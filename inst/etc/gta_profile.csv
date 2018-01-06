@@ -1,0 +1,11 @@
+VAR_NAME,VAR_VALUE
+gta_fieldname_list,gta_fieldname_list
+TRD_Co,TRD_Co_公司基本情况
+TRD_DALYR,TRD_Dalyr_日个股回报率
+TRD_WEEK,TRD_Week_周个股回报率
+TRD_MNTH,TRD_Mnth_月个股回报率
+TRD_YEAR,TRD_Year_年个股回报率
+TRD_CNDALYM,TRD_Cndalym_综合市场日度回报
+TRD_WEEKCM,TRD_Weekcm_综合市场周度回报
+TRD_CNMONT,TRD_Cnmont_综合市场月度回报
+TRD_YEARCM,TRD_Yearcm_综合市场年度回报

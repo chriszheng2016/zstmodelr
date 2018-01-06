@@ -1,0 +1,88 @@
+---
+title: "Portfilo backtings with Rmetrics"
+date: '2017-12-25'
+output: 
+  html_notebook: 
+    fig_caption: yes
+    number_sections: yes
+    toc: yes
+---
+
+
+```{r setup, include=FALSE  }
+
+library(tidyverse)
+library(lubridate)
+library(stringr)
+library(fPortfolio)
+library(ZStockModels)
+
+# Set global options for knitr 
+knitr::opts_chunk$set(
+comment = "#>",
+echo = FALSE,
+warning = FALSE,
+message = FALSE,
+collapse = TRUE
+)
+
+options(tibble.print_min = 10L, tibble.print_max = 20L)
+
+```
+
+# Data Preparation(数据准备)
+
+## Data tables in database(数据库所包含数据表)
+
+```{r connect_db}
+# Open gta stock databse
+stock_db <- stock_db(gta_db, "GTA_SQLData")
+open_stock_db(stock_db)
+
+# Initate the stock database
+invisible(init_stock_db(stock_db))
+stock_name_list  <- stock_name_list(stock_db)
+stock_field_list <- stock_field_list(stock_db)
+
+# Get names of all stock table from database   
+ db_tables <- list_stock_tables(stock_db)
+ knitr::kable(
+  x = db_tables,
+  caption = "Tables in GTA Stock Database",
+  align = "l"
+ )
+ 
+```
+
+## Load return timeseris of market and stocks(加载市场与个股回报时间序列)
+
+```{r load_return_series}
+# load monthly return of stocks
+ds_trd_mnth.df <- get_table_dataset(stock_db, 
+                                    table_name = "TRD_Mnth_月个股回报率")
+ds_stocks_mretwd.fts <- fetch_stock_field_dataset(ds_source.df = ds_trd_mnth.df,
+                                                  stock_cd_list = stock_cd_list, 
+                                                  replaceNA = "zeros",
+                                                  target_field = "mretwd", 
+                                                  date_field = "trdmnt")
+
+
+# load montly return of market
+ds_trd_cnmont.df <- get_table_dataset(stock_db, 
+                                    table_name = "TRD_Cnmont_综合市场月度回报")
+ds_market_cmretwdtl.fts <- fetch_stock_field_dataset(ds_source.df = ds_trd_cnmont.df,
+                                                  stock_cd_list = stock_cd_list, 
+                                                  replaceNA = "zeros",
+                                                  target_field = "cmretwdtl", 
+                                                  date_field = "trdmnt")
+
+
+
+
+```
+
+
+
+# Build Portfolio(构建组合)
+
+# Backtest Portfolio(组合回测)

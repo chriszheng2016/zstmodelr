@@ -1,0 +1,467 @@
+---
+title: "Analysis of Stock Indicator"
+editor_options:
+  chunk_output_type: inline
+date: '2017-12-25'
+output:
+  html_notebook:
+    fig_caption: yes
+    number_sections: yes
+    toc: yes
+---
+
+研究各股票的利润情况
+
+
+```{r setup, include=FALSE  }
+
+library(tidyverse)
+library(lubridate)
+library(stringr)
+library(shiny)
+library(zstmodelr)
+
+# Set global options for knitr 
+knitr::opts_chunk$set(
+comment = "#>",
+echo = FALSE,
+warning = FALSE,
+message = FALSE,
+collapse = TRUE
+)
+
+options(tibble.print_min = 10L, tibble.print_max = 20L)
+
+```
+
+# Data Preparation(数据准备)
+
+## Data tables in database(数据库所包含数据表)
+```{r connect_db}
+# Open gta stock databse
+stock_db <- stock_db(gta_db, "GTA_SQLData")
+open_stock_db(stock_db)
+
+# Initate the stock database
+invisible(init_stock_db(stock_db))
+stock_name_list  <- stock_name_list(stock_db)
+stock_field_list <- stock_field_list(stock_db)
+
+# Get names of all stock table from database   
+ db_tables <- list_stock_tables(stock_db)
+ knitr::kable(
+  x = db_tables,
+  caption = "Tables in GTA Stock Database",
+  align = "l"
+ )
+ 
+```
+
+
+**共有`r length(db_tables)`个数据表**
+
+
+## Summary of Stocks&Industries in Universe(全部股票及行业信息)
+
+**全部股票与行业信息如下：**
+```{r summary_stock_info}
+
+# Get company info 
+trd_company.df <- get_table_dataset(stock_db, table_name = "TRD_Co_公司基本情况")
+trd_company.tib <- tibble::as.tibble(trd_company.df)
+
+# all stocks in the investment universe
+universe_stocks <- trd_company.tib %>%
+    select(stkcd, stkname= stknme, indcd = nnindcd, indname = nnindnme) %>%
+    arrange(indcd, stkcd)
+
+
+# all industries in investment universe
+universe_industries <- universe_stocks %>%
+  group_by(indcd, indname) %>%
+  summarise(stknum = n()) %>%
+  arrange(indcd, desc(stknum))
+
+# Output the results
+universe_industries
+universe_stocks
+
+```
+
+**共`r nrow(universe_industries)`个行业, `r nrow(universe_stocks)`只股票**
+
+## Set Params of Study(设置研究参数)
+
+**组合股票明细：**
+```{r set_params_study}
+# Set params of study
+
+table_indicator <- "FR_T5_盈利能力"
+
+# Set stocks as portfolio
+stock_stkcds_list <- c(600066,000550, 600031, 000157,000651, 000333)
+portfolio_stocks <- universe_stocks %>%
+    filter(stkcd %in% stock_stkcds_list)
+
+#Set focus indicator of portfolio
+focus_fields_code <- c("f053301c", "f050504c", "f052401c")
+focus_fields_name <- code2name(stock_field_list,focus_fields_code)
+focus_fields.tib  <- tibble(code = focus_fields_code, name = focus_fields_name)
+
+the_indicator <- focus_fields_code[2]
+the_indicator_name <- code2name(stock_field_list,the_indicator)
+
+# Set top/last n industries for show
+top_last_n_industies <- 5
+
+#Output the results
+portfolio_stocks
+
+focus_fields.tib
+
+```
+**研究指标: `r str_c(the_indicator, "/",the_indicator_name)`**
+
+
+## Load Inicators of Porfolio(加载组合指标数据)
+
+**加载组合指标数据如下：**
+```{r get_portfolio_data }
+# Load indicators of all stocks
+universe_data.df <- as.tibble(get_table_dataset(stock_db, table_name = table_indicator))
+universe_data.tib <- as.tibble(universe_data.df)
+
+# get indicators of all stocks
+universe_data <- universe_data.tib %>%
+    left_join(trd_company.tib, by  = "stkcd") %>%
+    mutate(periodtype = ifelse(lubridate::month(accper) == 12, "annual","quarter")) %>%
+    filter(typrep == 'A') %>%
+    select(accper, periodtype, stkcd, stkname = stknme, 
+           indcd = indcd.x, indname = nnindnme,
+           contains("0"))
+
+# get indicators of portfolio
+portfolio_data <- universe_data %>%
+      dplyr::filter( stkcd %in% stock_stkcds_list)
+
+
+(portfolio_data)
+```
+
+
+**组合指标字段信息如下：**
+```{r get_portfolio_field}
+# Get all fields of portfolio 
+stock_field_code_list <- colnames(portfolio_data)
+stock_field_code_list <- stringr::str_subset(stock_field_code_list, "\\d")
+stock_field_name_list <- code2name(stock_field_list, stock_field_code_list)
+portfolio_fields <- tibble::tibble(code = stock_field_code_list, name = stock_field_name_list)
+
+# get indicators data for allstock
+universe_indicators <- universe_data %>%
+  select(accper:indname, the_indicator) 
+
+# get indictors data for portfolio
+portfolio_indicators <- portfolio_data %>%
+  select(accper:indname, the_indicator) 
+
+# Output the results
+portfolio_fields
+
+portfolio_indicators
+
+```
+
+**研究指标: `r str_c(the_indicator, "/",the_indicator_name)`**
+
+
+# Data Exploration(数据探索)
+
+## Industry Study (各行业相关指标研究)
+
+**1.各行业指标数据统计分布**
+
+各行业各指标中值分布如下：
+```{r industry_indicator_distribution_summary}
+
+# use median of each peroid as indicator for industry
+industry_indicator_peroid<- universe_indicators %>%
+    group_by(indname, accper) %>%
+    summarise_at(the_indicator, .funs = funs(mean, median, sd, max, min)) %>%
+    mutate(periodtype = ifelse(lubridate::month(accper) == 12, 
+                                "annual","quarter")) %>%
+    select(indname, accper, periodtype, !!the_indicator:=median, everything()) %>%
+    arrange(indname, accper) %>%
+    ungroup()
+
+# Indicator summary of each industry
+industry_indicator_summary <- industry_indicator_peroid %>%
+    group_by(indname) %>%
+    summarise_at(the_indicator, .funs = funs(mean, median, sd, max, min)) %>%
+    filter(!is.na(indname)) %>%
+    arrange(desc(mean))
+
+# Output the results
+industry_indicator_summary
+
+
+# top and last industries
+sort_var <- "mean"
+top_industries <- industry_indicator_summary %>%
+     top_n(top_last_n_industies, get(sort_var)) %>%
+     select(indname) 
+top_industries <- top_industries$indname
+
+last_industries <- industry_indicator_summary %>%
+     top_n(-top_last_n_industies, get(sort_var)) %>%
+     select(indname)
+last_industries <- last_industries$indname
+
+
+
+# Top 10 industries of Indicator
+industry_indicator_summary %>%
+  filter(indname %in% top_industries) %>%
+  ggplot(aes(x = reorder(indname, get(sort_var) ), y = get(sort_var))) +
+    geom_col() +
+    labs(
+      title = str_c("Top Industries of Indicator"),
+      subtitle = str_c("(", the_indicator, "/", the_indicator_name, ")"),
+      x = "Industry",
+      y = "Median of Indicator"
+    ) +
+    geom_label(aes(label = format(get(sort_var), digits = 2, nsmall = 2)), hjust = TRUE) +
+    coord_flip()
+
+# last 10 industries of Indicator
+industry_indicator_summary %>%
+  filter(indname %in% last_industries) %>%
+  ggplot(aes(x = reorder(indname, get(sort_var)), y = get(sort_var))) +
+    geom_col() +
+    labs(
+        title = str_c("Last Industries of Indicator"),
+        subtitle = str_c("(", the_indicator, "/", the_indicator_name, ")"),
+        x = "Industry",
+        y = "Median of Indicator"
+      ) +
+    geom_label(aes(label = format(get(sort_var), digits = 2, nsmall = 2)), hjust = FALSE) +
+    coord_flip()
+
+# Plot histogram of distiubtion of top industry
+industry_indicator_peroid %>%
+    filter(indname %in% top_industries) %>%
+    ggplot(aes(x = get(the_indicator))) +
+      geom_histogram(binwidth = 0.01) +
+      geom_density() +
+      labs(
+      title = "Distribution Summarry of Top Industries",
+      subtitle = str_c("(", the_indicator, "/", the_indicator_name, ")"),
+      x = NULL,
+      y = NULL
+      ) +
+      coord_cartesian(xlim = c(-1, 1)) +
+      facet_wrap(~indname)
+
+# Plot histogram of distiubtion of last industry
+industry_indicator_peroid %>%
+    filter(indname %in% last_industries) %>%
+    ggplot(aes(x = get(the_indicator))) +
+      geom_histogram(binwidth = 0.01) +
+      geom_density() +
+      labs(
+      title = "Distribution Summarry of of Last Industries ",
+      subtitle = str_c("(", the_indicator, "/", the_indicator_name, ")"),
+      x = NULL,
+      y = NULL
+      ) +
+      coord_cartesian(xlim = c(-1, 1)) +
+      facet_wrap(~indname)
+      
+
+# industry_indicator_peroid %>%
+#    filter(indname %in% top_industries) %>%
+#    ggplot(aes(x = reorder(indname, median), y = median)) +
+#    geom_boxplot() +
+#    coord_flip()
+
+```
+
+
+
+**2.各行业指标数据时间趋势**
+
+```{r}
+
+# plot data for top industries 
+
+# plot series of annual data
+industry_indicator_peroid %>%
+    filter(indname %in% top_industries) %>%
+    filter(periodtype == "annual") %>%
+    ggplot(aes(x = accper, y = get(the_indicator))) +
+       geom_col() + 
+       labs(
+         title = "Annual Trends of Top Industries",
+         subtitle = str_c("(", the_indicator, "/", the_indicator_name, ")"),
+         x = NULL,
+         y = NULL
+         ) +
+       coord_cartesian(ylim = c(-1, 1)) +
+       facet_wrap(~indname) 
+       
+
+
+# plot series of quarter data
+industry_indicator_peroid %>%
+    filter(indname %in% top_industries) %>%
+    ggplot(aes(x = accper, y = get(the_indicator))) +
+       geom_col() + 
+       labs(
+         title = "Quarterly Trends of Top Industries", 
+         subtitle = str_c("(", the_indicator, "/", the_indicator_name, ")"),
+         x = NULL,
+         y = NULL
+         ) +
+       coord_cartesian(ylim = c(-1, 1)) +
+       facet_wrap(~indname) 
+
+# plot data for last industries
+
+# plot series of annual data
+industry_indicator_peroid %>%
+    filter(indname %in% last_industries) %>%
+    filter(periodtype == "annual") %>%
+    ggplot(aes(x = accper, y = get(the_indicator))) +
+       geom_col() + 
+       labs(
+         title = "Annual Trends of Last Industries",
+         subtitle = str_c("(", the_indicator, "/", the_indicator_name, ")"),
+         x = NULL,
+         y = NULL
+         ) +
+       coord_cartesian(ylim = c(-1, 1)) +
+       facet_wrap(~indname) 
+       
+
+
+# plot series of quarter data
+industry_indicator_peroid %>%
+    filter(indname %in% last_industries) %>%
+    ggplot(aes(x = accper, y = get(the_indicator))) +
+       geom_col() + 
+       labs(
+         title = "Quarterly Trends of Last Industries", 
+         subtitle = str_c("(", the_indicator, "/", the_indicator_name, ")"),
+         x = NULL,
+         y = NULL
+         ) +
+       coord_cartesian(ylim = c(-1, 1)) +
+       facet_wrap(~indname) 
+
+
+```
+
+
+## Portfoilo Study(投资组合相关指标研究)
+
+**1.各股指标数据统计分布**
+```{r portfolio_indicator_ditribution_summary}
+
+# summary distribution of each stock
+portfolio_indicators_summary <- portfolio_indicators %>%
+  group_by(stkname) %>%
+  summarise(
+            mean = mean(get(the_indicator), na.rm = TRUE),
+            std  = sqrt(var(get(the_indicator), na.rm = TRUE)),
+            max = max(get(the_indicator), na.rm = TRUE),
+            Q3 = quantile(get(the_indicator),probs = c(0.75),na.rm = TRUE),
+            median = median(get(the_indicator), na.rm = TRUE),
+            Q1 = quantile(get(the_indicator),probs = c(0.25),na.rm = TRUE),
+            min = min(get(the_indicator), na.rm = TRUE)
+            )
+
+# portfolio_indicators_summary
+
+ knitr::kable(
+  x = portfolio_indicators_summary,
+  caption = "Portfolio Indicator Summary",
+  align = "l"
+ )
+
+# Plot boxplot of distribution of each stock
+portfolio_indicators %>%
+  ggplot(aes(x = reorder(stkname, get(the_indicator), FUN = median), 
+             y = get(the_indicator), 
+             colour = indname)) +
+     geom_boxplot() +
+     labs(
+         title = "Box Summarry ",
+         subtitle = str_c("(", the_indicator, "/", the_indicator_name, ")"),
+         x = NULL,
+         y = NULL
+         ) +
+     theme(legend.position = "bottom") +
+     coord_flip()
+
+# Plot histogram of distiubtion of each stock 
+portfolio_indicators %>%
+   ggplot(aes(x = get(the_indicator))) +
+      geom_histogram(binwidth = 0.01) +
+      geom_density() +
+      labs(
+         title = "Distribution Summarry ",
+         subtitle = str_c("(", the_indicator, "/", the_indicator_name, ")"),
+         x = NULL,
+         y = NULL
+         ) +
+      facet_wrap(~stkname)
+
+```
+
+
+
+
+**2.各股指标数据时间趋势**
+
+
+```{r portfolio_indicator_history_trends}
+
+# plot series of annual data
+portfolio_indicators %>%
+    filter(periodtype == "annual") %>%
+    ggplot(aes(x = accper, y = get(the_indicator))) +
+       geom_col() + 
+       labs(
+         title = "Annual Trends",
+         subtitle = str_c("(", the_indicator, "/", the_indicator_name, ")"),
+         x = NULL,
+         y = NULL
+         ) +
+       facet_wrap(~stkname) 
+       
+
+
+# plot series of quarter data
+portfolio_indicators %>%
+    ggplot(aes(x = accper, y = get(the_indicator))) +
+       geom_col() + 
+       labs(
+         title = "Quarterly Trends", 
+         subtitle = str_c("(", the_indicator, "/", the_indicator_name, ")"),
+         x = NULL,
+         y = NULL
+         ) +
+       facet_wrap(~stkname) 
+       
+
+
+```
+
+```{r clsoe_db}
+
+# Close gta stock databse
+close_stock_db(stock_db)
+
+```
+
+
