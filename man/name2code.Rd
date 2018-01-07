@@ -37,3 +37,6 @@ Generic function to translate name into code
 \item \code{stock_name_list}: Translate name into code in a object of stock_name_list  class
 }}
 
+\examples{
+
+}

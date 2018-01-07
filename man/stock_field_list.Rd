@@ -23,3 +23,6 @@ Generic stock_field class creator
 \item \code{gta_db}: create a stock_filed_list for a database of gta_db class
 }}
 
+\examples{
+
+}

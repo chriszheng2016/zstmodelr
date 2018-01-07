@@ -28,11 +28,10 @@
   "TRD_YEARCM"       # name for TRD_Yearcm_综合市场年度回报
 )
 
-
-
-
 .GTA_XXXX <- "中文字符"  # not supported
 
+
+# Interface Implementation of stock_db class by gta_db ------------------------
 
 #' Creator of gta_db class
 #'
@@ -63,7 +62,7 @@ gta_db <- function(dsn = "GTA_SQLData") {
 #' @export
 open_stock_db.gta_db <- function(stock_db) {
 
-  stopifnot(inherits(stock_db, "gta_db"))
+  stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
   success <- TRUE
 
   con_stock_db <- tryCatch( RODBC::odbcConnect(dsn = stock_db$dsn),
@@ -80,6 +79,7 @@ open_stock_db.gta_db <- function(stock_db) {
   message(msg)
 
   return(invisible(success))
+
 }
 
 # Init param of stock db
@@ -87,7 +87,7 @@ open_stock_db.gta_db <- function(stock_db) {
 #' @export
 init_stock_db.gta_db <- function(stock_db) {
 
-  stopifnot(inherits(stock_db, "gta_db"))
+  stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
 
   success <- TRUE
 
@@ -136,7 +136,8 @@ init_stock_db.gta_db <- function(stock_db) {
     }
   }
 
-  return(success)
+  return(invisible(success))
+
 }
 
 # Close the stock database
@@ -144,7 +145,7 @@ init_stock_db.gta_db <- function(stock_db) {
 #' @export
 close_stock_db.gta_db <- function(stock_db) {
 
-  stopifnot(inherits(stock_db, "gta_db"))
+  stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
   success <- TRUE
 
   if (!is.null(stock_db$connection)) {
@@ -177,7 +178,7 @@ close_stock_db.gta_db <- function(stock_db) {
 #' @export
 list_stock_tables.gta_db <- function(stock_db) {
 
-  stopifnot(inherits(stock_db, "gta_db"))
+  stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
 
   if (is.null(stock_db$connection)) {
     stop("Stock db isn't connected, try to connect db again")
@@ -229,7 +230,7 @@ code2name.gta_db <- function(stock_db, code, type=c("field", "stock")) {
 get_table_dataset.gta_db <- function(stock_db, table_name ) {
 
   # Validate params
-  stopifnot(inherits(stock_db, "gta_db"))
+  stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
 
   if (is.null(stock_db$connection)) {
     stop("Stock db isn't connected, try to connect db again")
@@ -263,7 +264,7 @@ get_table_dataset.gta_db <- function(stock_db, table_name ) {
 get_stock_dataset.gta_db <- function(stock_db, table_name, stock_cd_list = NULL) {
 
   # Validate param
-  stopifnot(inherits(stock_db, "gta_db"))
+  stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
 
   if (is.null(stock_db$connection)) {
     stop("Stock db isn't connected, try to connect db again")
@@ -323,7 +324,7 @@ get_stock_dataset.gta_db <- function(stock_db, table_name, stock_cd_list = NULL)
 fetch_table_dataset.gta_db <- function(stock_db, table_list) {
 
   # validate params
-  stopifnot(inherits(stock_db, "gta_db"))
+  stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
 
   if (is.null(stock_db$connection)) {
     stop("Stock db isn't connected, try to connect db again")
@@ -363,17 +364,20 @@ fetch_table_dataset.gta_db <- function(stock_db, table_list) {
 
 }
 
-# Get stock return timeseries
-#
+# Get stock return timeseries from stock_db
+#' @describeIn get_stock_return get stock return timeseries from a database of gta_db class
+#' @export
 get_stock_return.gta_db <- function(stock_db, stock_cd_list = NULL,
                   period_type = c("daily", "weekly", "monthly", "annual")) {
 
   # validate params
-  stopifnot(inherits(stock_db, "gta_db"))
+  stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
 
   if (is.null(stock_db$connection)) {
     stop("Stock db isn't connected, try to connect db again")
   }
+
+  success = TRUE
 
   # get stock return dataset
   field_stkcd <- quo(stkcd)
@@ -384,6 +388,7 @@ get_stock_return.gta_db <- function(stock_db, stock_cd_list = NULL,
       table_name   <- stock_db$table_list[["TRD_DALYR"]]
       field_date   <- quo(trddt)
       field_return <- quo(dretwd)
+      date_format <- "ymd"
     },
     weekly  = {
       table_name <- stock_db$table_list[["TRD_WEEK"]]
@@ -394,48 +399,71 @@ get_stock_return.gta_db <- function(stock_db, stock_cd_list = NULL,
       table_name <- stock_db$table_list[["TRD_MNTH"]]
       field_date   <- quo(trdmnt)
       field_return <- quo(mretwd)
+      date_format <- "ymd"
     },
     annual  = {
       table_name <- stock_db$table_list[["TRD_YEAR"]]
       field_date   <- quo(trdynt)
       field_return <- quo(yretwd)
+      date_format <- "y"
     }
   )
 
-  ds_return <- as.tibble(get_table_dataset.gta_db(stock_db, table_name))
+  ds_return <- get_stock_dataset.gta_db(stock_db, table_name, stock_cd_list)
+  if (!is.null(ds_return)) {
+    ds_return <- tibble::as.tibble(ds_return)
+    msg <- sprintf("return table: %s , return field: %s, date field: %s",
+                   table_name, deparse(field_return), deparse(field_date))
+    message(msg)
+
+  } else {
+    success = FALSE
+  }
 
   # Build return results
-  if(!is.null(stock_cd_list) && length(stock_cd_list) != 0 )
-    ds_return <- dplyr::filter(ds_return, UQ(field_stkcd) %in% stock_cd_list)
+  if (success) {
 
-  ds_return <- ds_return %>%
+    # Filter return
+    if (!is.null(stock_cd_list) && length(stock_cd_list) != 0 )
+      ds_return <- dplyr::filter(ds_return, UQ(field_stkcd) %in% stock_cd_list)
+
+    ds_return <- ds_return %>%
       dplyr::select(date = !!field_date, stkcd = !!field_stkcd,
                     return = !!field_return) %>%
       tidyr::spread(key = stkcd, value = return)
 
-  ts_return.fts <- timeSeries(ds_return, lubridate::date(ds_return$date))
-  ts_return.fts <- ts_return.fts[,-1]
+    # Build time series
+    charvec <- lubridate::parse_date_time(as.character(ds_return$date), date_format)
+    ts_return.fts <- timeSeries::timeSeries(ds_return, charvec)
+    ts_return.fts <- ts_return.fts[,-1]
 
-  ts_return <- ts_return.fts
-  field_names <- sprintf("%06d", as.numeric(names(ts_return)))
-  names(ts_return) <- field_names
-  ts_return[is.na(ts_return)] <- 0
+    ts_return <- ts_return.fts
+    field_names <- sprintf("%06d", as.numeric(names(ts_return)))
+    names(ts_return) <- field_names
+    ts_return[is.na(ts_return)] <- 0
+
+  } else {
+    ts_return <- NULL
+  }
 
   return(ts_return)
 
 }
 
-# Get market return timesereis
-#
+# Get market return timesereis from stock_db
+#' @describeIn get_market_return get market return timeseries from a database of gta_db class
+#' @export
 get_market_return.gta_db <- function(stock_db,
                     period_type = c("daily", "weekly", "monthly", "annual")) {
 
   # validate params
-  stopifnot(inherits(stock_db, "gta_db"))
+  stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
 
   if (is.null(stock_db$connection)) {
     stop("Stock db isn't connected, try to connect db again")
   }
+
+  success = TRUE
 
   # get market return dataset
   field_markettype <- quo(markettype)
@@ -446,6 +474,7 @@ get_market_return.gta_db <- function(stock_db,
       table_name   <- stock_db$table_list[["TRD_CNDALYM"]]
       field_date   <- quo(trddt)
       field_return <- quo(cdretwdtl)
+      date_format <- "ymd"
     },
     weekly  = {
       table_name <- stock_db$table_list[["TRD_WEEKCM"]]
@@ -456,57 +485,50 @@ get_market_return.gta_db <- function(stock_db,
       table_name <- stock_db$table_list[["TRD_CNMONT"]]
       field_date   <- quo(trdmnt)
       field_return <- quo(cmretwdtl)
+      date_format <- "ym"
     },
     annual  = {
       table_name <- stock_db$table_list[["TRD_YEARCM"]]
       field_date   <- quo(trdynt)
       field_return <- quo(cyretwdtl)
+      date_format <- "y"
     }
   )
-  ds_return <- as.tibble(get_table_dataset.gta_db(stock_db, table_name))
+
+  ds_return <- get_table_dataset.gta_db(stock_db, table_name)
+  if (!is.null(ds_return)) {
+    ds_return <- tibble::as.tibble(ds_return)
+    msg <- sprintf("return table: %s , return field: %s, date field: %s",
+                   table_name, deparse(field_return), deparse(field_date))
+    message(msg)
+  }
+  else{
+    success <- FALSE
+  }
+
 
   # Build return results
-  ds_return <- dplyr::filter(ds_return, UQ(field_markettype) == 21)
-  ds_return <- ds_return %>%
-    dplyr::select(date = !!field_date, market_index = !!field_return)
+  if (success) {
+    ds_return <- dplyr::filter(ds_return, UQ(field_markettype) == 21)
+    ds_return <- ds_return %>%
+      dplyr::select(date = !!field_date, market_index = !!field_return)
 
-  # set charvec for return results
-  switch (
-    period_type,
-    daily = {
-      charvec <- lubridate::date(ds_return$date)
-    },
-    weekly  = {
-       charvec <- lubridate::date(ds_return$date)
-    },
-    monthly  = {
-      if(is.character(ds_return$date)) {
-        charvec <- lubridate::parse_date_time(ds_return$date, "ym")
-      } else {
-        charvec <- ds_return$date
-      }
 
-      charvec <- lubridate::date(charvec)
+    # Build timeseries
+    charvec <- lubridate::parse_date_time(as.character(ds_return$date), date_format)
+    ts_return.fts <- timeSeries::timeSeries(ds_return, charvec)
+    ts_return.fts <- ts_return.fts[,-1]
+    ts_return <- ts_return.fts
+    ts_return[is.na(ts_return)] <- 0
 
-    },
-    annual  = {
-      charvec <- lubridate::parse_date_time(as.character(ds_return$date), "y")
-      charvec <- lubridate::date(charvec)
-    }
-  )
-
-  # Build timeseries
-  ts_return.fts <- timeSeries(ds_return, charvec)
-  ts_return.fts <- ts_return.fts[,-1]
-  ts_return <- ts_return.fts
-  ts_return[is.na(ts_return)] <- 0
+  } else {
+    ts_return <- NULL
+  }
 
   return(ts_return)
-
 }
 
-
-# stock_field_list class of gta -------------------------------------------------------
+# Interface Implementation of stock_field_list class by gta_db -----------------
 
 # stock_field class creator
 #' @describeIn stock_field_list create a stock_filed_list for a database of gta_db class
@@ -529,7 +551,7 @@ stock_field_list.gta_db <- function(stock_db) {
 }
 
 
-# stock_name_list class of gta ---------------------------------------------------
+# Interface Implementation of stock_name_list class by gta_db -----------------
 
 
 # stock_name_list class creator

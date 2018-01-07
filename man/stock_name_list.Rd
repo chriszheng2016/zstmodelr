@@ -23,3 +23,6 @@ generic stock_name_list class creator
 \item \code{gta_db}: create a stock_name_list for a database of gta_db class
 }}
 
+\examples{
+
+}

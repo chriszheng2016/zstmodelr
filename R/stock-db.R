@@ -1,6 +1,6 @@
 
 
-# stock_db class ----------------------------------------------------------
+# Generic interface definiation of stock_db class -------------------------------
 
 
 #' S3 generic function for stock_db
@@ -143,7 +143,7 @@ get_table_dataset <- function(stock_db, table_name) {
 #' ds_trd_dalyr.df <- get_stock_dataset(stock_db,
 #'                             table_name = "TRD_Dalyr_日个股回报率",
 #'                             stock_cd_list = c("600066", "000550"))
-get_stock_dataset <- function(stock_db, table_name, stock_cd_list) {
+get_stock_dataset <- function(stock_db, table_name, stock_cd_list = NULL) {
   UseMethod("get_stock_dataset")
 }
 
@@ -165,6 +165,42 @@ fetch_table_dataset <- function(stock_db, table_list) {
   UseMethod("fetch_table_dataset")
 }
 
+#' Get stock return timeseries from stock_db
+#'
+#' Generic function to get stock return timeseries from stock_db
+#'
+#' @param stock_db   a stock database object to operate
+#' @param stock_cd_list a list of stock cd, default value of NULL means
+#'     all stock data will be returned
+#' @param period_type date peroid for time series, e.g. "daily", "weekly",
+#'                    "monthly", "annual", default value is "daily"
+#'
+#' @return A timeseries of stock return
+#' @export
+#'
+#' @examples
+#'
+get_stock_return <- function(stock_db, stock_cd_list = NULL,
+                  period_type = c("daily", "weekly", "monthly", "annual")) {
+  UseMethod("get_stock_return")
+}
+
+#' Get market return timesereis from stock_db
+#' Generic function to get stock return timeseries from stock_db
+#'
+#' @param stock_db   a stock database object to operate
+#' @param period_type date peroid for time series, e.g. "daily", "weekly",
+#'                    "monthly", "annual", default value is  "daily"
+#'
+#' @return A timeseries of market return
+#' @export
+#'
+#' @examples
+#'
+get_market_return <- function(stock_db,
+                  period_type = c("daily", "weekly", "monthly", "annual")) {
+  UseMethod("get_market_return")
+}
 
 # Get a timeseries of stock data for specified stock from table datasets
 get_stock_field_dataset <- function(ds_source.df,
@@ -300,6 +336,7 @@ fetch_stock_field_dataset <- function(ds_source.df,
 #' @export
 #'
 #' @examples
+#'
 code2name <- function(x, code, ...) {
   UseMethod("code2name")
 }
@@ -317,11 +354,12 @@ code2name <- function(x, code, ...) {
 #' @export
 #'
 #' @examples
+#'
 name2code <- function(x, name, ...) {
   UseMethod("name2code")
 }
 
-# stock_field_list class -------------------------------------------------------
+# Generic interface definiation of stock_field_list class ----------------------
 
 #' Class creator of stock_field class
 #'
@@ -333,6 +371,7 @@ name2code <- function(x, name, ...) {
 #' @export
 #'
 #' @examples
+#'
 stock_field_list <- function(stock_db) {
   UseMethod("stock_field_list")
 }
@@ -366,7 +405,7 @@ name2code.stock_field_list <- function(x, name) {
 }
 
 
-# stock_name_list class ---------------------------------------------------------
+# Generic interface definiation of stock_name_list class -----------------------
 
 
 #' Class creator of stock_name_list class
@@ -379,6 +418,7 @@ name2code.stock_field_list <- function(x, name) {
 #' @export
 #'
 #' @examples
+#'
 stock_name_list <- function(stock_db) {
   UseMethod("stock_name_list")
 }

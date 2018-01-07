@@ -7,7 +7,7 @@
 \usage{
 \method{get_stock_dataset}{gta_db}(stock_db, table_name, stock_cd_list = NULL)
 
-get_stock_dataset(stock_db, table_name, stock_cd_list)
+get_stock_dataset(stock_db, table_name, stock_cd_list = NULL)
 }
 \arguments{
 \item{stock_db}{a stock database object to operate}
