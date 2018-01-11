@@ -169,28 +169,51 @@ fetch_table_dataset <- function(stock_db, table_list) {
 #'
 #' Generic function to get stock return timeseries from stock_db
 #'
-#' @param stock_db   a stock database object to operate
+#' @param stock_db    a stock database object to operate
 #' @param stock_cd_list a list of stock cd, default value of NULL means
 #'     all stock data will be returned
 #' @param period_type date peroid for time series, e.g. "daily", "weekly",
 #'                    "monthly", "annual", default value is "daily"
+#' @param handleNA    Specifies the method how to handle NAs. One of the applied vector strings:
+#'                    method="s" na.rm = FALSE, skip, i.e. do nothing, method="r" remove NAs,
+#'                    method="z" substitute NAs by zeros, method="ir" interpolate NAs and remove
+#'                    NAs at the beginning and end of the series, method="iz" interpolate NAs and
+#'                    substitute NAs with zero at the beginning and end of the series,
+#'                    method="ie" interpolate NAs and extrapolate NAs at the beginning and
+#'                    end of the series
+#' @param interpNA_method    Specifies the method how to interpolate NA the matrix column by column.
+#'                    One of the applied vector strings: method="linear", method="before"
+#'                    or method="after". For the interpolation the function approx is used.
 #'
 #' @return A timeseries of stock return
 #' @export
 #'
 #' @examples
+
 #'
 get_stock_return <- function(stock_db, stock_cd_list = NULL,
-                  period_type = c("daily", "weekly", "monthly", "annual")) {
+                  period_type = c("daily", "weekly", "monthly", "annual"),
+                  handleNA = c("r", "s", "z", "ir", "iz", "ie"),
+                  interpNA_method = c("before", "linear", "after")) {
   UseMethod("get_stock_return")
 }
 
 #' Get market return timesereis from stock_db
 #' Generic function to get stock return timeseries from stock_db
 #'
-#' @param stock_db   a stock database object to operate
+#' @param stock_db    a stock database object to operate
 #' @param period_type date peroid for time series, e.g. "daily", "weekly",
 #'                    "monthly", "annual", default value is  "daily"
+#' @param handleNA    Specifies the method how to handle NAs. One of the applied vector strings:
+#'                    method="s" na.rm = FALSE, skip, i.e. do nothing, method="r" remove NAs,
+#'                    method="z" substitute NAs by zeros, method="ir" interpolate NAs and remove
+#'                    NAs at the beginning and end of the series, method="iz" interpolate NAs and
+#'                    substitute NAs with zero at the beginning and end of the series,
+#'                    method="ie" interpolate NAs and extrapolate NAs at the beginning and
+#'                    end of the series
+#' @param interpNA_method    Specifies the method how to interpolate NA the matrix column by column.
+#'                    One of the applied vector strings: method="linear", method="before"
+#'                    or method="after". For the interpolation the function approx is used.
 #'
 #' @return A timeseries of market return
 #' @export
@@ -198,7 +221,9 @@ get_stock_return <- function(stock_db, stock_cd_list = NULL,
 #' @examples
 #'
 get_market_return <- function(stock_db,
-                  period_type = c("daily", "weekly", "monthly", "annual")) {
+                  period_type = c("daily", "weekly", "monthly", "annual"),
+                  handleNA = c("r", "s", "z", "ir", "iz", "ie"),
+                  interpNA_method = c("before", "linear", "after")) {
   UseMethod("get_market_return")
 }
 

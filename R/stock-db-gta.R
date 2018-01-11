@@ -193,7 +193,7 @@ list_stock_tables.gta_db <- function(stock_db) {
 # Translate name into code for field or stock
 #' @describeIn name2code Translate name into code in a database of gta_db class
 #' @export
-name2code.gta_db <- function(stock_db, name, type=c("field", "stock")) {
+name2code.gta_db <- function(stock_db, name, type=c("stock", "field")) {
 
     stopifnot(inherits(stock_db, "gta_db"), !missing(name))
 
@@ -210,7 +210,7 @@ name2code.gta_db <- function(stock_db, name, type=c("field", "stock")) {
 # Translate code into name for field or stock
 #' @describeIn code2name Translate code into name in a database of gta_db class
 #' @export
-code2name.gta_db <- function(stock_db, code, type=c("field", "stock")) {
+code2name.gta_db <- function(stock_db, code, type=c("stock", "field")) {
 
   stopifnot(inherits(stock_db, "gta_db"), !missing(code))
 
@@ -368,7 +368,9 @@ fetch_table_dataset.gta_db <- function(stock_db, table_list) {
 #' @describeIn get_stock_return get stock return timeseries from a database of gta_db class
 #' @export
 get_stock_return.gta_db <- function(stock_db, stock_cd_list = NULL,
-                  period_type = c("daily", "weekly", "monthly", "annual")) {
+                  period_type = c("daily", "weekly", "monthly", "annual"),
+                  handleNA = c("r", "s", "z", "ir", "iz", "ie"),
+                  interpNA_method = c("before", "linear", "after")) {
 
   # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
@@ -432,15 +434,20 @@ get_stock_return.gta_db <- function(stock_db, stock_cd_list = NULL,
                     return = !!field_return) %>%
       tidyr::spread(key = stkcd, value = return)
 
+    # Set colname as order of stock_cd_list
+    if (!is.null(stock_cd_list) && length(stock_cd_list) != 0 )
+      ds_return <- dplyr::select(ds_return, date, as.character(stock_cd_list))
+
     # Build time series
     charvec <- lubridate::parse_date_time(as.character(ds_return$date), date_format)
-    ts_return.fts <- timeSeries::timeSeries(ds_return, charvec)
-    ts_return.fts <- ts_return.fts[,-1]
+    ts_return.fts <- timeSeries::timeSeries(ds_return[, -1], charvec)
 
     ts_return <- ts_return.fts
     field_names <- sprintf("%06d", as.numeric(names(ts_return)))
     names(ts_return) <- field_names
-    ts_return[is.na(ts_return)] <- 0
+
+    # deal with the NAs
+    ts_return <- na.omit(ts_return, method = handleNA, interp = interpNA_method )
 
   } else {
     ts_return <- NULL
@@ -454,7 +461,9 @@ get_stock_return.gta_db <- function(stock_db, stock_cd_list = NULL,
 #' @describeIn get_market_return get market return timeseries from a database of gta_db class
 #' @export
 get_market_return.gta_db <- function(stock_db,
-                    period_type = c("daily", "weekly", "monthly", "annual")) {
+                    period_type = c("daily", "weekly", "monthly", "annual"),
+                    handleNA = c("r", "s", "z", "ir", "iz", "ie"),
+                    interpNA_method = c("before", "linear", "after")) {
 
   # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
@@ -516,10 +525,11 @@ get_market_return.gta_db <- function(stock_db,
 
     # Build timeseries
     charvec <- lubridate::parse_date_time(as.character(ds_return$date), date_format)
-    ts_return.fts <- timeSeries::timeSeries(ds_return, charvec)
-    ts_return.fts <- ts_return.fts[,-1]
+    ts_return.fts <- timeSeries::timeSeries(ds_return[,-1], charvec)
     ts_return <- ts_return.fts
-    ts_return[is.na(ts_return)] <- 0
+
+    # deal with the NAs
+    ts_return <- na.omit(ts_return, method = handleNA, interp = interpNA_method )
 
   } else {
     ts_return <- NULL
