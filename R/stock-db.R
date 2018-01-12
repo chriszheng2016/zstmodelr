@@ -174,16 +174,9 @@ fetch_table_dataset <- function(stock_db, table_list) {
 #'     all stock data will be returned
 #' @param period_type date peroid for time series, e.g. "daily", "weekly",
 #'                    "monthly", "annual", default value is "daily"
-#' @param handleNA    Specifies the method how to handle NAs. One of the applied vector strings:
-#'                    method="s" na.rm = FALSE, skip, i.e. do nothing, method="r" remove NAs,
-#'                    method="z" substitute NAs by zeros, method="ir" interpolate NAs and remove
-#'                    NAs at the beginning and end of the series, method="iz" interpolate NAs and
-#'                    substitute NAs with zero at the beginning and end of the series,
-#'                    method="ie" interpolate NAs and extrapolate NAs at the beginning and
-#'                    end of the series
-#' @param interpNA_method    Specifies the method how to interpolate NA the matrix column by column.
-#'                    One of the applied vector strings: method="linear", method="before"
-#'                    or method="after". For the interpolation the function approx is used.
+#' @param return_type a character string naming the method how the returns were computed
+#' @param cumulated   calculate cumulated return, default value is FALSE
+#'
 #'
 #' @return A timeseries of stock return
 #' @export
@@ -193,8 +186,9 @@ fetch_table_dataset <- function(stock_db, table_list) {
 #'
 get_stock_return <- function(stock_db, stock_cd_list = NULL,
                   period_type = c("daily", "weekly", "monthly", "annual"),
-                  handleNA = c("r", "s", "z", "ir", "iz", "ie"),
-                  interpNA_method = c("before", "linear", "after")) {
+                  return_type = c("simple", "compound"),
+                  cumulated = FALSE
+                  ) {
   UseMethod("get_stock_return")
 }
 
@@ -204,16 +198,8 @@ get_stock_return <- function(stock_db, stock_cd_list = NULL,
 #' @param stock_db    a stock database object to operate
 #' @param period_type date peroid for time series, e.g. "daily", "weekly",
 #'                    "monthly", "annual", default value is  "daily"
-#' @param handleNA    Specifies the method how to handle NAs. One of the applied vector strings:
-#'                    method="s" na.rm = FALSE, skip, i.e. do nothing, method="r" remove NAs,
-#'                    method="z" substitute NAs by zeros, method="ir" interpolate NAs and remove
-#'                    NAs at the beginning and end of the series, method="iz" interpolate NAs and
-#'                    substitute NAs with zero at the beginning and end of the series,
-#'                    method="ie" interpolate NAs and extrapolate NAs at the beginning and
-#'                    end of the series
-#' @param interpNA_method    Specifies the method how to interpolate NA the matrix column by column.
-#'                    One of the applied vector strings: method="linear", method="before"
-#'                    or method="after". For the interpolation the function approx is used.
+#' @param return_type a character string naming the method how the returns were computed
+#' @param cumulated   calculate cumulated return, default value is FALSE
 #'
 #' @return A timeseries of market return
 #' @export
@@ -222,9 +208,50 @@ get_stock_return <- function(stock_db, stock_cd_list = NULL,
 #'
 get_market_return <- function(stock_db,
                   period_type = c("daily", "weekly", "monthly", "annual"),
-                  handleNA = c("r", "s", "z", "ir", "iz", "ie"),
-                  interpNA_method = c("before", "linear", "after")) {
+                  return_type = c("simple", "compound"),
+                  cumulated = FALSE) {
   UseMethod("get_market_return")
+}
+
+
+# Get portfolio return
+#
+get_portfolio_return <- function(benchmark_return, stocks_return) {
+
+  stopifnot(timeSeries::is.timeSeries(benchmark_return),
+            timeSeries::is.timeSeries(stocks_return))
+
+
+  start_date_market <- timeSeries::start(benchmark_return)
+  end_date_market   <- timeSeries::end(benchmark_return)
+
+  start_date_stocks <- timeSeries::start(stocks_return)
+  end_date_stocks   <- timeSeries::end(stocks_return)
+
+  # Used later start_date as start_date
+  if (start_date_market >= start_date_stocks ) {
+    start_date <- start_date_market
+  } else {
+    start_date <- start_date_stocks
+  }
+
+  # Used early end_date as end_date
+  if (end_date_market <= end_date_stocks ) {
+    end_date <- end_date_market
+  } else {
+    end_date <- end_date_stocks
+  }
+
+  # get data window between start_date and end_date
+  benchmark_return <- timeSeries::window(benchmark_return, start_date, end_date)
+  stocks_return    <- timeSeries::window(stocks_return, start_date, end_date)
+
+  #Combine benchmark and stocks return
+  portfolio_return <- merge(benchmark_return, stocks_return)
+  colnames(portfolio_return) <- stringr::str_replace(colnames(portfolio_return), "X", "")
+
+  return(portfolio_return)
+
 }
 
 # Get a timeseries of stock data for specified stock from table datasets

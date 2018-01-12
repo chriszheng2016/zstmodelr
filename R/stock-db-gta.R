@@ -369,8 +369,9 @@ fetch_table_dataset.gta_db <- function(stock_db, table_list) {
 #' @export
 get_stock_return.gta_db <- function(stock_db, stock_cd_list = NULL,
                   period_type = c("daily", "weekly", "monthly", "annual"),
-                  handleNA = c("r", "s", "z", "ir", "iz", "ie"),
-                  interpNA_method = c("before", "linear", "after")) {
+                  return_type = c("simple", "compound"),
+                  cumulated = FALSE
+                  ) {
 
   # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
@@ -411,6 +412,7 @@ get_stock_return.gta_db <- function(stock_db, stock_cd_list = NULL,
     }
   )
 
+  #Warning: ds_return is simple return in database by default !!
   ds_return <- get_stock_dataset.gta_db(stock_db, table_name, stock_cd_list)
   if (!is.null(ds_return)) {
     ds_return <- tibble::as.tibble(ds_return)
@@ -422,12 +424,13 @@ get_stock_return.gta_db <- function(stock_db, stock_cd_list = NULL,
     success = FALSE
   }
 
-  # Build return results
+  # Build simple return results
+  ts_return <- NULL
   if (success) {
 
-    # Filter return
-    if (!is.null(stock_cd_list) && length(stock_cd_list) != 0 )
-      ds_return <- dplyr::filter(ds_return, UQ(field_stkcd) %in% stock_cd_list)
+    # # Filter return
+    # if (!is.null(stock_cd_list) && length(stock_cd_list) != 0 )
+    #   ds_return <- dplyr::filter(ds_return, UQ(field_stkcd) %in% stock_cd_list)
 
     ds_return <- ds_return %>%
       dplyr::select(date = !!field_date, stkcd = !!field_stkcd,
@@ -441,16 +444,23 @@ get_stock_return.gta_db <- function(stock_db, stock_cd_list = NULL,
     # Build time series
     charvec <- lubridate::parse_date_time(as.character(ds_return$date), date_format)
     ts_return.fts <- timeSeries::timeSeries(ds_return[, -1], charvec)
-
-    ts_return <- ts_return.fts
-    field_names <- sprintf("%06d", as.numeric(names(ts_return)))
-    names(ts_return) <- field_names
-
-    # deal with the NAs
-    ts_return <- na.omit(ts_return, method = handleNA, interp = interpNA_method )
+    field_names <- sprintf("%06d", as.numeric(names(ts_return.fts)))
+    names(ts_return.fts) <- field_names
 
   } else {
-    ts_return <- NULL
+    success <- FALSE
+  }
+
+  # Build final rturn reuslts
+  if (success) {
+    if (cumulated) {
+      ts_return.fts <- cumulated(na.omit(ts_return.fts, method = "z"), method = "simple")
+    } else {
+      if (match.arg(return_type) == "compound")
+         ts_return.fts <- simple2compound_return(ts_return.fts)
+    }
+
+    ts_return <- ts_return.fts
   }
 
   return(ts_return)
@@ -462,8 +472,9 @@ get_stock_return.gta_db <- function(stock_db, stock_cd_list = NULL,
 #' @export
 get_market_return.gta_db <- function(stock_db,
                     period_type = c("daily", "weekly", "monthly", "annual"),
-                    handleNA = c("r", "s", "z", "ir", "iz", "ie"),
-                    interpNA_method = c("before", "linear", "after")) {
+                    return_type = c("simple", "compound"),
+                    cumulated = FALSE
+                    ) {
 
   # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
@@ -516,23 +527,29 @@ get_market_return.gta_db <- function(stock_db,
   }
 
 
-  # Build return results
+   # Build simple return results
+  ts_return <- NULL
   if (success) {
     ds_return <- dplyr::filter(ds_return, UQ(field_markettype) == 21)
     ds_return <- ds_return %>%
       dplyr::select(date = !!field_date, market_index = !!field_return)
 
-
     # Build timeseries
     charvec <- lubridate::parse_date_time(as.character(ds_return$date), date_format)
     ts_return.fts <- timeSeries::timeSeries(ds_return[,-1], charvec)
+
+  }
+
+  # Build final rturn reuslts
+  if (success) {
+    if (cumulated) {
+      ts_return.fts <- cumulated(na.omit(ts_return.fts, method = "z"), method = "simple")
+    } else {
+      if (match.arg(return_type) == "compound")
+        ts_return.fts <- simple2compound_return(ts_return.fts)
+    }
+
     ts_return <- ts_return.fts
-
-    # deal with the NAs
-    ts_return <- na.omit(ts_return, method = handleNA, interp = interpNA_method )
-
-  } else {
-    ts_return <- NULL
   }
 
   return(ts_return)

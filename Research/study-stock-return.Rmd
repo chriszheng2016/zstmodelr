@@ -1,0 +1,126 @@
+---
+title: "Analysis of Stock Return"
+output: 
+  html_notebook: 
+    fig_caption: yes
+    number_sections: yes
+    toc: yes
+---
+
+研究各股票的投资回报情况
+
+
+```{r setup, include=FALSE  }
+
+library(fPortfolio)
+library(tidyverse)
+library(lubridate)
+library(stringr)
+library(shiny)
+library(zstmodelr)
+
+# Set global options for knitr 
+knitr::opts_chunk$set(
+comment = "#>",
+echo = FALSE,
+warning = FALSE,
+message = FALSE,
+collapse = TRUE
+)
+
+options(tibble.print_min = 10L, tibble.print_max = 20L)
+
+```
+# Data Preparation(数据准备)
+
+## Data tables in database(数据库所包含数据表)
+```{r connect_db}
+# Open gta stock databse
+stock_db <- stock_db(gta_db, "GTA_SQLData")
+open_stock_db(stock_db)
+
+# Initate the stock database
+invisible(init_stock_db(stock_db))
+stock_name_list  <- stock_name_list(stock_db)
+stock_field_list <- stock_field_list(stock_db)
+
+# Get names of all stock table from database   
+ db_tables <- list_stock_tables(stock_db)
+ knitr::kable(
+  x = db_tables,
+  caption = "Tables in GTA Stock Database",
+  align = "l"
+ )
+ 
+```
+
+**共有`r length(db_tables)`个数据表**
+
+## Summary of Stocks&Industries in Universe(全部股票及行业信息)
+
+**全部股票与行业信息如下：**
+```{r summary_stock_info}
+
+# Get company info 
+trd_company.df <- get_table_dataset(stock_db, table_name = "TRD_Co_公司基本情况")
+trd_company.tib <- tibble::as.tibble(trd_company.df)
+
+# all stocks in the investment universe
+universe_stocks <- trd_company.tib %>%
+    select(stkcd, stkname= stknme, indcd = nnindcd, indname = nnindnme) %>%
+    arrange(indcd, stkcd)
+
+
+# all industries in investment universe
+universe_industries <- universe_stocks %>%
+  group_by(indcd, indname) %>%
+  summarise(stknum = n()) %>%
+  arrange(indcd, desc(stknum))
+
+# Output the results
+universe_industries
+universe_stocks
+
+```
+
+## Set Params of Study(设置研究参数)
+
+**组合股票明细：**
+```{r set_params_study}
+# Set params of study
+
+# Set stocks as portfolio
+stock_stkcds_list <- c(600066,000550, 600031, 000157,000651, 000333)
+
+
+
+
+
+
+```
+## Load return of Porfolio and market (加载投资组合与市场投资回报数据)
+```{r get_portfolio_data}
+
+# Get stocks and market return data
+stocks_return <- get_stock_return(stock_db, stock_stkcds_list, 
+                                  period_type = "monthly")
+
+market_return <- get_market_return(stock_db, 
+                                   period_type = "monthly")
+
+portfolio_return <- get_portfolio_return(benchmark_return = market_return,
+                                         stocks_return = stocks_return)
+                    
+portfolio_cumulated_return <- cumulated_return(portfolio_return, method = "simple")
+
+```
+
+## Basic Statis of return of portfolio (投资组给回报数据的基本统计信息)
+```{r}
+
+portfolio_return_stats <- basicStats(portfolio_return)
+print(round(portfolio_return_stats, digits = 3))
+
+
+```
+

@@ -7,7 +7,7 @@
 \alias{name2code.stock_name_list}
 \title{Translate name into code}
 \usage{
-\method{name2code}{gta_db}(stock_db, name, type = c("field", "stock"))
+\method{name2code}{gta_db}(stock_db, name, type = c("stock", "field"))
 
 name2code(x, name, ...)
 
