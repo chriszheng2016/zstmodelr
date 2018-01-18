@@ -3,16 +3,14 @@
 \name{get_market_return.gta_db}
 \alias{get_market_return.gta_db}
 \alias{get_market_return}
-\title{Get market return timesereis from stock_db
-Generic function to get stock return timeseries from stock_db}
+\title{Get market return timesereis from stock_db}
 \usage{
 \method{get_market_return}{gta_db}(stock_db, period_type = c("daily",
-  "weekly", "monthly", "annual"), handleNA = c("r", "s", "z", "ir", "iz",
-  "ie"), interpNA_method = c("before", "linear", "after"))
+  "weekly", "monthly", "annual"), return_type = c("simple", "compound"),
+  cumulated = FALSE)
 
 get_market_return(stock_db, period_type = c("daily", "weekly", "monthly",
-  "annual"), handleNA = c("r", "s", "z", "ir", "iz", "ie"),
-  interpNA_method = c("before", "linear", "after"))
+  "annual"), return_type = c("simple", "compound"), cumulated = FALSE)
 }
 \arguments{
 \item{stock_db}{a stock database object to operate}
@@ -20,22 +18,14 @@ get_market_return(stock_db, period_type = c("daily", "weekly", "monthly",
 \item{period_type}{date peroid for time series, e.g. "daily", "weekly",
 "monthly", "annual", default value is  "daily"}
 
-\item{handleNA}{Specifies the method how to handle NAs. One of the applied vector strings:
-method="s" na.rm = FALSE, skip, i.e. do nothing, method="r" remove NAs,
-method="z" substitute NAs by zeros, method="ir" interpolate NAs and remove
-NAs at the beginning and end of the series, method="iz" interpolate NAs and
-substitute NAs at the beginning and end of the series, method="ie" interpolate
-NAs and extrapolate NAs at the beginning and end of the series#'}
+\item{return_type}{a character string naming the method how the returns were computed}
 
-\item{interpNA_method}{Specifies the method how to interpolate NA the matrix column by column.
-One of the applied vector strings: method="linear", method="before"
-or method="after". For the interpolation the function approx is used.}
+\item{cumulated}{calculate cumulated return, default value is FALSE}
 }
 \value{
 A timeseries of market return
 }
 \description{
-Get market return timesereis from stock_db
 Generic function to get stock return timeseries from stock_db
 }
 \section{Methods (by class)}{
@@ -43,6 +33,3 @@ Generic function to get stock return timeseries from stock_db
 \item \code{gta_db}: get market return timeseries from a database of gta_db class
 }}
 
-\examples{
-
-}

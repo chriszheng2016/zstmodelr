@@ -159,7 +159,6 @@ get_stock_dataset <- function(stock_db, table_name, stock_cd_list = NULL) {
 #' @export
 #'
 #' @examples
-#'
 
 fetch_table_dataset <- function(stock_db, table_list) {
   UseMethod("fetch_table_dataset")
@@ -175,6 +174,7 @@ fetch_table_dataset <- function(stock_db, table_list) {
 #' @param period_type date peroid for time series, e.g. "daily", "weekly",
 #'                    "monthly", "annual", default value is "daily"
 #' @param return_type a character string naming the method how the returns were computed
+#' @param use_stock_name use stock name as field name instead of stock cd, default is TRUE
 #' @param cumulated   calculate cumulated return, default value is FALSE
 #'
 #'
@@ -183,16 +183,17 @@ fetch_table_dataset <- function(stock_db, table_list) {
 #'
 #' @examples
 
-#'
 get_stock_return <- function(stock_db, stock_cd_list = NULL,
                   period_type = c("daily", "weekly", "monthly", "annual"),
                   return_type = c("simple", "compound"),
+                  use_stock_name = TRUE,
                   cumulated = FALSE
                   ) {
   UseMethod("get_stock_return")
 }
 
 #' Get market return timesereis from stock_db
+#'
 #' Generic function to get stock return timeseries from stock_db
 #'
 #' @param stock_db    a stock database object to operate
@@ -205,7 +206,7 @@ get_stock_return <- function(stock_db, stock_cd_list = NULL,
 #' @export
 #'
 #' @examples
-#'
+
 get_market_return <- function(stock_db,
                   period_type = c("daily", "weekly", "monthly", "annual"),
                   return_type = c("simple", "compound"),
@@ -214,9 +215,19 @@ get_market_return <- function(stock_db,
 }
 
 
-# Get portfolio return
-#
-get_portfolio_return <- function(benchmark_return, stocks_return) {
+#' Get assets return from market and stocks return
+#'
+#' Get assets return timeseries by combining marekt return anad stocks return
+#'
+#' @param benchmark_return   a timeseries of market index
+#' @param stocks_return      a timeseries of a group stock stocks
+#'
+#' @return A timeseries of assets return
+#' @export
+#'
+#' @examples
+
+get_assets_return <- function(benchmark_return, stocks_return) {
 
   stopifnot(timeSeries::is.timeSeries(benchmark_return),
             timeSeries::is.timeSeries(stocks_return))
@@ -247,10 +258,10 @@ get_portfolio_return <- function(benchmark_return, stocks_return) {
   stocks_return    <- timeSeries::window(stocks_return, start_date, end_date)
 
   #Combine benchmark and stocks return
-  portfolio_return <- merge(benchmark_return, stocks_return)
-  colnames(portfolio_return) <- stringr::str_replace(colnames(portfolio_return), "X", "")
+  assets_return <- merge(benchmark_return, stocks_return)
+  colnames(assets_return) <- stringr::str_replace(colnames(assets_return), "X", "")
 
-  return(portfolio_return)
+  return(assets_return)
 
 }
 

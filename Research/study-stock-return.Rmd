@@ -83,44 +83,452 @@ universe_stocks
 
 ```
 
-## Set Params of Study(设置研究参数)
+## Set Study Params (设置研究参数)
 
 **组合股票明细：**
 ```{r set_params_study}
 # Set params of study
 
-# Set stocks as portfolio
+# Set stocks as assets
 stock_stkcds_list <- c(600066,000550, 600031, 000157,000651, 000333)
 
+#period_type: c("daily", "weekly", "monthly", "annual")
+period_type <- "monthly"
+
+#return_type: c("simple", "compound")
+return_type <- "simple"
+
+# start and end date of period
+# period_start_date <- today() - 365
+period_start_date <- NULL
+period_end_date <- today()
+
+#nYearsBack: c("1y", "2y", "3y", "5y", "10y", "YTD")
+nYearsBack <- NULL
+
+
 
 
 
 
 
 ```
-## Load return of Porfolio and market (加载投资组合与市场投资回报数据)
-```{r get_portfolio_data}
+## Load Data of Assets Return (加载资产投资回报数据)
+```{r get_assets_data}
 
 # Get stocks and market return data
-stocks_return <- get_stock_return(stock_db, stock_stkcds_list, 
-                                  period_type = "monthly")
+stocks_return <- get_stock_return(stock_db, 
+                                  stock_stkcds_list, 
+                                  period_type = period_type, 
+                                  return_type = return_type)
 
 market_return <- get_market_return(stock_db, 
-                                   period_type = "monthly")
+                                   period_type = period_type, 
+                                   return_type = return_type)
 
-portfolio_return <- get_portfolio_return(benchmark_return = market_return,
+# Build assets_return
+assets_return <- get_assets_return(benchmark_return = market_return,
                                          stocks_return = stocks_return)
+if (!is.null(nYearsBack)) {
+  # get lastest series
+  assets_return <- endOfPeriodSeries(assets_return)
+  
+} else {
+  # get window series
+  if ( !is.null(period_start_date) && !is.null(period_end_date)) {
+    assets_return <- window(assets_return, start = period_start_date,
+                             end = period_end_date)
+  }
+}
                     
-portfolio_cumulated_return <- cumulated_return(portfolio_return, method = "simple")
+assets_cumulated_return <- cumulated_return(assets_return, method = "simple")
 
 ```
 
-## Basic Statis of return of portfolio (投资组给回报数据的基本统计信息)
+
+# Data Exploration(数据探索)
+## Basic Statistics of Assets Return(资产回报基本统计信息分析)
+```{r assets_return_summary}
+
+assets_return_stats <- basicStats(assets_return)
+print(round(assets_return_stats, digits = 3))
+
+# display assets box plot
+assetsBoxPlot(assets_return,cex = 0.4)
+ 
+# display assets box percentile plot
+assetsBoxPercentilePlot(assets_return)
+
+
+
+```
+
+
+
+## Comparing Multivariate Assets Return Statistics(资产回报统计对比)
+```{r assets_return_compare_multivariate}
+
+# Segment Plots of Box Plot Statistics
+assetsBoxStatsPlot(assets_return)
+
+# Segment plots of basic return statistics
+assetsBasicStatsPlot(assets_return)
+
+# Segment Plots of Distribution Moments
+assetsMomentsPlot(removeNA(assets_return))
+
+
+```
+
+
+## Pairwise Dependencies of Assets Return(资产回报相关性分析)
+```{r assets_return_pairwise_dependence}
+
+histPanel <- function(x, ...) {
+  usr <- par("usr")
+  on.exit(par(usr))
+  par(usr = c(usr[1:2], 0, 1.5))
+  h <- hist(x, plot = FALSE)
+  breaks <- h$breaks
+  nB <- length(breaks)
+  y <- h$counts
+  y <- y/max(y)
+  rect(breaks[-nB], 0, breaks[-1], y, ...)
+}
+
+# Simple Pairwise Scatter Plots of Assets
+assetsPairsPlot(assets_return, 
+                main = "Simple Pairwise Scatter Plots of Assets", 
+                pch = 19, cex = 0.5, col = "royalblue4",
+                 diag.panel = histPanel)
+
+# Pairwise Correlations Between Assets
+assetsCorgramPlot(assets_return, method = "pie", 
+                  main = "Pairwise Correlations Between Assets", 
+                  pch = 19, cex = .5, 
+                  diag.panel = histPanel)
+assetsCorgramPlot(assets_return, method = "shade", 
+                  main = "Pairwise Correlations Between Assets", 
+                  pch = 19, cex = .5, 
+                  diag.panel = histPanel)
+
+# Tests of Pairwise Correlations
+assetsCorTestPlot(removeNA(assets_return), 
+                  main = "Tests of Pairwise Correlations", 
+                  diag.panel = histPanel)
+
+# Image Plot of Correlations
+assetsCorImagePlot(assets_return)
+
+
+
+```
+
+
+## Modelling Asset Returns(资产回报建模分析)
+```{r asset_return_modelling}
+
+# display asset HistPlot
+for (i in 1:ncol(assets_return)) {
+  assetsHistPlot(removeNA(assets_return[, i]))
+}
+
+# display normal qq plot 
+for (i in 1:ncol(assets_return)) {
+  assets_stkcd <- names(assets_return)[i]
+  if(assets_stkcd != "market_index"){
+    assets_name <- code2name(stock_db, as.numeric(assets_stkcd))
+  } else {
+    assets_name <- ""
+  }
+  sub_titile <- sprintf("%6s:%s", assets_stkcd, assets_name )
+  assetsQQNormPlot(removeNA(assets_return[, i]), sub = sub_titile)
+}
+
+```
+
+
+
+## Drawdown Statistics of Assets Return(资产回报回撤分析)
+```{r assets_return_drawndowns}
+
+# display drawndown and turns plot 
+for (i in 1:ncol(assets_return)) {
+
+  drawdownsAnalytics(assets_cumulated_return[, i], trace = FALSE)
+  
+  turnsAnalytics(assets_cumulated_return[, i], trace = TRUE)
+  
+  asset_drawdown_stats <- drawdownsStats(removeNA(assets_return[, i]))
+  print(asset_drawdown_stats, digits = 2)
+  
+}
+
+
+```
+
+
+
+
+
+## Group of Similar or Dissimlar Assets(类似资产分组)
+
+**A.Grouping Asset Returns by Hierarchical Clustering**
+```{r assets_grouping_hclust}
+
+assets_group_hclust_complete <- assetsSelect(assets_return, method = "hclust")
+plot(assets_group_hclust_complete, xlab = "Assets")
+mtext("Distance Metric: Euclidean", side = 3)
+
+assets_group_hclust_Ward <- assetsSelect(assets_return, method = "hclust", 
+                                   control = c(measure = "euclidean",
+                                               method = "ward"))
+
+plot(assets_group_hclust_Ward, xlab = "Assets")
+mtext("Distance Metric: Euclidean", side = 3)
+
+```
+
+**B.Grouping Asset Returns by k-means Clustering**
+```{r assets_grouping_kmeans}
+
+assets_group_kmeans <- assetsSelect(removeNA(assets_return), method = "kmeans", 
+                              control <- c(centers = 3,
+                                           algorithm = "Hartigan-Wong"))
+sort(assets_group_kmeans$cluster)
+
+```
+
+
+**C.Grouping Asset Returns through Eigenvalue Analysis**
+```{r assets_grouping_pca}
+
+assets_group_pca_pearson <- assetsCorEigenPlot(assets_return, method = "pearson")
+mtext("Method: pearson", side = 3)
+
+assets_group_pca_kendall <- assetsCorEigenPlot(assets_return, method = "kendall")
+mtext("Method: kendall", side = 3)
+
+assets_group_pca_spearman <- assetsCorEigenPlot(assets_return, method = "spearman")
+mtext("Method: spearman", side = 3)
+
+```
+
+**D.Grouping Asset Returns by Contributed Cluster Algorithms**
+```{r assets_grouping_other_cluster}
+.pamSelect <- function(x, control = NULL, ...) {
+    if (is.null(control))
+    control = c(k = 2, metric = "euclidean")
+    k <- as.integer(control[1])
+    metric <- control[2]
+    cluster::pam(x <- as.matrix(x), k = k, metric = metric, ...)
+}
+
+assets_group_pam <- assetsSelect( removeNA(assets_return), 
+                                  method = "pam", 
+                                  control <- c(k = 2, metric = "euclidean"))
+
+plot(assets_group_pam, which.plots = 1)
+
+```
+
+
+# Portfolio investment Strategy(投资组合策略)
+## Basic Portfolios(基本投资组合)
+
+```{r portfolio_setting}
+
+portfolio_bemchmark_return <- removeNA(assets_return)
+portfolio_return <- portfolio_bemchmark_return[, -1]
+
+portfolio_assets_name <- names(portfolio_return)
+portfolio_assets_code <- name2code(stock_db, portfolio_assets_name, type = "stock")
+
+```
+**投资组合中的股票资产**
+
+资产代码：`r portfolio_assets_code`
+
+资产代码：`r portfolio_assets_name`
+
+共有`r nrow(portfolio_return)`个数据记录
+
+
+
+
+### Mean-Variance Portfolios
+
+**A.Compute Equal Weights Portfolio**
+```{r mv_portfolio_equalweights}
+
+equalwieght_portfolio_spec <- portfolioSpec()
+setWeights(equalwieght_portfolio_spec) <- rep(1/ncol(portfolio_return), 
+                                              times = ncol(portfolio_return))
+equalweight_portfolio <- feasiblePortfolio( data = portfolio_return,
+                                            spec = equalwieght_portfolio_spec,
+                                            constraints = "LongOnly" 
+                                            )
+print(equalweight_portfolio)
+
+weightsPie(equalweight_portfolio, radius = 0.7)
+mtext(text = "Equally Weighted MV Portfolio: weights", side = 3, line = 1.5,
+font = 2, cex = 0.7, adj = 0)
+
+weightedReturnsPie(equalweight_portfolio, radius = 0.7)
+mtext(text = "Equally Weighted MV Portfolio: weightedReturns", side = 3, line = 1.5,
+font = 2, cex = 0.7, adj = 0)
+
+covRiskBudgetsPie(equalweight_portfolio, radius = 0.7)
+mtext(text = "Equally Weighted MV Portfolio: covRiskBudgets", side = 3, line = 1.5,
+font = 2, cex = 0.7, adj = 0)
+
+```
+
+
+**B.Compute a Mininum Risk Efficient Portfolio**
+```{r mv_porfolio_minRisk}
+
+minrisk_portfolio_spec <- portfolioSpec()
+setTargetReturn(minrisk_portfolio_spec) <- getTargetReturn(equalweight_portfolio)["mean"]
+minrisk_portfolio <- efficientPortfolio( data = portfolio_return,
+                                            spec = minrisk_portfolio_spec,
+                                            constraints = "LongOnly" 
+                                            )
+print(minrisk_portfolio)
+
+weightsPie(minrisk_portfolio, radius = 0.7)
+mtext(text = "Minimal Risk MV Portfolio: weights", side = 3, line = 1.5,
+font = 2, cex = 0.7, adj = 0)
+
+weightedReturnsPie(minrisk_portfolio, radius = 0.7)
+mtext(text = "Minimal Risk MV Portfolio: weightedReturns", side = 3, line = 1.5,
+font = 2, cex = 0.7, adj = 0)
+
+covRiskBudgetsPie(minrisk_portfolio, radius = 0.7)
+mtext(text = "Minimal Risk MV Portfolio: covRiskBudgets", side = 3, line = 1.5,
+font = 2, cex = 0.7, adj = 0)
+
+```
+
+
+**C.Compute the Global Minimum Variance Portfolio**
+```{r mv_portfolio_glboalMinVar}
+
+globalMinVar_portfolio_spec <- portfolioSpec()
+
+globalMinVar_portfolio <- minvariancePortfolio( data = portfolio_return,
+                                            spec =globalMinVar_portfolio_spec,
+                                            constraints = "LongOnly" 
+                                            )
+print(globalMinVar_portfolio)
+
+weightsPie(globalMinVar_portfolio, radius = 0.7)
+mtext(text = "Global Minimum Variance MV Portfolio: weights", side = 3, line = 1.5, 
+      font = 2, cex = 0.7, adj = 0)
+
+weightedReturnsPie(globalMinVar_portfolio, radius = 0.7)
+mtext(text = "Global Minimum Variance MV Portfolio: weightedReturns", side = 3, line = 1.5,
+font = 2, cex = 0.7, adj = 0)
+
+covRiskBudgetsPie(globalMinVar_portfolio, radius = 0.7)
+mtext(text = "Global Minimum Variance MV Portfolio: covRiskBudgets", side = 3, line = 1.5,
+font = 2, cex = 0.7, adj = 0)
+
+```
+
+
+**D.Compute the Tangency Portfolio**
+```{r mv_portfolio_tangency}
+
+tangency_portfolio_spec <- portfolioSpec()
+setRiskFreeRate(tangency_portfolio_spec) <- 0.00
+tangency_portfolio <- tangencyPortfolio( data = portfolio_return,
+                                            spec = tangency_portfolio_spec,
+                                            constraints = "LongOnly" 
+                                            )
+print(tangency_portfolio)
+
+weightsPie(tangency_portfolio, radius = 0.7)
+mtext(text = "Tangency MV Portfolio: weights", side = 3, line = 1.5,
+font = 2, cex = 0.7, adj = 0)
+
+weightedReturnsPie(tangency_portfolio, radius = 0.7)
+mtext(text = "Tangency MV Portfolio: weightedReturns", side = 3, line = 1.5,
+font = 2, cex = 0.7, adj = 0)
+
+covRiskBudgetsPie(tangency_portfolio, radius = 0.7)
+mtext(text = "Tangency MV Portfolio: covRiskBudgets", side = 3, line = 1.5,
+font = 2, cex = 0.7, adj = 0)
+
+```
+
+**E.MV Portfolio Frontier Plot**
+```{r mv_portfolio_Frontier}
+
+long_portfolio_spec <- portfolioSpec()
+
+long_portfolio_frontier <- portfolioFrontier(data = portfolio_return, 
+                                             spec = long_portfolio_spec)
+tailoredFrontierPlot(object = long_portfolio_frontier, 
+                     mText = "MV Portfolio - LongOnly Constraints",
+                     risk = "Cov")
+
+# create weights related plots
+
+weightsPlot(long_portfolio_frontier, mtext = FALSE)
+# text <- "Mean-Variance Portfolio - Long Only Constraints"
+# mtext(text, side = 3, line = 3, font = 2, cex = 0.9)
+weightedReturnsPlot(long_portfolio_frontier, mtext = FALSE)
+covRiskBudgetsPlot(long_portfolio_frontier, mtext = FALSE)
+
+
+```
+
+
+
+## Portfolio Backtesting(投资策略回测)
+
+回测期间：`r start(portfolio_bemchmark_return)` -> `r end(portfolio_bemchmark_return)`
+
+
 ```{r}
+  
+my_portfolio_strategy <- function(data, spec, constraints, backtest)
+{
+    ## Extract Parameters:
+    Parameters <- getStrategyParams(backtest)
+    ## Strategy Portfolio:
+    strategyPortfolio <- tangencyPortfolio(data, spec, constraints)
+    ## Return :
+    strategyPortfolio
+}
 
-portfolio_return_stats <- basicStats(portfolio_return)
-print(round(portfolio_return_stats, digits = 3))
+portfolio_spec <- portfolioSpec()
+portfolio_backtest <- portfolioBacktest()
+setStrategyFun(portfolio_backtest) <- "tangencyStrategy"
+# setStrategyFun(portfolio_backtest) <- "my_portfolio_strategy"
+setStrategyParams(portfolio_backtest) <- list()
 
+portfolio_backtest_fomula <- market_index ~ 宇通客车 + 江铃汽车 + 三一重工 + 中联重科 + 格力电器 + 美的集团
+
+
+portfolio_constraints <- "LongOnly"
+
+
+backtest_portfolios <- portfolioBacktesting(formula = portfolio_backtest_fomula,
+                                      data = portfolio_bemchmark_return, 
+                                      spec = portfolio_spec,
+                                      constraints = portfolio_constraints,
+                                      backtest = portfolio_backtest,
+                                      trace = FALSE)
+
+backtest_soomthing_portfolios <- portfolioSmoothing(object = backtest_portfolios,                                                                               trace = FALSE)
+
+backtestPlot(backtest_soomthing_portfolios, 
+             cex = 0.6, font = 1, family = "mono", 
+             format = "%Y-%m")
+
+netPerformance(backtest_soomthing_portfolios)
 
 ```
 

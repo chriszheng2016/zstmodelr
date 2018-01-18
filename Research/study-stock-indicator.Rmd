@@ -175,6 +175,7 @@ portfolio_indicators
 **研究指标: `r str_c(the_indicator, "/",the_indicator_name)`**
 
 
+
 # Data Exploration(数据探索)
 
 ## Industry Study (各行业相关指标研究)
@@ -290,7 +291,7 @@ industry_indicator_peroid %>%
 
 **2.各行业指标数据时间趋势**
 
-```{r}
+```{r industry_indicator_history_trends}
 
 # plot data for top industries 
 

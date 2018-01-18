@@ -25,6 +25,3 @@ Generic function to fetch many datasets from stock_db
 \item \code{gta_db}: get many datasets from a database of gta_db class
 }}
 
-\examples{
-
-}

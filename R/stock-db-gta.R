@@ -370,6 +370,7 @@ fetch_table_dataset.gta_db <- function(stock_db, table_list) {
 get_stock_return.gta_db <- function(stock_db, stock_cd_list = NULL,
                   period_type = c("daily", "weekly", "monthly", "annual"),
                   return_type = c("simple", "compound"),
+                  use_stock_name = TRUE,
                   cumulated = FALSE
                   ) {
 
@@ -444,7 +445,13 @@ get_stock_return.gta_db <- function(stock_db, stock_cd_list = NULL,
     # Build time series
     charvec <- lubridate::parse_date_time(as.character(ds_return$date), date_format)
     ts_return.fts <- timeSeries::timeSeries(ds_return[, -1], charvec)
-    field_names <- sprintf("%06d", as.numeric(names(ts_return.fts)))
+
+    if (use_stock_name) {
+      field_names <- code2name(stock_db, as.numeric(names(ts_return.fts)))
+    } else {
+      field_names <- sprintf("%06d", as.numeric(names(ts_return.fts)))
+    }
+
     names(ts_return.fts) <- field_names
 
   } else {

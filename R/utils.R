@@ -26,6 +26,7 @@ magrittr::`%>%`
 }
 
 # Convert normal return into cumulated return
+#' @export
 cumulated_return <- function(normal_return, method = c("compound", "simple")) {
 
   stopifnot(timeSeries::is.timeSeries(normal_return))
@@ -37,6 +38,7 @@ cumulated_return <- function(normal_return, method = c("compound", "simple")) {
 }
 
 # Convert simple return into compound return
+#' @export
 simple2compound_return <- function(simple_return) {
 
   stopifnot(timeSeries::is.timeSeries(simple_return))
@@ -52,6 +54,7 @@ simple2compound_return <- function(simple_return) {
 }
 
 # Convert simple return into compound return
+#' @export
 compound2simple_return <- function(compund_return) {
 
   stopifnot(timeSeries::is.timeSeries(compund_return))

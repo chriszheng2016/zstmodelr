@@ -15,7 +15,7 @@ library(tidyverse)
 library(lubridate)
 library(stringr)
 library(fPortfolio)
-library(ZStockModels)
+library(zstmodelr)
 
 # Set global options for knitr 
 knitr::opts_chunk$set(
