@@ -8,7 +8,7 @@
 # have to use reference name of varible in profile for refering Chinese table
 # name in DB
 .GTA_RPROFILE_DIR <- "etc"
-.GTA_PROFILE_FILE <- "gta_profile.csv"
+.GTA_PROFILE_FILE <- "gta_profile.xlsx"
 
 
 .GTA_TABLE_NAME_LIST = list(
@@ -95,7 +95,7 @@ init_stock_db.gta_db <- function(stock_db) {
   gta_profile_name <- system.file(.GTA_RPROFILE_DIR,
                                   .GTA_PROFILE_FILE, package = .PACKAGE_NAME )
   if (gta_profile_name == "") {
-    msg = sprintf("No profileof % exisits in % for %",
+    msg = sprintf("No profile of % exisits in % for %",
                   .GTA_PROFILE_FILE,
                   .GTA_RPROFILE_DIR,
                   .PACKAGE_NAME)
@@ -106,7 +106,7 @@ init_stock_db.gta_db <- function(stock_db) {
   stock_db$table_list <- list()
   for (i in seq_along(.GTA_TABLE_NAME_LIST)) {
     table_name_id <- .GTA_TABLE_NAME_LIST[[i]]
-    table_name_value <- .get_db_profile(gta_profile_name, table_name_id)
+    table_name_value <- .get_db_profile_varible_setting(gta_profile_name, table_name_id)
     if (is.null(table_name_value)) {
       msg = sprintf("failed to load %s from %", table_name_id,
                     gta_profile_name)
@@ -429,16 +429,12 @@ get_stock_return.gta_db <- function(stock_db, stock_cd_list = NULL,
   ts_return <- NULL
   if (success) {
 
-    # # Filter return
-    # if (!is.null(stock_cd_list) && length(stock_cd_list) != 0 )
-    #   ds_return <- dplyr::filter(ds_return, UQ(field_stkcd) %in% stock_cd_list)
-
     ds_return <- ds_return %>%
       dplyr::select(date = !!field_date, stkcd = !!field_stkcd,
                     return = !!field_return) %>%
       tidyr::spread(key = stkcd, value = return)
 
-    # Set colname as order of stock_cd_list
+    # arrange colname as the order of stock_cd_list
     if (!is.null(stock_cd_list) && length(stock_cd_list) != 0 )
       ds_return <- dplyr::select(ds_return, date, as.character(stock_cd_list))
 
@@ -485,7 +481,6 @@ get_market_return.gta_db <- function(stock_db,
 
   # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
-
   if (is.null(stock_db$connection)) {
     stop("Stock db isn't connected, try to connect db again")
   }
@@ -547,7 +542,7 @@ get_market_return.gta_db <- function(stock_db,
 
   }
 
-  # Build final rturn reuslts
+  # Build final return results
   if (success) {
     if (cumulated) {
       ts_return.fts <- cumulated(na.omit(ts_return.fts, method = "z"), method = "simple")
@@ -561,6 +556,155 @@ get_market_return.gta_db <- function(stock_db,
 
   return(ts_return)
 }
+
+# Get Get factor indicator timeseries for stock_db
+#' @describeIn get_stock_return get stock return timeseries from a database of gta_db class
+#' @export
+get_factor_indicator.gta_db <- function(stock_db, factor_list){
+
+  # validate params
+  stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
+  if (is.null(stock_db$connection)) {
+    stop("Stock db isn't connected, try to connect db again")
+  }
+
+  stopifnot(!is.null(factor_list))
+
+  success = TRUE
+
+  # get file table name mapping for referece
+  gta_profile_name <- system.file(.GTA_RPROFILE_DIR,
+                                  .GTA_PROFILE_FILE, package = .PACKAGE_NAME )
+  if (gta_profile_name == "") {
+    msg = sprintf("No file of % exisits in % for %",
+                  .GTA_PROFILE_FILE,
+                  .GTA_RPROFILE_DIR,
+                  .PACKAGE_NAME)
+    stop(msg)
+    success = FALSE
+  }
+
+
+  # get indcator info of matched factor
+  if (success) {
+    matched_indicator_map <- .get_db_profile_factor_indicator_map(gta_profile_name,
+                                                                  factor_list)
+    if (!is.null(matched_indicator_map)) {
+
+      # build table_list for fetching indicators
+      indicator_table_list<- matched_indicator_map %>%
+        dplyr::filter(factor_list %in% factor_code) %>%
+        dplyr::group_by(indicator_table) %>%
+        tidyr::nest()
+
+    } else {
+      success = FALSE
+    }
+  }
+
+  # get indicators dataset from indicator_data_table
+  if (success) {
+
+    ds_all_indicators = NULL
+    for (i in seq_len(nrow(indicator_table_list))) {
+
+      indicator_table <- indicator_table_list[i,]$indicator_table
+      indicator_params <- indicator_table_list[i, ]$data[[1]]
+      indicator_code_list <- indicator_params$indicator_code
+      factor_code_list <- indicator_params$factor_code
+
+      # Get a indicator dataset from database
+      if (success) {
+        ds_indicators <- get_table_dataset(stock_db,
+                                          table_name = indicator_table)
+        if (!is.null(ds_indicators)) {
+
+          indicators_is_existed <- indicator_code_list %in% colnames(ds_indicators)
+          if (all(indicators_is_existed)) {
+
+            # proceed only if all indicators exists in result dataset
+
+            ds_indicators <- tibble::as.tibble(ds_indicators)
+
+            # filter consolidated report data
+            if ( "typrep" %in% names(ds_indicators)) {
+              ds_indicators <- dplyr::filter(ds_indicators, typrep == 'A')
+            }
+
+            # get indicators from dataset
+            ds_indicators <- ds_indicators %>%
+              dplyr::mutate(periodtype = ifelse(lubridate::month(accper) == 12, "annual","quarter")) %>%
+              dplyr::select(date = accper, periodtype, stkcd,
+                            indcd = indcd,
+                            indicator_code_list)
+
+            # rename indicator_code to factor_code
+            col_names <- colnames(ds_indicators)
+            col_names <- col_names[1:(length(col_names) - length(indicator_code_list))]
+            col_names <- c(col_names, factor_code_list)
+            colnames(ds_indicators) <- col_names
+
+            # message
+            msg <- sprintf("get factor: %s from indicator table: %s at indicator field: %s(%s)",
+                           stringr::str_c(factor_code_list, collapse = ","),
+                           indicator_table,
+                           stringr::str_c(indicator_code_list, collapse = ","),
+                           stringr::str_c(code2name(stock_db,
+                                                    indicator_code_list,
+                                                    type = "field"),
+                                          collapse = ","))
+            message(msg)
+
+          } else {
+
+            # some indicators miss from result dataset
+            msg <- sprintf("indicator fields: %s aren't in the table of %s",
+                           stringr::str_c(indicator_code_list[!indicators_is_existed], collapse = ","),
+                           indicator_table)
+            warn(msg)
+
+            success <- FALSE
+
+          }
+
+        } else {
+          success <- FALSE
+        }
+
+      }
+
+
+      # combine the indicators dataset into all indicators datasets
+      if (success) {
+        if (is.null(ds_all_indicators)) {
+          ds_all_indicators <- ds_indicators
+        } else {
+          ds_all_indicators <- ds_all_indicators %>%
+              dplyr::full_join(ds_indicators,
+                               by = c("date", "periodtype", "stkcd", "indcd"))
+
+        }
+      }
+    }
+  }
+
+
+  # Build final indicator results
+  ts_indicator = NULL
+  if (success) {
+
+    # sort resutls by time and stkcd
+    ds_all_indicators <- ds_all_indicators %>%
+              dplyr::arrange(date, indcd, stkcd)
+
+    ts_indicator = ds_all_indicators
+
+  }
+
+  return(ts_indicator)
+
+}
+
 
 # Interface Implementation of stock_field_list class by gta_db -----------------
 

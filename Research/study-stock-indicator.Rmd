@@ -10,7 +10,7 @@ output:
     toc: yes
 ---
 
-研究各股票的利润情况
+研究各股票的各项指标数据
 
 
 ```{r setup, include=FALSE  }
@@ -72,15 +72,15 @@ trd_company.tib <- tibble::as.tibble(trd_company.df)
 
 # all stocks in the investment universe
 universe_stocks <- trd_company.tib %>%
-    select(stkcd, stkname= stknme, indcd = nnindcd, indname = nnindnme) %>%
-    arrange(indcd, stkcd)
+    dplyr::select(stkcd, stkname= stknme, indcd = nnindcd, indname = nnindnme) %>%
+    dplyr::arrange(indcd, stkcd)
 
 
 # all industries in investment universe
 universe_industries <- universe_stocks %>%
-  group_by(indcd, indname) %>%
-  summarise(stknum = n()) %>%
-  arrange(indcd, desc(stknum))
+  dplyr::group_by(indcd, indname) %>%
+  dplyr::summarise(stknum = n()) %>%
+  dplyr::arrange(indcd, desc(stknum))
 
 # Output the results
 universe_industries
@@ -101,12 +101,12 @@ table_indicator <- "FR_T5_盈利能力"
 # Set stocks as portfolio
 stock_stkcds_list <- c(600066,000550, 600031, 000157,000651, 000333)
 portfolio_stocks <- universe_stocks %>%
-    filter(stkcd %in% stock_stkcds_list)
+    dplyr::filter(stkcd %in% stock_stkcds_list)
 
 #Set focus indicator of portfolio
 focus_fields_code <- c("f053301c", "f050504c", "f052401c")
 focus_fields_name <- code2name(stock_field_list,focus_fields_code)
-focus_fields.tib  <- tibble(code = focus_fields_code, name = focus_fields_name)
+focus_fields.tib  <- tibble::tibble(code = focus_fields_code, name = focus_fields_name)
 
 the_indicator <- focus_fields_code[2]
 the_indicator_name <- code2name(stock_field_list,the_indicator)
@@ -128,15 +128,15 @@ focus_fields.tib
 **加载组合指标数据如下：**
 ```{r get_portfolio_data }
 # Load indicators of all stocks
-universe_data.df <- as.tibble(get_table_dataset(stock_db, table_name = table_indicator))
+universe_data.df <- get_table_dataset(stock_db, table_name = table_indicator)
 universe_data.tib <- as.tibble(universe_data.df)
 
 # get indicators of all stocks
 universe_data <- universe_data.tib %>%
-    left_join(trd_company.tib, by  = "stkcd") %>%
-    mutate(periodtype = ifelse(lubridate::month(accper) == 12, "annual","quarter")) %>%
-    filter(typrep == 'A') %>%
-    select(accper, periodtype, stkcd, stkname = stknme, 
+    dplyr::left_join(trd_company.tib, by  = "stkcd") %>%
+    dplyr::mutate(periodtype = ifelse(lubridate::month(accper) == 12, "annual","quarter")) %>%
+    dplyr::filter(typrep == 'A') %>%
+    dplyr::select(accper, periodtype, stkcd, stkname = stknme, 
            indcd = indcd.x, indname = nnindnme,
            contains("0"))
 
@@ -159,11 +159,11 @@ portfolio_fields <- tibble::tibble(code = stock_field_code_list, name = stock_fi
 
 # get indicators data for allstock
 universe_indicators <- universe_data %>%
-  select(accper:indname, the_indicator) 
+  dplyr::select(accper:indname, the_indicator) 
 
 # get indictors data for portfolio
 portfolio_indicators <- portfolio_data %>%
-  select(accper:indname, the_indicator) 
+  dplyr::select(accper:indname, the_indicator) 
 
 # Output the results
 portfolio_fields
@@ -187,20 +187,20 @@ portfolio_indicators
 
 # use median of each peroid as indicator for industry
 industry_indicator_peroid<- universe_indicators %>%
-    group_by(indname, accper) %>%
-    summarise_at(the_indicator, .funs = funs(mean, median, sd, max, min)) %>%
-    mutate(periodtype = ifelse(lubridate::month(accper) == 12, 
+    dplyr::group_by(indname, accper) %>%
+    dplyr::summarise_at(the_indicator, .funs = funs(mean, median, sd, max, min)) %>%
+    dplyr::mutate(periodtype = ifelse(lubridate::month(accper) == 12, 
                                 "annual","quarter")) %>%
-    select(indname, accper, periodtype, !!the_indicator:=median, everything()) %>%
-    arrange(indname, accper) %>%
-    ungroup()
+    dplyr::select(indname, accper, periodtype, !!the_indicator:=median, everything()) %>%
+    dplyr::arrange(indname, accper) %>%
+    dplyr::ungroup()
 
 # Indicator summary of each industry
 industry_indicator_summary <- industry_indicator_peroid %>%
-    group_by(indname) %>%
-    summarise_at(the_indicator, .funs = funs(mean, median, sd, max, min)) %>%
-    filter(!is.na(indname)) %>%
-    arrange(desc(mean))
+    dplyr::group_by(indname) %>%
+    dplyr::summarise_at(the_indicator, .funs = funs(mean, median, sd, max, min)) %>%
+    dplyr::filter(!is.na(indname)) %>%
+    dplyr::arrange(desc(mean))
 
 # Output the results
 industry_indicator_summary
@@ -209,20 +209,20 @@ industry_indicator_summary
 # top and last industries
 sort_var <- "mean"
 top_industries <- industry_indicator_summary %>%
-     top_n(top_last_n_industies, get(sort_var)) %>%
-     select(indname) 
+     dplyr::top_n(top_last_n_industies, get(sort_var)) %>%
+     dplyr::select(indname) 
 top_industries <- top_industries$indname
 
 last_industries <- industry_indicator_summary %>%
-     top_n(-top_last_n_industies, get(sort_var)) %>%
-     select(indname)
+     dplyr::top_n(-top_last_n_industies, get(sort_var)) %>%
+     dplyr::select(indname)
 last_industries <- last_industries$indname
 
 
 
 # Top 10 industries of Indicator
 industry_indicator_summary %>%
-  filter(indname %in% top_industries) %>%
+  dplyr::filter(indname %in% top_industries) %>%
   ggplot(aes(x = reorder(indname, get(sort_var) ), y = get(sort_var))) +
     geom_col() +
     labs(
@@ -236,7 +236,7 @@ industry_indicator_summary %>%
 
 # last 10 industries of Indicator
 industry_indicator_summary %>%
-  filter(indname %in% last_industries) %>%
+  dplyr::filter(indname %in% last_industries) %>%
   ggplot(aes(x = reorder(indname, get(sort_var)), y = get(sort_var))) +
     geom_col() +
     labs(
@@ -250,7 +250,7 @@ industry_indicator_summary %>%
 
 # Plot histogram of distiubtion of top industry
 industry_indicator_peroid %>%
-    filter(indname %in% top_industries) %>%
+    dplyr::filter(indname %in% top_industries) %>%
     ggplot(aes(x = get(the_indicator))) +
       geom_histogram(binwidth = 0.01) +
       geom_density() +
@@ -265,7 +265,7 @@ industry_indicator_peroid %>%
 
 # Plot histogram of distiubtion of last industry
 industry_indicator_peroid %>%
-    filter(indname %in% last_industries) %>%
+    dplyr::filter(indname %in% last_industries) %>%
     ggplot(aes(x = get(the_indicator))) +
       geom_histogram(binwidth = 0.01) +
       geom_density() +
@@ -297,8 +297,8 @@ industry_indicator_peroid %>%
 
 # plot series of annual data
 industry_indicator_peroid %>%
-    filter(indname %in% top_industries) %>%
-    filter(periodtype == "annual") %>%
+    dplyr::filter(indname %in% top_industries) %>%
+    dplyr::filter(periodtype == "annual") %>%
     ggplot(aes(x = accper, y = get(the_indicator))) +
        geom_col() + 
        labs(
@@ -314,7 +314,7 @@ industry_indicator_peroid %>%
 
 # plot series of quarter data
 industry_indicator_peroid %>%
-    filter(indname %in% top_industries) %>%
+    dplyr::filter(indname %in% top_industries) %>%
     ggplot(aes(x = accper, y = get(the_indicator))) +
        geom_col() + 
        labs(
@@ -330,8 +330,8 @@ industry_indicator_peroid %>%
 
 # plot series of annual data
 industry_indicator_peroid %>%
-    filter(indname %in% last_industries) %>%
-    filter(periodtype == "annual") %>%
+    dplyr::filter(indname %in% last_industries) %>%
+    dplyr::filter(periodtype == "annual") %>%
     ggplot(aes(x = accper, y = get(the_indicator))) +
        geom_col() + 
        labs(
@@ -347,7 +347,7 @@ industry_indicator_peroid %>%
 
 # plot series of quarter data
 industry_indicator_peroid %>%
-    filter(indname %in% last_industries) %>%
+    dplyr::filter(indname %in% last_industries) %>%
     ggplot(aes(x = accper, y = get(the_indicator))) +
        geom_col() + 
        labs(
@@ -370,8 +370,8 @@ industry_indicator_peroid %>%
 
 # summary distribution of each stock
 portfolio_indicators_summary <- portfolio_indicators %>%
-  group_by(stkname) %>%
-  summarise(
+  dplyr::group_by(stkname) %>%
+  dplyr::summarise(
             mean = mean(get(the_indicator), na.rm = TRUE),
             std  = sqrt(var(get(the_indicator), na.rm = TRUE)),
             max = max(get(the_indicator), na.rm = TRUE),
@@ -429,7 +429,7 @@ portfolio_indicators %>%
 
 # plot series of annual data
 portfolio_indicators %>%
-    filter(periodtype == "annual") %>%
+    dplyr::filter(periodtype == "annual") %>%
     ggplot(aes(x = accper, y = get(the_indicator))) +
        geom_col() + 
        labs(

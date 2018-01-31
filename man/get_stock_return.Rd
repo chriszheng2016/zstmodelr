@@ -2,6 +2,7 @@
 % Please edit documentation in R/stock-db-gta.R, R/stock-db.R
 \name{get_stock_return.gta_db}
 \alias{get_stock_return.gta_db}
+\alias{get_factor_indicator.gta_db}
 \alias{get_stock_return}
 \title{Get stock return timeseries from stock_db}
 \usage{
@@ -9,6 +10,8 @@
   period_type = c("daily", "weekly", "monthly", "annual"),
   return_type = c("simple", "compound"), use_stock_name = TRUE,
   cumulated = FALSE)
+
+\method{get_factor_indicator}{gta_db}(stock_db, factor_list)
 
 get_stock_return(stock_db, stock_cd_list = NULL, period_type = c("daily",
   "weekly", "monthly", "annual"), return_type = c("simple", "compound"),
@@ -37,6 +40,8 @@ Generic function to get stock return timeseries from stock_db
 }
 \section{Methods (by class)}{
 \itemize{
+\item \code{gta_db}: get stock return timeseries from a database of gta_db class
+
 \item \code{gta_db}: get stock return timeseries from a database of gta_db class
 }}
 

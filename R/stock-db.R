@@ -184,11 +184,11 @@ fetch_table_dataset <- function(stock_db, table_list) {
 #' @examples
 
 get_stock_return <- function(stock_db, stock_cd_list = NULL,
-                  period_type = c("daily", "weekly", "monthly", "annual"),
-                  return_type = c("simple", "compound"),
-                  use_stock_name = TRUE,
-                  cumulated = FALSE
-                  ) {
+                             period_type = c("daily", "weekly", "monthly", "annual"),
+                             return_type = c("simple", "compound"),
+                             use_stock_name = TRUE,
+                             cumulated = FALSE
+) {
   UseMethod("get_stock_return")
 }
 
@@ -208,9 +208,9 @@ get_stock_return <- function(stock_db, stock_cd_list = NULL,
 #' @examples
 
 get_market_return <- function(stock_db,
-                  period_type = c("daily", "weekly", "monthly", "annual"),
-                  return_type = c("simple", "compound"),
-                  cumulated = FALSE) {
+                              period_type = c("daily", "weekly", "monthly", "annual"),
+                              return_type = c("simple", "compound"),
+                              cumulated = FALSE) {
   UseMethod("get_market_return")
 }
 
@@ -265,9 +265,28 @@ get_assets_return <- function(benchmark_return, stocks_return) {
 
 }
 
+#' Get factor indicator timeseries for stock_db
+#'
+#' Generic function to get  factor indicator from stock_db
+#'
+#' @param stock_db         a stock database object to operate
+#' @param factor_list      factor name list
+#'
+#'
+#' @return A timeseries of factor indicator
+#' @export
+#'
+#' @examples
+
+get_factor_indicator <- function(stock_db, factor_list){
+  UseMethod("get_factor_indicator")
+}
+
+
+
 # Get a timeseries of stock data for specified stock from table datasets
 get_stock_field_dataset <- function(ds_source.df,
-                              stock_cd,
+                                    stock_cd,
                               target_field,
                               stkcd_field = "stkcd",
                               date_field="trdmnt",
