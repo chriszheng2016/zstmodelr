@@ -67,18 +67,6 @@ get_factor_indicator.default <- function(stock_db, factor){
   stop("Unknow class")
 }
 
-# Default funcation to create stock_field_list
-stock_field_list.default <- function(stock_db) {
-  stopifnot(!is.null(stock_db))
-  stop("Unknow class")
-}
-
-# Default funcation to create stock_name_list
-stock_name_list.default <- function(stock_db) {
-  stopifnot(!is.null(stock_db))
-  stop("Unknow class")
-}
-
 # Default funcation to translate code to name
 code2name.default <- function(x, code, ...) {
   stopifnot(!is.null(stock_db))

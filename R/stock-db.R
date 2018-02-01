@@ -441,98 +441,59 @@ name2code <- function(x, name, ...) {
   UseMethod("name2code")
 }
 
-# Generic interface definiation of stock_field_list class ----------------------
+# Generic interface definiation of code_name_list class ----------------------
 
-#' Class creator of stock_field class
+#' Class creator of code_name_list class
 #'
-#' Generic stock_field class creator
+#' code_name_list class creator
 #'
-#' @param stock_db a stock database object to provide stock_field info
+#' @param codes a vector of code
+#' @param names a vector of name
 #'
-#' @return a object of stock_filed class
+#' @return a object of code_name_list
 #' @export
 #'
 #' @examples
 #'
-stock_field_list <- function(stock_db) {
-  UseMethod("stock_field_list")
+code_name_list <- function(codes, names) {
+
+  stopifnot(!is.null(codes), !is.null(names))
+  stopifnot(length(codes) == length(names))
+
+  code_name_list <- structure(list(code = codes, name = names),
+                              class = "code_name_list")
+
+  return(code_name_list)
+
 }
 
-# Translate field code into field name for table fields
-#' @describeIn code2name Translate code into name in a object of stock_field_list  class
+# Translate code into name in code_name_list
+#' @describeIn code2name Translate code into name in a object of code_name_list
 #' @export
-code2name.stock_field_list <- function(x, code) {
+code2name.code_name_list <- function(x, code) {
 
-  stopifnot(inherits(x, "stock_field_list") ,!is.null(code))
+  stopifnot(inherits(x, "code_name_list") ,!is.null(code))
 
-  match_index = match(code, x$field_code)
-  name <- x$field_name[match_index]
+  match_index = match(code, x$code)
+  name <- x$name[match_index]
 
   return(name)
 
 }
 
-# Translate field name into field code for table fields
-#' @describeIn name2code Translate name into code in a object of stock_field_list  class
+# Translate name into code in code_name_list
+#' @describeIn name2code Translate name into code in a object of code_name_list
 #' @export
-name2code.stock_field_list <- function(x, name) {
+name2code.code_name_list <- function(x, name) {
 
-  stopifnot(inherits(x, "stock_field_list") ,!is.null(name), is.character(name))
+  stopifnot(inherits(x, "code_name_list") ,!is.null(name), is.character(name))
 
-  match_index = match(name, x$field_name)
-  code <- x$field_code[match_index]
+  match_index = match(name, x$name)
+  code <- x$code[match_index]
 
   return(code)
 
 }
-
-
-# Generic interface definiation of stock_name_list class -----------------------
-
-
-#' Class creator of stock_name_list class
-#'
-#' generic stock_name_list class creator
-#'
-#' @param stock_db a stock database object to provide stock_name info
-#'
-#' @return a object of stock_name class
-#' @export
-#'
-#' @examples
-#'
-stock_name_list <- function(stock_db) {
-  UseMethod("stock_name_list")
-}
-
-# Translate stock code into stock name for stock_name_list
-#' @describeIn code2name Translate code into name in a object of stock_name_list  class
-#' @export
-code2name.stock_name_list <- function(x, code) {
-
-  stopifnot(inherits(x, "stock_name_list") ,!is.null(code))
-
-  match_index = match(code, x$stock_code)
-  name <- x$stock_name[match_index]
-
-  return(name)
-
-}
-
-# Translate stock name into stock code for stock_name_list
-#' @describeIn name2code Translate name into code in a object of stock_name_list  class
-#' @export
-name2code.stock_name_list <- function(x, name) {
-
-  stopifnot(inherits(x, "stock_name_list") ,!is.null(name), is.character(name))
-
-  match_index = match(name, x$stock_name)
-  code <- x$stock_code[match_index]
-
-  return(code)
-
-}
-
 
 
 

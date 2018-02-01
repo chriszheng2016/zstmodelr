@@ -4,6 +4,8 @@
 #' @export
 magrittr::`%>%`
 
+
+
 # get table name value from profile of database
 .get_db_profile_varible_setting <- function(profile_name, variable) {
 

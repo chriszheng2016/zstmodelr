@@ -120,7 +120,7 @@ init_stock_db.gta_db <- function(stock_db) {
 
   # set up field_name list
   if (success) {
-    stock_db$stock_field_list <- stock_field_list(stock_db)
+    stock_db$stock_field_list <- stock_field_list.gta_db(stock_db)
     if (is.null(stock_db$stock_field_list)) {
       warning("failed to set up field_name_list")
       success = FALSE
@@ -129,9 +129,18 @@ init_stock_db.gta_db <- function(stock_db) {
 
   # set up stock_name list
   if (success) {
-    stock_db$stock_name_list <- stock_name_list(stock_db)
+    stock_db$stock_name_list <- stock_name_list.gta_db(stock_db)
     if (is.null(stock_db$stock_name_list)) {
       warning("failed to set up stock_name_list")
+      success = FALSE
+    }
+  }
+
+  # set up industry_name list
+  if (success) {
+    stock_db$industry_name_list <- industry_name_list.gta_db(stock_db)
+    if (is.null(stock_db$industry_name_list)) {
+      warning("failed to set up industry_name_list")
       success = FALSE
     }
   }
@@ -193,14 +202,17 @@ list_stock_tables.gta_db <- function(stock_db) {
 # Translate name into code for field or stock
 #' @describeIn name2code Translate name into code in a database of gta_db class
 #' @export
-name2code.gta_db <- function(stock_db, name, type=c("stock", "field")) {
+name2code.gta_db <- function(stock_db, name,
+                             type=c("stock", "field", "industry")) {
 
     stopifnot(inherits(stock_db, "gta_db"), !missing(name))
 
     target_type <- match.arg(type)
     code = switch(target_type,
               field = name2code(stock_db$stock_field_list, name = name),
-              stock = name2code(stock_db$stock_name_list, name = name)
+              stock = name2code(stock_db$stock_name_list, name = name),
+              industry = name2code(stock_db$industry_name_list, name = name)
+
     )
 
     return(code)
@@ -210,14 +222,16 @@ name2code.gta_db <- function(stock_db, name, type=c("stock", "field")) {
 # Translate code into name for field or stock
 #' @describeIn code2name Translate code into name in a database of gta_db class
 #' @export
-code2name.gta_db <- function(stock_db, code, type=c("stock", "field")) {
+code2name.gta_db <- function(stock_db, code,
+                             type=c("stock", "field", "industry")) {
 
   stopifnot(inherits(stock_db, "gta_db"), !missing(code))
 
   target_type <- match.arg(type)
   name = switch(target_type,
                 field = code2name(stock_db$stock_field_list, code = code),
-                stock = code2name(stock_db$stock_name_list, code = code)
+                stock = code2name(stock_db$stock_name_list, code = code),
+                industry = code2name(stock_db$industry_name_list, code = code)
   )
 
   return(name)
@@ -706,11 +720,7 @@ get_factor_indicator.gta_db <- function(stock_db, factor_list){
 }
 
 
-# Interface Implementation of stock_field_list class by gta_db -----------------
-
-# stock_field class creator
-#' @describeIn stock_field_list create a stock_filed_list for a database of gta_db class
-#' @export
+#' Create a stock_filed_list for a database of gta_db class
 stock_field_list.gta_db <- function(stock_db) {
 
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
@@ -719,22 +729,24 @@ stock_field_list.gta_db <- function(stock_db) {
   field_name_list <- NULL
   table_name <- stock_db$table_list[["gta_fieldname_list"]]
   field_list.df <- get_table_dataset.gta_db(stock_db, table_name )
-  field_list <- field_list.df[, c(1, 2)]
-  colnames(field_list) <- c("field_code", "field_name")
-  field_list["field_code"] <- lapply(field_list["field_code"], tolower)
-  field_name_list <- structure(field_list, class = "stock_field_list")
+  if (!is.null(field_list.df)) {
+
+    codes <- field_list.df[, "field_code"]
+    codes <- tolower(codes)
+    names <- field_list.df[, "field_name"]
+
+    field_name_list <- code_name_list(codes, names)
+
+  } else {
+    warning("can't create code_name_list due to failing
+            to get data from stock db")
+  }
 
   return(field_name_list)
 
 }
 
-
-# Interface Implementation of stock_name_list class by gta_db -----------------
-
-
-# stock_name_list class creator
-#' @describeIn stock_name_list create a stock_name_list for a database of gta_db class
-#' @export
+#' Create a stock_name_list for a database of gta_db class
 stock_name_list.gta_db <- function(stock_db) {
 
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
@@ -744,11 +756,44 @@ stock_name_list.gta_db <- function(stock_db) {
   table_name <- stock_db$table_list[["TRD_Co"]]
   ds_trd_company.df <- get_table_dataset.gta_db(stock_db, table_name)
   if (!is.null(ds_trd_company.df)) {
-    stock_name_list <- ds_trd_company.df[,c("stkcd", "stknme")]
-    names(stock_name_list) <- c("stock_code","stock_name")
-    stock_name_list <- structure(stock_name_list, class = "stock_name_list")
+
+    codes <- ds_trd_company.df[, "stkcd"]
+    names <- ds_trd_company.df[, "stknme"]
+
+    stock_name_list <- code_name_list(codes, names)
+
   } else {
-    stop("can't get data from stock db")
+    warning("can't create code_name_list due to failing
+            to get data from stock db")
+  }
+
+  return(stock_name_list)
+
+}
+
+#' Create a industry_name_list for a database of gta_db class
+industry_name_list.gta_db <- function(stock_db) {
+
+  stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
+
+  #build stock_name_list
+  stock_name_list <- NULL
+  table_name <- stock_db$table_list[["TRD_Co"]]
+  ds_trd_company.df <- get_table_dataset.gta_db(stock_db, table_name)
+  if (!is.null(ds_trd_company.df)) {
+
+    ds_indistry <- ds_trd_company.df %>%
+      dplyr::select(nnindcd, nnindnme) %>%
+      dplyr::distinct()
+
+    codes <- ds_indistry[, "nnindcd"]
+    names <- ds_indistry[, "nnindnme"]
+
+    stock_name_list <- code_name_list(codes, names)
+
+  } else {
+    warning("can't create code_name_list due to failing
+            to get data from stock db")
   }
 
   return(stock_name_list)

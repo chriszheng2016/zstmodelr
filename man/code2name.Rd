@@ -3,17 +3,14 @@
 \name{code2name.gta_db}
 \alias{code2name.gta_db}
 \alias{code2name}
-\alias{code2name.stock_field_list}
-\alias{code2name.stock_name_list}
+\alias{code2name.code_name_list}
 \title{Translate code into name}
 \usage{
 \method{code2name}{gta_db}(stock_db, code, type = c("stock", "field"))
 
 code2name(x, code, ...)
 
-\method{code2name}{stock_field_list}(x, code)
-
-\method{code2name}{stock_name_list}(x, code)
+\method{code2name}{code_name_list}(x, code)
 }
 \arguments{
 \item{code}{a code or a vector of codes to be translated}
@@ -32,9 +29,7 @@ Generic function to translate code into name
 \itemize{
 \item \code{gta_db}: Translate code into name in a database of gta_db class
 
-\item \code{stock_field_list}: Translate code into name in a object of stock_field_list  class
-
-\item \code{stock_name_list}: Translate code into name in a object of stock_name_list  class
+\item \code{code_name_list}: Translate code into name in a object of code_name_list
 }}
 
 \examples{
