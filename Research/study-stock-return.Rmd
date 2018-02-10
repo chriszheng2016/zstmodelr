@@ -41,8 +41,6 @@ open_stock_db(stock_db)
 
 # Initate the stock database
 invisible(init_stock_db(stock_db))
-stock_name_list  <- stock_name_list(stock_db)
-stock_field_list <- stock_field_list(stock_db)
 
 # Get names of all stock table from database   
  db_tables <- list_stock_tables(stock_db)
@@ -120,11 +118,13 @@ nYearsBack <- NULL
 stocks_return <- get_stock_return(stock_db, 
                                   stock_stkcds_list, 
                                   period_type = period_type, 
-                                  return_type = return_type)
+                                  return_type = return_type, 
+                                  output_type = "timeSeries")
 
 market_return <- get_market_return(stock_db, 
                                    period_type = period_type, 
-                                   return_type = return_type)
+                                   return_type = return_type,
+                                   output_type = "timeSeries")
 
 # Build assets_return
 assets_return <- get_assets_return(benchmark_return = market_return,
