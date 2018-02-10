@@ -9,13 +9,14 @@
 \method{get_stock_return}{gta_db}(stock_db, stock_cd_list = NULL,
   period_type = c("daily", "weekly", "monthly", "annual"),
   return_type = c("simple", "compound"), use_stock_name = TRUE,
-  cumulated = FALSE)
+  cumulated = FALSE, output_type = c("timeSeries", "tibble"))
 
 \method{get_factor_indicator}{gta_db}(stock_db, factor_list)
 
 get_stock_return(stock_db, stock_cd_list = NULL, period_type = c("daily",
   "weekly", "monthly", "annual"), return_type = c("simple", "compound"),
-  use_stock_name = TRUE, cumulated = FALSE)
+  use_stock_name = TRUE, cumulated = FALSE, output_type = c("timeSeries",
+  "tibble"))
 }
 \arguments{
 \item{stock_db}{a stock database object to operate}
@@ -31,6 +32,8 @@ all stock data will be returned}
 \item{use_stock_name}{use stock name as field name instead of stock cd, default is TRUE}
 
 \item{cumulated}{calculate cumulated return, default value is FALSE}
+
+\item{output_type}{format of output result, e.g "timeSeries", "tibble"}
 }
 \value{
 A timeseries of stock return

@@ -176,6 +176,7 @@ fetch_table_dataset <- function(stock_db, table_list) {
 #' @param return_type a character string naming the method how the returns were computed
 #' @param use_stock_name use stock name as field name instead of stock cd, default is TRUE
 #' @param cumulated   calculate cumulated return, default value is FALSE
+#' @param output_type format of output result, e.g "timeSeries", "tibble"
 #'
 #'
 #' @return A timeseries of stock return
@@ -187,7 +188,8 @@ get_stock_return <- function(stock_db, stock_cd_list = NULL,
                              period_type = c("daily", "weekly", "monthly", "annual"),
                              return_type = c("simple", "compound"),
                              use_stock_name = TRUE,
-                             cumulated = FALSE
+                             cumulated = FALSE,
+                             output_type = c("timeSeries", "tibble")
 ) {
   UseMethod("get_stock_return")
 }

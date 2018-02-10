@@ -385,7 +385,8 @@ get_stock_return.gta_db <- function(stock_db, stock_cd_list = NULL,
                   period_type = c("daily", "weekly", "monthly", "annual"),
                   return_type = c("simple", "compound"),
                   use_stock_name = TRUE,
-                  cumulated = FALSE
+                  cumulated = FALSE,
+                  output_type = c("timeSeries", "tibble")
                   ) {
 
   # validate params
@@ -468,7 +469,7 @@ get_stock_return.gta_db <- function(stock_db, stock_cd_list = NULL,
     success <- FALSE
   }
 
-  # Build final rturn reuslts
+  # transform simple return into requried return type
   if (success) {
     if (cumulated) {
       ts_return.fts <- cumulated(na.omit(ts_return.fts, method = "z"), method = "simple")
@@ -477,7 +478,26 @@ get_stock_return.gta_db <- function(stock_db, stock_cd_list = NULL,
          ts_return.fts <- simple2compound_return(ts_return.fts)
     }
 
-    ts_return <- ts_return.fts
+
+  }
+
+  # Build final rturn reuslts by output format
+  if (success) {
+    output_type = match.arg(output_type)
+    switch( output_type,
+      tibble = {
+        ts_return.tib <- tibble::rownames_to_column(
+                            as.tibble(ts_return.fts),var = "date")
+        ts_return.tib <- ts_return.tib %>%
+          dplyr::mutate(date = lubridate::ymd(date)) %>%
+          tidyr::gather(key="stkcd", value = "return", -date)
+
+        ts_return <- ts_return.tib
+      },
+      timeSeries = {
+        ts_return <- ts_return.fts
+      }
+    )
   }
 
   return(ts_return)
