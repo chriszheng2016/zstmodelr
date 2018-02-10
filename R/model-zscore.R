@@ -9,17 +9,24 @@
 #'
 #' @param ds_factors  a factors dataset
 #' @param aggregate_formula a formula to aggreate zscores of all factors,
-#'                    e.g. ROCE + P/B, default is NULL which means no need to
+#'                    e.g. ROCE + PB, NULL is default which means no need to
 #'                    compute aggregate zscore, but only compute zscore for all
 #'                    numberic factor fields
-#' @param group_by  a character vector of fields as group data for scaling
+#' @param group_by  a character vector of fields as group data for scaling, NULL
+#'                    is default value which means no group settting
+#' @param max_abs_score maximum absolute value of individual z-score, default value
+#'                    is 3.0, any z-score beyond[-max_abs_score, max_abs_score]
+#'                    will be set to value of +/- max_abs_score to exclude outliers
 #'
 #' @return            a z-score datasets of factors
 #' @export
 #'
 #' @examples
 
-factors_zscore <- function(ds_factors, aggregate_formula = NULL, group_by = NULL ) {
+factors_zscore <- function(ds_factors,
+                           aggregate_formula = NULL,
+                           group_by = NULL,
+                           max_abs_score = 3.0) {
 
   # Validate params
   stopifnot(!is.null(ds_factors))
@@ -29,7 +36,7 @@ factors_zscore <- function(ds_factors, aggregate_formula = NULL, group_by = NULL
 
   # get compute factors list
   aggregate_formula <- rlang::enquo(aggregate_formula)
-  origin_fields <- names(ds_factors)
+  origin_fields <- colnames(ds_factors)
   is_numeric_class_field <- purrr::map_lgl(ds_factors, ~inherits(., "numeric"))
   if (!rlang::quo_is_null(aggregate_formula)) {
 
@@ -75,10 +82,10 @@ factors_zscore <- function(ds_factors, aggregate_formula = NULL, group_by = NULL
     dplyr::mutate_at(compute_factors, scale) %>%
     dplyr::select(output_fields)
 
-  # Replace outliers's z-score to 3/-3 to avoid influence of extreme value
+  # Replace outliers's z-score to max_abs_score(3/-3) to avoid influence of extreme value
   zscore_result <- zscore_result %>%
     dplyr::mutate_at(compute_factors,
-                     function(x) dplyr::if_else(abs(x) > 3, sign(x)*3, x))
+           function(x) dplyr::if_else(abs(x) > max_abs_score, sign(x)*max_abs_score, x))
 
   # Compute a stock's aggregate z-scores if need
   if (!rlang::quo_is_null(aggregate_formula)) {
@@ -120,8 +127,15 @@ zscore_filter_stocks <- function(ds_zscores,
     dplyr::top_n( ranking_number, !!ranking_field)
 
   # Build result stocks
-  result_stocks <- filter_stocks %>%
-    dplyr::arrange( desc(!!ranking_field), .by_group = TRUE )
+
+  if (is.null(groups(filter_stocks)))
+  {
+    result_stocks <- filter_stocks %>%
+      dplyr::arrange( desc(!!ranking_field) )
+  } else {
+    result_stocks <- filter_stocks %>%
+      dplyr::arrange( desc(!!ranking_field),.by_group = TRUE )
+  }
 
   return(result_stocks)
 }

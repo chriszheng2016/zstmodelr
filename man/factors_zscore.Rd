@@ -4,17 +4,23 @@
 \alias{factors_zscore}
 \title{Compute z-scores of facotrs}
 \usage{
-factors_zscore(ds_factors, aggregate_formula = NULL, group_by = NULL)
+factors_zscore(ds_factors, aggregate_formula = NULL, group_by = NULL,
+  max_score = 3)
 }
 \arguments{
 \item{ds_factors}{a factors dataset}
 
 \item{aggregate_formula}{a formula to aggreate zscores of all factors,
-e.g. ROCE + P/B, default is NULL which means no need to
+e.g. ROCE + PB, NULL is default which means no need to
 compute aggregate zscore, but only compute zscore for all
 numberic factor fields}
 
-\item{group_by}{a character vector of fields as group data for scaling}
+\item{group_by}{a character vector of fields as group data for scaling, NULL
+is default value which means no group settting}
+
+\item{max_score}{maximum absolute value of individual z-score, default value
+is 3, any z-score which is bigger or less than max_score
+will be set to value of +/- max_score to exclude outliers}
 }
 \value{
 a z-score datasets of factors
