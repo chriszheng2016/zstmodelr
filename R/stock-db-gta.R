@@ -408,23 +408,27 @@ get_stock_return.gta_db <- function(stock_db, stock_cd_list = NULL,
       field_date   <- quo(trddt)
       field_return <- quo(dretwd)
       date_format <- "ymd"
+      date_ceiling_unit <-"day"
     },
     weekly  = {
       table_name <- stock_db$table_list[["TRD_WEEK"]]
       field_date   <- quo(trdwnt)
       field_return <- quo(wretwd)
+      date_ceiling_unit <-"week"
     },
     monthly = {
       table_name <- stock_db$table_list[["TRD_MNTH"]]
       field_date   <- quo(trdmnt)
       field_return <- quo(mretwd)
       date_format <- "ymd"
+      date_ceiling_unit <-"month"
     },
     annual  = {
       table_name <- stock_db$table_list[["TRD_YEAR"]]
       field_date   <- quo(trdynt)
       field_return <- quo(yretwd)
       date_format <- "y"
+      date_ceiling_unit <-"year"
     }
   )
 
@@ -433,7 +437,7 @@ get_stock_return.gta_db <- function(stock_db, stock_cd_list = NULL,
   if (!is.null(ds_return)) {
     ds_return <- tibble::as.tibble(ds_return)
     msg <- sprintf("return table: %s , return field: %s, date field: %s",
-                   table_name, deparse(field_return), deparse(field_date))
+                   table_name, rlang::quo_text(field_return), rlang::quo_text(field_date))
     message(msg)
 
   } else {
@@ -453,16 +457,32 @@ get_stock_return.gta_db <- function(stock_db, stock_cd_list = NULL,
     if (!is.null(stock_cd_list) && length(stock_cd_list) != 0 )
       ds_return <- dplyr::select(ds_return, date, as.character(stock_cd_list))
 
+
+    # Change date format: datetime --> date
+    # Use the last day of the period as the date for weekly, monthly, annual data
+    origin_date <- lubridate::parse_date_time(as.character(ds_return$date), date_format)
+    origin_date <- lubridate::as_date(origin_date)
+    if (period_type != "daily") {
+
+      #last day of period = ceiling_date -1
+      ceiling_date <- lubridate::ceiling_date(origin_date,
+                                           unit = date_ceiling_unit,
+                                           change_on_boundary = TRUE)
+      charvec <- ceiling_date -1
+
+    } else {
+      charvec <- origin_date
+    }
+
     # Build time series
-    charvec <- lubridate::parse_date_time(as.character(ds_return$date), date_format)
     ts_return.fts <- timeSeries::timeSeries(ds_return[, -1], charvec)
 
+    # Format the colname by stkcd or stckname
     if (use_stock_name) {
       field_names <- code2name(stock_db, as.numeric(names(ts_return.fts)))
     } else {
       field_names <- sprintf("%06d", as.numeric(names(ts_return.fts)))
     }
-
     names(ts_return.fts) <- field_names
 
   } else {
@@ -478,19 +498,34 @@ get_stock_return.gta_db <- function(stock_db, stock_cd_list = NULL,
          ts_return.fts <- simple2compound_return(ts_return.fts)
     }
 
-
   }
 
-  # Build final rturn reuslts by output format
+  # Build final return results by output format
   if (success) {
     output_type = match.arg(output_type)
     switch( output_type,
       tibble = {
-        ts_return.tib <- tibble::rownames_to_column(
-                            as.tibble(ts_return.fts),var = "date")
+
+        # take back date column from rowsname
+        ts_return.tib <- tibble::rownames_to_column(tibble::as.tibble(ts_return.fts),
+                                                    var = "date")
+        # turn width format back into long format
         ts_return.tib <- ts_return.tib %>%
           dplyr::mutate(date = lubridate::ymd(date)) %>%
           tidyr::gather(key="stkcd", value = "return", -date)
+
+        # rebuild stkcd coloumn
+        if (use_stock_name) {
+          # change stkname into stkcd number
+          ts_return.tib <- ts_return.tib %>%
+            dplyr::mutate(stkcd = name2code(stock_db, name = stkcd))
+
+        } else {
+          # normalize stkcd string to stkcd number(when turn timeSeries into tibble,
+          # the stkcd were added prefix of "X" )
+          ts_return.tib <- ts_return.tib %>%
+            dplyr::mutate(stkcd = as.integer(stringr::str_replace(stkcd, "^X", "")))
+        }
 
         ts_return <- ts_return.tib
       },
@@ -510,8 +545,8 @@ get_stock_return.gta_db <- function(stock_db, stock_cd_list = NULL,
 get_market_return.gta_db <- function(stock_db,
                     period_type = c("daily", "weekly", "monthly", "annual"),
                     return_type = c("simple", "compound"),
-                    cumulated = FALSE
-                    ) {
+                    cumulated = FALSE,
+                    output_type = c("timeSeries", "tibble")) {
 
   # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
@@ -531,31 +566,36 @@ get_market_return.gta_db <- function(stock_db,
       field_date   <- quo(trddt)
       field_return <- quo(cdretwdtl)
       date_format <- "ymd"
+      date_ceiling_unit <-"day"
     },
     weekly  = {
       table_name <- stock_db$table_list[["TRD_WEEKCM"]]
       field_date   <- quo(trdwnt)
       field_return <- quo(cwretwdtl)
+      date_ceiling_unit <-"week"
     },
     monthly = {
       table_name <- stock_db$table_list[["TRD_CNMONT"]]
       field_date   <- quo(trdmnt)
       field_return <- quo(cmretwdtl)
       date_format <- "ym"
+      date_ceiling_unit <-"month"
     },
     annual  = {
       table_name <- stock_db$table_list[["TRD_YEARCM"]]
       field_date   <- quo(trdynt)
       field_return <- quo(cyretwdtl)
       date_format <- "y"
+      date_ceiling_unit <-"year"
     }
   )
 
+  #Warning: ds_return is simple return in database by default !!
   ds_return <- get_table_dataset.gta_db(stock_db, table_name)
   if (!is.null(ds_return)) {
     ds_return <- tibble::as.tibble(ds_return)
     msg <- sprintf("return table: %s , return field: %s, date field: %s",
-                   table_name, deparse(field_return), deparse(field_date))
+                   table_name, rlang::quo_text(field_return), rlang::quo_text(field_date))
     message(msg)
   }
   else{
@@ -566,17 +606,33 @@ get_market_return.gta_db <- function(stock_db,
    # Build simple return results
   ts_return <- NULL
   if (success) {
+
     ds_return <- dplyr::filter(ds_return, UQ(field_markettype) == 21)
     ds_return <- ds_return %>%
       dplyr::select(date = !!field_date, market_index = !!field_return)
 
+    # Change date format: datetime --> date
+    # Use the last day of the period as the date for weekly, monthly, annual data
+    origin_date <- lubridate::parse_date_time(as.character(ds_return$date), date_format)
+    origin_date <- lubridate::as_date(origin_date)
+    if (period_type != "daily") {
+
+      #last day of period = ceiling_date -1
+      ceiling_date <- lubridate::ceiling_date(origin_date,
+                                              unit = date_ceiling_unit,
+                                              change_on_boundary = TRUE)
+      charvec <- ceiling_date - 1
+
+    } else {
+      charvec <- origin_date
+    }
+
     # Build timeseries
-    charvec <- lubridate::parse_date_time(as.character(ds_return$date), date_format)
     ts_return.fts <- timeSeries::timeSeries(ds_return[,-1], charvec)
 
   }
 
-  # Build final return results
+  # Transform simple return into requried return type
   if (success) {
     if (cumulated) {
       ts_return.fts <- cumulated(na.omit(ts_return.fts, method = "z"), method = "simple")
@@ -584,8 +640,25 @@ get_market_return.gta_db <- function(stock_db,
       if (match.arg(return_type) == "compound")
         ts_return.fts <- simple2compound_return(ts_return.fts)
     }
+  }
 
-    ts_return <- ts_return.fts
+  # Build final return results by output format
+  if (success) {
+    output_type = match.arg(output_type)
+    switch( output_type,
+            tibble = {
+              # take back date column from rowsname
+              ts_return.tib <- tibble::rownames_to_column(tibble::as.tibble(ts_return.fts),
+                                                           var = "date")
+              ts_return.tib <- ts_return.tib %>%
+                dplyr::mutate(date = lubridate::ymd(date))
+
+              ts_return <- ts_return.tib
+            },
+            timeSeries = {
+              ts_return <- ts_return.fts
+            }
+    )
   }
 
   return(ts_return)
@@ -667,10 +740,9 @@ get_factor_indicator.gta_db <- function(stock_db, factor_list){
 
             # get indicators from dataset
             ds_indicators <- ds_indicators %>%
-              dplyr::mutate(periodtype = ifelse(lubridate::month(accper) == 12, "annual","quarter")) %>%
-              dplyr::select(date = accper, periodtype, stkcd,
-                            indcd = indcd,
-                            indicator_code_list)
+              dplyr::mutate( date = lubridate::as_date(accper),
+                  periodtype = ifelse(lubridate::month(accper) == 12, "annual","quarter")) %>%
+              dplyr::select(date , periodtype, stkcd, indcd, indicator_code_list)
 
             # rename indicator_code to factor_code
             col_names <- colnames(ds_indicators)

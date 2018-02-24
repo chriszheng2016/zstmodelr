@@ -5,7 +5,7 @@
 \title{Compute z-scores of facotrs}
 \usage{
 factors_zscore(ds_factors, aggregate_formula = NULL, group_by = NULL,
-  max_score = 3)
+  max_abs_score = 3)
 }
 \arguments{
 \item{ds_factors}{a factors dataset}
@@ -18,9 +18,9 @@ numberic factor fields}
 \item{group_by}{a character vector of fields as group data for scaling, NULL
 is default value which means no group settting}
 
-\item{max_score}{maximum absolute value of individual z-score, default value
-is 3, any z-score which is bigger or less than max_score
-will be set to value of +/- max_score to exclude outliers}
+\item{max_abs_score}{maximum absolute value of individual z-score, default value
+is 3.0, any z-score beyond[-max_abs_score, max_abs_score]
+will be set to value of +/- max_abs_score to exclude outliers}
 }
 \value{
 a z-score datasets of factors

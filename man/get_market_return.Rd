@@ -7,20 +7,23 @@
 \usage{
 \method{get_market_return}{gta_db}(stock_db, period_type = c("daily",
   "weekly", "monthly", "annual"), return_type = c("simple", "compound"),
-  cumulated = FALSE)
+  cumulated = FALSE, output_type = c("timeSeries", "tibble"))
 
 get_market_return(stock_db, period_type = c("daily", "weekly", "monthly",
-  "annual"), return_type = c("simple", "compound"), cumulated = FALSE)
+  "annual"), return_type = c("simple", "compound"), cumulated = FALSE,
+  output_type = c("timeSeries", "tibble"))
 }
 \arguments{
-\item{stock_db}{a stock database object to operate}
+\item{stock_db}{a stock database object to operate.}
 
 \item{period_type}{date peroid for time series, e.g. "daily", "weekly",
-"monthly", "annual", default value is  "daily"}
+"monthly", "annual", default value is  "daily".}
 
-\item{return_type}{a character string naming the method how the returns were computed}
+\item{return_type}{a character string naming the method how the returns were computed.}
 
-\item{cumulated}{calculate cumulated return, default value is FALSE}
+\item{cumulated}{calculate cumulated return, default value is FALSE.}
+
+\item{output_type}{format of output result, e.g "timeSeries", "tibble".}
 }
 \value{
 A timeseries of market return

@@ -19,21 +19,21 @@ get_stock_return(stock_db, stock_cd_list = NULL, period_type = c("daily",
   "tibble"))
 }
 \arguments{
-\item{stock_db}{a stock database object to operate}
+\item{stock_db}{a stock database object to operate.}
 
 \item{stock_cd_list}{a list of stock cd, default value of NULL means
-all stock data will be returned}
+all stock data will be returned.}
 
 \item{period_type}{date peroid for time series, e.g. "daily", "weekly",
-"monthly", "annual", default value is "daily"}
+"monthly", "annual", default value is "daily".}
 
-\item{return_type}{a character string naming the method how the returns were computed}
+\item{return_type}{a character string naming the method how the returns were computed.}
 
-\item{use_stock_name}{use stock name as field name instead of stock cd, default is TRUE}
+\item{use_stock_name}{use stock name as field name instead of stock cd, default is TRUE.}
 
-\item{cumulated}{calculate cumulated return, default value is FALSE}
+\item{cumulated}{calculate cumulated return, default value is FALSE.}
 
-\item{output_type}{format of output result, e.g "timeSeries", "tibble"}
+\item{output_type}{format of output result, e.g "timeSeries", "tibble".}
 }
 \value{
 A timeseries of stock return
