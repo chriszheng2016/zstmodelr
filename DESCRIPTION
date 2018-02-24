@@ -17,6 +17,9 @@ Suggests: testthat,
 VignetteBuilder: knitr
 Imports: fPortfolio,
     timeSeries,
+    plyr,
     tidyverse,
+    modelr,
+    broom,
     RODBC
 RoxygenNote: 6.0.1
