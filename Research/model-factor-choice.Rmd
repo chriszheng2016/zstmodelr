@@ -1,0 +1,273 @@
+---
+title: "R Notebook"
+output: 
+  html_notebook: 
+    fig_caption: yes
+    number_sections: yes
+    toc: yes
+---
+
+研究股票的因素模型
+
+
+```{r setup, include=FALSE  }
+
+library(fPortfolio)
+library(PerformanceAnalytics)
+library(tidyverse)
+library(lubridate)
+library(stringr)
+library(shiny)
+library(zstmodelr)
+
+
+# Set global options for knitr 
+knitr::opts_chunk$set(
+comment = "#>",
+echo = FALSE,
+warning = FALSE,
+message = FALSE,
+collapse = TRUE
+)
+
+options(tibble.print_min = 10L, tibble.print_max = 20L)
+
+options(digits = 3)
+
+```
+
+# Data Preparation(数据准备)
+
+## Set Params of Study(设置研究参数)
+```{r set_params_study}
+# Set params of study
+
+# Set stocks as portfolio
+ stock_stkcds_list <- c(600066,000550, 600031, 000157,000651, 000333)
+# stock_stkcds_list <- c(600066)
+
+#period_type: c("daily", "weekly", "monthly", "annual")
+period_type <- "monthly"
+
+#return_type: c("simple", "compound")
+return_type <- "simple"
+
+fundamental_factors_list <- c("GPM", "ROCE", "PE", "PB", "CUR", "QR")
+
+```
+
+
+
+## Load facotrs data (加载因子数据)
+```{r load_factors_data}
+# Open gta stock databse
+stock_db <- stock_db(gta_db, "GTA_SQLData")
+open_stock_db(stock_db)
+
+# Initate the stock database
+invisible(init_stock_db(stock_db))
+
+# Get fundamental_facotrs
+fundamental_factors <- get_factor_indicator(stock_db, 
+                                factor_list = fundamental_factors_list)
+
+# Get stocks return
+stocks_return <- get_stock_return(stock_db, 
+                                  stock_cd_list = NULL, 
+                                  period_type = period_type, 
+                                  return_type = return_type,
+                                  use_stock_name = FALSE,
+                                  output_type = "tibble")
+
+
+
+```
+
+## Factor Standardization(数据标准化)
+
+```{r factor_standardization }
+
+# Compute the z-score of indicatros
+fundamental_factors_zscore <- factors_zscore(fundamental_factors, 
+                                             aggregate_formula = NULL,
+                                             group_by = c("date"))
+
+# Resample factors by specified frequency
+fundamental_factors_zscore_period <- fundamental_factors_zscore %>%
+    dplyr::filter(stkcd %in% stock_stkcds_list) %>%
+    ts_resample( by_group = "stkcd", freq_rule = "month", 
+                     fillna_method = "ffill", agg_method = mean)
+
+# Resample return by specified frequency
+stocks_return_period <- stocks_return %>%
+    dplyr::filter(stkcd %in% stock_stkcds_list) %>%
+    ts_resample( by_group = "stkcd", freq_rule = "month", 
+                     fillna_method = "ffill", 
+                     agg_method = function(x) prod(1 + x, na.rm = TRUE) - 1)
+
+
+
+
+```
+
+
+
+# Uinivariate Factors Test(因子筛选与检测)
+
+## Factor Distribution Exploration(因子分布规规律探索)
+
+```{r factor_test_Uniregression_dataset}
+
+
+# visulize the relation between return and factor
+# data_univariate_regression_test %>%
+#      ggplot(aes(factor_exposure, return)) +
+#        geom_hex(bins = 50) +
+#        geom_smooth(se = FALSE) +
+#        facet_wrap(~factor_name) 
+
+
+
+```
+
+
+## Pooling Univariate Regression Test(单因子池回归)
+```{r factor_test_Uniregression_pooling}
+
+stocks_return_pre_period <- ts_lag(stocks_return_period,
+                                               k = -1,trim = TRUE,
+                                               by_group = "stkcd")
+
+# Build test data dataset
+ds_test_uniregression_pooling <- stocks_return_pre_period %>%
+    dplyr::inner_join(fundamental_factors_zscore_period, by = c("date", "stkcd")) %>%
+    tidyr::gather(-(date:indcd), key = "factor_name", value = "factor_exposure") %>%
+    dplyr::select(date, stkcd, indcd, return , factor_name, factor_exposure)
+
+# Model of conducting univariate regression test
+model_univariate_regression_pooling <- function(df) {
+  lm(return ~ factor_exposure, data = df)
+}
+result_test_uniregression_pooling <- factor_test_uniregress(ds_test_uniregression_pooling,
+                                                regress_method = "pooling",                  
+                                                regress_fun = model_univariate_regression_pooling,
+                                                factor_field = "factor_name",
+                                                output_type = "summary",
+                                                date_field = "date")
+                               
+# Disply test result
+
+summary(result_test_uniregression_pooling)
+
+```
+
+
+## Barra Univarate Reggression Test(Barra单因子截面回归)
+```{r factor_test_Uniregression_barra}
+
+stocks_return_pre_period <- ts_lag(stocks_return_period,
+                                               k = -1,trim = TRUE,
+                                               by_group = "stkcd")
+
+# Build test data dataset
+ds_test_uniregression_barra <- stocks_return_pre_period %>%
+    dplyr::inner_join(fundamental_factors_zscore_period, by = c("date", "stkcd")) %>%
+    tidyr::gather(-(date:indcd), key = "factor_name", value = "factor_exposure") %>%
+    dplyr::select(date, stkcd, indcd, return , factor_name, factor_exposure)
+
+
+# Model of conducting univariate regression test
+model_univariate_regression_barra <- function(df, ...) {
+  lm(return ~ factor_exposure, data = df, ...)
+}
+result_test_uniregression_barra <- factor_test_uniregress( ds_test_uniregression_barra,
+                                                regress_method = "cross_section",                  
+                                                regress_fun = model_univariate_regression_barra,
+                                                output_type = "summary",
+                                                factor_field = "factor_name",
+                                                date_field = "date")
+
+# Disply test result
+summary(result_test_uniregression_barra)
+
+# Plot test result                               
+plot(result_test_uniregression_barra)
+
+```
+
+
+
+
+## Information Coefficients Test（IC值评估）
+```{r factor_test_IC}
+
+stocks_return_pre_period <- ts_lag(stocks_return_period,
+                                               k = -1,trim = TRUE,
+                                               by_group = "stkcd")
+
+# Build test data dataset
+ds_test_IC <- stocks_return_pre_period %>%
+    dplyr::inner_join(fundamental_factors_zscore_period, by = c("date", "stkcd")) %>%
+    tidyr::gather(-(date:indcd), key = "factor_name", value = "factor_exposure") %>%
+    dplyr::select(date, stkcd, indcd, return , factor_name, factor_exposure)
+
+
+# Method of conducting IC test
+Model_compute_IC <- function(df, ...) {
+  cor.test(x = df$return, y = df$factor_exposure, ... )
+}
+result_test_IC <- factor_test_IC( ds_test_IC,
+                                  IC_fun = Model_compute_IC,
+                                  method = "pearson",
+                                  output_type = "summary",
+                                  factor_field = "factor_name",
+                                  date_field = "date")
+
+# Disply test result
+summary(result_test_IC)
+
+```
+
+## Factor Sort Portfolios Test(因子组合分类法)
+```{r factor_test_portfolio_sorts}
+
+stocks_return_pre_period <- ts_lag(stocks_return_period,
+                                               k = -1,trim = TRUE,
+                                               by_group = "stkcd")
+
+# Build test data dataset
+ds_test_sort_portfolios <- stocks_return_pre_period %>%
+    dplyr::inner_join(fundamental_factors_zscore_period, by = c("date", "stkcd")) %>%
+    tidyr::gather(-(date:indcd), key = "factor_name", value = "factor_exposure") %>%
+    dplyr::select(date, stkcd, indcd, return , factor_name, factor_exposure)
+
+
+# Conduct  portfolio sorts
+model_sort_portfolios <- function(df, ...) {
+  
+  # build portfolio group by portfolio groups
+  sort_portfolios <- build_sort_portfolios(stocks_list = df$stkcd,
+                                           factor_value_list = df$factor_exposure,
+                                           ngroup = 5,
+                                           first_group_index = 1, 
+                                           factor_group_order = "asc" )
+  return(sort_portfolios) 
+}
+
+result_sort_portfolios <- factor_test_sort_portfolios(ds_test_portfolio_sorts,
+                                  sort_portfolios_fun = model_sort_portfolios,
+                                  output_type = "summary",
+                                  factor_field = "factor_name",
+                                  date_field = "date",
+                                  stkcd_field = "stkcd",
+                                  return_field = "return")
+
+
+# Disply test result
+summary(result_sort_portfolios)
+
+# Plot test result
+plot(result_sort_portfolios)
+
+```
+

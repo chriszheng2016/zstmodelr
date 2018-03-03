@@ -65,15 +65,15 @@ trd_company.tib <- tibble::as.tibble(trd_company.df)
 
 # all stocks in the investment universe
 universe_stocks <- trd_company.tib %>%
-    select(stkcd, stkname= stknme, indcd = nnindcd, indname = nnindnme) %>%
-    arrange(indcd, stkcd)
+    dplyr::select(stkcd, stkname= stknme, indcd = nnindcd, indname = nnindnme) %>%
+    dplyr::arrange(indcd, stkcd)
 
 
 # all industries in investment universe
 universe_industries <- universe_stocks %>%
-  group_by(indcd, indname) %>%
-  summarise(stknum = n()) %>%
-  arrange(indcd, desc(stknum))
+  dplyr::group_by(indcd, indname) %>%
+  dplyr::summarise(stknum = n()) %>%
+  dplyr::arrange(indcd, desc(stknum))
 
 # Output the results
 universe_industries
@@ -118,7 +118,8 @@ nYearsBack <- NULL
 stocks_return <- get_stock_return(stock_db, 
                                   stock_stkcds_list, 
                                   period_type = period_type, 
-                                  return_type = return_type, 
+                                  return_type = return_type,
+                                  use_stock_name = FALSE,
                                   output_type = "timeSeries")
 
 market_return <- get_market_return(stock_db, 
@@ -491,7 +492,7 @@ covRiskBudgetsPlot(long_portfolio_frontier, mtext = FALSE)
 回测期间：`r start(portfolio_bemchmark_return)` -> `r end(portfolio_bemchmark_return)`
 
 
-```{r}
+```{r backtest_strategy}
   
 my_portfolio_strategy <- function(data, spec, constraints, backtest)
 {
@@ -509,8 +510,12 @@ setStrategyFun(portfolio_backtest) <- "tangencyStrategy"
 # setStrategyFun(portfolio_backtest) <- "my_portfolio_strategy"
 setStrategyParams(portfolio_backtest) <- list()
 
-portfolio_backtest_fomula <- market_index ~ 宇通客车 + 江铃汽车 + 三一重工 + 中联重科 + 格力电器 + 美的集团
+portfolio_backtest_fomula <- market_index ~ I(宇通客车) + I(江铃汽车) + I(三一重工) + I(中联重科) + I(格力电器) + I(美的集团)
+# portfolio_backtest_fomula <- market_index ~ 600066 + 000550 + 600031 + 000157 + 000651 + 000333
+# portfolio_backtest_fomula <- market_index ~ "600066"+"000550"
 
+
+# portfolio_backtest_fomula <- market_index ~ market_index
 
 portfolio_constraints <- "LongOnly"
 

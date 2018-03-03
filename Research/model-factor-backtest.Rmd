@@ -81,6 +81,71 @@ ds_market_cmretwdtl.fts <- fetch_stock_field_dataset(ds_source.df = ds_trd_cnmon
 
 ```
 
+## Z-score Factor model
+
+### Z-score Stock Selection
+
+筛选最近一期z分值最高的公司如下：
+
+```{r zscore_filter}
+
+# Compute the z-score of indicatros
+fundamental_factors_zscore_by_industry <- factors_zscore(fundamental_factors, 
+                                             aggregate_formula = ROCE,
+                                             group_by = c("date","indcd"))
+
+# Select top stocks basing on z-scores
+top_score_stocks_list <- zscore_filter_stocks(fundamental_factors_zscore_by_industry,
+                                              ranking_field = "stk_score",
+                                              ranking_number =  5)
+
+# Top stocks with highest zscroe in last quarter
+date_last_quarter = max(top_score_stocks_list$date)
+
+top_stocks_last_quater <- top_score_stocks_list %>%
+    dplyr::filter( date == date_last_quarter) %>%
+    dplyr::mutate(stkname = code2name(stock_db, stkcd, type = "stock"),
+                 indname = code2name(stock_db, indcd, type = "industry")) %>%
+    dplyr::select(date, stkcd, stkname, indcd, indname, stk_score, 
+                  everything(), -periodtype)
+
+top_stocks_last_quater
+
+
+# Top stocks with hightest average zscorse
+top_stocks_average_score <- fundamental_factors_zscore_by_industry %>%
+    dplyr::ungroup() %>%
+    dplyr::group_by(stkcd) %>%
+    dplyr::summarise(stk_score = mean(stk_score, na.rm = TRUE), obs = n()) %>%
+    dplyr::filter(obs >= 8) %>%
+    dplyr::top_n(100, stk_score) %>%
+    dplyr::mutate(stkname = code2name(stock_db, stkcd, type = "stock"), 
+                  No. = min_rank(desc(stk_score))) %>%
+    dplyr::arrange(desc(stk_score)) %>%
+    dplyr::select(No., stkcd, stkname, everything())
+
+top_stocks_average_score
+
+```
+
+# Model Exploration(模型探索)
+
+
+
+### Z-score Stock Model Paramters Estimation
+
+
+## Fundenmental factor model
+
+
+
+### Estimation of Factor Premium
+
+
+## Ecomomic Factor Model
+
+
+### Estimation of Factor Exposure
 
 
 # Build Portfolio(构建组合)

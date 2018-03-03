@@ -17,6 +17,7 @@ Suggests: testthat,
 VignetteBuilder: knitr
 Imports: fPortfolio,
     timeSeries,
+    PerformanceAnalytics,
     plyr,
     tidyverse,
     modelr,
