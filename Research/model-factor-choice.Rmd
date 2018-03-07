@@ -254,7 +254,7 @@ model_sort_portfolios <- function(df, ...) {
   return(sort_portfolios) 
 }
 
-result_sort_portfolios <- factor_test_sort_portfolios(ds_test_portfolio_sorts,
+result_sort_portfolios <- factor_test_sort_portfolios(ds_test_sort_portfolios,
                                   sort_portfolios_fun = model_sort_portfolios,
                                   output_type = "summary",
                                   factor_field = "factor_name",
