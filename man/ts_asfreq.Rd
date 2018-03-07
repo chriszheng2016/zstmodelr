@@ -6,9 +6,9 @@
 \alias{ts_asfreq.timeSeries}
 \title{Utility frequency conversion method of setting frequncey of timeseries}
 \usage{
-ts_asfreq(ts_dataset, date_index_field = c("date"), by_group = NULL,
-  freq_rule = c("day", "month", "quarter"), fillna_method = c("nfill",
-  "ffill", "bfill"))
+ts_asfreq(ts_dataset, freq_rule = c("day", "month", "quarter"),
+  fillna_method = c("nfill", "ffill", "bfill"),
+  date_index_field = c("date"), by_group = NULL)
 
 \method{ts_asfreq}{tbl_df}(ts_dataset, freq_rule = c("day", "month",
   "quarter"), fillna_method = c("nfill", "ffill", "bfill"),
@@ -20,36 +20,36 @@ ts_asfreq(ts_dataset, date_index_field = c("date"), by_group = NULL,
 \arguments{
 \item{ts_dataset}{a timeseries of tibble/timeSeries.}
 
+\item{freq_rule, }{the offset string or object representing target conversion,
+e.g. "Day", "Month", "Quarter", default "Day".}
+
+\item{fillna_method, }{method to fill holes in reindexed Series, e.g.
+"nfill", "bfill","ffill", default nfill(fiil with NA).}
+
 \item{date_index_field}{the name of date index field of ts_df for resample,
 default 'date', Column must be date-like.
 Only be used for tibble dataset.}
 
 \item{by_group}{a character vector of fields as group data for asfreq.
 Only be used for tibble dataset.}
-
-\item{freq_rule, }{the offset string or object representing target conversion,
-e.g. "Day", "Month", "Quarter", default "Day".}
-
-\item{fillna_method, }{method to fill holes in reindexed Series, e.g.
-"nfill", "bfill","ffill", default nfill(fiil with NA).}
 }
 \value{
 a converted timeseres
 }
 \description{
-Convert timeseries at specified frequency, return the original data conformed
-to a new index with the specified frequency.
-Optionally provide filling method to pad/backfill missing values.
+Convert timeseries at specified frequency by setting new frequency of data index
 }
 \details{
-resample is more appropriate if an operation, such as summarization, is
-necessary to represent the data at the new frequency.
-'
+Convert timeseries to specified frequency by refrequencing date index.
+Optionally provide filling method to pad/backfill missing values.
+Return originaldata conformed to a new index with the specified frequency.
+
+ts_asfreq is more appropriate if use original the data at the new frequency.
 }
 \section{Methods (by class)}{
 \itemize{
 \item \code{tbl_df}: Set new frequency for timeseries of tibble dataset
 
-\item \code{timeSeries}: Set new frequency for timeseries of tibble dataset
+\item \code{timeSeries}: Set new frequency for timeseries of timeSeries dataset
 }}
 

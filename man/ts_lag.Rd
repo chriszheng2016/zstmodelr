@@ -6,12 +6,13 @@
 \alias{ts_lag.timeSeries}
 \title{Compute a lagged version of timeseries}
 \usage{
-ts_lag(ts_dataset, k = 1, trim = TRUE, ...)
+ts_lag(ts_dataset, k = 1, trim = TRUE, ..., date_index_field = c("date"),
+  by_group = NULL)
 
-\method{ts_lag}{tbl_df}(ts_dataset, k = 1, trim = TRUE,
+\method{ts_lag}{tbl_df}(ts_dataset, k = 1, trim = TRUE, ...,
   date_index_field = c("date"), by_group = NULL)
 
-\method{ts_lag}{timeSeries}(ts_dataset, k = 1, trim = TRUE)
+\method{ts_lag}{timeSeries}(ts_dataset, k = 1, trim = TRUE, ...)
 }
 \arguments{
 \item{ts_dataset}{a timeseries of tibble/timeSeries.}
@@ -21,6 +22,8 @@ By default 1.}
 
 \item{trim}{a logical value. By default TRUE, the first missing observation in the return series
 will be removed.}
+
+\item{...}{argments passed to other methods}
 
 \item{date_index_field}{the name of date index field of ts_df for resample,
 default 'date', Column must be date-like.
