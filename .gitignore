@@ -3,3 +3,6 @@
 .RData
 .Ruserdata
 inst/doc
+.RDataTmp
+profile_files
+profile.html
