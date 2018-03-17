@@ -11,3 +11,7 @@
 #'
 #' @import rlang
 NULL
+
+# Register parallel backend for parallel process
+cores_for_process <- parallel::detectCores() - 1
+doParallel::registerDoParallel(cores = cores_for_process)
