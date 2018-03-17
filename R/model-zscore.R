@@ -139,3 +139,16 @@ zscore_filter_stocks <- function(ds_zscores,
 
   return(result_stocks)
 }
+
+#Skiped Huber Method to remove outliers
+skip_huber_method <- function(x , n = 5){
+
+  .skip_huber_method <- function(x)
+  {
+    d_mad <- abs(x-mad)
+  }
+
+
+
+}
+
