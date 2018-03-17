@@ -94,18 +94,21 @@ fundamental_factors_zscore <- factors_zscore(fundamental_factors,
 
 # Resample factors by specified frequency
 fundamental_factors_zscore_period <- fundamental_factors_zscore %>%
-    dplyr::filter(stkcd %in% stock_stkcds_list) %>%
+    # dplyr::filter(stkcd %in% stock_stkcds_list) %>%
     ts_resample( by_group = "stkcd", freq_rule = "month", 
                      fillna_method = "ffill", agg_method = mean)
 
 # Resample return by specified frequency
 stocks_return_period <- stocks_return %>%
-    dplyr::filter(stkcd %in% stock_stkcds_list) %>%
+    # dplyr::filter(stkcd %in% stock_stkcds_list) %>%
     ts_resample( by_group = "stkcd", freq_rule = "month", 
                      fillna_method = "ffill", 
                      agg_method = function(x) prod(1 + x, na.rm = TRUE) - 1)
 
 
+stocks_return_pre_period <- ts_lag(stocks_return_period,
+                                               k = -1,trim = TRUE,
+                                               by_group = "stkcd")
 
 
 ```
@@ -134,10 +137,6 @@ stocks_return_period <- stocks_return %>%
 ## Pooling Univariate Regression Test(单因子池回归)
 ```{r factor_test_Uniregression_pooling}
 
-stocks_return_pre_period <- ts_lag(stocks_return_period,
-                                               k = -1,trim = TRUE,
-                                               by_group = "stkcd")
-
 # Build test data dataset
 ds_test_uniregression_pooling <- stocks_return_pre_period %>%
     dplyr::inner_join(fundamental_factors_zscore_period, by = c("date", "stkcd")) %>%
@@ -164,10 +163,6 @@ summary(result_test_uniregression_pooling)
 
 ## Barra Univarate Reggression Test(Barra单因子截面回归)
 ```{r factor_test_Uniregression_barra}
-
-stocks_return_pre_period <- ts_lag(stocks_return_period,
-                                               k = -1,trim = TRUE,
-                                               by_group = "stkcd")
 
 # Build test data dataset
 ds_test_uniregression_barra <- stocks_return_pre_period %>%
@@ -201,10 +196,6 @@ plot(result_test_uniregression_barra)
 ## Information Coefficients Test（IC值评估）
 ```{r factor_test_IC}
 
-stocks_return_pre_period <- ts_lag(stocks_return_period,
-                                               k = -1,trim = TRUE,
-                                               by_group = "stkcd")
-
 # Build test data dataset
 ds_test_IC <- stocks_return_pre_period %>%
     dplyr::inner_join(fundamental_factors_zscore_period, by = c("date", "stkcd")) %>%
@@ -231,10 +222,6 @@ summary(result_test_IC)
 ## Factor Sort Portfolios Test(因子组合分类法)
 ```{r factor_test_portfolio_sorts}
 
-stocks_return_pre_period <- ts_lag(stocks_return_period,
-                                               k = -1,trim = TRUE,
-                                               by_group = "stkcd")
-
 # Build test data dataset
 ds_test_sort_portfolios <- stocks_return_pre_period %>%
     dplyr::inner_join(fundamental_factors_zscore_period, by = c("date", "stkcd")) %>%
@@ -249,9 +236,9 @@ model_sort_portfolios <- function(df, ...) {
   sort_portfolios <- build_sort_portfolios(stocks_list = df$stkcd,
                                            factor_value_list = df$factor_exposure,
                                            ngroup = 5,
-                                           first_group_index = 1, 
+                                           first_group_index = 1,
                                            factor_group_order = "asc" )
-  return(sort_portfolios) 
+  return(sort_portfolios)
 }
 
 result_sort_portfolios <- factor_test_sort_portfolios(ds_test_sort_portfolios,
