@@ -11,23 +11,23 @@
 #' resample is more appropriate if an operation, such as summarization, is
 #' necessary to represent the data at the new frequency.
 #'
-#' @param ts_dataset       a timeseries of tibble or timeSeries.
+#' @param ts_dataset a timeseries of tibble or timeSeries.
 #'
 #' @param freq_rule  the offset string or object representing target conversion,
-#'                     e.g. "day", "month", "quarter", default "Day".
+#'                    e.g. "day", "month", "quarter", default "Day".
 #' @param fillna_method method to fill holes in reindexed Series, e.g.
-#'                     "nfill", "bfill","ffill", default nafill(fill NA)
+#'                   "nfill", "bfill","ffill", default nafill(fill NA)
 #' @param agg_fun    function to aggregate values of group data for new timestamp,
 #'                   default setting is mean
 #' @param ...        argments passed to agg_fun
 #'
 #' @param date_index_field the name of date index field of ts_df for resample,
-#'                          default 'date', Column must be date-like.
-#'                          Only be used for tibble dataset.
-#' @param by_group  a character vector of fields as group data for resampling.
+#'                   default 'date', Column must be date-like.
+#'                   Only be used for tibble dataset.
+#' @param by_group   a character vector of fields as group data for resampling.
 #'                   Only be used for tibble dataset.
 #'
-#' @return            a converted timeseres.
+#' @return           a converted timeseres.
 #' @export
 #'
 #' @examples
@@ -37,7 +37,7 @@ ts_resample <- function(ts_dataset,
                        agg_fun = mean,
                        ...,
                        date_index_field = c("date"),
-                       by_group = NULL )  {
+                       by_group = NULL)  {
   UseMethod("ts_resample")
 }
 
@@ -51,16 +51,16 @@ ts_resample <- function(ts_dataset,
 #'
 #' ts_asfreq is more appropriate if use original the data at the new frequency.
 #'
-#' @param ts_dataset       a timeseries of tibble/timeSeries.
+#' @param ts_dataset   a timeseries of tibble/timeSeries.
 #
-#' @param freq_rule,  the offset string or object representing target conversion,
-#'                    e.g. "Day", "Month", "Quarter", default "Day".
+#' @param freq_rule,   the offset string or object representing target conversion,
+#'                     e.g. "Day", "Month", "Quarter", default "Day".
 #' @param fillna_method, method to fill holes in reindexed Series, e.g.
 #'                     "nfill", "bfill","ffill", default nfill(fiil with NA).
 #' @param date_index_field the name of date index field of ts_df for resample,
 #'                     default 'date', Column must be date-like.
 #'                     Only be used for tibble dataset.
-#' @param by_group  a character vector of fields as group data for asfreq.
+#' @param by_group     a character vector of fields as group data for asfreq.
 #'                     Only be used for tibble dataset.
 #'
 #' @return            a converted timeseres
@@ -71,7 +71,8 @@ ts_asfreq <- function(ts_dataset,
                       freq_rule =c("day", "month", "quarter"),
                       fillna_method = c("nfill", "ffill", "bfill"),
                       date_index_field = c("date"),
-                      by_group = NULL){
+                      by_group = NULL
+                      ){
 
   UseMethod("ts_asfreq")
 }
@@ -123,7 +124,8 @@ ts_resample.tbl_df <- function(ts_dataset,
                                  fillna_method = c("nfill", "ffill", "bfill"),
                                  agg_fun = mean,
                                  ...,
-                                 date_index_field = c("date")) {
+                                 date_index_field = c("date")
+                                 ) {
 
       # validate params
       stopifnot(!is.null(ts_dataset), inherits(ts_dataset, "data.frame"))
@@ -168,7 +170,7 @@ ts_resample.tbl_df <- function(ts_dataset,
     # work for single/multi group dataset
     if (is.null(by_group)) {
 
-      # for single group
+      # for single group process
       result_ts <- .ts_resample_single_df(ts_dataset,
                                     freq_rule = freq_rule,
                                     fillna_method = fillna_method,
@@ -178,7 +180,8 @@ ts_resample.tbl_df <- function(ts_dataset,
 
     } else {
 
-      # for multi groups
+      # for multi groups process
+
       result_ts <- plyr::ddply(ts_dataset,
                                .variables =  by_group,
                                .fun = .ts_resample_single_df,
@@ -187,8 +190,8 @@ ts_resample.tbl_df <- function(ts_dataset,
                                agg_fun = agg_fun,
                                ...,
                                date_index_field = date_index_field,
-                               .parallel = FALSE,
-                               .progress = plyr::progress_win(title = "Working..."))
+                               .parallel = TRUE,
+                               .progress = plyr::progress_win(title = "Resampling..."))
     }
 
     result_ts <- tibble::as.tibble(result_ts)
@@ -258,7 +261,7 @@ ts_asfreq.tbl_df <- function(ts_dataset,
                              freq_rule = freq_rule,
                              fillna_method = fillna_method,
                              date_index_field = date_index_field,
-                             .parallel = FALSE,
+                             .parallel = TRUE,
                              .progress = plyr::progress_win(title = "Working..."))
   }
 
@@ -277,7 +280,7 @@ ts_lag.tbl_df <- function(ts_dataset,
                           trim = TRUE,
                           ...,
                           date_index_field = c("date"),
-                          by_group = NULL ) {
+                          by_group = NULL) {
 
   # compute lag timeseries for single group dataset
   .ts_lag_single_df <- function(ts_dataset,
@@ -363,7 +366,7 @@ ts_lag.tbl_df <- function(ts_dataset,
                              k = k,
                              trim = trim,
                              date_index_field = date_index_field,
-                             .parallel = FALSE,
+                             .parallel = TRUE,
                              .progress = plyr::progress_win(title = "Working..."))
   }
 
