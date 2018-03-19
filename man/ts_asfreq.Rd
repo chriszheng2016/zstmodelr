@@ -4,11 +4,10 @@
 \alias{ts_asfreq}
 \alias{ts_asfreq.tbl_df}
 \alias{ts_asfreq.timeSeries}
-\title{Utility frequency conversion method of setting frequncey of timeseries}
+\title{Utility Frequency Conversion Method of Setting Frequncey of Timeseries}
 \usage{
 ts_asfreq(ts_dataset, freq_rule = c("day", "month", "quarter"),
-  fillna_method = c("nfill", "ffill", "bfill"),
-  date_index_field = c("date"), by_group = NULL)
+  fillna_method = c("nfill", "ffill", "bfill"), ...)
 
 \method{ts_asfreq}{tbl_df}(ts_dataset, freq_rule = c("day", "month",
   "quarter"), fillna_method = c("nfill", "ffill", "bfill"),
@@ -18,7 +17,7 @@ ts_asfreq(ts_dataset, freq_rule = c("day", "month", "quarter"),
   "quarter"), fillna_method = c("nfill", "ffill", "bfill"))
 }
 \arguments{
-\item{ts_dataset}{a timeseries of tibble/timeSeries.}
+\item{ts_dataset}{a timeseries of tibble/timeSeries.#}
 
 \item{freq_rule, }{the offset string or object representing target conversion,
 e.g. "Day", "Month", "Quarter", default "Day".}

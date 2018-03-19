@@ -2,7 +2,7 @@
 % Please edit documentation in R/stock-db.R
 \name{stock_db}
 \alias{stock_db}
-\title{creator of stock_db class}
+\title{subclass object factory of stock_db class}
 \usage{
 stock_db(stock_db_class, ...)
 }
@@ -17,7 +17,7 @@ e.g. gta_db}
 a object of stock db
 }
 \description{
-factory creator for stock_db class
+factory for creating for subclass object of stock_db class
 }
 \examples{
 stock_db <- stock_db(gta_db, "GTA_SQLData")

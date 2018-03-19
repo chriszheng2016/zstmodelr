@@ -4,11 +4,10 @@
 \alias{ts_resample}
 \alias{ts_resample.tbl_df}
 \alias{ts_resample.timeSeries}
-\title{Utility frequency conversion method of resamping timeseries}
+\title{Utility Frequency Conversion Method of Resamping Timeseries}
 \usage{
 ts_resample(ts_dataset, freq_rule = c("day", "month", "quarter"),
-  fillna_method = c("nfill", "ffill", "bfill"), agg_fun = mean, ...,
-  date_index_field = c("date"), by_group = NULL)
+  fillna_method = c("nfill", "ffill", "bfill"), agg_fun = mean, ...)
 
 \method{ts_resample}{tbl_df}(ts_dataset, freq_rule = c("day", "month",
   "quarter"), fillna_method = c("nfill", "ffill", "bfill"), agg_fun = mean,
@@ -55,7 +54,7 @@ necessary to represent the data at the new frequency.
 }
 \section{Methods (by class)}{
 \itemize{
-\item \code{tbl_df}: Resampe timeseries of tibble dataset
+\item \code{tbl_df}: Resamping timeseries of tibble dataset
 
 \item \code{timeSeries}: Resamping timeseries of timeSeries dataset
 }}

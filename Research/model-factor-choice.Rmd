@@ -94,13 +94,13 @@ fundamental_factors_zscore <- factors_zscore(fundamental_factors,
 
 # Resample factors by specified frequency
 fundamental_factors_zscore_period <- fundamental_factors_zscore %>%
-    # dplyr::filter(stkcd %in% stock_stkcds_list) %>%
+    dplyr::filter(stkcd %in% stock_stkcds_list) %>%
     ts_resample( by_group = "stkcd", freq_rule = "month", 
                      fillna_method = "ffill", agg_method = mean)
 
 # Resample return by specified frequency
 stocks_return_period <- stocks_return %>%
-    # dplyr::filter(stkcd %in% stock_stkcds_list) %>%
+    dplyr::filter(stkcd %in% stock_stkcds_list) %>%
     ts_resample( by_group = "stkcd", freq_rule = "month", 
                      fillna_method = "ffill", 
                      agg_method = function(x) prod(1 + x, na.rm = TRUE) - 1)

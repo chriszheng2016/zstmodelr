@@ -1,5 +1,30 @@
 
-# Functions of factors test Classes -------------------------------------------
+# Class Definination of FactorTest classes--------------------------------------
+
+
+setClassUnion("data.frameOrNull", c("data.frame", "NULL"))
+
+# Abstract class of factor testing
+setClass("FactorTest",
+         slots = list(summary = "data.frame",
+                                 raw_result = "data.frameOrNull"),
+         contains = "VIRTUAL")
+
+# Spficific classes of various factor testing
+
+setClass("FactorTestUniregress",
+         slots = list(factor_returns = "data.frame" ),
+         contains = "FactorTest")
+
+setClass("FactorTestIC",
+         contains = "FactorTest")
+
+setClass("FactorTestSortPortfolios",
+         slots = list(portfolios_return = "data.frame"),
+         contains = "FactorTest")
+
+
+# Creating Functions of FactorTest classes -------------------------------------------
 
 #  Univarate Reggression Test
 
@@ -144,16 +169,18 @@ factor_test_uniregress <- function(ds_test,
   output_type <- match.arg(output_type)
   if (output_type == "summary") {
     # include test result summary dataset
-    result_object <- structure(list(summary = result_summary,
-                                    factor_returns = ds_factor_returns ),
-                               class = c("factor_test_uniregress", "factor_test"))
+    result_object <- new("FactorTestUniregress",
+                         summary = result_summary,
+                         factor_returns = ds_factor_returns,
+                         raw_result = NULL)
+
 
   } else {
     # include test result summary dataset and test result raw dataset
-    result_object <- structure(list(summary = result_summary,
-                                    factor_returns = ds_factor_returns,
-                                    raw_result = ds_test_result),
-                               class = c("factor_test_uniregress", "factor_test"))
+    result_object <- new("FactorTestUniregress",
+                         summary = result_summary,
+                         factor_returns = ds_factor_returns,
+                         raw_result = ds_test_result)
   }
 
   return(invisible(result_object))
@@ -229,13 +256,17 @@ factor_test_IC <- function(ds_test,
   output_type <- match.arg(output_type)
   if (output_type == "summary") {
     # include test result summary dataset
-    result_object <- structure(list(summary = result_summary),
-                               class = c("factor_test_IC", "factor_test"))
+    result_object <- new("FactorTestIC",
+                         summary = result_summary,
+                         raw_result = NULL)
+
+
   } else {
     # include test result summary dataset and test result raw dataset
-    result_object <- structure(list(summary = result_summary,
-                                    raw_result = ds_test_result),
-                               class = c("factor_test_IC", "factor_test"))
+    result_object <- new("FactorTestIC",
+                         summary = result_summary,
+                         raw_result = ds_test_result)
+
   }
 
   return(invisible(result_object))
@@ -389,18 +420,17 @@ factor_test_sort_portfolios <- function(ds_test,
   output_type <- match.arg(output_type)
   if (output_type == "summary") {
     # include test result summary dataset
-     result_object <- structure(list(summary = result_summary,
-                                     portfolios_return = ds_test_result_portolios_return ),
-                                     class = c("factor_test_sort_portfolios",
-                                              "factor_test"))
+     result_object <- new("FactorTestSortPortfolios",
+                          summary = result_summary,
+                          portfolios_return = ds_test_result_portolios_return,
+                          raw_result = NULL)
 
   } else {
     # include test result summary dataset and test result raw dataset
-    result_object <- structure(list(summary = result_summary,
-                                    portfolios_return = ds_test_result_portolios_return,
-                                    raw_result = ds_test_result),
-                                    class = c("factor_test_sort_portfolios",
-                                             "factor_test"))
+    result_object <- new("FactorTestSortPortfolios",
+                         summary = result_summary,
+                         portfolios_return = ds_test_result_portolios_return,
+                         raw_result = ds_test_result)
 
    }
 
@@ -484,32 +514,35 @@ build_sort_portfolios <- function(stocks_list,
 }
 
 
-# Implementation of Generic Functions  ---------------------
+# Generic Functions Implmentation for FactorTest classes   ---------------------
 
-# Generic Implementation of summary for factor_test class
+# Generic Implementation of summary for FactorTest class
 #' @export
-summary.factor_test <- function(factor_test_result){
-
+summary.FactorTest <- function(factor_test_result){
   # validate params
-  stopifnot(!is.null(factor_test_result), inherits(factor_test_result, "factor_test"))
+  stopifnot(!is.null(factor_test_result), inherits(factor_test_result, "FactorTest"))
 
-  print(factor_test_result$summary)
-
+  print(factor_test_result@summary)
 }
+setMethod("summary",
+          signature(object = "FactorTest"),
+          function(object){ summary.FactorTest(object)})
 
-# Generic Implementation of plot for factor_test class
+
+# Generic Implementation of plot for FactorTest class
 #' @export
-plot.factor_test <- function(factor_test_result){
-
+plot.FactorTest <- function(factor_test_result){
   # validate params
-  stopifnot(!is.null(factor_test_result), inherits(factor_test_result, "factor_test"))
-
+  stopifnot(!is.null(factor_test_result), inherits(factor_test_result, "FactorTest"))
 }
+setMethod("plot",
+          signature(x = "FactorTest"),
+          function(x){ plot.FactorTest(x)})
 
-# Generic Implementation of plot for factor_test_uniregress
-# Plot result for factor_test_uniregress class
+# Generic Implementation of plot for FactorTestUniregress
+# Plot result for FactorTestUniregress class
 #' @export
-plot.factor_test_uniregress <- function(factor_test_result){
+plot.FactorTestUniregress <- function(factor_test_result){
 
   .plot_returns <- function(ds_factors_return){
 
@@ -571,20 +604,24 @@ plot.factor_test_uniregress <- function(factor_test_result){
 
   # validate params
   stopifnot(!is.null(factor_test_result),
-            inherits(factor_test_result, "factor_test_uniregress"))
+            inherits(factor_test_result, "FactorTestUniregress"))
 
   # plot return of factors
-   .plot_returns(factor_test_result$factor_returns)
+   .plot_returns(factor_test_result@factor_returns)
 
   # plot return summary
 
   invisible(return)
 }
+setMethod("plot",
+          signature(x = "FactorTestUniregress", y = "missing"),
+          function(x){ plot.FactorTestUniregress(x)}
+)
 
-# Generic Implementation of plot for test_sort_portfolios#
-# Plot result for test_sort_portfolios
+# Generic Implementation of plot for FactorTestSortPortfolios
+# Plot result for FactorTestSortPortfolios
 #' @export
-plot.factor_test_sort_portfolios <- function(factor_test_result){
+plot.FactorTestSortPortfolios <- function(factor_test_result){
 
   .plot_returns <- function(ds_portfolios_return, factor_name){
 
@@ -640,10 +677,10 @@ plot.factor_test_sort_portfolios <- function(factor_test_result){
 
   # validate params
   stopifnot(!is.null(factor_test_result),
-            inherits(factor_test_result, "factor_test_sort_portfolios"))
+            inherits(factor_test_result, "FactorTestSortPortfolios"))
 
   # plot return of portfolios
-  ds_portfolios_return <- factor_test_result$portfolios_return %>%
+  ds_portfolios_return <- factor_test_result@portfolios_return %>%
        dplyr::group_by(factor_name) %>%
        tidyr::nest(.key = "returns")
 
@@ -655,7 +692,10 @@ plot.factor_test_sort_portfolios <- function(factor_test_result){
 
   invisible(return)
 }
-
+setMethod("plot",
+          signature(x = "FactorTestSortPortfolios", y = "missing"),
+          function(x){ plot.FactorTestSortPortfolios(x)}
+)
 
 
 

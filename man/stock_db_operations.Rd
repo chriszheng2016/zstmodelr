@@ -2,10 +2,10 @@
 % Please edit documentation in R/stock-db.R
 \name{stock_db_operations}
 \alias{stock_db_operations}
-\title{S3 generic function for stock_db
+\title{Generic function for stock_db
 Generic function of operating stock database}
 \description{
-A group generic function to deal with a stock_db objec
+A group generic function to deal with a stock_db object
 }
 \examples{
 stock_db <- stock_db(gta_db, "GTA_SQLData")

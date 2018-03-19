@@ -1,25 +1,17 @@
+# setClassUnion("optionalList", c("list", "NULL"))
 
+# Class definition of stock_db class -------------------------------
 
-# Generic interface definiation of stock_db class -------------------------------
+# Abstract Class of StockDB
+# setClassUnion("ANYOrNull", c("ANY", "NULL"))
+setRefClass("stock_db",
+            fields =  list(dsn = "character",
+                           connection = "ANY"),
+            contains = "VIRTUAL")
 
-
-#' S3 generic function for stock_db
-#
-#' Generic function of operating stock database
+#' subclass object factory of stock_db class
 #'
-#' A group generic function to deal with a stock_db objec
-#'
-#' @name stock_db_operations
-#' @examples
-#' stock_db <- stock_db(gta_db, "GTA_SQLData")
-#' open_stock_db(stock_db)
-#' close_stock_db(stock_db)
-NULL
-
-
-#' creator of stock_db class
-#'
-#' factory creator for stock_db class
+#' factory for creating for subclass object of stock_db class
 #'
 #' @param stock_db_class   specific creator of stock database class,
 #' e.g. gta_db
@@ -41,6 +33,21 @@ stock_db <- function(stock_db_class, ...) {
 
 }
 
+# Generic functions for stock_db operation ---------------------------------
+
+#' Generic function for stock_db
+#
+#' Generic function of operating stock database
+#'
+#' A group generic function to deal with a stock_db object
+#'
+#' @name stock_db_operations
+#' @examples
+#' stock_db <- stock_db(gta_db, "GTA_SQLData")
+#' open_stock_db(stock_db)
+#' close_stock_db(stock_db)
+NULL
+
 #' Open stock database
 #'
 #' Generic function to open a stock database
@@ -53,9 +60,19 @@ stock_db <- function(stock_db_class, ...) {
 #' stock_db <- stock_db(gta_db, "GTA_SQLData")
 #' open_stock_db(stock_db)
 #' close_stock_db(stock_db)
-open_stock_db <- function(stock_db) {
-  UseMethod("open_stock_db")
-}
+
+# S3 generic definition
+# open_stock_db <- function(stock_db, ...) {
+#   UseMethod("open_stock_db")
+# }
+
+# S4 generic definition
+setGeneric(name = "open_stock_db",
+           signature = c("stock_db"),
+           def = open_stock_db <- function(stock_db, ...) {
+             standardGeneric("open_stock_db")
+           })
+
 
 #' Close the stock database
 #'
@@ -70,9 +87,18 @@ open_stock_db <- function(stock_db) {
 #' stock_db <- stock_db(gta_db, "GTA_SQLData")
 #' open_stock_db(stock_db)
 #' close_stock_db(stock_db)
-close_stock_db <- function(stock_db) {
-  UseMethod("close_stock_db")
-}
+
+# S3 generic definition
+# close_stock_db <- function(stock_db, ...) {
+#   UseMethod("close_stock_db")
+# }
+
+# S4 generic definition
+setGeneric(name = "close_stock_db",
+           signature = c("stock_db"),
+           def = close_stock_db <- function(stock_db, ...) {
+             standardGeneric("close_stock_db")
+           })
 
 
 #' Init param of stock db
@@ -88,9 +114,19 @@ close_stock_db <- function(stock_db) {
 #' stock_db <- stock_db(gta_db, "GTA_SQLData")
 #' open_stock_db(stock_db)
 #' init_stock_db(stock_db)
-init_stock_db <- function(stock_db) {
-  UseMethod("init_stock_db")
-}
+
+# S3 generic definition
+# init_stock_db <- function(stock_db, ...) {
+#   UseMethod("init_stock_db")
+# }
+
+# S4 generic definition
+setGeneric(name = "init_stock_db",
+           signature = c("stock_db"),
+           def = init_stock_db <- function (stock_db, ...) {
+             standardGeneric("init_stock_db")
+           })
+
 
 #' List all tables of stcok_db
 #'
@@ -106,10 +142,18 @@ init_stock_db <- function(stock_db) {
 #' open_stock_db(stock_db)
 #' init_stock_db(stock_db)
 #' list_stock_tables(stock_db)
-list_stock_tables <- function(stock_db) {
-  UseMethod("list_stock_tables")
-}
 
+# S3 generic definition
+# list_stock_tables <- function(stock_db,...) {
+#   UseMethod("list_stock_tables")
+# }
+
+# S4 generic definition
+setGeneric(name = "list_stock_tables",
+           signature = c("stock_db"),
+           def = list_stock_tables <- function (stock_db, ...) {
+             standardGeneric("list_stock_tables")
+           })
 
 #' Get adataset from a table in stock_db
 #'
@@ -123,9 +167,18 @@ list_stock_tables <- function(stock_db) {
 #'
 #' @examples
 #' ds_trd_mnth.df <- get_table_dataset(stock_db, table_name = "TRD_Mnth_月个股回报率")
-get_table_dataset <- function(stock_db, table_name) {
-  UseMethod("get_table_dataset")
-}
+
+# S3 generic definition
+# get_table_dataset <- function(stock_db, table_name,...) {
+#   UseMethod("get_table_dataset")
+# }
+
+# S4 generic definition
+setGeneric(name = "get_table_dataset",
+           signature = c("stock_db"),
+           def = get_table_dataset <- function (stock_db, table_name,...) {
+             standardGeneric("get_table_dataset")
+           })
 
 #' Get a dataset of a list of stock_cd from a table in stock_db
 #'
@@ -143,9 +196,24 @@ get_table_dataset <- function(stock_db, table_name) {
 #' ds_trd_dalyr.df <- get_stock_dataset(stock_db,
 #'                             table_name = "TRD_Dalyr_日个股回报率",
 #'                             stock_cd_list = c("600066", "000550"))
-get_stock_dataset <- function(stock_db, table_name, stock_cd_list = NULL) {
-  UseMethod("get_stock_dataset")
-}
+
+# S3 generic definition
+# get_stock_dataset <- function(stock_db,
+#                               table_name,
+#                               stock_cd_list = NULL,
+#                               ...) {
+#   UseMethod("get_stock_dataset")
+# }
+
+# S4 generic definition
+setGeneric(name = "get_stock_dataset",
+           signature = c("stock_db"),
+           def = get_stock_dataset <- function (stock_db,
+                                               table_name,
+                                               stock_cd_list = NULL,
+                                               ...) {
+             standardGeneric("get_stock_dataset")
+           })
 
 
 #' Fetch many datasets from stock_db
@@ -160,9 +228,17 @@ get_stock_dataset <- function(stock_db, table_name, stock_cd_list = NULL) {
 #'
 #' @examples
 
-fetch_table_dataset <- function(stock_db, table_list) {
-  UseMethod("fetch_table_dataset")
-}
+# S3 generic definition
+# fetch_table_dataset <- function(stock_db, table_list, ...) {
+#   UseMethod("fetch_table_dataset")
+# }
+
+# S4 generic definition
+setGeneric(name = "fetch_table_dataset",
+           signature = c("stock_db"),
+           def = fetch_table_dataset <- function(stock_db, table_list, ...) {
+             standardGeneric("fetch_table_dataset")
+           })
 
 #' Get stock return timeseries from stock_db
 #'
@@ -185,15 +261,33 @@ fetch_table_dataset <- function(stock_db, table_list) {
 #'
 #' @examples
 
-get_stock_return <- function(stock_db, stock_cd_list = NULL,
-                             period_type = c("daily", "weekly", "monthly", "annual"),
-                             return_type = c("simple", "compound"),
-                             use_stock_name = TRUE,
-                             cumulated = FALSE,
-                             output_type = c("timeSeries", "tibble")
-) {
-  UseMethod("get_stock_return")
-}
+# S3 generic definition
+# get_stock_return <- function(stock_db,
+#                              stock_cd_list = NULL,
+#                              period_type = c("daily", "weekly", "monthly", "annual"),
+#                              return_type = c("simple", "compound"),
+#                              use_stock_name = TRUE,
+#                              cumulated = FALSE,
+#                              output_type = c("timeSeries", "tibble"),
+#                              ...) {
+#   UseMethod("get_stock_return")
+# }
+
+# S4 generic definition
+setGeneric(
+  name = "get_stock_return",
+  signature = c("stock_db"),
+  def = get_stock_return <- function(stock_db,
+                                     stock_cd_list = NULL,
+                                     period_type = c("daily", "weekly", "monthly", "annual"),
+                                     return_type = c("simple", "compound"),
+                                     use_stock_name = TRUE,
+                                     cumulated = FALSE,
+                                     output_type = c("timeSeries", "tibble"),
+                                     ...) {
+      standardGeneric("get_stock_return")
+    }
+)
 
 #' Get market return timesereis from stock_db
 #'
@@ -211,14 +305,58 @@ get_stock_return <- function(stock_db, stock_cd_list = NULL,
 #'
 #' @examples
 
-get_market_return <- function(stock_db,
-                              period_type = c("daily", "weekly", "monthly", "annual"),
-                              return_type = c("simple", "compound"),
-                              cumulated = FALSE,
-                              output_type = c("timeSeries", "tibble")) {
-  UseMethod("get_market_return")
-}
+# S3 generic definition
+# get_market_return <- function(stock_db,
+#                               period_type = c("daily", "weekly", "monthly", "annual"),
+#                               return_type = c("simple", "compound"),
+#                               cumulated = FALSE,
+#                               output_type = c("timeSeries", "tibble"),
+#                               ...) {
+#   UseMethod("get_market_return")
+# }
 
+# S4 generic definition
+setGeneric(
+  name = "get_market_return",
+  signature = c("stock_db"),
+  def = get_market_return <- function(stock_db,
+                                      period_type = c("daily", "weekly", "monthly", "annual"),
+                                      return_type = c("simple", "compound"),
+                                      cumulated = FALSE,
+                                      output_type = c("timeSeries", "tibble"),
+                                      ...) {
+    standardGeneric("get_market_return")
+  }
+)
+
+#' Get factor indicator timeseries for stock_db
+#'
+#' Generic function to get  factor indicator from stock_db
+#'
+#' @param stock_db         a stock database object to operate
+#' @param factor_list      factor name list
+#'
+#'
+#' @return A timeseries of factor indicator
+#' @export
+#'
+#' @examples
+
+# S3 generic definition
+# get_factor_indicator <- function(stock_db, factor_list,...){
+#   UseMethod("get_factor_indicator")
+# }
+
+# S4 generic definition
+setGeneric(
+  name = "get_factor_indicator",
+  signature = c("stock_db"),
+  def = get_factor_indicator <- function(stock_db, factor_list,...) {
+    standardGeneric("get_factor_indicator")
+  }
+)
+
+# Non-generic functions for stock db operation ---------------------------------
 
 #' Get assets return from market and stocks return
 #'
@@ -270,33 +408,15 @@ get_assets_return <- function(benchmark_return, stocks_return) {
 
 }
 
-#' Get factor indicator timeseries for stock_db
-#'
-#' Generic function to get  factor indicator from stock_db
-#'
-#' @param stock_db         a stock database object to operate
-#' @param factor_list      factor name list
-#'
-#'
-#' @return A timeseries of factor indicator
-#' @export
-#'
-#' @examples
-
-get_factor_indicator <- function(stock_db, factor_list){
-  UseMethod("get_factor_indicator")
-}
-
-
 
 # Get a timeseries of stock data for specified stock from table datasets
 get_stock_field_dataset <- function(ds_source.df,
                                     stock_cd,
-                              target_field,
-                              stkcd_field = "stkcd",
-                              date_field="trdmnt",
-                              tseries_type = c("timeSeries", "xts"),
-                              debug = FALSE) {
+                                    target_field,
+                                    stkcd_field = "stkcd",
+                                    date_field="trdmnt",
+                                    tseries_type = c("timeSeries", "xts"),
+                                    debug = FALSE) {
 
   # Validate param
   if (is.null(ds_source.df) || missing(stock_cd)
@@ -411,22 +531,33 @@ fetch_stock_field_dataset <- function(ds_source.df,
   return(ds_result)
 }
 
+
+# Generic functions for tranlation between code and name -----------------------
+
 #' Translate code into name
 #'
 #' Generic function to translate code into name
 #'
 #' @param x    a object containg code/name infomation
 #' @param code a code or a vector of codes to be translated
-#' @param ...  other params to be provided to underlyling functions
+#' @param ...  other arguments to be provided to underlyling functions
 #'
 #' @return     a name or a vector of names
 #' @export
 #'
 #' @examples
-#'
-code2name <- function(x, code, ...) {
-  UseMethod("code2name")
-}
+
+# S3 generic definition
+# code2name <- function(x, code, ...) {
+#   UseMethod("code2name")
+# }
+
+# S4 generic definition
+setGeneric(name = "code2name",
+           signature = c("x"),
+           def = code2name <- function (x, code, ...) {
+             standardGeneric("code2name")
+           })
 
 
 #' Translate name into code
@@ -435,75 +566,23 @@ code2name <- function(x, code, ...) {
 #'
 #' @param x     a object containg code/name infomation
 #' @param name  a name or a vector of names to be translated
-#' @param ...   other params to be provided to underlyling functions
+#' @param ...   other arguments to be provided to underlyling functions
 #'
 #' @return      a code or a vector of codes
 #' @export
 #'
 #' @examples
-#'
-name2code <- function(x, name, ...) {
-  UseMethod("name2code")
-}
 
-# Generic interface definiation of code_name_list class ----------------------
+# S3 generic definition
+# name2code <- function(x, name, ...) {
+#   UseMethod("name2code")
+# }
 
-#' Class creator of code_name_list class
-#'
-#' code_name_list class creator
-#'
-#' @param codes a vector of code
-#' @param names a vector of name
-#'
-#' @return a object of code_name_list
-#' @export
-#'
-#' @examples
-#'
-code_name_list <- function(codes, names) {
-
-  stopifnot(!is.null(codes), !is.null(names))
-  stopifnot(length(codes) == length(names))
-
-  code_name_list <- structure(list(code = codes, name = names),
-                              class = "code_name_list")
-
-  return(code_name_list)
-
-}
-
-# Translate code into name in code_name_list
-#' @describeIn code2name Translate code into name in a object of code_name_list
-#' @export
-code2name.code_name_list <- function(x, code) {
-
-  stopifnot(inherits(x, "code_name_list") ,!is.null(code))
-
-  match_index = match(code, x$code)
-  name <- x$name[match_index]
-
-  return(name)
-
-}
-
-# Translate name into code in code_name_list
-#' @describeIn name2code Translate name into code in a object of code_name_list
-#' @export
-name2code.code_name_list <- function(x, name) {
-
-  stopifnot(inherits(x, "code_name_list") ,!is.null(name), is.character(name))
-
-  match_index = match(name, x$name)
-  code <- x$code[match_index]
-
-  return(code)
-
-}
-
-
-
-
-
-
+# S4 generic definition
+setGeneric(name = "name2code",
+           signature = c("x"),
+           def = name2code <- function (x, name, ...) {
+             standardGeneric("name2code")
+           })
 
 

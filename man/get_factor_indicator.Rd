@@ -4,7 +4,7 @@
 \alias{get_factor_indicator}
 \title{Get factor indicator timeseries for stock_db}
 \usage{
-get_factor_indicator(stock_db, factor_list)
+get_factor_indicator(stock_db, factor_list, ...)
 }
 \arguments{
 \item{stock_db}{a stock database object to operate}

@@ -4,10 +4,9 @@
 \alias{ts_lag}
 \alias{ts_lag.tbl_df}
 \alias{ts_lag.timeSeries}
-\title{Compute a lagged version of timeseries}
+\title{Compute a Lagged Version of Timeseries}
 \usage{
-ts_lag(ts_dataset, k = 1, trim = TRUE, ..., date_index_field = c("date"),
-  by_group = NULL)
+ts_lag(ts_dataset, k = 1, trim = TRUE, ...)
 
 \method{ts_lag}{tbl_df}(ts_dataset, k = 1, trim = TRUE, ...,
   date_index_field = c("date"), by_group = NULL)
@@ -36,7 +35,7 @@ Only be used for tibble dataset.}
 a lagged timeseres
 }
 \description{
-Compute a lagged version of timeseries
+Compute a Lagged Version of Timeseries
 }
 \section{Methods (by class)}{
 \itemize{

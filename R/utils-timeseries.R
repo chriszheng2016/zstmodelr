@@ -1,6 +1,6 @@
-# Generic function definiation --------------------------------------------
+# Generic functions for timeseries operation------------------------------------
 
-#' Utility frequency conversion method of resamping timeseries
+#' Utility Frequency Conversion Method of Resamping Timeseries
 #'
 #' Convert TimeSeries to specified frequency by resamploing date index
 #'
@@ -14,34 +14,45 @@
 #' @param ts_dataset a timeseries of tibble or timeSeries.
 #'
 #' @param freq_rule  the offset string or object representing target conversion,
-#'                    e.g. "day", "month", "quarter", default "Day".
+#'  e.g. "day", "month", "quarter", default "Day".
 #' @param fillna_method method to fill holes in reindexed Series, e.g.
-#'                   "nfill", "bfill","ffill", default nafill(fill NA)
+#' "nfill", "bfill","ffill", default nafill(fill NA)
 #' @param agg_fun    function to aggregate values of group data for new timestamp,
-#'                   default setting is mean
+#' default setting is mean
 #' @param ...        argments passed to agg_fun
 #'
 #' @param date_index_field the name of date index field of ts_df for resample,
-#'                   default 'date', Column must be date-like.
-#'                   Only be used for tibble dataset.
+#' default 'date', Column must be date-like.
+#' Only be used for tibble dataset.
 #' @param by_group   a character vector of fields as group data for resampling.
-#'                   Only be used for tibble dataset.
+#' Only be used for tibble dataset.
 #'
 #' @return           a converted timeseres.
 #' @export
 #'
 #' @examples
-ts_resample <- function(ts_dataset,
-                       freq_rule = c("day", "month", "quarter"),
-                       fillna_method = c("nfill", "ffill", "bfill"),
-                       agg_fun = mean,
-                       ...,
-                       date_index_field = c("date"),
-                       by_group = NULL)  {
+# S3 generic definition
+ts_resample <- function(ts_dataset,freq_rule = c("day", "month", "quarter"),
+                        fillna_method = c("nfill", "ffill", "bfill"),
+                        agg_fun = mean,
+                        ...){
   UseMethod("ts_resample")
 }
 
-#' Utility frequency conversion method of setting frequncey of timeseries
+# S4 generic definition
+# setGeneric(name = "ts_resample",
+#            signature = c("ts_dataset"),
+#            def = ts_resample <- function (ts_dataset,
+#                                          freq_rule = c("day", "month", "quarter"),
+#                                          fillna_method = c("nfill", "ffill", "bfill"),
+#                                          agg_fun = mean,
+#                                          ...) {
+#              standardGeneric("ts_resample")
+#            })
+
+
+
+#' Utility Frequency Conversion Method of Setting Frequncey of Timeseries
 #'
 #' Convert timeseries at specified frequency by setting new frequency of data index
 #'
@@ -51,65 +62,63 @@ ts_resample <- function(ts_dataset,
 #'
 #' ts_asfreq is more appropriate if use original the data at the new frequency.
 #'
-#' @param ts_dataset   a timeseries of tibble/timeSeries.
-#
+#' @param ts_dataset   a timeseries of tibble/timeSeries.#
 #' @param freq_rule,   the offset string or object representing target conversion,
-#'                     e.g. "Day", "Month", "Quarter", default "Day".
+#' e.g. "Day", "Month", "Quarter", default "Day".
 #' @param fillna_method, method to fill holes in reindexed Series, e.g.
-#'                     "nfill", "bfill","ffill", default nfill(fiil with NA).
+#' "nfill", "bfill","ffill", default nfill(fiil with NA).
 #' @param date_index_field the name of date index field of ts_df for resample,
-#'                     default 'date', Column must be date-like.
-#'                     Only be used for tibble dataset.
-#' @param by_group     a character vector of fields as group data for asfreq.
-#'                     Only be used for tibble dataset.
+#' default 'date', Column must be date-like.
+#' Only be used for tibble dataset.
+#' @param by_group    a character vector of fields as group data for asfreq.
+#' Only be used for tibble dataset.
 #'
 #' @return            a converted timeseres
 #' @export
 #'
 #' @examples
+# S3 generic definition
 ts_asfreq <- function(ts_dataset,
                       freq_rule =c("day", "month", "quarter"),
                       fillna_method = c("nfill", "ffill", "bfill"),
-                      date_index_field = c("date"),
-                      by_group = NULL
-                      ){
-
+                      ...) {
   UseMethod("ts_asfreq")
 }
 
-#' Compute a lagged version of timeseries
+#' Compute a Lagged Version of Timeseries
 #'
 #'
 #' @param ts_dataset       a timeseries of tibble/timeSeries.
 #' @param k                an integer value. The number of lags (in units of observations).
-#'                         By default 1.
+#' By default 1.
 #' @param trim             a logical value. By default TRUE, the first missing observation in the return series
-#'                         will be removed.
+#' will be removed.
 #' @param ...              argments passed to other methods
 #' @param date_index_field the name of date index field of ts_df for resample,
-#'                         default 'date', Column must be date-like.
-#'                         Only be used for tibble dataset.
+#' default 'date', Column must be date-like.
+#' Only be used for tibble dataset.
 #' @param by_group         a character vector of fields as group data for asfreq.
-#'                         Only be used for tibble dataset.
+#' Only be used for tibble dataset.
 #'
 #' @return            a lagged timeseres
 #' @export
 #'
 #' @examples
+#S3 generic definition
 ts_lag <- function(ts_dataset,
                    k = 1,
                    trim = TRUE,
-                   ...,
-                   date_index_field = c("date"),
-                   by_group = NULL){
+                   ...
+                   ){
   UseMethod("ts_lag")
 }
 
-# Generic function implemetaion for tibble dataset -------------------------------
+# Generic function implemetaion by tibble class -------------------------------
 
 # Convert TimeSeries to specified frequency by resampling for tibble dataset
-#' @describeIn ts_resample Resampe timeseries of tibble dataset
+#' @describeIn ts_resample Resamping timeseries of tibble dataset
 #' @export
+# Method definition for s3 generic
 ts_resample.tbl_df <- function(ts_dataset,
                               freq_rule = c("day", "month", "quarter"),
                               fillna_method = c("nfill", "ffill", "bfill"),
@@ -200,6 +209,12 @@ ts_resample.tbl_df <- function(ts_dataset,
 
   }
 
+# Method definition for s4 generic
+# setMethod("ts_resample",
+#           signature(ts_dataset = "tbl_df"),
+#           function(ts_dataset, ...) {
+#             ts_resample.tbl_df(ts_dataset, ...)
+#           })
 
 # Convert TimeSeries to specified frequency by refrequencying for tibble dataset
 #' @describeIn ts_asfreq Set new frequency for timeseries of tibble dataset
@@ -497,7 +512,7 @@ reindex_by_regroup.tbl_df <- function(ts_df,
 
 
 
-# Generic function implemetaion for timeSeries dataset --------------
+# Generic function implemetaion by timeSeries class -------------------------
 
 
 # Convert TimeSeries to specified frequency by resampling for timeSeries dataset

@@ -24,3 +24,15 @@ Imports: fPortfolio,
     broom,
     RODBC
 RoxygenNote: 6.0.1
+Collate: 
+    'stock-db.R'
+    'code-name-list.R'
+    'model-backtest.R'
+    'model-factor.R'
+    'model-predict.R'
+    'model-zscore.R'
+    'stock-db-default.R'
+    'stock-db-gta.R'
+    'utils-timeseries.R'
+    'utils.R'
+    'zstmodelr.R'

@@ -30,8 +30,21 @@
 
 .GTA_XXXX <- "中文字符"  # not supported
 
+# Class definition of gta_db class -----------------------------------------
 
-# Interface Implementation of stock_db class by gta_db ------------------------
+
+#' @include stock-db.R
+#' @include code-name-list.R
+
+# Definition of gta_db class
+setRefClass("gta_db",
+            fields = list(table_list = "list",
+                          stock_field_list = "code_name_listOrNull",
+                          stock_name_list = "code_name_listOrNull",
+                          industry_name_list = "code_name_listOrNull"
+            ),
+            contains = "stock_db")
+
 
 #' Creator of gta_db class
 #'
@@ -47,17 +60,25 @@ gta_db <- function(dsn = "GTA_SQLData") {
 
   stopifnot(!is.null(dsn))
 
-  # use envir for class member storage
-  class_env <- new.env()
-  class_env$dsn <- dsn
-  class_env$connection <- NULL
+  # use envir for class member storage - created only for s3 class
+  # class_env <- new.env()
+  # class_env$dsn <- dsn
+  # class_env$connection <- NULL
 
-  #create the class object
-  structure(class_env, class = c("gta_db", "stock_db"))
+  # create object of S3 Class
+  # stock_db <- structure(class_env, class = c("gta_db", "stock_db"))
+
+  # create object of S4 Class
+  stock_db <- new("gta_db", dsn = dsn, connection = NULL)
+
+  return(stock_db)
 
 }
 
+# Generic functions implemetation by gta_db class ------------------------
+
 # Open the stock database
+# Method definition for s3 generic
 #' @describeIn open_stock_db Open a database of gta_db class
 #' @export
 open_stock_db.gta_db <- function(stock_db) {
@@ -81,8 +102,17 @@ open_stock_db.gta_db <- function(stock_db) {
   return(invisible(success))
 
 }
+# Method definition for s4 generic
+#' @describeIn open_stock_db Open a database of gta_db class
+#' @export
+setMethod("open_stock_db",
+          signature(stock_db = "gta_db"),
+          function(stock_db, ...) {
+            open_stock_db.gta_db(stock_db, ...)
+          })
 
 # Init param of stock db
+# Method definition for s3 generic
 #' @describeIn init_stock_db Init param of database of gta_db class
 #' @export
 init_stock_db.gta_db <- function(stock_db) {
@@ -148,8 +178,18 @@ init_stock_db.gta_db <- function(stock_db) {
   return(invisible(success))
 
 }
+# Method definition for s4 generic
+#' @describeIn init_stock_db Init param of database of gta_db class
+#' @export
+setMethod("init_stock_db",
+          signature(stock_db = "gta_db"),
+          function(stock_db, ...) {
+            init_stock_db.gta_db(stock_db, ...)
+          })
+
 
 # Close the stock database
+# Method definition for s3 generic
 #' @describeIn close_stock_db Close a database of gta_db class
 #' @export
 close_stock_db.gta_db <- function(stock_db) {
@@ -181,8 +221,17 @@ close_stock_db.gta_db <- function(stock_db) {
   return(invisible(success))
 
 }
+# Method definition for s4 generic
+#' @describeIn close_stock_db Close a database of gta_db class
+#' @export
+setMethod("close_stock_db",
+          signature(stock_db = "gta_db"),
+          function(stock_db, ...) {
+            close_stock_db.gta_db(stock_db, ...)
+          })
 
 # List all tables of stck_db
+# Method definition for s3 generic
 #' @describeIn list_stock_tables List names of tables in database of gta_db class
 #' @export
 list_stock_tables.gta_db <- function(stock_db) {
@@ -198,8 +247,18 @@ list_stock_tables.gta_db <- function(stock_db) {
 
   return(db_tables)
 }
+# Method definition for s4 generic
+#' @describeIn list_stock_tables List names of tables in database of gta_db class
+#' @export
+setMethod("list_stock_tables",
+          signature(stock_db = "gta_db"),
+          function(stock_db, ...) {
+            list_stock_tables.gta_db(stock_db, ...)
+          })
+
 
 # Translate name into code for field or stock
+# Method definition for s3 generic
 #' @describeIn name2code Translate name into code in a database of gta_db class
 #' @export
 name2code.gta_db <- function(stock_db, name,
@@ -218,8 +277,18 @@ name2code.gta_db <- function(stock_db, name,
     return(code)
 
 }
+# Method definition for s4 generic
+# Translate name into code for field or stock
+#' @describeIn name2code Translate name into code in a database of gta_db class
+#' @export
+setMethod("name2code",
+          signature(x = "gta_db"),
+          function(x, name,...) {
+            name2code.gta_db(stock_db = x, name, ...)
+          })
 
 # Translate code into name for field or stock
+# Method definition for s3 generic
 #' @describeIn code2name Translate code into name in a database of gta_db class
 #' @export
 code2name.gta_db <- function(stock_db, code,
@@ -236,9 +305,17 @@ code2name.gta_db <- function(stock_db, code,
 
   return(name)
 }
-
-
+# Method definition for s4 generic
+#' @describeIn code2name Translate code into name in a database of gta_db class
+#' @export
+setMethod("code2name",
+          signature(x = "gta_db"),
+          function (x, code, ...)
+          {
+            code2name.gta_db(stock_db = x, code, ...)
+          })
 # Get a dataset from a table in stock_db
+# Method definition for s3 generic
 #' @describeIn get_table_dataset get a table dataset from a database of gta_db class
 #' @export
 get_table_dataset.gta_db <- function(stock_db, table_name ) {
@@ -270,8 +347,18 @@ get_table_dataset.gta_db <- function(stock_db, table_name ) {
 
   return(invisible(ds_result))
 }
+# Method definition for s4 generic
+#' @describeIn get_table_dataset get a table dataset from a database of gta_db class
+#' @export
+setMethod("get_table_dataset",
+          signature(stock_db = "gta_db"),
+          function (stock_db, table_name, ...)
+          {
+            get_table_dataset.gta_db(stock_db, table_name)
+          })
 
 # Get a dataset of a list of stock_cd from table in stock
+# Method definition for s3 generic
 #' @describeIn get_stock_dataset get a dataset of a list of stock_cd from table
 #' in a database of gta_db class
 #' @export
@@ -331,8 +418,19 @@ get_stock_dataset.gta_db <- function(stock_db, table_name, stock_cd_list = NULL)
   return(invisible(ds_result))
 
 }
+# Method definition for s4 generic
+#' @describeIn get_stock_dataset get a dataset of a list of stock_cd from table
+#' in a database of gta_db class
+#' @export
+setMethod("get_stock_dataset",
+          signature(stock_db = "gta_db"),
+          function (stock_db, table_name, stock_cd_list = NULL, ...)
+          {
+            get_stock_dataset.gta_db(stock_db, table_name, stock_cd_list)
+          })
 
 # Fetch many datasets from stock_db
+# Method definition for s3 generic
 #' @describeIn fetch_table_dataset get many datasets from a database of gta_db class
 #' @export
 fetch_table_dataset.gta_db <- function(stock_db, table_list) {
@@ -377,8 +475,18 @@ fetch_table_dataset.gta_db <- function(stock_db, table_list) {
   return( result_table_list)
 
 }
+# Method definition for s4 generic
+#' @describeIn fetch_table_dataset get many datasets from a database of gta_db class
+#' @export
+setMethod("fetch_table_dataset",
+          signature(stock_db = "gta_db"),
+          function (stock_db, table_list, ...)
+          {
+            fetch_table_dataset.gta_db(stock_db, table_list)
+          })
 
 # Get stock return timeseries from stock_db
+# Method definition for s3 generic
 #' @describeIn get_stock_return get stock return timeseries from a database of gta_db class
 #' @export
 get_stock_return.gta_db <- function(stock_db, stock_cd_list = NULL,
@@ -538,8 +646,34 @@ get_stock_return.gta_db <- function(stock_db, stock_cd_list = NULL,
   return(ts_return)
 
 }
+# Method definition for s4 generic
+#' @describeIn get_stock_return get stock return timeseries from a database of gta_db class
+#' @export
+setMethod("get_stock_return",
+          signature(stock_db = "gta_db"),
+          function (stock_db,
+                    stock_cd_list = NULL,
+                    period_type = c("daily",
+                                    "weekly", "monthly", "annual"),
+                    return_type = c("simple",
+                                    "compound"),
+                    use_stock_name = TRUE,
+                    cumulated = FALSE,
+                    output_type = c("timeSeries",
+                                    "tibble"),
+                    ...)
+          {
+            get_stock_return.gta_db(stock_db = stock_db,
+                                    stock_cd_list = stock_cd_list,
+                                    period_type = period_type,
+                                    return_type = return_type,
+                                    use_stock_name = use_stock_name,
+                                    cumulated = cumulated,
+                                    output_type = output_type)
+          })
 
 # Get market return timesereis from stock_db
+# Method definition for s3 generic
 #' @describeIn get_market_return get market return timeseries from a database of gta_db class
 #' @export
 get_market_return.gta_db <- function(stock_db,
@@ -663,8 +797,27 @@ get_market_return.gta_db <- function(stock_db,
 
   return(ts_return)
 }
+# Method definition for s4 generic
+#' @describeIn get_market_return get market return timeseries from a database of gta_db class
+#' @export
+setMethod("get_market_return",
+          signature(stock_db = "gta_db"),
+          function (stock_db,
+                    period_type = c("daily", "weekly", "monthly", "annual"),
+                    return_type = c("simple", "compound"),
+                    cumulated = FALSE,
+                    output_type = c("timeSeries", "tibble"),
+                    ...)
+          {
+            get_market_return.gta_db(stock_db = stock_db,
+                                     period_type = period_type,
+                                     return_type = return_type,
+                                     cumulated = cumulated,
+                                     output_type = output_type)
+          })
 
 # Get Get factor indicator timeseries for stock_db
+# Method definition for s3 generic
 #' @describeIn get_stock_return get stock return timeseries from a database of gta_db class
 #' @export
 get_factor_indicator.gta_db <- function(stock_db, factor_list){
@@ -810,7 +963,18 @@ get_factor_indicator.gta_db <- function(stock_db, factor_list){
   return(ts_indicator)
 
 }
+# Method definition for s4 generic
+#' @describeIn get_stock_return get stock return timeseries from a database of gta_db class
+#' @export
+setMethod("get_factor_indicator",
+          signature(stock_db = "gta_db"),
+          function (stock_db, factor_list, ...)
+          {
+            get_factor_indicator.gta_db(stock_db, factor_list)
+          }
+)
 
+# Non-generic functions for gta_db operation ---------------------------------
 
 #' Create a stock_filed_list for a database of gta_db class
 stock_field_list.gta_db <- function(stock_db) {
