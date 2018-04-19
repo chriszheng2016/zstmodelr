@@ -2,9 +2,12 @@
 title: "R Notebook"
 output: 
   html_notebook: 
+    toc: yes
+  html_document: 
     fig_caption: yes
     number_sections: yes
     toc: yes
+#>runtime: shiny    
 ---
 
 研究股票的因素模型
