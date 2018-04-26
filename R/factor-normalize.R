@@ -1,4 +1,26 @@
-# Normalize the indicators dataset
+
+#' Normalize the indicators dataset
+#'
+#' Normalze indicators dataset by cleaning extremes and standardation.
+#'
+#'
+#' @param ds_indicators  a indicators dataset.
+#' @param group_by  a character vector of fields as group data for scaling, NULL
+#' is default value which means no group settting.
+#' @param clean_extremes_method method of cleaning extremes befre standardization
+#' , i.e. "sigma","mad", by default "sigma".
+#' see details: \code{\link{clean_extremes_sigma}}, \code{\link{clean_extremes_mad}}
+#' @param standard_method  method of standardizing data, i.e. "normal","rank",
+#' by default "normal".
+#' see details: \code{\link{standardize_normal_scale}}, \code{\link{standardize_rank_scale}}
+#' @param ... additional arguments to clean_extremes_method and standard_method.
+#'
+#'
+#' @return            a dataset of normalized indicators
+#' @export
+#'
+#' @examples
+
 normalize_indicators <- function(ds_indicators,
                                  indicators = NULL,
                                  group_by = NULL,
@@ -53,7 +75,26 @@ normalize_indicators <- function(ds_indicators,
   return(ds_result)
 }
 
-# Pre-process indicators
+#' Normalize a vector of data
+#'
+#' Normalize a vector of data by cleaning extremes and standardizing.
+#'
+#'
+#' @param x  a vector of data.
+#' @param clean_extremes_method method of cleaning extremes befre standardization
+#' , i.e. "sigma","mad", by default "sigma".
+#' see details: \code{\link{clean_extremes_sigma}}, \code{\link{clean_extremes_mad}}
+#' @param standard_method  method of standardizing data, i.e. "normal","rank",
+#' by default "normal".
+#' see details: \code{\link{standardize_normal_scale}}, \code{\link{standardize_rank_scale}}
+#' @param ... additional arguments to clean_extremes_method and standard_method.
+#'
+#'
+#' @return            a vector of normalized data
+#' @export
+#'
+#' @examples
+
 normalize <- function(x, clean_extremes_method = c("sigma","mad"),
                          standard_method = c("normal","rank"), ...) {
 
@@ -91,7 +132,22 @@ normalize <- function(x, clean_extremes_method = c("sigma","mad"),
 
 
 
-# Clean extremes by max sigma
+#' Clean extremes by normal sigma method
+#'
+#' Identify extremes in data vector by normal sigma method, and repalce extremes
+#' by NA or max/min limitation
+#'
+#' @param x  a vector of data.
+#' @param n_sigma numbers of sigma to identify extemes, by default 3.
+#' @param extreme_value  value to replace extremes, i.e. "limit","NA",
+#' by default "limit".
+#'
+#'
+#' @return      a vector of data without extremes
+#' @export
+#'
+#' @examples
+
 clean_extremes_sigma <- function(x, n_sigma = 3, extreme_value = c("limit","NA")){
 
   # Validate params
@@ -116,7 +172,21 @@ clean_extremes_sigma <- function(x, n_sigma = 3, extreme_value = c("limit","NA")
 
 }
 
-# Clean extremes by mad
+#' Clean extremes by MAD method
+#'
+#' Identify extremes in data vector by MAD method, and repalce extremes
+#' by NA or max/min limitation
+#'
+#' @param x  a vector of data.
+#' @param n_dmad numbers of dmad to identify extemes, by default 3.
+#' @param extreme_value  value to replace extremes, i.e. "limit","NA",
+#' by default "limit".
+#'
+#'
+#' @return      a vector of data without extremes
+#' @export
+#'
+#' @examples
 clean_extremes_mad <- function(x, n_dmad = 3, extreme_value = c("limit","NA")){
 
   # Validate params
@@ -171,7 +241,18 @@ clean_extremes_mad <- function(x, n_dmad = 3, extreme_value = c("limit","NA")){
   return(x_clean)
 }
 
-# Standardize indicators by applying normal scale method
+#' Standardize data vector by applying normal scale method
+#'
+#' Scale data into new vector of mean of 0 and stdev of 1
+#'
+#'
+#' @param x  a vector of data.
+#'
+#' @return      a vector of standardized data
+#' @export
+#'
+#' @examples
+
 standardize_normal_scale <- function(x) {
 
   # Validate params
@@ -184,7 +265,19 @@ standardize_normal_scale <- function(x) {
   return(x_result)
 }
 
-# Standardize indicattors by
+
+#' Standardize data vector by applying rank scale method
+#'
+#' Use data rank as new data
+#'
+#'
+#' @param x  a vector of data.
+#'
+#' @return      a vector of standardized data
+#' @export
+#'
+#' @examples
+
 standardize_rank_scale <- function(x) {
 
   # Validate params
