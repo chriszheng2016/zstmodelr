@@ -1,24 +1,26 @@
 
-
-#' Compute z-scores of facotrs
+#' Compute z-scores of facotrs dataset
 #'
 #' Compute z-scores of factors by scaling all factors according the aggreate
 #' formula and groups of fields.
-#' The z-scores are in the range of [-3, 3] by
-#' replacing the values of outliers beyond(-3/3) with -3 or 3
 #'
-#' @param ds_factors  a factors dataset
+#'
+#' @param ds_factors  a factors dataset.
 #' @param aggregate_formula a formula to aggreate zscores of all factors,
-#'                    e.g. ROCE + PB, NULL is default which means no need to
-#'                    compute aggregate zscore, but only compute zscore for all
-#'                    numberic factor fields
+#' e.g. ROCE + PB, NULL is default which means no need to compute aggregate
+#' zscore, but only compute zscore for all  numberic factor fields.
 #' @param group_by  a character vector of fields as group data for scaling, NULL
-#'                    is default value which means no group settting
-#' @param max_abs_score maximum absolute value of individual z-score, default value
-#'                    is 3.0, any z-score beyond[-max_abs_score, max_abs_score]
-#'                    will be set to value of +/- max_abs_score to exclude outliers
+#' is default value which means no group settting.
+#' @param clean_extremes_method method of cleaning extremes befre standardization
+#' , i.e. "sigma","mad", by default "sigma".
+#' see details: \code{\link{clean_extremes_sigma}}, \code{\link{clean_extremes_mad}}
+#' @param standard_method  method of standardize data, i.e. "normal","rank",
+#' by default "normal".
+#' see details: \code{\link{standardize_normal_scale}}, \code{\link{standardize_rank_scale}}
+#' @param ... additional arguments to clean_extremes_method and standard_method.
 #'
-#' @return            a z-score datasets of factors
+#'
+#' @return            a dataset of factors z-score
 #' @export
 #'
 #' @examples
@@ -26,7 +28,8 @@
 factors_zscore <- function(ds_factors,
                            aggregate_formula = NULL,
                            group_by = NULL,
-                           max_abs_score = 3.0) {
+                           clean_extremes_method = c("sigma","mad"),
+                           standard_method = c("normal","rank"), ...) {
 
   # Validate params
   stopifnot(!is.null(ds_factors))
@@ -79,13 +82,10 @@ factors_zscore <- function(ds_factors,
 
   # Compute z-score of each factors
   zscore_result <- ds_factors_by_group %>%
-    dplyr::mutate_at(compute_factors, scale) %>%
+    dplyr::mutate_at(compute_factors, normalize,
+                     clean_extremes_method,
+                     standard_method,...) %>%
     dplyr::select(output_fields)
-
-  # Replace outliers's z-score to max_abs_score(3/-3) to avoid influence of extreme value
-  zscore_result <- zscore_result %>%
-    dplyr::mutate_at(compute_factors,
-           function(x) dplyr::if_else(abs(x) > max_abs_score, sign(x)*max_abs_score, x))
 
   # Compute a stock's aggregate z-scores if need
   if (!rlang::quo_is_null(aggregate_formula)) {
@@ -141,14 +141,16 @@ zscore_filter_stocks <- function(ds_zscores,
 }
 
 #Skiped Huber Method to remove outliers
-skip_huber_method <- function(x , n = 5){
+# skip_huber_method <- function(x , n = 5){
+#
+#   .skip_huber_method <- function(x)
+#   {
+#     d_mad <- abs(x-mad)
+#   }
+#
+#
+#
+# }
 
-  .skip_huber_method <- function(x)
-  {
-    d_mad <- abs(x-mad)
-  }
 
-
-
-}
 

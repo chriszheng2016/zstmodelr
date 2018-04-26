@@ -2,32 +2,36 @@
 % Please edit documentation in R/model-zscore.R
 \name{factors_zscore}
 \alias{factors_zscore}
-\title{Compute z-scores of facotrs}
+\title{Compute z-scores of facotrs dataset}
 \usage{
 factors_zscore(ds_factors, aggregate_formula = NULL, group_by = NULL,
-  max_abs_score = 3)
+  clean_extremes_method = c("sigma", "mad"), standard_method = c("normal",
+  "rank"), ...)
 }
 \arguments{
-\item{ds_factors}{a factors dataset}
+\item{ds_factors}{a factors dataset.}
 
 \item{aggregate_formula}{a formula to aggreate zscores of all factors,
-e.g. ROCE + PB, NULL is default which means no need to
-compute aggregate zscore, but only compute zscore for all
-numberic factor fields}
+e.g. ROCE + PB, NULL is default which means no need to compute aggregate
+zscore, but only compute zscore for all  numberic factor fields.}
 
 \item{group_by}{a character vector of fields as group data for scaling, NULL
-is default value which means no group settting}
+is default value which means no group settting.}
 
-\item{max_abs_score}{maximum absolute value of individual z-score, default value
-is 3.0, any z-score beyond[-max_abs_score, max_abs_score]
-will be set to value of +/- max_abs_score to exclude outliers}
+\item{clean_extremes_method}{method of cleaning extremes befre standardization
+, i.e. "sigma","mad", by default "sigma".
+see details: \code{\link{clean_extremes_sigma}}, \code{\link{clean_extremes_mad}}}
+
+\item{standard_method}{method of standardize data, i.e. "normal","rank",
+by default "normal".
+see details: \code{\link{standardize_normal_scale}}, \code{\link{standardize_rank_scale}}}
+
+\item{...}{additional arguments to clean_extremes_method and standard_method.}
 }
 \value{
-a z-score datasets of factors
+a dataset of factors z-score
 }
 \description{
 Compute z-scores of factors by scaling all factors according the aggreate
 formula and groups of fields.
-The z-scores are in the range of [-3, 3] by
-replacing the values of outliers beyond(-3/3) with -3 or 3
 }
