@@ -31,22 +31,22 @@ setClass("factor_test_sort_portfolios",
 #' Creator of factor_test_unigress class
 #'
 #' Conduct univarate reggression test for descriptors of factors and build object
-#' of factor_test_uniregress class as output
+#' of factor_test_uniregress class as output.
 #'
 #'
 #'
 #' @param ds_test          a timeseries dataset with descriptors of factors for test
-#' @param regress_method   method of partitioning data for regression, i.g.
-#'                         "cross_section", "pooling", by default "cross_section"
-#' @param regress_fun      a function to conduct regress
-#' @param ...              argments passed to regress_fun
-#' @param output_type      type of output data, i.g."summary", "raw", if "raw",
-#'                          raw data will be append to output object for dignosis
-#' @param factor_field     the name of factor field of ds_test, by default "factor_name"
+#' @param regress_method   method of partitioning data for regression, i.e.
+#' "cross_section", "pooling", by default "cross_section".
+#' @param regress_fun      a function to conduct regress.
+#' @param ...              argments passed to regress_fun.
+#' @param output_type      type of output data, i.e."summary", "raw", if "raw",
+#' raw data will be append to output object for dignosis.
+#' @param factor_field     the name of factor field of ds_test, by default "factor_name".
 #' @param date_field       the name of date field of ds_test, by default "date",
-#'                         Column must be date-like.
+#' Column must be date-like.
 #'
-#' @return                 a object of factor_test_uniregress class
+#' @return                 a object of factor_test_uniregress class.
 #'
 #' @export
 #'
@@ -192,20 +192,20 @@ factor_test_uniregress <- function(ds_test,
 #' Creator of factor_test_IC class
 #'
 #' Conduct information coefficients test for descriptors of factors and build object
-#' of factor_test_IC class as output
+#' of factor_test_IC class as output.
 #'
 #'
 #'
-#' @param ds_test          a timeseries dataset with descriptors of factors for test
-#' @param IC_fun           a function to compute information coefficients
-#' @param ...              argments passed to IC_fun
-#' @param output_type      type of output data, i.g."summary", "raw", if "raw",
-#'                         raw data will be append to output object for dignosis
-#' @param factor_field     the name of factor field of ds_test, by default "factor_name"
+#' @param ds_test          a timeseries dataset with descriptors of factors for test.
+#' @param IC_fun           a function to compute information coefficients.
+#' @param ...              argments passed to IC_fun.
+#' @param output_type      type of output data, i.e."summary", "raw", if "raw",
+#' raw data will be append to output object for dignosis.
+#' @param factor_field     the name of factor field of ds_test, by default "factor_name".
 #' @param date_field       the name of date field of ds_test, by default "date",
-#'                         Column must be date-like.
+#' Column must be date-like.
 #'
-#' @return                 a object of factor_test_IC class
+#' @return                 a object of factor_test_IC class.
 #'
 #' @export
 #'
@@ -279,23 +279,23 @@ factor_test_IC <- function(ds_test,
 #' Creator of factor_test_sort_portfolios class
 #'
 #' Conduct factor sort portfolios test for descriptors of factors and build object
-#' of factor_test_sort_portfolios class as output
+#' of factor_test_sort_portfolios class as output.
 #'
 #'
 #'
-#' @param ds_test          a timeseries dataset with descriptors of factors for test
-#' @param sort_portfolios_fun  a function to sort descriptors of factors to build
-#'                         portfolios for test
-#' @param ...              argments passed to sort_portfolios_fun
-#' @param output_type      type of output data, i.g."summary", "raw", if "raw",
-#'                         raw data will be append to output object for dignosis
+#' @param ds_test          a timeseries dataset with descriptors of factors for test.
+#' @param sort_portfolios_fun  a function to sort descriptors of factors to build.
+#' portfolios for test
+#' @param ...              argments passed to sort_portfolios_fun.
+#' @param output_type      type of output data, i.e."summary", "raw", if "raw",
+#' raw data will be append to output object for dignosis.
 #' @param factor_field     the name of factor field of ds_test, by default "factor_name"
 #' @param date_field       the name of date field of ds_test, by default "date",
-#'                         Column must be date-like.
-#' @param stkcd_field      the name of stkcd_field of ds_test, by default "stkcd"
-#' @param return_field     the name of return_field of ds_test, by default "return"
+#' Column must be date-like.
+#' @param stkcd_field      the name of stkcd_field of ds_test, by default "stkcd".
+#' @param return_field     the name of return_field of ds_test, by default "return".
 #'
-#' @return                 a object of factor_test_sort_portfolios class
+#' @return                 a object of factor_test_sort_portfolios class.
 #'
 #' @export
 #'
@@ -441,18 +441,21 @@ factor_test_sort_portfolios <- function(ds_test,
 #' Build sort portfoilos basing on group list of stocks
 #'
 #' use stocks list and factor value list to build sort portfoilos by sorting
-#' factor value and cutting in n groups
+#' factor value and cutting in n groups.
 #'
-#' @param stocks_list           a list of stkcds of stocks
-#' @param factor_value_list     a list of factor value of corresponding stocks
-#' @param ngroup                numbers of groups to cut stocks into, default 3
-#' @param first_group_index     index number of group name, default 1 for group_1
-#' @param factor_group_order    order of factor group_order,
-#'      asc:  group_1(smallest factor) ... group_N(largest factor);
-#'      desc: group_1(largest factor)  ... group_N(smallest factor)
+#' @param stocks_list           a list of stkcds of stocks.
+#' @param factor_value_list     a list of factor value of corresponding stocks.
+#' @param ngroup                numbers of groups to cut stocks into, default 3.
+#' @param first_group_index     index number of group name, default 1 for group_1.
+#' @param factor_group_order    order of factor group_order:
+#'      \itemize{
+#'      \item asc:  group_1(smallest factor) ... group_N(largest factor)
+#'      \item desc: group_1(largest factor)  ... group_N(smallest factor)
+#'      }
+#'
 #'
 #' @return                 a tibble dataset of portfolio_group, stkcd, weight,
-#'                         factor_value
+#'                         factor_value.
 #'
 #' @export
 #'
