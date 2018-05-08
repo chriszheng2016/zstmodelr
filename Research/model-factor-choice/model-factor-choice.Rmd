@@ -1,13 +1,14 @@
 ---
 title: "R Notebook"
-output: 
-  html_notebook: 
+output:
+  pdf_document:
     toc: yes
-  html_document: 
+  html_notebook:
+    toc: yes
+  html_document:
     fig_caption: yes
     number_sections: yes
     toc: yes
-#>runtime: shiny    
 ---
 
 研究股票的因素模型
@@ -55,6 +56,8 @@ period_type <- "monthly"
 #return_type: c("simple", "compound")
 return_type <- "simple"
 
+# fundamental_factors_list <- c("GPM", "ROCE", "PE", "PB", "CUR", "QR")
+
 fundamental_factors_list <- c("GPM", "ROCE", "PE", "PB", "CUR", "QR")
 
 ```
@@ -70,7 +73,7 @@ open_stock_db(stock_db)
 # Initate the stock database
 invisible(init_stock_db(stock_db))
 
-# Get fundamental_facotrs
+# Get fundamental indicators
 fundamental_factors <- get_factor_indicator(stock_db, 
                                 factor_list = fundamental_factors_list)
 
@@ -86,17 +89,18 @@ stocks_return <- get_stock_return(stock_db,
 
 ```
 
-## Factor Standardization(数据标准化)
+## Factors Normalization(因子数据规范化)
 
-```{r factor_standardization }
+```{r factors_Normalization }
 
-# Compute the z-score of indicatros
-fundamental_factors_zscore <- factors_zscore(fundamental_factors, 
-                                             aggregate_formula = NULL,
-                                             group_by = c("date"))
+# Normalize the factor indicators
+fundamental_normal_factors <- normalize_factors(fundamental_factors,
+                                           group_by = c("date"), 
+                                           clean_extremes_method = "sigma",
+                                           standard_method = "normal")
 
 # Resample factors by specified frequency
-fundamental_factors_zscore_period <- fundamental_factors_zscore %>%
+fundamental_normal_factors_period <- fundamental_normal_factors %>%
     dplyr::filter(stkcd %in% stock_stkcds_list) %>%
     ts_resample( by_group = "stkcd", freq_rule = "month", 
                      fillna_method = "ffill", agg_method = mean)
@@ -109,9 +113,16 @@ stocks_return_period <- stocks_return %>%
                      agg_method = function(x) prod(1 + x, na.rm = TRUE) - 1)
 
 
-stocks_return_pre_period <- ts_lag(stocks_return_period,
-                                               k = -1,trim = TRUE,
-                                               by_group = "stkcd")
+# stocks_return_pre_period <- ts_lag(stocks_return_period,
+#                                                k = -1,trim = TRUE,
+#                                                by_group = "stkcd")
+
+# Lag factors to avoid peeking ahead bias                                                
+fundamental_normal_factors_pre_period <- ts_lag(
+                                          fundamental_normal_factors_period,
+                                          k = 1,
+                                          trim = TRUE,
+                                          by_group = "stkcd")                                        
 
 
 ```
@@ -141,8 +152,8 @@ stocks_return_pre_period <- ts_lag(stocks_return_period,
 ```{r factor_test_Uniregression_pooling}
 
 # Build test data dataset
-ds_test_uniregression_pooling <- stocks_return_pre_period %>%
-    dplyr::inner_join(fundamental_factors_zscore_period, by = c("date", "stkcd")) %>%
+ds_test_uniregression_pooling <- stocks_return_period %>%
+    dplyr::inner_join(fundamental_normal_factors_pre_period, by = c("date", "stkcd")) %>%
     tidyr::gather(-(date:indcd), key = "factor_name", value = "factor_exposure") %>%
     dplyr::select(date, stkcd, indcd, return , factor_name, factor_exposure)
 
@@ -150,6 +161,8 @@ ds_test_uniregression_pooling <- stocks_return_pre_period %>%
 model_univariate_regression_pooling <- function(df) {
   lm(return ~ factor_exposure, data = df)
 }
+
+# Condcut factor uniregress test
 result_test_uniregression_pooling <- factor_test_uniregress(ds_test_uniregression_pooling,
                                                 regress_method = "pooling",                  
                                                 regress_fun = model_univariate_regression_pooling,
@@ -168,8 +181,8 @@ summary(result_test_uniregression_pooling)
 ```{r factor_test_Uniregression_barra}
 
 # Build test data dataset
-ds_test_uniregression_barra <- stocks_return_pre_period %>%
-    dplyr::inner_join(fundamental_factors_zscore_period, by = c("date", "stkcd")) %>%
+ds_test_uniregression_barra <- stocks_return_period %>%
+    dplyr::inner_join(fundamental_normal_factors_pre_period, by = c("date", "stkcd")) %>%
     tidyr::gather(-(date:indcd), key = "factor_name", value = "factor_exposure") %>%
     dplyr::select(date, stkcd, indcd, return , factor_name, factor_exposure)
 
@@ -178,6 +191,8 @@ ds_test_uniregression_barra <- stocks_return_pre_period %>%
 model_univariate_regression_barra <- function(df, ...) {
   lm(return ~ factor_exposure, data = df, ...)
 }
+
+# Condcut factor uniregress test
 result_test_uniregression_barra <- factor_test_uniregress( ds_test_uniregression_barra,
                                                 regress_method = "cross_section",                  
                                                 regress_fun = model_univariate_regression_barra,
@@ -200,8 +215,8 @@ plot(result_test_uniregression_barra)
 ```{r factor_test_IC}
 
 # Build test data dataset
-ds_test_IC <- stocks_return_pre_period %>%
-    dplyr::inner_join(fundamental_factors_zscore_period, by = c("date", "stkcd")) %>%
+ds_test_IC <- stocks_return_period %>%
+    dplyr::inner_join(fundamental_normal_factors_pre_period, by = c("date", "stkcd")) %>%
     tidyr::gather(-(date:indcd), key = "factor_name", value = "factor_exposure") %>%
     dplyr::select(date, stkcd, indcd, return , factor_name, factor_exposure)
 
@@ -210,6 +225,8 @@ ds_test_IC <- stocks_return_pre_period %>%
 Model_compute_IC <- function(df, ...) {
   cor.test(x = df$return, y = df$factor_exposure, ... )
 }
+
+# Condcut factor IC test
 result_test_IC <- factor_test_IC( ds_test_IC,
                                   IC_fun = Model_compute_IC,
                                   method = "pearson",
@@ -226,13 +243,13 @@ summary(result_test_IC)
 ```{r factor_test_portfolio_sorts}
 
 # Build test data dataset
-ds_test_sort_portfolios <- stocks_return_pre_period %>%
-    dplyr::inner_join(fundamental_factors_zscore_period, by = c("date", "stkcd")) %>%
+ds_test_sort_portfolios <- stocks_return_period %>%
+    dplyr::inner_join(fundamental_normal_factors_pre_period, by = c("date", "stkcd")) %>%
     tidyr::gather(-(date:indcd), key = "factor_name", value = "factor_exposure") %>%
     dplyr::select(date, stkcd, indcd, return , factor_name, factor_exposure)
 
 
-# Conduct  portfolio sorts
+# Method to build sort portfolios
 model_sort_portfolios <- function(df, ...) {
   
   # build portfolio group by portfolio groups
@@ -244,6 +261,7 @@ model_sort_portfolios <- function(df, ...) {
   return(sort_portfolios)
 }
 
+# Condcut portfolio sorts test
 result_sort_portfolios <- factor_test_sort_portfolios(ds_test_sort_portfolios,
                                   sort_portfolios_fun = model_sort_portfolios,
                                   output_type = "summary",
