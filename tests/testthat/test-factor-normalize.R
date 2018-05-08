@@ -1,37 +1,37 @@
-context("Tests related to functions of processing indicators")
+context("Tests related to functions of normalizing factors")
 
-test_that("normalize_indicators, with various arguments", {
+test_that("normalize_factors, with various arguments", {
 
   #Load test data
-  ds_test_indicators <- readRDS("ds_test_indicators.rds")
+  ds_test_factors <- readRDS("ds_test_factors.rds")
 
-  # normalize indicators with default arguments ====
-  result_normalize_indicators <- normalize_indicators(ds_test_indicators)
-  # mean of normalized indicators is 0
-  actual_means <- result_normalize_indicators %>%
+  # normalize factors with default arguments ====
+  result_normalize_factors <- normalize_factors(ds_test_factors)
+  # mean of normalized factors is 0
+  actual_means <- result_normalize_factors %>%
     dplyr::select(-(1:4)) %>%
     dplyr::summarise_all( mean, na.rm = TRUE)
   expect_equal(mean(colMeans(actual_means)), 0)
 
-  # sd of normalized indicators is 1
-  actual_sds <- result_normalize_indicators %>%
+  # sd of normalized factors is 1
+  actual_sds <- result_normalize_factors %>%
     dplyr::select(-(1:4)) %>%
     dplyr::summarise_all(sd, na.rm = TRUE)
   expect_equal(mean(colMeans(actual_sds)), 1)
 
-  # normalize inidcators by groups ====
-  result_normalize_indicators <- normalize_indicators(ds_test_indicators,
-                                          indicators = NULL,
+  # normalize factors by groups ====
+  result_normalize_factors <- normalize_factors(ds_test_factors,
+                                          factors = NULL,
                                           group_by = c("date"))
-  # mean of normalized indicators is 0
-  actual_means <- result_normalize_indicators %>%
+  # mean of normalized factors is 0
+  actual_means <- result_normalize_factors %>%
     dplyr::select(-(1:4)) %>%
     dplyr::summarise_all( mean, na.rm = TRUE) %>%
     dplyr::select(-date)
   expect_equal(mean(colMeans(actual_means)), 0)
 
-  # sd of normalized indicators is 1
-  actual_sds <- result_normalize_indicators %>%
+  # sd of normalized factors is 1
+  actual_sds <- result_normalize_factors %>%
     dplyr::select(-(1:4)) %>%
     dplyr::summarise_all(sd, na.rm = TRUE) %>%
     dplyr::select(-date)
@@ -80,6 +80,19 @@ test_that("normalize, with various arguments", {
   expect_equal(mean(x_result), 0)
   expect_equal(sd(x_result), 1)
 
+
+  # clean extremes and standize with non-default arguments ====
+  x_result <- normalize(x, clean_extremes_method = "mad", n_dmad = 1,
+                        extreme_value = "NA",standard_method = "rank")
+  expect_equal(min(x_result, na.rm = TRUE), 1)
+  expect_equal(max(x_result, na.rm = TRUE), sum(!is.na(x_result)))
+
+  # clean extremes and standize with explict arguments ====
+  x_result <- normalize(x, clean_extremes_method = "sigma", n_sigma = 1,
+                        extreme_value = "NA",standard_method = "normal")
+  expect_equal(mean(x_result, na.rm = TRUE), 0)
+  expect_equal(sd(x_result, na.rm = TRUE), 1)
+
 })
 
 
@@ -102,6 +115,12 @@ test_that("clean_extremes_sigma, with various arguments", {
   x_result <- clean_extremes_sigma(x, n_sigma = 1, extreme_value = "limit")
   expect_true(any(duplicated(x_result)))
 
+  # make sure deel with abnormal data robustly
+  x <- 0
+  expect_failure(expect_error(x_result <- clean_extremes_sigma(x)))
+  x <- c(NA, NA, NA)
+  expect_failure(expect_error(x_result <- clean_extremes_sigma(x)))
+
 })
 
 test_that("clean_extremes_mad, with various arguments", {
@@ -122,6 +141,12 @@ test_that("clean_extremes_mad, with various arguments", {
   # clean extremes by using small n_dmad and replacing with limit value ====
   x_result <- clean_extremes_mad(x, n_dmad = 1, extreme_value = "limit")
   expect_true(any(duplicated(x_result)))
+
+  # make sure deel with abnormal data robustly
+  x <- 0
+  expect_failure(expect_error(x_result <- clean_extremes_mad(x)))
+  x <- c(NA, NA, NA)
+  expect_failure(expect_error(x_result <- clean_extremes_mad(x)))
 
 })
 
