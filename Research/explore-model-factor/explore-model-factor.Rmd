@@ -1,0 +1,127 @@
+---
+title: "因子数据探索"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+    
+    
+runtime: shiny
+
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(shiny)
+library(shinydashboard)
+
+library(tidyverse)
+library(lubridate)
+library(stringr)
+library(zstmodelr)
+
+source("explore-model-factor.R")
+
+fundamental_factors <- NULL
+fundamental_factors <- readRDS("./../../data-raw/fundamental_factors.rds")
+fundamental_factors <- fundamental_factors %>%
+  tidyr::gather(key = "factor_name", value = "factor_exposure", -(date:indcd))
+
+
+fundamental_normal_factors <- NULL
+fundamental_normal_factors <- readRDS("./../../data-raw/fundamental_normal_factors.rds")
+fundamental_normal_factors <- fundamental_normal_factors %>%
+  tidyr::gather(key = "factor_name", value = "factor_exposure", -(date:indcd))
+
+fundamental_factors_list <- c("GPM", "ROCE", "PE", "PB", "CUR", "QR")
+
+```
+
+# 数据准备 {data-icon="fa-map"}
+
+
+## {.tabset}
+
+### 加载因子
+```{r}
+
+loadFactorsUI("load_factors", factors_list = fundamental_factors_list)
+
+fundamental_factors <- callModule(loadFactors, "load_factors")
+
+```
+
+
+
+### 标准化因子
+```{r}
+
+# normalizeFactorsUI("normalize_factors")
+# 
+# fundamental_normal_factors <- callModule(normalizeFactors, "normalize_factors",
+#               ds_factors = fundamental_factors)
+
+```
+
+# 非标准化因子 {data-icon="fa-list"}
+
+## {.tabset}
+
+### 因子分布
+```{r}
+
+exploreFactorsDistributionUI("non_normalized_factors_distribution",
+                              ds_factors = fundamental_factors)
+callModule(exploreFactorsDistribution, "non_normalized_factors_distribution",
+             ds_factors = fundamental_factors)
+
+```
+
+### 因子相关性
+```{r}
+
+exploreFactorsDistributionUI("non_normalized_factors_correlation",
+                          ds_factors = fundamental_factors)
+
+callModule(exploreFactorsCorrelation, "non_normalized_factors_correlation",
+             ds_factors = fundamental_factors)
+
+```
+
+
+# 标准化因子 {data-icon="fa-list"}
+
+## {.tabset}
+
+### 因子分布
+
+```{r}
+
+# exploreFactorsDistributionUI("normalized_factors_distribution",
+#                              ds_factors = fundamental_normal_factors)
+# 
+# callModule(exploreFactorsDistribution, "normalized_factors_distribution",
+#              ds_factors = fundamental_normal_factors)
+
+```
+
+
+
+### 因子相关性
+
+```{r}
+# exploreFactorsCorrelationUI("normalized_factors_correlation",
+#                              ds_factors = fundamental_normal_factors)
+# 
+# callModule(exploreFactorsCorrelation, "normalized_factors_correlation",
+#               ds_factors = fundamental_normal_factors)
+  
+```
+
+
+
+
+
+
+
+
