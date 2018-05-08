@@ -1,10 +1,10 @@
 
-#' Normalize the indicators dataset
+#' Normalize the factors dataset
 #'
-#' Normalze indicators dataset by cleaning extremes and standardation.
+#' Normalze factors dataset by cleaning extremes and standardation.
 #'
 #'
-#' @param ds_indicators  a indicators dataset.
+#' @param ds_factors  a factors dataset.
 #' @param group_by  a character vector of fields as group data for scaling, NULL
 #' is default value which means no group settting.
 #' @param clean_extremes_method method of cleaning extremes befre standardization
@@ -16,40 +16,40 @@
 #' @param ... additional arguments to clean_extremes_method and standard_method.
 #'
 #'
-#' @return            a dataset of normalized indicators
+#' @return            a dataset of normalized factors
 #' @export
 #'
 #' @examples
 
-normalize_indicators <- function(ds_indicators,
-                                 indicators = NULL,
-                                 group_by = NULL,
-                                 clean_extremes_method = c("sigma","mad"),
-                                 standard_method = c("normal","rank"), ...) {
+normalize_factors <- function(ds_factors,
+                              factors_list = NULL,
+                              group_by = NULL,
+                              clean_extremes_method = c("sigma","mad"),
+                              standard_method = c("normal","rank"), ...) {
 
-  # get compute indicators list
-  origin_fields <- colnames(ds_indicators)
-  is_numeric_class_field <- purrr::map_lgl(ds_indicators, ~inherits(., "numeric"))
-  if (!is.null(indicators)) {
-    # use specified indicators as computing fields
+  # get compute factors list
+  origin_fields <- colnames(ds_factors)
+  is_numeric_class_field <- purrr::map_lgl(ds_factors, ~inherits(., "numeric"))
+  if (!is.null(factors_list)) {
+    # use specified factors_list as computing fields
 
-    #Make sure compute indicators are valid fields in ds_fators
-    is_valid_indicator_field <- indicators %in% origin_fields[is_numeric_class_field]
+    #Make sure compute factors_list are valid fields in ds_fators
+    is_valid_indicator_field <- factors_list %in% origin_fields[is_numeric_class_field]
     if (!all(is_valid_indicator_field)) {
-      msg <- sprintf("indicators(%s): not vaild field of dataset",
-                     stringr::str_c(indicators[!is_valid_indicator_field], collapse = ","))
+      msg <- sprintf("factors(%s): not vaild field of dataset",
+                     stringr::str_c(factors_list[!is_valid_indicator_field], collapse = ","))
       stop(msg)
     }
-    compute_indicators <- indicators
+    compute_factors <- factors_list
 
   } else {
-    # use all fields of numeric class as computing indicators if no specifying indicators
-    compute_indicators <- origin_fields[is_numeric_class_field]
+    # use all fields of numeric class as computing factors if no specifying factors
+    compute_factors <- origin_fields[is_numeric_class_field]
   }
   # Build result field names
-  output_fields <- c(origin_fields[!is_numeric_class_field], compute_indicators)
+  output_fields <- c(origin_fields[!is_numeric_class_field], compute_factors)
 
-  # Group indicators if needed
+  # Group factors if needed
   if (!is.null(group_by) && length(group_by) > 0) {
 
     # Make sure group field are valid fields in ds_fators
@@ -60,14 +60,14 @@ normalize_indicators <- function(ds_indicators,
       stop(msg)
     }
 
-    ds_indicators_by_group <- dplyr::group_by_at(ds_indicators, group_by )
+    ds_factors_by_group <- dplyr::group_by_at(ds_factors, group_by )
   } else {
-    ds_indicators_by_group <- ds_indicators
+    ds_factors_by_group <- ds_factors
   }
 
-  # Normalize each indicators
-  ds_result <- ds_indicators_by_group %>%
-    dplyr::mutate_at(compute_indicators, normalize,
+  # Normalize each factors
+  ds_result <- ds_factors_by_group %>%
+    dplyr::mutate_at(compute_factors, normalize,
                      clean_extremes_method,
                      standard_method,...) %>%
     dplyr::select(output_fields)
@@ -121,9 +121,9 @@ normalize <- function(x, clean_extremes_method = c("sigma","mad"),
     standard_method <- match.arg(standard_method)
     ds_result <- switch(
       standard_method,
-      normal = standardize_normal_scale(ds_result, ...),
-      rank   = standardize_rank_scale(ds_result, ...),
-      standardize_normal_scale(ds_result, ...)
+      normal = standardize_normal_scale(ds_result),
+      rank   = standardize_rank_scale(ds_result),
+      standardize_normal_scale(ds_result)
     )
   }
 
@@ -159,14 +159,21 @@ clean_extremes_sigma <- function(x, n_sigma = 3, extreme_value = c("limit","NA")
   # Clean extremes
   x_mean  <- mean(x, na.rm = TRUE)
   x_stdev <- sd(x, na.rm = TRUE)
-  upper_extreme_limit <- x_mean + n_sigma * x_stdev
-  lower_extreme_limit <- x_mean - n_sigma * x_stdev
+  if ((!is.na(x_mean)) && (!is.na(x_stdev))) {
+    upper_extreme_limit <- x_mean + n_sigma * x_stdev
+    lower_extreme_limit <- x_mean - n_sigma * x_stdev
 
-  x_result <- purrr::map_dbl(x, .f = .clean_extreme_value,
-                             upper_extreme_limit,
-                             lower_extreme_limit,
-                             extreme_value)
-
+    x_result <- purrr::map_dbl(x,
+                               .f = .clean_extreme_value,
+                               upper_extreme_limit,
+                               lower_extreme_limit,
+                               extreme_value)
+  } else {
+    # Notice: mean(NA) return NA which lead wrong results
+    # Notice: sd(0) return NA which lead wrong results
+    # So keep original x as result
+    x_result <- x
+  }
 
   return(x_result)
 
@@ -197,14 +204,24 @@ clean_extremes_mad <- function(x, n_dmad = 3, extreme_value = c("limit","NA")){
 
   # Clean extremes
   x_median  <- median(x, na.rm = TRUE)
-  x_mad     <- median(abs(x - x_median))
-  upper_extreme_limit <- x_median + n_dmad * x_mad
-  lower_extreme_limit <- x_median - n_dmad * x_mad
+  x_mad     <- median(abs(x - x_median), na.rm = TRUE )
 
-  x_result <- purrr::map_dbl(x, .f = .clean_extreme_value,
-                             upper_extreme_limit,
-                             lower_extreme_limit,
-                             extreme_value)
+  if ((!is.na(x_median)) && (!is.na(x_mad))) {
+    upper_extreme_limit <- x_median + n_dmad * x_mad
+    lower_extreme_limit <- x_median - n_dmad * x_mad
+
+    x_result <- purrr::map_dbl(x,
+                               .f = .clean_extreme_value,
+                               upper_extreme_limit,
+                               lower_extreme_limit,
+                               extreme_value)
+  } else {
+    # Notice: median(NA) return NA which lead wrong results
+    # So keep original x as result
+    x_result <- x
+  }
+
+
 
   return(x_result)
 }
@@ -217,6 +234,7 @@ clean_extremes_mad <- function(x, n_dmad = 3, extreme_value = c("limit","NA")){
                            extreme_value = c("limit","NA") ) {
 
   stopifnot(!is.null(x), !is.null(upper_extreme_limit), !is.null(lower_extreme_limit))
+  stopifnot(!is.na(upper_extreme_limit), !is.na(lower_extreme_limit))
 
   # don't use following assertive due to bad performance
   # assertive::assert_is_not_null(x)
@@ -230,10 +248,15 @@ clean_extremes_mad <- function(x, n_dmad = 3, extreme_value = c("limit","NA")){
   # assertive::assert_all_are_not_na(lower_extreme_limit)
 
   extreme_value <- match.arg(extreme_value)
-  if (!is.na(x) & (x > upper_extreme_limit)) {
-    x_clean <- ifelse(extreme_value == "NA", NA, upper_extreme_limit)
-  } else if (!is.na(x) & (x < lower_extreme_limit)) {
-    x_clean <- ifelse(extreme_value == "NA", NA, lower_extreme_limit)
+
+  if (!is.na(x)) {
+    if (x > upper_extreme_limit) {
+      x_clean <- ifelse(extreme_value == "NA", NA, upper_extreme_limit)
+    } else if (x < lower_extreme_limit) {
+      x_clean <- ifelse(extreme_value == "NA", NA, lower_extreme_limit)
+    } else {
+      x_clean <- x
+    }
   } else {
     x_clean <- x
   }
@@ -286,7 +309,7 @@ standardize_rank_scale <- function(x) {
   assertive::assert_is_numeric(x)
 
   # Standardize x by ranking
-  x_result <- rank(x)
+  x_result <- rank(x, na.last = "keep")
 
   return(x_result)
 
