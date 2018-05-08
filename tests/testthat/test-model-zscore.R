@@ -3,10 +3,10 @@ context("Tests related to z-score compuation")
 test_that("factors_zscore, with various arguments", {
 
   #Load test data
-  ds_test_indicators <- readRDS("ds_test_indicators.rds")
+  ds_test_factors <- readRDS("ds_test_factors.rds")
 
   # compute zscore with default argments ====
-  result_factors_zscore <- factors_zscore(ds_test_indicators)
+  result_factors_zscore <- factors_zscore(ds_test_factors)
   # mean of z-score is 0
   actual_means <- result_factors_zscore %>%
     dplyr::select(-(1:4)) %>%
@@ -20,7 +20,7 @@ test_that("factors_zscore, with various arguments", {
   expect_equal(mean(colMeans(actual_sds)), 1)
 
   # compute zscore with group and no aggregate_formula ====
-  result_factors_zscore <- factors_zscore(ds_test_indicators,
+  result_factors_zscore <- factors_zscore(ds_test_factors,
                                           aggregate_formula = NULL,
                                           group_by = c("date"))
   # mean of z-score is 0
@@ -39,7 +39,7 @@ test_that("factors_zscore, with various arguments", {
 
   # compute zscore with group and aggregate_formula ====
   # aggregate_formula = quote(GPM + ROCE + PE + PB + CUR + QR)
-  result_factors_zscore <- factors_zscore(ds_test_indicators,
+  result_factors_zscore <- factors_zscore(ds_test_factors,
                                           aggregate_formula = GPM + ROCE + PE + PB + CUR + QR,
                                           group_by = c("date"))
 
@@ -72,11 +72,11 @@ test_that("factors_zscore, with various arguments", {
 test_that("zscore_filter_stocks, with varous argments", {
 
   #Load test data
-  ds_test_indicators <- readRDS("ds_test_indicators.rds")
+  ds_test_factors <- readRDS("ds_test_factors.rds")
 
   # filter stocks with default argments ====
 
-  result_factors_zscore <- factors_zscore(ds_test_indicators,
+  result_factors_zscore <- factors_zscore(ds_test_factors,
                                           aggregate_formula = GPM + ROCE + PE + PB + CUR + QR,
                                           group_by = c("date"))
 
