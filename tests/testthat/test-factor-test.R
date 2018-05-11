@@ -1,6 +1,7 @@
 library(withr)
 
-context("Tests related to factor_test classes")
+# Tests for factor_test classes - factor_test_uniregress ----
+context("Tests for factor_test classes - factor_test_uniregress")
 
 test_that("factor_test_uniregress, with regress_method = 'pooling'", {
 
@@ -47,7 +48,6 @@ test_that("factor_test_uniregress, with regress_method = 'pooling'", {
 
 })
 
-
 test_that("factor_test_uniregress, with regress_method = 'cross_section'", {
 
   #Load test data
@@ -90,11 +90,14 @@ test_that("factor_test_uniregress, with regress_method = 'cross_section'", {
 
   # Validate results
   expect_is(result_test_uniregression_barra, "factor_test_uniregress")
-  expect_not_null(result_test_uniregression_pooling@factor_returns)
-  expect_not_null(result_test_uniregression_pooling@summary)
-  expect_not_null(result_test_uniregression_pooling@raw_result)
+  expect_not_null(result_test_uniregression_barra@factor_returns)
+  expect_not_null(result_test_uniregression_barra@summary)
+  expect_not_null(result_test_uniregression_barra@raw_result)
 
 })
+
+# Tests for factor_test classes - factor_test_IC" ----
+context("Tests for factor_test classes - factor_test_IC")
 
 test_that("factor_test_IC, with general arguments", {
 
@@ -140,6 +143,9 @@ test_that("factor_test_IC, with general arguments", {
 
 })
 
+# Tests for factor_test classes - factor_test_sort_portfolios ----
+context("Tests for factor_test classes - factor_test_sort_portfolios")
+
 test_that("factor_test_sort_portfolios, with general arguments", {
 
   #Load test data
@@ -159,18 +165,28 @@ test_that("factor_test_sort_portfolios, with general arguments", {
   }
 
   # Conduct portfolio sorts test with summary ouput ====
-  with_options(
-  c(warn = -1),
-    {
-      result_sort_portfolios <- factor_test_sort_portfolios(ds_test_sort_portfolios,
-                                                            sort_portfolios_fun = model_sort_portfolios,
-                                                            output_type = "summary",
-                                                            factor_field = "factor_name",
-                                                            date_field = "date",
-                                                            stkcd_field = "stkcd",
-                                                            return_field = "return")
+  # with_options(
+  # c(warn = -1),
+  #   {
+  #     result_sort_portfolios <- factor_test_sort_portfolios(ds_test_sort_portfolios,
+  #                                                           sort_portfolios_fun = model_sort_portfolios,
+  #                                                           output_type = "summary",
+  #                                                           factor_field = "factor_name",
+  #                                                           date_field = "date",
+  #                                                           stkcd_field = "stkcd",
+  #                                                           return_field = "return")
+  #
+  #   }
+  # )
 
-    }
+  suppressWarnings(
+    result_sort_portfolios <- factor_test_sort_portfolios(ds_test_sort_portfolios,
+                                                          sort_portfolios_fun = model_sort_portfolios,
+                                                          output_type = "summary",
+                                                          factor_field = "factor_name",
+                                                          date_field = "date",
+                                                          stkcd_field = "stkcd",
+                                                          return_field = "return")
   )
 
   # Validate results
