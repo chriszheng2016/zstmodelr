@@ -44,8 +44,7 @@ factors_zscore <- function(ds_factors,
   if (!rlang::quo_is_null(aggregate_formula)) {
 
     # use factors in aggregate_formula as computing factors
-    compute_factors <- stringr::str_split( rlang::quo_text(aggregate_formula), "[+\\-*/]")
-    compute_factors <- stringr::str_trim(compute_factors[[1]])
+    compute_factors = all.vars(aggregate_formula)
 
     #Make sure compute factors are valid fields in ds_fators
     is_valid_formula_factor <- compute_factors %in% origin_fields[is_numeric_class_field]
@@ -62,30 +61,13 @@ factors_zscore <- function(ds_factors,
   # Build result field names
   output_fields <- c(origin_fields[!is_numeric_class_field], compute_factors)
 
-  # Group factors if needed
-  if (!is.null(group_by) && length(group_by) > 0) {
+  # Compute z-score of each factors by normalization
+  zscore_result <- ds_factors %>%
+    normalize_factors(factors_list = compute_factors,
+                         group_by = group_by,
+                         clean_extremes_method,
+                         standard_method,...)
 
-    # Make sure group field are valid fields in ds_fators
-    is_valid_group_field <- group_by %in% origin_fields[!is_numeric_class_field]
-    if (!all(is_valid_group_field)) {
-      msg <- sprintf("group fields(%s): not valid group field of factors dataset",
-                     stringr::str_c(group_by[!is_valid_group_field], collapse = ","))
-      stop(msg)
-    }
-
-
-     # ds_factors_by_group <- dplyr::group_by(ds_factors, !!group_by )
-    ds_factors_by_group <- dplyr::group_by_at(ds_factors, group_by )
-  } else {
-    ds_factors_by_group <- ds_factors
-  }
-
-  # Compute z-score of each factors
-  zscore_result <- ds_factors_by_group %>%
-    dplyr::mutate_at(compute_factors, normalize,
-                     clean_extremes_method,
-                     standard_method,...) %>%
-    dplyr::select(output_fields)
 
   # Compute a stock's aggregate z-scores if need
   if (!rlang::quo_is_null(aggregate_formula)) {
@@ -128,7 +110,7 @@ zscore_filter_stocks <- function(ds_zscores,
 
   # Build result stocks
 
-  if (is.null(groups(filter_stocks)))
+  if (is.null(dplyr::groups(filter_stocks)))
   {
     result_stocks <- filter_stocks %>%
       dplyr::arrange( desc(!!ranking_field) )
@@ -140,17 +122,7 @@ zscore_filter_stocks <- function(ds_zscores,
   return(result_stocks)
 }
 
-#Skiped Huber Method to remove outliers
-# skip_huber_method <- function(x , n = 5){
-#
-#   .skip_huber_method <- function(x)
-#   {
-#     d_mad <- abs(x-mad)
-#   }
-#
-#
-#
-# }
+
 
 
 
