@@ -172,34 +172,19 @@ normalizeFactors <- function(input, output, session, ds_factors) {
     isolate({
 
 
-      # if (input$clean_extremes_method == "sigma") {
-      #   arguments_list = rlang::expr("n_sigma = input$n_sigma")
-      # } else {
-      #   arguments_list = rlang::expr("n_dmad  = input$n_dmad")
-      # }
-      #
-      # normalized_factors <- normalize_factors(ds_factors,
-      #                                         group_by = c("date"),
-      #                                         clean_extremes_method = input$clean_extremes_method,
-      #                                         standard_method = input$standard_method,
-      #                                         extreme_value = input$value_replace_extremes,
-      #                                         arguments_list)
-
       if (input$clean_extremes_method == "sigma") {
-        normalized_factors <- normalize_factors(ds_factors,
-                                                group_by = c("date"),
-                                                clean_extremes_method = input$clean_extremes_method,
-                                                standard_method = input$standard_method,
-                                                extreme_value = input$value_replace_extremes,
-                                                n_sigma = input$n_sigma)
+        extra_arguments = list(n_sigma = input$n_sigma)
       } else {
-         normalized_factors <- normalize_factors(ds_factors,
-                                                group_by = c("date"),
-                                                clean_extremes_method = input$clean_extremes_method,
-                                                standard_method = input$standard_method,
-                                                extreme_value = input$value_replace_extremes,
-                                                n_dmad  = input$n_dmad)
+        extra_arguments = list(n_dmad = input$n_dmad)
       }
+
+      normalized_factors <- normalize_factors(ds_factors,
+                                              factors_list = NULL,
+                                              group_by = c("date"),
+                                              clean_extremes_method = input$clean_extremes_method,
+                                              standard_method = input$standard_method,
+                                              extreme_value = input$value_replace_extremes,
+                                              !!!extra_arguments)
 
     })
 

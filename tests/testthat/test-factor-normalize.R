@@ -1,4 +1,6 @@
-context("Tests related to functions of normalizing factors")
+
+# Tests for normalizing factors functions - normalize_factors ----
+context("Tests for normalizing factors functions - normalize_factors")
 
 test_that("normalize_factors, with various arguments", {
 
@@ -39,6 +41,8 @@ test_that("normalize_factors, with various arguments", {
 
 })
 
+# Tests for normalizing factors functions - normalize" ----
+context("Tests for normalizing factors functions - normalize")
 
 test_that("normalize, with various arguments", {
 
@@ -95,6 +99,8 @@ test_that("normalize, with various arguments", {
 
 })
 
+# Tests for normalizing factors functions - clean_extremes_sigma ----
+context("Tests for normalizing factors functions - clean_extremes_sigma")
 
 test_that("clean_extremes_sigma, with various arguments", {
 
@@ -123,6 +129,9 @@ test_that("clean_extremes_sigma, with various arguments", {
 
 })
 
+# Tests for normalizing factors functions - clean_extremes_mad ----
+context("Tests for normalizing factors functions - clean_extremes_mad")
+
 test_that("clean_extremes_mad, with various arguments", {
 
   set.seed(1234)
@@ -150,6 +159,9 @@ test_that("clean_extremes_mad, with various arguments", {
 
 })
 
+# Tests for normalizing factors functions - standardize_normal_scale ----
+context("Tests for normalizing factors functions - standardize_normal_scale")
+
 test_that("standardize_normal_scale, with various arguments", {
 
   set.seed(1234)
@@ -161,6 +173,9 @@ test_that("standardize_normal_scale, with various arguments", {
   expect_equal(sd(x_result), 1)
 
 })
+
+# Tests for normalizing factors functions - standardize_rank_scale ----
+context("Tests for normalizing factors functions - standardize_rank_scale")
 
 test_that("standardize_rank_scale, with various arguments", {
 
