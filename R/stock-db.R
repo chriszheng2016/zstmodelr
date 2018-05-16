@@ -479,14 +479,16 @@ get_stock_field_dataset <- function(ds_source.df,
     # timeSeries data series
     ds_name <- sprintf("ds_%s_%s.fts", stkcd_string, target_field)
     result_ts <- timeSeries::timeSeries(ds_stock_data.df[target_field],
-                                        zoo::as.Date(zoo::as.yearmon(ds_stock_data.df[[date_field]])))
+                                        zoo::as.Date(zoo::as.yearmon(
+                                          ds_stock_data.df[[date_field]])))
     colnames(result_ts) <- stkcd_string
 
   } else {
     # xts data series
     ds_name <- sprintf("ds_%s_%s.xts", stkcd_string, target_field)
     result_ts <- xts::xts(ds_stock_data.df[target_field],
-                          order.by = zoo::as.Date(zoo::as.yearmon(ds_stock_data.df[[date_field]])))
+                          order.by = zoo::as.Date(
+                            zoo::as.yearmon(ds_stock_data.df[[date_field]])))
     colnames(result_ts) <- stkcd_string
   }
 
@@ -510,7 +512,7 @@ get_stock_field_dataset <- function(ds_source.df,
 # Get several timeseries of stocks data for multiple stocks from peroidic dataset
 fetch_stock_field_dataset <- function(ds_source.df,
                                       stock_cd_list,
-                                      replaceNA = c("keep", "zeros", "mean", "median"),
+                                replaceNA = c("keep", "zeros", "mean", "median"),
                                       ...) {
 
 
@@ -525,7 +527,8 @@ fetch_stock_field_dataset <- function(ds_source.df,
   for (the_stock_cd in stock_cd_list) {
 
     # get stock data for specified stock
-    ds_stock_data <- get_stock_field_dataset(ds_source.df = ds_source.df, stock_cd = the_stock_cd, ...)
+    ds_stock_data <- get_stock_field_dataset(ds_source.df = ds_source.df,
+                                             stock_cd = the_stock_cd, ...)
 
     # Build the result dataset
     if (is.null(ds_result)) {

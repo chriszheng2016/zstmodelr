@@ -460,8 +460,8 @@ fetch_table_dataset.gta_db <- function(stock_db, table_list) {
 
       # get table successfully
       ds_name <- sprintf("ds_%s.df", the_table)
-      #assign(ds_name, ds_result, pos = .GlobalEnv)
-      assign(ds_name, ds_result, pos = parent.frame())
+      assign(ds_name, ds_result, envir = .GlobalEnv)
+      # assign(ds_name, ds_result, envir = parent.frame())
       result_table_list[table_index] <- ds_name
     } else {
 
@@ -472,7 +472,7 @@ fetch_table_dataset.gta_db <- function(stock_db, table_list) {
 
   }
 
-  return( result_table_list)
+  return(result_table_list)
 
 }
 # Method definition for s4 generic
