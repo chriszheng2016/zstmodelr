@@ -27,6 +27,9 @@ normalize_factors <- function(ds_factors,
                               clean_extremes_method = c("sigma","mad"),
                               standard_method = c("normal","rank"), ...) {
 
+  # Validate params
+  assertive::assert_is_not_null(ds_factors)
+
   # get compute factors list
   origin_fields <- colnames(ds_factors)
   is_numeric_class_field <- purrr::map_lgl(ds_factors, ~inherits(., "numeric"))
