@@ -76,11 +76,11 @@ setGeneric(name = "open_stock_db",
 
 #' Close the stock database
 #'
-#' Generic function to close a stock database
+#' Generic function to close a stock database.
 #'
-#' @param stock_db a stock database object to operate
+#' @param stock_db a stock database object to operate.
 #'
-#' @return TRUE if success, else FALSE
+#' @return TRUE if success, else FALSE.
 #' @export
 #'
 #' @examples
@@ -103,11 +103,11 @@ setGeneric(name = "close_stock_db",
 
 #' Init param of stock db
 #'
-#' Generic function to initiate params of a stock database
+#' Generic function to initiate params of a stock database.
 #'
-#' @param stock_db a stock database object to operate
+#' @param stock_db a stock database object to operate.
 #'
-#' @return TRUE if success, else FALSE
+#' @return TRUE if success, else FALSE.
 #' @export
 #'
 #' @examples
@@ -130,11 +130,11 @@ setGeneric(name = "init_stock_db",
 
 #' List all tables of stcok_db
 #'
-#' Generic function to list all tables of stock_db
+#' Generic function to list all tables of stock_db.
 #'
-#' @param stock_db  a stock database object to operate
+#' @param stock_db  a stock database object to operate.
 #'
-#' @return a vectors of characters of table names
+#' @return a vectors of characters of table names.
 #' @export
 #'
 #' @examples
@@ -157,12 +157,12 @@ setGeneric(name = "list_stock_tables",
 
 #' Get adataset from a table in stock_db
 #'
-#' Generic function to get one dataset from stock_db
+#' Generic function to get one dataset from stock_db.
 #'
-#' @param stock_db    a stock database object to operate
-#' @param table_name  name of target table
+#' @param stock_db    a stock database object to operate.
+#' @param table_name  name of target table.
 #'
-#' @return A data frame on success, or NULL
+#' @return A data frame on success, or NULL.
 #' @export
 #'
 #' @examples
@@ -182,14 +182,14 @@ setGeneric(name = "get_table_dataset",
 
 #' Get a dataset of a list of stock_cd from a table in stock_db
 #'
-#' Generic function to get a dataset of a list of stock_cd from table in stock
+#' Generic function to get a dataset of a list of stock_cd from table in stock.
 #'
-#' @param stock_db      a stock database object to operate
-#' @param table_name    name of target table
-#' @param stock_cd_list a list of stock cd, default value of NULL means
-#'     all stock data will be returned
+#' @param stock_db      a stock database object to operate.
+#' @param table_name    name of target table.
+#' @param stock_cd_list a list of stock cd, default value of NULL means.
+#'     all stock data will be returned.
 #'
-#' @return A data frame on success, or NULL
+#' @return A data frame on success, or NULL.
 #' @export
 #'
 #' @examples
@@ -208,7 +208,7 @@ setGeneric(name = "get_table_dataset",
 # S4 generic definition
 setGeneric(name = "get_stock_dataset",
            signature = c("stock_db"),
-           def = get_stock_dataset <- function (stock_db,
+           def = get_stock_dataset <- function(stock_db,
                                                table_name,
                                                stock_cd_list = NULL,
                                                ...) {
@@ -218,12 +218,12 @@ setGeneric(name = "get_stock_dataset",
 
 #' Fetch many datasets from stock_db
 #'
-#' Generic function to fetch many datasets from stock_db
+#' Generic function to fetch many datasets from stock_db.
 #'
-#' @param stock_db   a stock database object to operate
-#' @param table_list a character vector of table names
+#' @param stock_db   a stock database object to operate.
+#' @param table_list a character vector of table names.
 #'
-#' @return A list of names of table fetched successfully
+#' @return A list of names of table fetched successfully.
 #' @export
 #'
 #' @examples
@@ -242,7 +242,7 @@ setGeneric(name = "fetch_table_dataset",
 
 #' Get stock return timeseries from stock_db
 #'
-#' Generic function to get stock return timeseries from stock_db
+#' Generic function to get stock return timeseries from stock_db.
 #'
 #' @param stock_db    a stock database object to operate.
 #' @param stock_cd_list a list of stock cd, default value of NULL means
@@ -256,7 +256,7 @@ setGeneric(name = "fetch_table_dataset",
 #'
 #'
 #'
-#' @return A timeseries of stock return
+#' @return A timeseries of stock return.
 #' @export
 #'
 #' @examples
@@ -291,7 +291,7 @@ setGeneric(
 
 #' Get market return timesereis from stock_db
 #'
-#' Generic function to get stock return timeseries from stock_db
+#' Generic function to get stock return timeseries from stock_db.
 #'
 #' @param stock_db    a stock database object to operate.
 #' @param period_type date peroid for time series, e.g. "daily", "weekly",
@@ -300,7 +300,7 @@ setGeneric(
 #' @param cumulated   calculate cumulated return, default value is FALSE.
 #' @param output_type format of output result, e.g "timeSeries", "tibble".
 #'
-#' @return A timeseries of market return
+#' @return A timeseries of market return.
 #' @export
 #'
 #' @examples
@@ -329,30 +329,53 @@ setGeneric(
   }
 )
 
-#' Get factor indicator timeseries for stock_db
+#' Get factor indicator timeseries from stock_db
 #'
-#' Generic function to get  factor indicator from stock_db
+#' Generic function to get  factor indicator from stock_db.
 #'
-#' @param stock_db         a stock database object to operate
-#' @param factor_list      factor name list
+#' @param stock_db         a stock database object to operate.
+#' @param factor_list      factor name list.
 #'
 #'
 #' @return A timeseries of factor indicator
 #' @export
 #'
 #' @examples
-
 # S3 generic definition
-# get_factor_indicator <- function(stock_db, factor_list,...){
-#   UseMethod("get_factor_indicator")
+# get_factor_indicator <- function(stock_db, factor_group,...){
+#   UseMethod("get_factors")
 # }
-
 # S4 generic definition
 setGeneric(
   name = "get_factor_indicator",
   signature = c("stock_db"),
   def = get_factor_indicator <- function(stock_db, factor_list,...) {
     standardGeneric("get_factor_indicator")
+  }
+)
+
+
+#' Get factors Info from stock_db
+#'
+#' Generic function to get factors info from stock_db.
+#'
+#' @param stock_db         a stock database object to operate.
+#' @param factor_groups    a character vector of factor groups, if NULL will
+#' return all factors, otherwise return factors of matched fator groups,
+#' by default NULL.
+#'
+#'
+#' @return A dataframe of factors of matched factor groups if successfully,
+#' otherwise NULL.
+#' @export
+#'
+#' @examples
+# S4 generic definition
+setGeneric(
+  name = "get_factors_info",
+  signature = c("stock_db"),
+  def = get_factors_info <- function(stock_db, factor_groups =NULL, ...) {
+    standardGeneric("get_factors_info")
   }
 )
 

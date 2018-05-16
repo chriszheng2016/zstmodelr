@@ -1,7 +1,6 @@
 # unit testing for gta_db (specific class of stock database)
 
 library(zstmodelr)
-context("gta_db class features")
 
 context("Testing features of GtaData class")
 

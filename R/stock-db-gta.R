@@ -816,9 +816,10 @@ setMethod("get_market_return",
                                      output_type = output_type)
           })
 
-# Get Get factor indicator timeseries for stock_db
+# Get Get factor indicator timeseries from stock_db
 # Method definition for s3 generic
-#' @describeIn get_stock_return get stock return timeseries from a database of gta_db class
+#' @describeIn get_factor_indicator get factor indicator timeseries from a
+#' database of gta_db class
 #' @export
 get_factor_indicator.gta_db <- function(stock_db, factor_list){
 
@@ -852,7 +853,7 @@ get_factor_indicator.gta_db <- function(stock_db, factor_list){
     if (!is.null(matched_indicator_map)) {
 
       # build table_list for fetching indicators
-      indicator_table_list<- matched_indicator_map %>%
+      indicator_table_list <- matched_indicator_map %>%
         dplyr::filter(factor_list %in% factor_code) %>%
         dplyr::group_by(indicator_table) %>%
         tidyr::nest()
@@ -968,9 +969,57 @@ get_factor_indicator.gta_db <- function(stock_db, factor_list){
 #' @export
 setMethod("get_factor_indicator",
           signature(stock_db = "gta_db"),
-          function (stock_db, factor_list, ...)
+          function(stock_db, factor_list, ...)
           {
             get_factor_indicator.gta_db(stock_db, factor_list)
+          }
+)
+
+# Get factors info of matched factor_groups
+# Method definition for s3 generic
+#' @describeIn get_factors_info get factors info of matched factor groups from a
+#' database of gta_db class
+#' @export
+get_factors_info.gta_db <- function(stock_db, factor_groups = NULL) {
+
+  # validate params
+  stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
+  if (is.null(stock_db$connection)) {
+    stop("Stock db isn't connected, try to connect db again")
+  }
+
+  success = TRUE
+
+  # get file table name mapping for referece
+  gta_profile_name <- system.file(.GTA_RPROFILE_DIR,
+                                  .GTA_PROFILE_FILE, package = .PACKAGE_NAME )
+  if (gta_profile_name == "") {
+    msg = sprintf("No file of % exisits in % for %",
+                  .GTA_PROFILE_FILE,
+                  .GTA_RPROFILE_DIR,
+                  .PACKAGE_NAME)
+    stop(msg)
+    success = FALSE
+  }
+
+  # get factors info of matched factor_group
+  if (success) {
+    ds_matched_factors <- .get_db_profile_group_factors(gta_profile_name,
+                                                          factor_groups)
+
+  }
+
+  return(ds_matched_factors)
+}
+
+# Method definition for s4 generic
+#' @describeIn get_factors_info get factors info from a database of gta_db class
+#' @export
+setMethod("get_factors_info",
+          signature(stock_db = "gta_db"),
+          function (stock_db, factor_groups, ...)
+          {
+            get_factors_info.gta_db(stock_db, factor_groups)
           }
 )
 

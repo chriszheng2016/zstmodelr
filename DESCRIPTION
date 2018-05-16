@@ -22,17 +22,29 @@ Imports: fPortfolio,
     tidyverse,
     modelr,
     broom,
+    car,
+    assertive,
+    shiny,
+    shinydashboard,
     RODBC
 RoxygenNote: 6.0.1
 Collate: 
     'stock-db.R'
     'code-name-list.R'
+    'factor-analyse.R'
+    'factor-composite.R'
+    'factor-normalize.R'
+    'factor-test.R'
+    'factor-tools.R'
     'model-backtest.R'
-    'model-factor.R'
     'model-predict.R'
     'model-zscore.R'
+    'model_fundamental.R'
+    'shiny-model-factor.R'
     'stock-db-default.R'
     'stock-db-gta.R'
+    'testthat-extends.R'
+    'utils-report.R'
     'utils-timeseries.R'
     'utils.R'
     'zstmodelr.R'

@@ -34,14 +34,17 @@ magrittr::`%>%`
   stopifnot(!is.null(profile_name), is.character(profile_name))
   stopifnot(!is.null(factor_code_list))
 
-  factor_indicator_map <- readxl::read_excel(profile_name, sheet = "Factor_Indicator_Map")
+  factor_indicator_map <- readxl::read_excel(profile_name,
+                                             sheet = "Factor_Indicator_Map")
+  matched_indicators <- NULL
   if (!is.null(factor_indicator_map)) {
 
     #get indicator info for mapped factor
     matched_indicators <- factor_indicator_map %>%
       dplyr::filter(factor_code %in%  factor_code_list )
     if ( nrow(matched_indicators) == 0 ) {
-      msg <- sprintf("No entry matched '%s' was found in %s", factor_code_list, profile_name )
+      msg <- sprintf("No entry matched '%s' was found in %s",
+                     factor_code_list, profile_name )
       warning(msg)
       matched_indicators = NULL
     }
@@ -50,6 +53,42 @@ magrittr::`%>%`
   return(matched_indicators)
 }
 
+# get factors of matched groups from profile of database
+.get_db_profile_group_factors <- function(profile_name, factor_groups) {
+
+  stopifnot(!is.null(profile_name), is.character(profile_name))
+
+  factor_indicator_map <- readxl::read_excel(profile_name,
+                                             sheet = "Factor_Indicator_Map")
+
+  matched_factors <- NULL
+  if (!is.null(factor_indicator_map)) {
+
+    #get factors info for mapped factor group
+    if (!is.null(factor_groups)) {
+      # get sepcified factor groups
+      matched_factors <- factor_indicator_map %>%
+      dplyr::filter(factor_group %in% factor_groups )
+      if ( nrow(matched_factors) == 0 ) {
+        msg <- sprintf("No entry matched '%s' was found in %s",
+                       factor_groups, profile_name )
+        warning(msg)
+        matched_factors = NULL
+      }
+
+    } else {
+      # get all factor_groups
+      matched_factors <- factor_indicator_map
+    }
+
+    matched_factors <- matched_factors %>%
+       dplyr::select(dplyr::contains("factor"))
+
+  }
+
+  return(matched_factors)
+
+}
 
 
 # Convert normal return into cumulated return
