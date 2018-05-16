@@ -27,10 +27,10 @@ get_market_return(stock_db, period_type = c("daily", "weekly", "monthly",
 \item{output_type}{format of output result, e.g "timeSeries", "tibble".}
 }
 \value{
-A timeseries of market return
+A timeseries of market return.
 }
 \description{
-Generic function to get stock return timeseries from stock_db
+Generic function to get stock return timeseries from stock_db.
 }
 \section{Methods (by class)}{
 \itemize{

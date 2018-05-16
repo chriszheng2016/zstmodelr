@@ -12,18 +12,18 @@ get_stock_dataset(stock_db, table_name, stock_cd_list = NULL, ...)
   stock_cd_list = NULL, ...)
 }
 \arguments{
-\item{stock_db}{a stock database object to operate}
+\item{stock_db}{a stock database object to operate.}
 
-\item{table_name}{name of target table}
+\item{table_name}{name of target table.}
 
-\item{stock_cd_list}{a list of stock cd, default value of NULL means
-all stock data will be returned}
+\item{stock_cd_list}{a list of stock cd, default value of NULL means.
+all stock data will be returned.}
 }
 \value{
-A data frame on success, or NULL
+A data frame on success, or NULL.
 }
 \description{
-Generic function to get a dataset of a list of stock_cd from table in stock
+Generic function to get a dataset of a list of stock_cd from table in stock.
 }
 \section{Methods (by class)}{
 \itemize{

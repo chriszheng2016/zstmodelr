@@ -11,15 +11,15 @@ fetch_table_dataset(stock_db, table_list, ...)
 \S4method{fetch_table_dataset}{gta_db}(stock_db, table_list, ...)
 }
 \arguments{
-\item{stock_db}{a stock database object to operate}
+\item{stock_db}{a stock database object to operate.}
 
-\item{table_list}{a character vector of table names}
+\item{table_list}{a character vector of table names.}
 }
 \value{
-A list of names of table fetched successfully
+A list of names of table fetched successfully.
 }
 \description{
-Generic function to fetch many datasets from stock_db
+Generic function to fetch many datasets from stock_db.
 }
 \section{Methods (by class)}{
 \itemize{

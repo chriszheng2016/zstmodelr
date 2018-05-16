@@ -11,13 +11,13 @@ init_stock_db(stock_db, ...)
 \S4method{init_stock_db}{gta_db}(stock_db, ...)
 }
 \arguments{
-\item{stock_db}{a stock database object to operate}
+\item{stock_db}{a stock database object to operate.}
 }
 \value{
-TRUE if success, else FALSE
+TRUE if success, else FALSE.
 }
 \description{
-Generic function to initiate params of a stock database
+Generic function to initiate params of a stock database.
 }
 \section{Methods (by class)}{
 \itemize{

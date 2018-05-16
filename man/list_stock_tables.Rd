@@ -11,13 +11,13 @@ list_stock_tables(stock_db, ...)
 \S4method{list_stock_tables}{gta_db}(stock_db, ...)
 }
 \arguments{
-\item{stock_db}{a stock database object to operate}
+\item{stock_db}{a stock database object to operate.}
 }
 \value{
-a vectors of characters of table names
+a vectors of characters of table names.
 }
 \description{
-Generic function to list all tables of stock_db
+Generic function to list all tables of stock_db.
 }
 \section{Methods (by class)}{
 \itemize{

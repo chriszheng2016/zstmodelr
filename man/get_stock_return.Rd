@@ -37,10 +37,10 @@ all stock data will be returned.}
 \item{output_type}{format of output result, e.g "timeSeries", "tibble".}
 }
 \value{
-A timeseries of stock return
+A timeseries of stock return.
 }
 \description{
-Generic function to get stock return timeseries from stock_db
+Generic function to get stock return timeseries from stock_db.
 }
 \section{Methods (by class)}{
 \itemize{

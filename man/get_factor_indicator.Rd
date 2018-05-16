@@ -2,18 +2,18 @@
 % Please edit documentation in R/stock-db.R
 \name{get_factor_indicator}
 \alias{get_factor_indicator}
-\title{Get factor indicator timeseries for stock_db}
+\title{Get factor indicator timeseries from stock_db}
 \usage{
 get_factor_indicator(stock_db, factor_list, ...)
 }
 \arguments{
-\item{stock_db}{a stock database object to operate}
+\item{stock_db}{a stock database object to operate.}
 
-\item{factor_list}{factor name list}
+\item{factor_list}{factor name list.}
 }
 \value{
 A timeseries of factor indicator
 }
 \description{
-Generic function to get  factor indicator from stock_db
+Generic function to get  factor indicator from stock_db.
 }

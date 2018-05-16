@@ -11,15 +11,15 @@ get_table_dataset(stock_db, table_name, ...)
 \S4method{get_table_dataset}{gta_db}(stock_db, table_name, ...)
 }
 \arguments{
-\item{stock_db}{a stock database object to operate}
+\item{stock_db}{a stock database object to operate.}
 
-\item{table_name}{name of target table}
+\item{table_name}{name of target table.}
 }
 \value{
-A data frame on success, or NULL
+A data frame on success, or NULL.
 }
 \description{
-Generic function to get one dataset from stock_db
+Generic function to get one dataset from stock_db.
 }
 \section{Methods (by class)}{
 \itemize{
