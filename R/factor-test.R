@@ -525,7 +525,9 @@ summary.factor_test <- function(factor_test_result){
   # validate params
   stopifnot(!is.null(factor_test_result), inherits(factor_test_result, "factor_test"))
 
-  print(factor_test_result@summary)
+  # print(factor_test_result@summary)
+
+  factor_test_result@summary
 }
 setMethod("summary",
           signature(object = "factor_test"),
@@ -669,7 +671,7 @@ plot.factor_test_sort_portfolios <- function(factor_test_result){
 
     # Plot Rolling Performance
     title = sprintf("Rolling 12-Month Performance(Factor:%s)", factor_name)
-    charts.RollingPerformance(ts_portfolios_return,
+    PerformanceAnalytics::charts.RollingPerformance(ts_portfolios_return,
                               main = title,
                               colorset = PerformanceAnalytics::redfocus,
                               legend.loc = "topleft",
