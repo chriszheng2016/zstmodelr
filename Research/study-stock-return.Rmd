@@ -1,6 +1,11 @@
 ---
 title: "Analysis of Stock Return"
 output: 
+  output:
+  rticles::ctex:
+    fig_caption: yes
+    number_sections: yes
+    toc: yes
   html_notebook: 
     fig_caption: yes
     number_sections: yes
@@ -43,12 +48,12 @@ open_stock_db(stock_db)
 invisible(init_stock_db(stock_db))
 
 # Get names of all stock table from database   
- db_tables <- list_stock_tables(stock_db)
- knitr::kable(
-  x = db_tables,
-  caption = "Tables in GTA Stock Database",
-  align = "l"
- )
+# db_tables <- list_stock_tables(stock_db)
+# knitr::kable(
+#  db_tables,
+#  caption = "Tables in GTA Stock Database",
+#  align = "l"
+# )
  
 ```
 
