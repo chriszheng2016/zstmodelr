@@ -4,7 +4,7 @@
 \alias{ts_lag}
 \alias{ts_lag.tbl_df}
 \alias{ts_lag.timeSeries}
-\title{Compute a Lagged Version of Timeseries}
+\title{Compute a lagged version of Timeseries}
 \usage{
 ts_lag(ts_dataset, k = 1, trim = TRUE, ...)
 
@@ -17,7 +17,13 @@ ts_lag(ts_dataset, k = 1, trim = TRUE, ...)
 \item{ts_dataset}{a timeseries of tibble/timeSeries.}
 
 \item{k}{an integer value. The number of lags (in units of observations).
-By default 1.}
+By default 1.
+\itemize{
+    \item k > 0: shfit forward, using earlier data as current data
+    \item k = 0: don't shift, keeping original data
+    \item k < 0: shift backward, using later data as current data
+}
+see details for more info.}
 
 \item{trim}{a logical value. By default TRUE, the first missing observation in the return series
 will be removed.}
@@ -35,7 +41,17 @@ Only be used for tibble dataset.}
 a lagged timeseres
 }
 \description{
-Compute a Lagged Version of Timeseries
+Shift data of timeseries(except date) forward and backward according current
+timeline
+}
+\details{
+There are two types of lag operation:
+\itemize{
+   \item shift forward: mostly known as lag, i.e. move data to next k periods,
+which means we use ealier data as current data while keeping current timeline
+   \item shfit backward: mostly known as head, i.e. move previous k periods,
+which means use later data as current data while keeping current timeline
+}
 }
 \section{Methods (by class)}{
 \itemize{

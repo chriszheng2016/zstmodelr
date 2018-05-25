@@ -85,12 +85,31 @@ ts_asfreq <- function(ts_dataset,
   UseMethod("ts_asfreq")
 }
 
-#' Compute a Lagged Version of Timeseries
+#' Compute a lagged version of Timeseries
+#'
+#' Shift data of timeseries(except date) forward and backward according current
+#' timeline
+#'
+#' @details
+#' There are two types of lag operation:
+#' \itemize{
+#'    \item shift forward: mostly known as lag, i.e. move data to next k periods,
+#' which means we use ealier data as current data while keeping current timeline
+#'    \item shfit backward: mostly known as head, i.e. move previous k periods,
+#' which means use later data as current data while keeping current timeline
+#'}
 #'
 #'
 #' @param ts_dataset       a timeseries of tibble/timeSeries.
 #' @param k                an integer value. The number of lags (in units of observations).
 #' By default 1.
+#' \itemize{
+#'     \item k > 0: shfit forward, using earlier data as current data
+#'     \item k = 0: don't shift, keeping original data
+#'     \item k < 0: shift backward, using later data as current data
+#' }
+#' see details for more info.
+#'
 #' @param trim             a logical value. By default TRUE, the first missing observation in the return series
 #' will be removed.
 #' @param ...              argments passed to other methods
@@ -153,7 +172,7 @@ ts_resample.tbl_df <- function(ts_dataset,
       # use new date_index to reindex timesereis
       if (success) {
 
-        if(length(unique(origin_date_index)) <= length(unique(new_date_index))) {
+        if (length(unique(origin_date_index)) <= length(unique(new_date_index))) {
           # upsampling with Interpolation : from low frequency to high frequency
           new_timeseries <- reindex_by_replace.tbl_df(ts_df,
                                                date_index_field = date_index_field,
@@ -314,6 +333,7 @@ ts_lag.tbl_df <- function(ts_dataset,
       stop(msg)
     }
 
+    # Shift data at current timeline
     origin_group_vars <- dplyr::group_vars(ts_df)
     date_index_field <- rlang::parse_quosure(date_index_field)
     if (k > 0) {
