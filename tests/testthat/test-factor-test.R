@@ -202,10 +202,7 @@ test_that("factor_test_sort_portfolios, with general arguments", {
   expect_equal(actual, expected)
 
   # Conduct portfolio sorts test with raw ouput ====
-  with_options(
-    c(warn = -1),
-    {
-      result_sort_portfolios <- factor_test_sort_portfolios(ds_test_sort_portfolios,
+  result_sort_portfolios <- factor_test_sort_portfolios(ds_test_sort_portfolios,
                                                             sort_portfolios_fun = model_sort_portfolios,
                                                             output_type = "raw",
                                                             factor_field = "factor_name",
@@ -213,8 +210,6 @@ test_that("factor_test_sort_portfolios, with general arguments", {
                                                             stkcd_field = "stkcd",
                                                             return_field = "return")
 
-    }
-  )
 
   # Validate results
   expect_is(result_sort_portfolios, "factor_test_sort_portfolios")
