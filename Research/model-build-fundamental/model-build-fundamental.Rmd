@@ -1,0 +1,227 @@
+---
+title: "R Notebook"
+params:
+  backtest_start_date:
+    label: 'backtest start date:'
+    value: '2016-01-01'
+  backtest_end_date:
+    label: 'backtest end date:'
+    value: '2017-12-31'
+  debug_mode: yes
+  factors_list:
+    choices: [GPM, ROCE, PE, PB, CUR, QR]
+    input: select
+    label: factors list
+    multiple: yes
+    value: PE
+  tmpfile_fundamental_factors: tempdata/fundamental_factors.rds
+  tmpfile_fundamental_normal_factors: tempdata/fundamental_normal_factors.rds
+  tmpfile_fundamental_normal_factors_period: tempdata/fundamental_normal_factors_period.rds
+  tmpfile_fundamental_normal_factors_pre_period: tempdata/fundamental_normal_factors_pre_period.rds
+  tmpfile_stocks_return: tempdata/stocks_return.rds
+  tmpfile_stocks_return_period: tempdata/stocks_return_period.rds
+output:
+  rticles::ctex:
+    fig_caption: yes
+    number_sections: yes
+    toc: yes
+  word_document:
+    toc: yes
+  html_document:
+    fig_caption: yes
+    number_sections: yes
+    toc: yes
+  html_notebook:
+    number_sections: yes
+    toc: yes
+documentclass: ctexart
+classoption: "hyperref,"
+---
+
+研究股票的因素模型
+
+
+```{r setup, include=FALSE  }
+
+library(fPortfolio)
+library(PerformanceAnalytics)
+library(tidyverse)
+library(lubridate)
+library(stringr)
+library(shiny)
+library(zstmodelr)
+
+
+# Set global options for knitr 
+knitr::opts_chunk$set(
+comment = "#>",
+echo = FALSE,
+warning = FALSE,
+message = FALSE,
+collapse = TRUE
+)
+
+options(tibble.print_min = 10L, tibble.print_max = 20L)
+
+# options(digits = 3)
+
+```
+
+
+# 数据准备
+
+## Set Study Params (设置研究参数)
+```{r set_params}
+# Set params of study
+
+# fundamental_factors_list <- c("GPM", "ROCE", "PE", "PB", "CUR", "QR")
+fundamental_factors_list <- params$factors_list
+
+# period of backtest
+start_date <- params$backtest_start_date
+end_date <- params$backtest_end_date
+
+```
+* __测试因子:__ `r params$factors_list`
+
+* __回测期间:__ `r params$backtest_start_date` ~ `r params$backtest_end_date`
+
+
+## Load facotrs data (加载因子数据)
+```{r fetch_new_data}
+
+if (!params$debug_mode) {
+  # Open gta stock databse
+  stock_db <- stock_db(gta_db, "GTA_SQLData")
+  open_stock_db(stock_db)
+  
+  # Initate the stock database
+  invisible(init_stock_db(stock_db))
+  
+  # Get fundamental indicators
+  fundamental_factors <- get_factor_indicator(stock_db, 
+                                  factor_list = fundamental_factors_list)
+  
+  # Get stocks return
+  stocks_return <- get_stock_return(stock_db, 
+                                    stock_cd_list = NULL, 
+                                    period_type = "monthly", 
+                                    return_type = "simple",
+                                    use_stock_name = FALSE,
+                                    output_type = "tibble")
+  # Save temp file for debug
+  saveRDS(fundamental_factors, file = params$tmpfile_fundamental_factors)
+  saveRDS(stocks_return, file = params$tmpfile_stocks_return)
+  
+} else {
+  
+  # Use temp file to debug
+  fundamental_factors <- readRDS(params$tmpfile_fundamental_factors)
+  stocks_return <- readRDS(params$tmpfile_stocks_return)
+}
+
+```
+
+
+## 因子数据规范化(Factors Normalization)
+
+```{r factors_Normalization }
+
+if (!params$debug_mode) {
+
+  # Normalize the factor indicators
+  fundamental_normal_factors <- fundamental_factors %>%
+  dplyr::filter( date >= start_date & date <= end_date ) %>%
+  normalize_factors( group_by = c("date"), 
+                     clean_extremes_method = "sigma",
+                     standard_method = "normal")
+   
+  # Resample factors by specified frequency
+  fundamental_normal_factors_period <- fundamental_normal_factors %>%
+    ts_resample( by_group = "stkcd", freq_rule = "month", 
+                     fillna_method = "ffill", agg_method = mean)
+  
+  # Resample return by specified frequency
+  stocks_return_period <- stocks_return %>%
+    dplyr::filter( date >= start_date & date <= end_date ) %>%
+    ts_resample( by_group = "stkcd", freq_rule = "month", 
+                     fillna_method = "ffill", 
+                     agg_method = function(x) prod(1 + x, na.rm = TRUE) - 1)
+  
+  # Lag factors to avoid peeking ahead bias                                                
+  fundamental_normal_factors_pre_period <- ts_lag(
+                                          fundamental_normal_factors_period,
+                                          k = 3,
+                                          trim = TRUE,
+                                          by_group = "stkcd")  
+  
+  # Save temp file for debug
+  saveRDS(fundamental_normal_factors, 
+          file = params$tmpfile_fundamental_normal_factors)
+  saveRDS(fundamental_normal_factors_period, 
+          file = params$tmpfile_fundamental_normal_factors_period)
+  saveRDS(stocks_return_period, 
+          file = params$tmpfile_stocks_return_period)
+  saveRDS(fundamental_normal_factors_pre_period, 
+          file = params$tmpfile_fundamental_normal_factors_pre_period)
+  
+} else {
+  
+  # Use temp file to debug
+  fundamental_normal_factors <- readRDS(params$tmpfile_fundamental_normal_factors)
+  fundamental_normal_factors_period <- readRDS(params$tmpfile_fundamental_normal_factors_period)
+  stocks_return_period <- readRDS(params$tmpfile_stocks_return_period)
+  fundamental_normal_factors_pre_period <- readRDS(params$tmpfile_fundamental_normal_factors_pre_period)
+  
+}
+
+                                   
+
+```
+
+
+
+# Fundamental Factors Modeling( 基本面因素模型构建)
+
+
+## Barra Multi-factor Model(Barra多因子模型)
+
+
+```{r model_build__fundamental_barra}
+
+# Build test data dataset
+ds_build_barra <- stocks_return_period %>%
+    dplyr::inner_join(fundamental_normal_factors_pre_period, by = c("date", "stkcd")) 
+
+# Model of conducting univariate regression test
+model_regression_barra <- function(df, factors_list, ...) {
+  lm(formula, data = df, ...)
+}
+
+# Condcut factor uniregress test
+result_model_barra <- model_build_fundamental( ds_build_barra,
+                                               regress_method = "cross_section",                  
+                                               regress_fun = model_regression_barra,
+                                               output_type = "summary",
+                                               date_field = "date")
+
+# Disply test result
+# summary(result_test_uniregression_barra)
+knitr::kable(
+   summary(result_model_barra),
+   format = "pandoc",
+   align = "c",
+   digits = 3,
+   caption = "Uniregression Barra Factor Test"
+)
+
+# Plot test result                               
+plot(result_test_uniregression_barra)
+
+```
+
+
+
+
+
+
