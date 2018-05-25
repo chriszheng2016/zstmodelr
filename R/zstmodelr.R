@@ -1,10 +1,19 @@
-#' ZStockModels: A package for computating the notorious bar statistic.
+#' zstmodelr: A package for building analysis model for China stock market.
 #'
-#' The foo package provides three categories of important functions:
-#' foo, bar and baz.
+#' The main goals of zstmodelr is to leverage traditional finacial theory and
+#' modern ML method to build stock models for China stock market.
 #'
-#' @section tools functions:
-#' The add functions ...
+#' @details
+#' In this package, `tidyquant` functions and supporting data sets are
+#' provided to seamlessly combine tidy tools with existing quantitative
+#' analytics packages. The main advantage is being able to use tidy
+#' functions with purrr for mapping and tidyr for nesting to extend modeling to
+#' many stocks. See the tidyquant website for more information, documentation
+#' and examples.
+#'
+#'
+#' To learn more about zstmodelr, start with the vignettes:
+#'  `browseVignettes(package = "zstmodelr")`
 #'
 #' @docType package
 #' @name zstmodelr
