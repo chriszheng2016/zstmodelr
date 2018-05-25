@@ -1,7 +1,9 @@
 # unit testing for stock_db (generic class of stock database)
 
 library(zstmodelr)
-context("Tests for stock_db class")
+
+# Tests for stock_db class - generic functions ----
+context("Tests for stock_db class - generic functions")
 
 # set up testing context
 stock_db <- stock_db(gta_db, "GTA_SQLData")
@@ -187,6 +189,16 @@ test_that("get_factors_info_info, with various arguments", {
   expect_gte(length(unique(ds_matched_factors$factor_group)), 0)
 })
 
+test_that("Translation between code and name", {
+  expect_equal(name2code(stock_db, "资产报酬率A", type = "field"), "f050101b")
+  expect_equal(code2name(stock_db, "f050101b", type = "field"), "资产报酬率A")
+  expect_equal(name2code(stock_db, "三一重工", type = "stock"), 600031)
+  expect_equal(code2name(stock_db, 600031, type = "stock"), "三一重工")
+})
+
+# Tests for stock_db class - non generic functions ----
+context("Tests for stock_db class - non generic functions")
+
 test_that("get_assets_return, with various arguments", {
 
   # get_assets_return with default arguments ====
@@ -247,12 +259,7 @@ test_that("fetch_stock_field_dataset, with various arguments", {
 
 })
 
-test_that("Translation between code and name", {
-  expect_equal(name2code(stock_db, "资产报酬率A", type = "field"), "f050101b")
-  expect_equal(code2name(stock_db, "f050101b", type = "field"), "资产报酬率A")
-  expect_equal(name2code(stock_db, "三一重工", type = "stock"), 600031)
-  expect_equal(code2name(stock_db, 600031, type = "stock"), "三一重工")
-})
+
 
 # clear up testing conext
 suppressMessages(close_stock_db(stock_db))
