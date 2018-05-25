@@ -1,14 +1,41 @@
 ---
 title: "R Notebook"
+params:
+  backtest_start_date:
+    label: 'backtest start date:'
+    value: '2016-01-01'
+  backtest_end_date:
+    label: 'backtest end date:'
+    value: '2017-12-31'
+  debug_mode: yes
+  factors_list:
+    choices: [GPM, ROCE, PE, PB, CUR, QR]
+    input: select
+    label: factors list
+    multiple: yes
+    value: DE, FL, TDR
+  tmpfile_fundamental_factors: tempdata/fundamental_factors.rds
+  tmpfile_fundamental_normal_factors: tempdata/fundamental_normal_factors.rds
+  tmpfile_fundamental_normal_factors_period: tempdata/fundamental_normal_factors_period.rds
+  tmpfile_fundamental_normal_factors_pre_period: tempdata/fundamental_normal_factors_pre_period.rds
+  tmpfile_stocks_return: tempdata/stocks_return.rds
+  tmpfile_stocks_return_period: tempdata/stocks_return_period.rds
 output:
-  pdf_document:
+  rticles::ctex:
+    fig_caption: yes
+    number_sections: yes
     toc: yes
-  html_notebook:
+  word_document:
     toc: yes
   html_document:
     fig_caption: yes
     number_sections: yes
     toc: yes
+  html_notebook:
+    number_sections: yes
+    toc: yes
+documentclass: ctexart
+classoption: "hyperref,"
 ---
 
 研究股票的因素模型
@@ -36,94 +63,119 @@ collapse = TRUE
 
 options(tibble.print_min = 10L, tibble.print_max = 20L)
 
-options(digits = 3)
+# options(digits = 3)
 
 ```
 
-# Data Preparation(数据准备)
 
-## Set Params of Study(设置研究参数)
-```{r set_params_study}
+# 数据准备
+
+## Set Study Params (设置研究参数)
+```{r set_params}
 # Set params of study
 
-# Set stocks as portfolio
- stock_stkcds_list <- c(600066,000550, 600031, 000157,000651, 000333)
-# stock_stkcds_list <- c(600066)
-
-#period_type: c("daily", "weekly", "monthly", "annual")
-period_type <- "monthly"
-
-#return_type: c("simple", "compound")
-return_type <- "simple"
-
 # fundamental_factors_list <- c("GPM", "ROCE", "PE", "PB", "CUR", "QR")
+fundamental_factors_list <- params$factors_list
 
-fundamental_factors_list <- c("GPM", "ROCE", "PE", "PB", "CUR", "QR")
+# period of backtest
+start_date <- params$backtest_start_date
+end_date <- params$backtest_end_date
 
 ```
+* __测试因子:__ `r params$factors_list`
 
+* __回测期间:__ `r params$backtest_start_date` ~ `r params$backtest_end_date`
 
 
 ## Load facotrs data (加载因子数据)
-```{r load_factors_data}
-# Open gta stock databse
-stock_db <- stock_db(gta_db, "GTA_SQLData")
-open_stock_db(stock_db)
+```{r fetch_factors_data}
 
-# Initate the stock database
-invisible(init_stock_db(stock_db))
-
-# Get fundamental indicators
-fundamental_factors <- get_factor_indicator(stock_db, 
-                                factor_list = fundamental_factors_list)
-
-# Get stocks return
-stocks_return <- get_stock_return(stock_db, 
-                                  stock_cd_list = NULL, 
-                                  period_type = period_type, 
-                                  return_type = return_type,
-                                  use_stock_name = FALSE,
-                                  output_type = "tibble")
-
-
+if (!params$debug_mode) {
+  # Open gta stock databse
+  stock_db <- stock_db(gta_db, "GTA_SQLData")
+  open_stock_db(stock_db)
+  
+  # Initate the stock database
+  invisible(init_stock_db(stock_db))
+  
+  # Get fundamental indicators
+  fundamental_factors <- get_factor_indicator(stock_db, 
+                                  factor_list = fundamental_factors_list)
+  
+  # Get stocks return
+  stocks_return <- get_stock_return(stock_db, 
+                                    stock_cd_list = NULL, 
+                                    period_type = "monthly", 
+                                    return_type = "simple",
+                                    use_stock_name = FALSE,
+                                    output_type = "tibble")
+  # Save temp file for debug
+  saveRDS(fundamental_factors, file = params$tmpfile_fundamental_factors)
+  saveRDS(stocks_return, file = params$tmpfile_stocks_return)
+  
+} else {
+  
+  # Use temp file to debug
+  fundamental_factors <- readRDS(params$tmpfile_fundamental_factors)
+  stocks_return <- readRDS(params$tmpfile_stocks_return)
+}
 
 ```
 
-## Factors Normalization(因子数据规范化)
+
+## 因子数据规范化(Factors Normalization)
 
 ```{r factors_Normalization }
 
-# Normalize the factor indicators
-fundamental_normal_factors <- normalize_factors(fundamental_factors,
-                                           group_by = c("date"), 
-                                           clean_extremes_method = "sigma",
-                                           standard_method = "normal")
+if (!params$debug_mode) {
 
-# Resample factors by specified frequency
-fundamental_normal_factors_period <- fundamental_normal_factors %>%
-    dplyr::filter(stkcd %in% stock_stkcds_list) %>%
+  # Normalize the factor indicators
+  fundamental_normal_factors <- fundamental_factors %>%
+  dplyr::filter( date >= start_date & date <= end_date ) %>%
+  normalize_factors( group_by = c("date"), 
+                     clean_extremes_method = "sigma",
+                     standard_method = "normal")
+   
+  # Resample factors by specified frequency
+  fundamental_normal_factors_period <- fundamental_normal_factors %>%
     ts_resample( by_group = "stkcd", freq_rule = "month", 
                      fillna_method = "ffill", agg_method = mean)
-
-# Resample return by specified frequency
-stocks_return_period <- stocks_return %>%
-    dplyr::filter(stkcd %in% stock_stkcds_list) %>%
+  
+  # Resample return by specified frequency
+  stocks_return_period <- stocks_return %>%
+    dplyr::filter( date >= start_date & date <= end_date ) %>%
     ts_resample( by_group = "stkcd", freq_rule = "month", 
                      fillna_method = "ffill", 
                      agg_method = function(x) prod(1 + x, na.rm = TRUE) - 1)
-
-
-# stocks_return_pre_period <- ts_lag(stocks_return_period,
-#                                                k = -1,trim = TRUE,
-#                                                by_group = "stkcd")
-
-# Lag factors to avoid peeking ahead bias                                                
-fundamental_normal_factors_pre_period <- ts_lag(
+  
+  # Lag factors to avoid peeking ahead bias                                                
+  fundamental_normal_factors_pre_period <- ts_lag(
                                           fundamental_normal_factors_period,
                                           k = 1,
                                           trim = TRUE,
-                                          by_group = "stkcd")                                        
+                                          by_group = "stkcd")  
+  
+  # Save temp file for debug
+  saveRDS(fundamental_normal_factors, 
+          file = params$tmpfile_fundamental_normal_factors)
+  saveRDS(fundamental_normal_factors_period, 
+          file = params$tmpfile_fundamental_normal_factors_period)
+  saveRDS(stocks_return_period, 
+          file = params$tmpfile_stocks_return_period)
+  saveRDS(fundamental_normal_factors_pre_period, 
+          file = params$tmpfile_fundamental_normal_factors_pre_period)
+  
+} else {
+  
+  # Use temp file to debug
+  fundamental_normal_factors <- readRDS(params$tmpfile_fundamental_normal_factors)
+  fundamental_normal_factors_period <- readRDS(params$tmpfile_fundamental_normal_factors_period)
+  stocks_return_period <- readRDS(params$tmpfile_stocks_return_period)
+  fundamental_normal_factors_pre_period <- readRDS(params$tmpfile_fundamental_normal_factors_pre_period)
+  
+}
 
+                                   
 
 ```
 
@@ -131,19 +183,40 @@ fundamental_normal_factors_pre_period <- ts_lag(
 
 # Uinivariate Factors Test(因子筛选与检测)
 
-## Factor Distribution Exploration(因子分布规规律探索)
+## Factor Distribution Exploration(因子分布状况)
 
-```{r factor_test_Uniregression_dataset}
+```{r factor_test_summarize_dataset}
+
+# summarize facgtor
+summary_fundamental_normal_factors <- fundamental_normal_factors %>%
+     tidyr::gather(key = "factor_name", value = "factor_exposure", fundamental_factors_list) %>%
+     dplyr::group_by(factor_name, date) %>%
+     dplyr::summarise_at("factor_exposure", 
+                          funs( NAs = sum(is.na(.)),
+                                mean,
+                                sd,
+                                median,
+                                mad,
+                                min,
+                                Q1 = quantile(., 0.25),
+                                Q3 = quantile(., 0.75),
+                                max,
+                                skewness,
+                                kurtosis
+                              ),
+                              na.rm = TRUE) %>%
+     dplyr::select(-date) %>%
+     dplyr::group_by(factor_name) %>%
+     dplyr::summarise_all(mean)
 
 
-# visulize the relation between return and factor
-# data_univariate_regression_test %>%
-#      ggplot(aes(factor_exposure, return)) +
-#        geom_hex(bins = 50) +
-#        geom_smooth(se = FALSE) +
-#        facet_wrap(~factor_name) 
-
-
+knitr::kable(
+  summary_fundamental_normal_factors,
+  format = "pandoc",
+  align = "c",
+  digits = 3,
+  caption = "因子分布情况总览"
+)
 
 ```
 
@@ -171,13 +244,51 @@ result_test_uniregression_pooling <- factor_test_uniregress(ds_test_uniregressio
                                                 date_field = "date")
                                
 # Disply test result
+# summary(result_test_uniregression_pooling)
 
-summary(result_test_uniregression_pooling)
+knitr::kable(
+   summary(result_test_uniregression_pooling),
+   format = "pandoc",
+   align = "c",
+   digits = 3,
+   caption = "Uniregression Pooling Factor Test"
+)
+
 
 ```
 
 
 ## Barra Univarate Reggression Test(Barra单因子截面回归)
+
+因子测试内容：
+
+* **步骤1、单因子回归确定每个因子每期的因子收益**
+
+* **步骤2、因子收益率序列检验**
+
+  - **t值绝对值序列的均值**：
+      对于每一期的截面回归，都可以得到一个因子收益率$\tilde{f^{t}_{k}}$的值。对于$\tilde{f^{t}_{k}}$值序列，首先取绝对值$|t|$，然后计算$|t|$的均值，$t$是判断因子是否为有效因子的重要指标，之所以要取绝对值，是因为只要t值显著不等于0，即可以认为在当期因子和收益率存在明显的相关性。但是这种相关性有的时候为正，有的时候为负，如果不取绝对值，则很多正负抵消，会低估因子的有效性。
+  - **t值经对值充列大于2的比例**：检验$|t|>2$的比例主要是为了保证$|t|$平均值的稳定性，避免出现少数数值特别大的样本值拉高均值；
+  - **因子收益率$\tilde{f^{t}_{k}}$序列t值检验**：对于每一期的截面回归，都可以得到一个因子收益率$\tilde{f^{t}_{k}}$，对于$\tilde{f^{t}_{k}}$序列同样需要进行检验，以观察因子收益率序列的方向一致性。
+
+
+
+
+测试结果字段说明：
+
+* factor_name: 因子名称
+* r.squared: 
+* f_pvalue:
+* beta_t_abs_mean:
+* beta_t_sig_ratio:
+* beta_t_mean:
+* beta_t_sd:
+* beta_t_mean_std_ratio:
+* factor_return:
+* factor_return_tvalue:
+* factor_return_pvalue:
+
+
 ```{r factor_test_Uniregression_barra}
 
 # Build test data dataset
@@ -201,7 +312,14 @@ result_test_uniregression_barra <- factor_test_uniregress( ds_test_uniregression
                                                 date_field = "date")
 
 # Disply test result
-summary(result_test_uniregression_barra)
+# summary(result_test_uniregression_barra)
+knitr::kable(
+   summary(result_test_uniregression_barra),
+   format = "pandoc",
+   align = "c",
+   digits = 3,
+   caption = "Uniregression Barra Factor Test"
+)
 
 # Plot test result                               
 plot(result_test_uniregression_barra)
@@ -235,7 +353,14 @@ result_test_IC <- factor_test_IC( ds_test_IC,
                                   date_field = "date")
 
 # Disply test result
-summary(result_test_IC)
+# summary(result_test_IC)
+knitr::kable(
+   summary(result_test_IC),
+   format = "pandoc",
+   align = "c",
+   digits = 3,
+   caption = "IC Factor Test"
+)
 
 ```
 
@@ -272,7 +397,14 @@ result_sort_portfolios <- factor_test_sort_portfolios(ds_test_sort_portfolios,
 
 
 # Disply test result
-summary(result_sort_portfolios)
+# summary(result_sort_portfolios)
+knitr::kable(
+   summary(result_sort_portfolios),
+   format = "pandoc",
+   align = "c",
+   digits = 3,
+   caption = "Sort Portfolios Factor Test"
+)
 
 # Plot test result
 plot(result_sort_portfolios)
