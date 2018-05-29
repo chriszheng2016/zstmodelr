@@ -18,8 +18,8 @@
 #' @docType package
 #' @name zstmodelr
 #'
-#' @import rlang
-#' @import methods
+#' @@import rlang
+#' @@import methods
 
 
 
