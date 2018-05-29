@@ -1,4 +1,5 @@
 output
-tempdata
+temp
 *.pdf
 *.html
+*.docx

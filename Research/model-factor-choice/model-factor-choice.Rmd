@@ -7,22 +7,21 @@ params:
   backtest_end_date:
     label: 'backtest end date:'
     value: '2017-12-31'
-  debug_mode: yes
+  debug_mode: no
   factors_list:
     choices: [GPM, ROCE, PE, PB, CUR, QR]
     input: select
     label: factors list
     multiple: yes
     value: DE, FL, TDR
-  tmpfile_fundamental_factors: tempdata/fundamental_factors.rds
-  tmpfile_fundamental_normal_factors: tempdata/fundamental_normal_factors.rds
-  tmpfile_fundamental_normal_factors_period: tempdata/fundamental_normal_factors_period.rds
-  tmpfile_fundamental_normal_factors_pre_period: tempdata/fundamental_normal_factors_pre_period.rds
-  tmpfile_stocks_return: tempdata/stocks_return.rds
-  tmpfile_stocks_return_period: tempdata/stocks_return_period.rds
+  tmpfile_fundamental_factors: temp/fundamental_factors.rds
+  tmpfile_fundamental_normal_factors: temp/fundamental_normal_factors.rds
+  tmpfile_fundamental_normal_factors_period: temp/fundamental_normal_factors_period.rds
+  tmpfile_fundamental_normal_factors_pre_period: temp/fundamental_normal_factors_pre_period.rds
+  tmpfile_stocks_return: temp/stocks_return.rds
+  tmpfile_stocks_return_period: temp/stocks_return_period.rds
 output:
-  rticles::ctex:
-    fig_caption: yes
+  html_notebook:
     number_sections: yes
     toc: yes
   word_document:
@@ -31,7 +30,8 @@ output:
     fig_caption: yes
     number_sections: yes
     toc: yes
-  html_notebook:
+  rticles::ctex:
+    fig_caption: yes
     number_sections: yes
     toc: yes
 documentclass: ctexart
