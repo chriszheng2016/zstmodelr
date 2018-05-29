@@ -7,19 +7,19 @@ params:
   backtest_end_date:
     label: 'backtest end date:'
     value: '2017-12-31'
-  debug_mode: yes
+  debug_mode: no
   factors_list:
     choices: [GPM, ROCE, PE, PB, CUR, QR]
     input: select
     label: factors list
     multiple: yes
     value: PE
-  tmpfile_fundamental_factors: tempdata/fundamental_factors.rds
-  tmpfile_fundamental_normal_factors: tempdata/fundamental_normal_factors.rds
-  tmpfile_fundamental_normal_factors_period: tempdata/fundamental_normal_factors_period.rds
-  tmpfile_fundamental_normal_factors_pre_period: tempdata/fundamental_normal_factors_pre_period.rds
-  tmpfile_stocks_return: tempdata/stocks_return.rds
-  tmpfile_stocks_return_period: tempdata/stocks_return_period.rds
+  tmpfile_fundamental_factors: temp/fundamental_factors.rds
+  tmpfile_fundamental_normal_factors: temp/fundamental_normal_factors.rds
+  tmpfile_fundamental_normal_factors_period: temp/fundamental_normal_factors_period.rds
+  tmpfile_fundamental_normal_factors_pre_period: temp/fundamental_normal_factors_pre_period.rds
+  tmpfile_stocks_return: temp/stocks_return.rds
+  tmpfile_stocks_return_period: temp/stocks_return_period.rds
 output:
   rticles::ctex:
     fig_caption: yes
@@ -194,7 +194,7 @@ ds_build_barra <- stocks_return_period %>%
     dplyr::inner_join(fundamental_normal_factors_pre_period, by = c("date", "stkcd")) 
 
 # Model of conducting univariate regression test
-model_regression_barra <- function(df, factors_list, ...) {
+model_regression_barra <- function(df, formula, ...) {
   lm(formula, data = df, ...)
 }
 
@@ -206,7 +206,6 @@ result_model_barra <- model_build_fundamental( ds_build_barra,
                                                date_field = "date")
 
 # Disply test result
-# summary(result_test_uniregression_barra)
 knitr::kable(
    summary(result_model_barra),
    format = "pandoc",
