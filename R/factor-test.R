@@ -328,7 +328,7 @@ factor_test_sort_portfolios <- function(ds_test,
   .summarize_portfolios_return <- function(ds_portfolios_return) {
 
     col_names <- colnames(ds_portfolios_return)
-    is_date_field = col_names %in% quo_text(date_field)
+    is_date_field = col_names %in% rlang::quo_text(date_field)
     if (!any(is_date_field)) {
       stop("Can't find date colomns")
     }

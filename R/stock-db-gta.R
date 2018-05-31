@@ -575,34 +575,34 @@ get_stock_return.gta_db <- function(stock_db, stock_cd_list = NULL,
   success = TRUE
 
   # get stock return dataset
-  field_stkcd <- quo(stkcd)
+  field_stkcd <- rlang::quo(stkcd)
   period_type <- match.arg(period_type)
   switch(
     period_type,
     daily = {
       table_name   <- stock_db$table_list[["TRD_DALYR"]]
-      field_date   <- quo(trddt)
-      field_return <- quo(dretwd)
+      field_date   <- rlang::quo(trddt)
+      field_return <- rlang::quo(dretwd)
       date_format <- "ymd"
       date_ceiling_unit <- "day"
     },
     weekly  = {
       table_name <- stock_db$table_list[["TRD_WEEK"]]
-      field_date   <- quo(trdwnt)
-      field_return <- quo(wretwd)
+      field_date   <- rlang::quo(trdwnt)
+      field_return <- rlang::quo(wretwd)
       date_ceiling_unit <- "week"
     },
     monthly = {
       table_name <- stock_db$table_list[["TRD_MNTH"]]
-      field_date   <- quo(trdmnt)
-      field_return <- quo(mretwd)
+      field_date   <- rlang::quo(trdmnt)
+      field_return <- rlang::quo(mretwd)
       date_format <- "ymd"
       date_ceiling_unit <- "month"
     },
     annual  = {
       table_name <- stock_db$table_list[["TRD_YEAR"]]
-      field_date   <- quo(trdynt)
-      field_return <- quo(yretwd)
+      field_date   <- rlang::quo(trdynt)
+      field_return <- rlang::quo(yretwd)
       date_format <- "y"
       date_ceiling_unit <- "year"
     }
@@ -766,34 +766,34 @@ get_market_return.gta_db <- function(stock_db,
   success = TRUE
 
   # get market return dataset
-  field_markettype <- quo(markettype)
+  field_markettype <- rlang::quo(markettype)
   period_type <- match.arg(period_type)
   switch(
     period_type,
     daily = {
       table_name   <- stock_db$table_list[["TRD_CNDALYM"]]
-      field_date   <- quo(trddt)
-      field_return <- quo(cdretwdtl)
+      field_date   <- rlang::quo(trddt)
+      field_return <- rlang::quo(cdretwdtl)
       date_format <- "ymd"
       date_ceiling_unit <- "day"
     },
     weekly  = {
       table_name <- stock_db$table_list[["TRD_WEEKCM"]]
-      field_date   <- quo(trdwnt)
-      field_return <- quo(cwretwdtl)
+      field_date   <- rlang::quo(trdwnt)
+      field_return <- rlang::quo(cwretwdtl)
       date_ceiling_unit <-"week"
     },
     monthly = {
       table_name <- stock_db$table_list[["TRD_CNMONT"]]
-      field_date   <- quo(trdmnt)
-      field_return <- quo(cmretwdtl)
+      field_date   <- rlang::quo(trdmnt)
+      field_return <- rlang::quo(cmretwdtl)
       date_format <- "ym"
       date_ceiling_unit <- "month"
     },
     annual  = {
       table_name <- stock_db$table_list[["TRD_YEARCM"]]
-      field_date   <- quo(trdynt)
-      field_return <- quo(cyretwdtl)
+      field_date   <- rlang::quo(trdynt)
+      field_return <- rlang::quo(cyretwdtl)
       date_format <- "y"
       date_ceiling_unit <- "year"
     }
