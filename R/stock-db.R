@@ -469,27 +469,34 @@ get_stock_field_dataset <- function(ds_source.df,
     tseries_type <- "timeSeries"
   }
 
-  # Get related data of the specified stock from all stock trd_mnth data table
-  ds_stock_data.df <- na.omit(ds_source.df[ds_source.df$stkcd == as.numeric(stock_cd),])
+  # Coerce stock code to 6 digit of characters
+  if (!is.character(stock_cd)) {
+      stock_cd <- stringr::str_pad(stock_cd, width = 6, pad = "0")
+      msg <- "Coerce stock cd to character of 6 digits if it were number"
+      warnings(msg)
+  }
+
+   # Get related data of the specified stock from all stock trd_mnth data table
+  ds_stock_data.df <- na.omit(ds_source.df[ds_source.df$stkcd == stock_cd, ])
+
 
   # Build result dataset for specified stock
-  stkcd_string = sprintf("%06d", stock_cd)
   result_ts = NULL
   if (tseries_type == "timeSeries") {
     # timeSeries data series
-    ds_name <- sprintf("ds_%s_%s.fts", stkcd_string, target_field)
+    ds_name <- sprintf("ds_%s_%s.fts", stock_cd, target_field)
     result_ts <- timeSeries::timeSeries(ds_stock_data.df[target_field],
                                         zoo::as.Date(zoo::as.yearmon(
                                           ds_stock_data.df[[date_field]])))
-    colnames(result_ts) <- stkcd_string
+    colnames(result_ts) <- stock_cd
 
   } else {
     # xts data series
-    ds_name <- sprintf("ds_%s_%s.xts", stkcd_string, target_field)
+    ds_name <- sprintf("ds_%s_%s.xts", stock_cd, target_field)
     result_ts <- xts::xts(ds_stock_data.df[target_field],
                           order.by = zoo::as.Date(
                             zoo::as.yearmon(ds_stock_data.df[[date_field]])))
-    colnames(result_ts) <- stkcd_string
+    colnames(result_ts) <- stock_cd
   }
 
   # Sort result
@@ -522,6 +529,13 @@ fetch_stock_field_dataset <- function(ds_source.df,
   }
 
   stopifnot(length(stock_cd_list) != 0, length(ds_source.df) != 0)
+
+  # Coerce stock code to 6 digit of characters
+  if (!is.character(stock_cd_list)) {
+      stock_cd_list <- stringr::str_pad(stock_cd_list, width = 6, pad = "0")
+      msg <- "Coerce stock cd to character of 6 digits if it were number"
+      warnings(msg)
+  }
 
   ds_result = NULL
   for (the_stock_cd in stock_cd_list) {

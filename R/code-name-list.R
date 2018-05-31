@@ -52,6 +52,16 @@ code2name.code_name_list <- function(x, code) {
 
   stopifnot(inherits(x, "code_name_list") ,!is.null(code))
 
+  # translate number code into charater code if stored code is character
+  if (is.character(x$code) && is.numeric(code)) {
+    code_length <- mean(nchar(x$code), na.rm = TRUE)
+    code <- stringr::str_pad(code, width = code_length, pad = "0")
+    msg <- "Coerce code to character with padding with 0 on the left as the same
+            length of codes in code_name_list"
+    warnings(msg)
+  }
+
+  # match code into name
   match_index = match(code, x$code)
   name <- x$name[match_index]
 

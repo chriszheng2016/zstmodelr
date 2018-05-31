@@ -86,8 +86,15 @@ open_stock_db.gta_db <- function(stock_db) {
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
   success <- TRUE
 
-  con_stock_db <- tryCatch( RODBC::odbcConnect(dsn = stock_db$dsn),
-                            error = function(e) e)
+  # Use data-engine of RODBC
+  # con_stock_db <- tryCatch( RODBC::odbcConnect(dsn = stock_db$dsn),
+  #                           error = function(e) e)
+
+  # Use data-engine of DBI:odbc
+  con_stock_db <- tryCatch(DBI::dbConnect(odbc::odbc(), "GTA_SQLDATA",
+                                      encoding = "CP936"),
+                             error = function(e) e)
+
   if (inherits(con_stock_db, "error")) {
     msg <- conditionMessage(con_stock_db)
     success <- FALSE
@@ -198,8 +205,15 @@ close_stock_db.gta_db <- function(stock_db) {
   success <- TRUE
 
   if (!is.null(stock_db$connection)) {
-    success <- tryCatch(RODBC::odbcClose(stock_db$connection),
+
+    # Use data-engine of RODBC
+    # success <- tryCatch(RODBC::odbcClose(stock_db$connection),
+    #                     error = function(e) e)
+
+    # Use data-engine of DBI:odbc
+    success <- tryCatch(DBI::dbDisconnect(stock_db$connection),
                         error = function(e) e)
+
     if (inherits(success, "error")) {
 
       # fail to close the connect
@@ -242,8 +256,13 @@ list_stock_tables.gta_db <- function(stock_db) {
     stop("Stock db isn't connected, try to connect db again")
   }
 
-  db_tables <- RODBC::sqlTables(stock_db$connection, tableType = "TABLE")
-  db_tables <- db_tables[db_tables$TABLE_SCHEM == "dbo", "TABLE_NAME" ]
+  # Use data-engine of RODBC
+  # db_tables <- RODBC::sqlTables(stock_db$connection, schema = "dbo")
+  # db_tables <- db_tables[db_tables$TABLE_SCHEM == "dbo", "TABLE_NAME" ]
+
+  # Use data-engine of DBI:odbc
+  db_tables <- DBI::dbListTables(stock_db$connection, schema_name = "dbo")
+  db_tables <- iconv(db_tables, from = "UTF-8", to ="CP936")
 
   return(db_tables)
 }
@@ -332,8 +351,15 @@ get_table_dataset.gta_db <- function(stock_db, table_name ) {
   }
 
   # Get table data  from database
-  ds_result <- tryCatch(RODBC::sqlFetch(stock_db$connection, table_name,
-                                        stringsAsFactors = FALSE),
+
+  # Use data-engine of RODBC
+  # ds_result <- tryCatch(RODBC::sqlFetch(stock_db$connection, table_name,
+  #                                       stringsAsFactors = FALSE),
+  #                        error = function(e) e)
+
+  # Use data-engine of DBI:odbc
+  table_name <- iconv(table_name, from = "UTF-8", to = "CP936")
+  ds_result <- tryCatch(DBI::dbReadTable(stock_db$connection, table_name),
                          error = function(e) e)
   if (inherits(ds_result, "error")) {
     msg <- conditionMessage(ds_result)
@@ -342,8 +368,21 @@ get_table_dataset.gta_db <- function(stock_db, table_name ) {
     msg <- sprintf("get data from %s successfully", table_name)
     colnames(ds_result) <- tolower(colnames(ds_result))
   }
-
   message(msg)
+
+  # Coerce stock code to 6 digit of characters
+  if (!is.null(ds_result)) {
+    field_names <- names(ds_result)
+    stkcd_names <- field_names[field_names %in% c("stkcd")]
+    if (length(stkcd_names) != 0) {
+      if (!is.character(ds_result[, stkcd_names])) {
+          ds_result[, stkcd_names] <- stringr::str_pad(ds_result[, stkcd_names],
+                                                       width = 6, pad = "0")
+          msg <- "Coerce stock cd to character of 6 digits if it were number"
+          warnings(msg)
+      }
+    }
+  }
 
   return(invisible(ds_result))
 }
@@ -376,19 +415,26 @@ get_stock_dataset.gta_db <- function(stock_db, table_name, stock_cd_list = NULL)
   }
 
   # if (missing(stock_cd_list) || !is.character(stock_cd_list) ) {
-  #   stop("stock_cd_list must be character string")
+  #    stop("stock_cd_list must be character string")
   # }
 
   # Build sql command for data query
   stock_cd_list_str <- NULL
   if (!is.null(stock_cd_list)) {
-    for (stock_cd in stock_cd_list) {
 
+    # Coerce stock code to 6 digit of characters
+    if (!is.character(stock_cd_list)) {
+        stock_cd_list <- stringr::str_pad(stock_cd_list, width = 6, pad = "0")
+        msg <- "Coerce stock cd to character of 6 digits if it were number"
+        warnings(msg)
+    }
+
+    # build stock_cd list string
+    for (stock_cd in stock_cd_list) {
       if (is.null(stock_cd_list_str)) {
-        stock_cd_list_str = sprintf("'%06d'", stock_cd)
+         stock_cd_list_str = stock_cd
       } else {
-        stock_cd_list_str = paste(stock_cd_list_str, sprintf("'%06d'", stock_cd),
-                                  sep = ",")
+         stock_cd_list_str = paste(stock_cd_list_str, stock_cd,sep = ",")
       }
     }
   }
@@ -401,9 +447,17 @@ get_stock_dataset.gta_db <- function(stock_db, table_name, stock_cd_list = NULL)
   }
 
   # Select stock data from table
-  ds_result <- tryCatch(RODBC::sqlQuery(stock_db$connection, sql_cmd,
-                                        stringsAsFactors = FALSE),
+
+  # Use data-engine of RODBC
+  # ds_result <- tryCatch(RODBC::sqlQuery(stock_db$connection, sql_cmd,
+  #                                       stringsAsFactors = FALSE),
+  #                       error = function(e) e)
+
+  # Use data-engine of DBI:odbc
+  sql_cmd <- iconv(sql_cmd, from="UTF-8", to = "CP936")
+  ds_result <- tryCatch(DBI::dbGetQuery(stock_db$connection, sql_cmd),
                         error = function(e) e)
+
   if (inherits(ds_result, "error")) {
     msg <- conditionMessage(ds_result)
     ds_result <- NULL
@@ -412,8 +466,22 @@ get_stock_dataset.gta_db <- function(stock_db, table_name, stock_cd_list = NULL)
                    table_name)
     colnames(ds_result) <- tolower(colnames(ds_result))
   }
-
   message(msg)
+
+  # Coerce stock code to 6 digit of characters
+  if (!is.null(ds_result)) {
+    field_names <- names(ds_result)
+    stkcd_names <- field_names[field_names %in% c("stkcd")]
+    if (length(stkcd_names) != 0) {
+      if (!is.character(ds_result[, stkcd_names])) {
+          ds_result[, stkcd_names] <- stringr::str_pad(ds_result[, stkcd_names],
+                                                       width = 6, pad = "0")
+          msg <- "Coerce stock cd to character of 6 digits if it were number"
+          warnings(msg)
+      }
+    }
+  }
+
 
   return(invisible(ds_result))
 
@@ -424,7 +492,7 @@ get_stock_dataset.gta_db <- function(stock_db, table_name, stock_cd_list = NULL)
 #' @export
 setMethod("get_stock_dataset",
           signature(stock_db = "gta_db"),
-          function (stock_db, table_name, stock_cd_list = NULL, ...)
+          function(stock_db, table_name, stock_cd_list = NULL, ...)
           {
             get_stock_dataset.gta_db(stock_db, table_name, stock_cd_list)
           })
@@ -516,29 +584,36 @@ get_stock_return.gta_db <- function(stock_db, stock_cd_list = NULL,
       field_date   <- quo(trddt)
       field_return <- quo(dretwd)
       date_format <- "ymd"
-      date_ceiling_unit <-"day"
+      date_ceiling_unit <- "day"
     },
     weekly  = {
       table_name <- stock_db$table_list[["TRD_WEEK"]]
       field_date   <- quo(trdwnt)
       field_return <- quo(wretwd)
-      date_ceiling_unit <-"week"
+      date_ceiling_unit <- "week"
     },
     monthly = {
       table_name <- stock_db$table_list[["TRD_MNTH"]]
       field_date   <- quo(trdmnt)
       field_return <- quo(mretwd)
       date_format <- "ymd"
-      date_ceiling_unit <-"month"
+      date_ceiling_unit <- "month"
     },
     annual  = {
       table_name <- stock_db$table_list[["TRD_YEAR"]]
       field_date   <- quo(trdynt)
       field_return <- quo(yretwd)
       date_format <- "y"
-      date_ceiling_unit <-"year"
+      date_ceiling_unit <- "year"
     }
   )
+
+  # Coerce stock code to 6 digit of characters
+  if (!is.null(stock_cd_list) && !is.character(stock_cd_list)) {
+      stock_cd_list <- stringr::str_pad(stock_cd_list, width = 6, pad = "0")
+      msg <- "Coerce stock cd to character of 6 digits if it were number"
+      warnings(msg)
+  }
 
   #Warning: ds_return is simple return in database by default !!
   ds_return <- get_stock_dataset.gta_db(stock_db, table_name, stock_cd_list)
@@ -563,7 +638,7 @@ get_stock_return.gta_db <- function(stock_db, stock_cd_list = NULL,
 
     # arrange colname as the order of stock_cd_list
     if (!is.null(stock_cd_list) && length(stock_cd_list) != 0 )
-      ds_return <- dplyr::select(ds_return, date, as.character(stock_cd_list))
+      ds_return <- dplyr::select(ds_return, date, stock_cd_list)
 
 
     # Change date format: datetime --> date
@@ -700,7 +775,7 @@ get_market_return.gta_db <- function(stock_db,
       field_date   <- quo(trddt)
       field_return <- quo(cdretwdtl)
       date_format <- "ymd"
-      date_ceiling_unit <-"day"
+      date_ceiling_unit <- "day"
     },
     weekly  = {
       table_name <- stock_db$table_list[["TRD_WEEKCM"]]
@@ -713,14 +788,14 @@ get_market_return.gta_db <- function(stock_db,
       field_date   <- quo(trdmnt)
       field_return <- quo(cmretwdtl)
       date_format <- "ym"
-      date_ceiling_unit <-"month"
+      date_ceiling_unit <- "month"
     },
     annual  = {
       table_name <- stock_db$table_list[["TRD_YEARCM"]]
       field_date   <- quo(trdynt)
       field_return <- quo(cyretwdtl)
       date_format <- "y"
-      date_ceiling_unit <-"year"
+      date_ceiling_unit <- "year"
     }
   )
 
@@ -802,7 +877,7 @@ get_market_return.gta_db <- function(stock_db,
 #' @export
 setMethod("get_market_return",
           signature(stock_db = "gta_db"),
-          function (stock_db,
+          function(stock_db,
                     period_type = c("daily", "weekly", "monthly", "annual"),
                     return_type = c("simple", "compound"),
                     cumulated = FALSE,
@@ -1063,6 +1138,13 @@ stock_name_list.gta_db <- function(stock_db) {
   if (!is.null(ds_trd_company.df)) {
 
     codes <- ds_trd_company.df[, "stkcd"]
+    # Coerce stock code to 6 digit of characters of format of "xxxxxxx"
+    if (!is.character(codes)) {
+        codes <- stringr::str_pad(codes, width = 6, pad = "0")
+        msg <- "Coerce stock cd to character of 6 digits if it were number"
+        warnings(msg)
+    }
+
     names <- ds_trd_company.df[, "stknme"]
 
     stock_name_list <- code_name_list(codes, names)
@@ -1092,6 +1174,7 @@ industry_name_list.gta_db <- function(stock_db) {
       dplyr::distinct()
 
     codes <- ds_indistry[, "nnindcd"]
+    codes <- as.character(codes)
     names <- ds_indistry[, "nnindnme"]
 
     stock_name_list <- code_name_list(codes, names)

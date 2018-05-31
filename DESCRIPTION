@@ -26,7 +26,8 @@ Imports: fPortfolio,
     assertive,
     shiny,
     shinydashboard,
-    RODBC
+    DBI,
+    odbc
 RoxygenNote: 6.0.1
 Collate: 
     'stock-db.R'

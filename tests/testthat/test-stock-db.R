@@ -37,6 +37,7 @@ test_that("get_table_dataset, with various arguments", {
   table_name <- stock_db$table_list$TRD_Co
   expect_message(ds_table <- get_table_dataset(stock_db, table_name), "successfully")
   expect_gte(nrow(ds_table), 0)
+  expect_true(is.character(ds_table[, "stkcd"]))
 
 })
 
@@ -47,12 +48,14 @@ test_that("get_stock_dataset, with various arguments", {
   # get_stock_dataset with default arguments ====
   ds_stocks <- get_stock_dataset(stock_db, table_name)
   expect_gte(nrow(ds_stocks), 0)
+  expect_true(is.character(ds_stocks$stkcd))
 
   # get_stock_dataset with customized arguments ====
-  stock_stkcds_list <- c(600066,000550, 600031, 000157,000651, 000333)
+  stock_stkcds_list <- c("600066","000550", "600031", "000157", "000651", "000333")
   expect_message(ds_stocks <- get_stock_dataset(stock_db, table_name = table_name,
                                  stock_cd_list = stock_stkcds_list), "successfully")
-  expect_true(all(unique(ds_stocks$stkcd) %in% stock_stkcds_list))
+  expect_true(all((unique(ds_stocks$stkcd)) %in% stock_stkcds_list))
+  expect_true(is.character(ds_stocks$stkcd))
 
 })
 
@@ -73,10 +76,9 @@ test_that("fetch_table_dataset, with various arguments", {
 test_that("get_stock_return, with various arguments", {
 
   # get_stock_return with default arguments ====
-  # ds_stock_return <- get_stock_return(stock_db)
 
   # get_stock_return with arguments: output_type ====
-  stock_stkcds_list <- c(600066,000550)
+  stock_stkcds_list <- c("600066","000550", "600031", "000157", "000651", "000333")
   stock_names_list <- code2name(stock_db,code = stock_stkcds_list, type = "stock")
   ds_stock_return <- get_stock_return(stock_db,
                                       stock_cd_list = stock_stkcds_list,
@@ -88,6 +90,7 @@ test_that("get_stock_return, with various arguments", {
   expect_is(ds_stock_return, "timeSeries")
   expect_true(all(names(ds_stock_return) %in% stock_names_list))
 
+
   ds_stock_return <- get_stock_return(stock_db,
                                       stock_cd_list = stock_stkcds_list,
                                       period_type = "monthly",
@@ -96,7 +99,7 @@ test_that("get_stock_return, with various arguments", {
                                       cumulated = FALSE,
                                       output_type = "timeSeries")
   expect_is(ds_stock_return, "timeSeries")
-  expect_true(all(names(ds_stock_return) %in% sprintf("%06d", stock_stkcds_list)))
+  expect_true(all(names(ds_stock_return) %in% stock_stkcds_list))
 
   ds_stock_return <- get_stock_return(stock_db,
                                       stock_cd_list = stock_stkcds_list,
@@ -109,6 +112,8 @@ test_that("get_stock_return, with various arguments", {
   expect_fields <- c("date", "stkcd", "return")
   expect_equal(names(ds_stock_return), expect_fields)
   expect_true(all(unique(ds_stock_return$stkcd) %in% stock_stkcds_list))
+  expect_true(is.character(ds_stock_return$stkcd))
+
 
 })
 
@@ -143,6 +148,8 @@ test_that("get_factor_indicator, with various arguments", {
   ds_factors <- get_factor_indicator(stock_db, factor_list)
   expect_fields <- c("date", "periodtype", "stkcd",  "indcd","ROCE", "FAT" )
   expect_true(all(names(ds_factors) %in% expect_fields))
+  expect_true(is.character(ds_factors$stkcd))
+
 
 })
 
@@ -192,8 +199,8 @@ test_that("get_factors_info_info, with various arguments", {
 test_that("Translation between code and name", {
   expect_equal(name2code(stock_db, "资产报酬率A", type = "field"), "f050101b")
   expect_equal(code2name(stock_db, "f050101b", type = "field"), "资产报酬率A")
-  expect_equal(name2code(stock_db, "三一重工", type = "stock"), 600031)
-  expect_equal(code2name(stock_db, 600031, type = "stock"), "三一重工")
+  expect_equal(name2code(stock_db, "三一重工", type = "stock"), "600031")
+  expect_equal(code2name(stock_db, "600031", type = "stock"), "三一重工")
 })
 
 # Tests for stock_db class - non generic functions ----
@@ -225,20 +232,20 @@ test_that("get_stock_field_dataset, with various arguments", {
 
   # get_assets_return with default arguments: tseries_type = "timeSeries" ====
   ds_stock_mretnd.fts <- get_stock_field_dataset(ds_source.df = ds_trd_mnth.df,
-                                                 stock_cd = 600066,
+                                                 stock_cd = "600066",
                                                  target_field = "mretnd",
                                                  date_field = "trdmnt")
   expect_is(ds_stock_mretnd.fts, "timeSeries")
-  expect_equal(names(ds_stock_mretnd.fts), as.character(600066))
+  expect_equal(names(ds_stock_mretnd.fts), "600066")
 
   # get_assets_return with arguments: tseries_type = "xts" ====
   ds_stock_mretnd.xts <- get_stock_field_dataset(ds_source.df = ds_trd_mnth.df,
-                                                 stock_cd = 600066,
+                                                 stock_cd = "600066",
                                                  target_field = "mretnd",
                                                  date_field = "trdmnt",
                                                  tseries_type = "xts")
   expect_is(ds_stock_mretnd.xts, "xts")
-  expect_equal(names(ds_stock_mretnd.xts), as.character(600066))
+  expect_equal(names(ds_stock_mretnd.xts), "600066")
 
 })
 
@@ -246,14 +253,14 @@ test_that("fetch_stock_field_dataset, with various arguments", {
 
   # load test dataset
   ds_trd_mnth.df <- readRDS("ds_trd_mnth.df.RDS")
-  stock_cd_list <- c(600066,000550, 600031, 000157,000651, 000333)
+  stock_cd_list <- c("600066","000550", "600031", "000157", "000651", "000333")
 
   ds_stocks_mretnd.fts <- fetch_stock_field_dataset(ds_source.df = ds_trd_mnth.df,
                                                     stock_cd_list = stock_cd_list,
                                                     target_field = "mretnd",
                                                     date_field = "trdmnt")
   expect_is(ds_stocks_mretnd.fts, "timeSeries")
-  expect_fields <- stringr::str_c("X", sprintf("%06d",stock_cd_list))
+  expect_fields <- stringr::str_c("X", stock_cd_list)
   actual_fields <- names(ds_stocks_mretnd.fts)
   expect_true(all(actual_fields %in% expect_fields))
 
