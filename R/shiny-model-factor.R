@@ -3,9 +3,9 @@
 #' @export
 loadFactorsUI <- function(id, factors_list) {
 
-  ns <- NS(id)
+  ns <- shiny::NS(id)
 
-  tagList(
+  shiny::tagList(
 
     #   sidebarPanel(
     #   selectInput(inputId = ns("factors"), label = strong("Factors:"),
@@ -20,17 +20,19 @@ loadFactorsUI <- function(id, factors_list) {
     #    DT::dataTableOutput(outputId = ns("factors_table"))
     # )
 
-    box(status = "primary",
+    shinydashboard::box(status = "primary",
         title = "Parameters",
         solidHeader = TRUE,
         collapsible = TRUE,
         width = 12,
 
-        selectInput(inputId = ns("factors"),label = strong("Factors:"),
-                  choices = unique(factors_list), multiple = TRUE),
+        shiny::selectInput(inputId = ns("factors"),
+                           label = shiny::strong("Factors:"),
+                           choices = unique(factors_list),
+                           multiple = TRUE),
 
-        actionButton(inputId = ns("load_factors"),
-                     label = strong("Load Factors")
+        shiny::actionButton(inputId = ns("load_factors"),
+                     label = shiny::strong("Load Factors")
         )
     ),
 
@@ -43,26 +45,26 @@ loadFactorsUI <- function(id, factors_list) {
 loadFactors <- function(input, output, session) {
 
   # load factors
-  load_factors <- reactive({
+  load_factors <- shiny::reactive({
 
-    req(input$load_factors)
+    shiny::req(input$load_factors)
 
-    factors_list <- isolate(req(input$factors))
+    factors_list <- shiny::isolate(shiny::req(input$factors))
 
-    withProgress(message = 'Load Factors', value = 0, {
+    shiny::withProgress(message = 'Load Factors', value = 0, {
 
-      incProgress(message = "open_stock_db")
+      shiny::incProgress(message = "open_stock_db")
 
       # Open gta stock databse
       stock_db <- stock_db(gta_db, "GTA_SQLData")
       open_stock_db(stock_db)
 
-      incProgress(message = "init_stock_db")
+      shiny::incProgress(message = "init_stock_db")
 
       # Initate the stock database
       invisible(init_stock_db(stock_db))
 
-      incProgress(message = "get_factor_indicator")
+      shiny::incProgress(message = "get_factor_indicator")
 
       # Get fundamental indicators
       fundamental_factors <- get_factor_indicator(stock_db,
@@ -75,7 +77,7 @@ loadFactors <- function(input, output, session) {
 
     })
 
-     showNotification("Load factors successfully.")
+    shiny::showNotification("Load factors successfully.")
 
      return(fundamental_factors)
 
@@ -97,50 +99,49 @@ loadFactors <- function(input, output, session) {
 # Normalize factors UI
 #' @export
 normalizeFactorsUI <- function(id) {
-  ns <- NS(id)
+  ns <- shiny::NS(id)
 
-  tagList(
-    box(
+  shiny::tagList(
+    shinydashboard::box(
       status = "primary",
       title = "Parameters",
       solidHeader = TRUE,
       collapsible = TRUE,
       width = 12,
-      fluidRow(
-        column(
+      shiny::fluidRow(
+        shiny::column(
           width = 6,
-          selectInput(
+          shiny::selectInput(
             inputId = ns("clean_extremes_method"),
-            label = strong("Clean extremes method:"),
+            label = shiny::strong("Clean extremes method:"),
             choices = c("sigma", "mad")          ),
 
-          sliderInput(inputId = ns("n_sigma"), label = strong("n Sigmas:"),
-                      min = 1,
-                      max = 5,
-                      value = 3, step = 1),
+          shiny::sliderInput(inputId = ns("n_sigma"),
+                             label = shiny::strong("n Sigmas:"),
+                             min = 1,
+                             max = 5,
+                             value = 3, step = 1),
 
-          sliderInput(inputId = ns("n_dmad"), label = strong("n dmads:"),
-                      min = 1,
-                      max = 5,
-                      value = 3, step = 1),
-          selectInput(
-            inputId = ns("value_replace_extremes"),
-            label = strong("value to replace extremes:"),
-            choices = c("limit", "NA")
+          shiny::sliderInput(inputId = ns("n_dmad"),
+                             label = shiny::strong("n dmads:"),
+                             min = 1,
+                             max = 5,
+                             value = 3, step = 1),
+          shiny::selectInput(inputId = ns("value_replace_extremes"),
+                             label = shiny::strong("value to replace extremes:"),
+                             choices = c("limit", "NA")
           )
         ),
-        column(
+        shiny::column(
           width = 6,
-          selectInput(
-            inputId = ns("standard_method"),
-            label = strong("Standardize Method:"),
-            choices = c("normal", "rank")
+          shiny::selectInput(inputId = ns("standard_method"),
+                             label = shiny::strong("Standardize Method:"),
+                             choices = c("normal", "rank")
           )
         )
       ),
-      actionButton(
-          inputId = ns("normalize_factors"),
-          label = strong("Normalize Factors")
+      shiny::actionButton(inputId = ns("normalize_factors"),
+                          label = shiny::strong("Normalize Factors")
       )
 
     ),
@@ -154,15 +155,15 @@ normalizeFactorsUI <- function(id) {
 normalizeFactors <- function(input, output, session, ds_factors) {
 
   # Normalize factors
-  normalized_factors <- reactive({
+  normalized_factors <- shiny::reactive({
 
-    req(input$normalize_factors)
+    shiny::req(input$normalize_factors)
 
     ds_factors <- ds_factors()
 
-    showNotification("Normalizing factors will take few minutes...")
+    shiny::showNotification("Normalizing factors will take few minutes...")
 
-    isolate({
+    shiny::isolate({
 
 
       if (input$clean_extremes_method == "sigma") {
@@ -184,7 +185,7 @@ normalizeFactors <- function(input, output, session, ds_factors) {
     # normalized_factors <- readRDS("./../../data-raw/fundamental_normal_factors.rds")
 
 
-    showNotification("Normalize factors successfully.")
+    shiny::showNotification("Normalize factors successfully.")
 
     return(normalized_factors)
   })
@@ -205,53 +206,60 @@ normalizeFactors <- function(input, output, session, ds_factors) {
 # Explore factors distribution UI
 #' @export
 exploreFactorsDistributionUI <- function(id, ds_factors) {
-  ns <- NS(id)
+  ns <- shiny::NS(id)
 
-  tagList(
+  shiny::tagList(
       #Side panel for input
-      sidebarPanel(
-
-        radioButtons(inputId = ns("date_type"), label = strong("Date Range"),
-                           choices = list("Single Period" = "single_period",
+      shiny::sidebarPanel(
+        shiny::radioButtons(inputId = ns("date_type"),
+                            label = shiny::strong("Date Range"),
+                            choices = list("Single Period" = "single_period",
                                           "Multi Periods" = "multi_period"),
-                           selected = "single_period"),
+                            selected = "single_period"),
 
-        conditionalPanel(
+        shiny::conditionalPanel(
           condition = "input.date_type == 'single_period'",
-          sliderInput(inputId = ns("report_date"), label = strong("report Date:"),
-                      min = lubridate::as_date("2017-12-31"),
-                      max = lubridate::as_date("2017-12-31"),
-                      value = lubridate::as_date("2017-12-31"), step = NULL,
-                      timeFormat = "%F"),
+          shiny::sliderInput(inputId = ns("report_date"),
+                             label = shiny::strong("report Date:"),
+                             min = lubridate::as_date("2017-12-31"),
+                             max = lubridate::as_date("2017-12-31"),
+                             value = lubridate::as_date("2017-12-31"),
+                             step = NULL,
+                             timeFormat = "%F"),
           ns = ns
         ),
 
-        conditionalPanel(
+        shiny::conditionalPanel(
           condition = "input.date_type == 'multi_period'",
-          selectInput(inputId = ns("start_date"), label = strong("Start Date:"),
-                      choices = ""),
+          shiny::selectInput(inputId = ns("start_date"),
+                             label = shiny::strong("Start Date:"),
+                             choices = ""),
 
-          selectInput(inputId = ns("end_date"), label = strong("End Date:"),
-                      choices = ""),
+          shiny::selectInput(inputId = ns("end_date"),
+                             label = shiny::strong("End Date:"),
+                             choices = ""),
           ns = ns
         ),
 
-        selectInput(inputId = ns("plot_type"), label = strong("Plot Type:"),
+        shiny::selectInput(inputId = ns("plot_type"),
+                    label = shiny::strong("Plot Type:"),
                     choices = c("boxplot", "violin", "density", "histogram", "freqpoly"),
                     selected = "boxplot"),
 
-        selectInput(inputId = ns("factors"), label = strong("Factors:"),
+        selectInput(inputId = ns("factors"),
+                    label = strong("Factors:"),
                     choices = "", multiple = TRUE),
 
-        sliderInput(inputId = ns("bins_adjust"), label = "Bins for Histogram/freqpoly:",
-                    min = 5, max = 100, value = 30, step = 1)
+        shiny::sliderInput(inputId = ns("bins_adjust"),
+                           label = "Bins for Histogram/freqpoly:",
+                           min = 5, max = 100, value = 30, step = 1)
       ),
 
       # MainPanel for Output
-      mainPanel(
-        titlePanel(textOutput(outputId = ns("caption"))),
-        plotOutput(outputId = ns("factor_compare_plot")),
-        tableOutput(outputId = ns("factor_compare_table"))
+      shiny::mainPanel(
+        shiny::titlePanel(shiny::textOutput(outputId = ns("caption"))),
+        shiny::plotOutput(outputId = ns("factor_compare_plot")),
+        shiny::tableOutput(outputId = ns("factor_compare_table"))
       )
   )
 
@@ -261,7 +269,7 @@ exploreFactorsDistributionUI <- function(id, ds_factors) {
 #' @export
 exploreFactorsDistribution <- function(input, output, session, ds_factors) {
 
-  ds_transform_factors <- reactive({
+  ds_transform_factors <- shiny::reactive({
     ds_factors <- ds_factors()
     ds_transform_factors <- ds_factors %>%
       tidyr::gather(key = "factor_name", value = "factor_exposure", -(date:indcd))
@@ -270,31 +278,31 @@ exploreFactorsDistribution <- function(input, output, session, ds_factors) {
   })
 
   # Update UI base ds_factors
-  observe({
+  shiny::observe({
 
     ds_factors <- ds_transform_factors()
 
-    updateSliderInput(session = session, inputId = "report_date",
+    shiny::updateSliderInput(session = session, inputId = "report_date",
                       min = min(unique(ds_factors$date)),
                       max = max(unique(ds_factors$date)),
                       value = max(unique(ds_factors$date)))
 
-    updateSelectInput(session = session, inputId = "start_date",
+    shiny::updateSelectInput(session = session, inputId = "start_date",
                 choices = unique(ds_factors$date),
                 selected = max(unique(ds_factors$date)))
 
-    updateSelectInput(session = session, inputId = "end_date",
+    shiny::updateSelectInput(session = session, inputId = "end_date",
                 choices = unique(ds_factors$date),
                 selected = max(unique(ds_factors$date)))
 
-    updateSelectInput(session = session, inputId = "factors",
+    shiny::updateSelectInput(session = session, inputId = "factors",
                       choices = c("ALL", unique(ds_factors$factor_name)),
                       selected = "ALL")
 
   })
 
   # Select date range
-  select_date_range <- reactive({
+  select_date_range <- shiny::reactive({
 
     ds_factors <- ds_transform_factors()
 
@@ -322,7 +330,7 @@ exploreFactorsDistribution <- function(input, output, session, ds_factors) {
   })
 
   # Filter data of factors
-  select_dataset <- reactive({
+  select_dataset <-shiny::reactive({
 
     ds_factors <- ds_transform_factors()
 
@@ -341,7 +349,7 @@ exploreFactorsDistribution <- function(input, output, session, ds_factors) {
 
 
   # Render captions
-  output$caption <- renderText({
+  output$caption <- shiny::renderText({
 
     start_date <- select_date_range()$start_date
     end_date <- select_date_range()$end_date
@@ -352,7 +360,7 @@ exploreFactorsDistribution <- function(input, output, session, ds_factors) {
   })
 
   # plot comparsion plot
-  output$factor_compare_plot <- renderPlot({
+  output$factor_compare_plot <- shiny::renderPlot({
     ds_select_factors <- select_dataset()
 
     # plot the select data
@@ -376,14 +384,14 @@ exploreFactorsDistribution <- function(input, output, session, ds_factors) {
   })
 
   # summarize comparison result
-  output$factor_compare_table <- renderTable({
+  output$factor_compare_table <- shiny::renderTable({
     ds_select_factors <- select_dataset()
 
     select_factors_summary <- ds_select_factors %>%
       dplyr::group_by(factor_name) %>%
       dplyr::summarise_at(
         "factor_exposure",
-        funs(
+        dplyr::funs(
           NAs = sum(is.na(.)),
           mean,
           sd,
@@ -407,47 +415,53 @@ exploreFactorsDistribution <- function(input, output, session, ds_factors) {
 # Explore factors correlation UI
 #' @export
 exploreFactorsCorrelationUI <- function(id, ds_factors) {
-  ns <- NS(id)
+  ns <- shiny::NS(id)
 
-  tagList(
+  shiny::tagList(
     #Side panel for input
-    sidebarPanel(
-      radioButtons(inputId = ns("date_type"), label = strong("Date Range"),
-                   choices = list("Single Period" = "single_period",
-                                  "Multi Periods" = "multi_period"),
-                   selected = "single_period"),
+    shiny::sidebarPanel(
+      shiny::radioButtons(inputId = ns("date_type"),
+                          label = shiny::strong("Date Range"),
+                          choices = list("Single Period" = "single_period",
+                                        "Multi Periods" = "multi_period"),
+                          selected = "single_period"),
 
-      conditionalPanel(
+      shiny::conditionalPanel(
         condition = "input.date_type == 'single_period'",
-        sliderInput(inputId = ns("report_date"), label = strong("report Date:"),
-                    min = lubridate::as_date("2017-12-31"),
-                    max = lubridate::as_date("2017-12-31"),
-                    value = lubridate::as_date("2017-12-31"), step = NULL,
-                    timeFormat = "%F"),
+        shiny::sliderInput(inputId = ns("report_date"),
+                           label = shiny::strong("report Date:"),
+                           min = lubridate::as_date("2017-12-31"),
+                           max = lubridate::as_date("2017-12-31"),
+                           value = lubridate::as_date("2017-12-31"), step = NULL,
+                           timeFormat = "%F"),
         ns = ns
       ),
 
-      conditionalPanel(
+      shiny::conditionalPanel(
         condition = "input.date_type == 'multi_period'",
-        selectInput(inputId = ns("start_date"), label = strong("Start Date:"),
-                    choices = ""),
+        shiny::selectInput(inputId = ns("start_date"),
+                           label = shiny::strong("Start Date:"),
+                           choices = ""),
 
-        selectInput(inputId = ns("end_date"), label = strong("End Date:"),
-                    choices = ""),
+        shiny::selectInput(inputId = ns("end_date"),
+                           label = shiny::strong("End Date:"),
+                           choices = ""),
         ns = ns
       ),
 
-      selectInput(inputId = ns("factors"), label = strong("Factors:"),
-                  choices = "", multiple = TRUE)
+      shiny::selectInput(inputId = ns("factors"),
+                         label = shiny::strong("Factors:"),
+                         choices = "",
+                         multiple = TRUE)
 
 
     ),
 
     # MainPanel for Output
-    mainPanel(
-      titlePanel(textOutput(outputId = ns("caption"))),
-      plotOutput(outputId = ns("factor_correlation_plot")),
-      verbatimTextOutput(outputId = ns("factor_corelation_table"))
+    shiny::mainPanel(
+      shiny::titlePanel(shiny::textOutput(outputId = ns("caption"))),
+      shiny::plotOutput(outputId = ns("factor_correlation_plot")),
+      shiny::verbatimTextOutput(outputId = ns("factor_corelation_table"))
     )
   )
 }
@@ -456,7 +470,7 @@ exploreFactorsCorrelationUI <- function(id, ds_factors) {
 #' @export
 exploreFactorsCorrelation <- function(input, output, session, ds_factors) {
 
-  ds_transform_factors <- reactive({
+  ds_transform_factors <- shiny::reactive({
     ds_factors <- ds_factors()
     ds_transform_factors <- ds_factors %>%
       tidyr::gather(key = "factor_name", value = "factor_exposure", -(date:indcd))
@@ -465,31 +479,31 @@ exploreFactorsCorrelation <- function(input, output, session, ds_factors) {
   })
 
   # Update UI base ds_factors
-  observe({
+  shiny::observe({
 
     ds_factors <- ds_transform_factors()
 
-    updateSliderInput(session = session, inputId = "report_date",
+    shiny::updateSliderInput(session = session, inputId = "report_date",
                       min = min(unique(ds_factors$date)),
                       max = max(unique(ds_factors$date)),
                       value = max(unique(ds_factors$date)))
 
-    updateSelectInput(session = session, inputId = "start_date",
+    shiny::updateSelectInput(session = session, inputId = "start_date",
                       choices = unique(ds_factors$date),
                       selected = max(unique(ds_factors$date)))
 
-    updateSelectInput(session = session, inputId = "end_date",
+    shiny::updateSelectInput(session = session, inputId = "end_date",
                       choices = unique(ds_factors$date),
                       selected = max(unique(ds_factors$date)))
 
-    updateSelectInput(session = session, inputId = "factors",
+    shiny::updateSelectInput(session = session, inputId = "factors",
                       choices = c("ALL", unique(ds_factors$factor_name)),
                       selected = "ALL")
 
   })
 
   # Select date range
-  select_date_range <- reactive({
+  select_date_range <- shiny::reactive({
 
     ds_factors <- ds_transform_factors()
 
@@ -517,7 +531,7 @@ exploreFactorsCorrelation <- function(input, output, session, ds_factors) {
   })
 
   # Filter data of factors
-  select_dataset <- reactive({
+  select_dataset <- shiny::reactive({
 
     ds_factors <- ds_transform_factors()
 
@@ -535,7 +549,7 @@ exploreFactorsCorrelation <- function(input, output, session, ds_factors) {
 
 
   # Render captions
-  output$caption <- renderText({
+  output$caption <- shiny::renderText({
 
     start_date <- select_date_range()$start_date
     end_date <- select_date_range()$end_date
@@ -546,7 +560,7 @@ exploreFactorsCorrelation <- function(input, output, session, ds_factors) {
   })
 
   # plot correlation plot
-  output$factor_correlation_plot <- renderPlot({
+  output$factor_correlation_plot <- shiny::renderPlot({
 
     ds_select_factors <- select_dataset()
 
@@ -561,7 +575,7 @@ exploreFactorsCorrelation <- function(input, output, session, ds_factors) {
   })
 
   # summarize correlation matrix
-  output$factor_corelation_table <- renderPrint({
+  output$factor_corelation_table <- shiny::renderPrint({
 
 
     ds_select_factors <- select_dataset()
@@ -573,7 +587,7 @@ exploreFactorsCorrelation <- function(input, output, session, ds_factors) {
 
     select_factors_correlation <- cor(ds_select_factors, use = "complete")
 
-    select_factors_correlation<- round(select_factors_correlation, digits = 2)
+    select_factors_correlation <- round(select_factors_correlation, digits = 2)
 
     return(select_factors_correlation)
 

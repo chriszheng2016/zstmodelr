@@ -15,17 +15,20 @@
 #' To learn more about zstmodelr, start with the vignettes:
 #'  `browseVignettes(package = "zstmodelr")`
 #'
-#' @docType package
 #' @name zstmodelr
+#' @docType package
+#' @aliases NULL
 #'
-#' @@import rlang
+#' @import rlang
+#' @import ggplot2
 #' @@import methods
-
-
-
-
 NULL
+
+
+
 
 # Register parallel backend for parallel process
 cores_for_process <- parallel::detectCores() - 1
 doParallel::registerDoParallel(cores = cores_for_process)
+
+"_PACKAGE"
