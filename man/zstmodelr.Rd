@@ -2,7 +2,6 @@
 % Please edit documentation in R/zstmodelr.R
 \docType{package}
 \name{zstmodelr}
-\alias{zstmodelr}
 \alias{zstmodelr-package}
 \title{zstmodelr: A package for building analysis model for China stock market.}
 \description{

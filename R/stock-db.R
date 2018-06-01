@@ -13,17 +13,21 @@ setRefClass("stock_db",
 #'
 #' factory for creating for subclass object of stock_db class
 #'
-#' @param stock_db_class   specific creator of stock database class,
+#' @param stock_db_class   Specific creator of stock database class,
 #' e.g. gta_db
-#' @param ... addition params used by specific class of stock database(e.g. a dsn string
+#' @param ... Addition params used by specific class of stock database(e.g. a dsn string
 #' "GTA_SQLData")
 #'
-#' @return a object of stock db
+#' @return A object of stock db
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#' library(zstmodelr)
 #' stock_db <- stock_db(gta_db, "GTA_SQLData")
-#'
+#' open_stock_db(stock_db)
+#' close_stock_db(stock_db)
+#' }
 stock_db <- function(stock_db_class, ...) {
 
   # build class object
@@ -41,25 +45,32 @@ stock_db <- function(stock_db_class, ...) {
 #'
 #' A group generic function to deal with a stock_db object
 #'
-#' @name stock_db_operations
+#' @name stock_db_operation
 #' @examples
+#' \dontrun{
+#' library(zstmodelr)
 #' stock_db <- stock_db(gta_db, "GTA_SQLData")
 #' open_stock_db(stock_db)
 #' close_stock_db(stock_db)
+#' }
 NULL
 
 #' Open stock database
 #'
 #' Generic function to open a stock database
 #'
-#' @param stock_db a stock database object to operate
+#' @param stock_db A stock database object to operate
 #'
-#' @return TRUE if success, else FALSE
+#' @family stock_db generics
+#' @return TRUE if success, otherwise FALSE
 #' @export
 #' @examples
+#' \dontrun{
+#' library(zstmodelr)
 #' stock_db <- stock_db(gta_db, "GTA_SQLData")
 #' open_stock_db(stock_db)
 #' close_stock_db(stock_db)
+#' }
 
 # S3 generic definition
 # open_stock_db <- function(stock_db, ...) {
@@ -78,15 +89,15 @@ setGeneric(name = "open_stock_db",
 #'
 #' Generic function to close a stock database.
 #'
-#' @param stock_db a stock database object to operate.
+#' @param stock_db A stock database object to operate.
+#'
+#' @family stock_db generics
 #'
 #' @return TRUE if success, else FALSE.
 #' @export
 #'
 #' @examples
-#' stock_db <- stock_db(gta_db, "GTA_SQLData")
-#' open_stock_db(stock_db)
-#' close_stock_db(stock_db)
+
 
 # S3 generic definition
 # close_stock_db <- function(stock_db, ...) {
@@ -105,7 +116,9 @@ setGeneric(name = "close_stock_db",
 #'
 #' Generic function to initiate params of a stock database.
 #'
-#' @param stock_db a stock database object to operate.
+#' @param stock_db A stock database object to operate.
+#'
+#' @family stock_db generics
 #'
 #' @return TRUE if success, else FALSE.
 #' @export
@@ -132,9 +145,11 @@ setGeneric(name = "init_stock_db",
 #'
 #' Generic function to list all tables of stock_db.
 #'
-#' @param stock_db  a stock database object to operate.
+#' @param stock_db  A stock database object to operate.
 #'
-#' @return a vectors of characters of table names.
+#' @family stock_db generics
+#'
+#' @return A vectors of characters of table names.
 #' @export
 #'
 #' @examples
@@ -159,8 +174,10 @@ setGeneric(name = "list_stock_tables",
 #'
 #' Generic function to get one dataset from stock_db.
 #'
-#' @param stock_db    a stock database object to operate.
-#' @param table_name  name of target table.
+#' @param stock_db    A stock database object to operate.
+#' @param table_name  Name of target table.
+#'
+#' @family stock_db generics
 #'
 #' @return A data frame on success, or NULL.
 #' @export
@@ -184,10 +201,12 @@ setGeneric(name = "get_table_dataset",
 #'
 #' Generic function to get a dataset of a list of stock_cd from table in stock.
 #'
-#' @param stock_db      a stock database object to operate.
-#' @param table_name    name of target table.
-#' @param stock_cd_list a list of stock cd, default value of NULL means.
+#' @param stock_db      A stock database object to operate.
+#' @param table_name    Name of target table.
+#' @param stock_cd_list A list of stock cd, default value of NULL means.
 #'     all stock data will be returned.
+#'
+#' @family stock_db generics
 #'
 #' @return A data frame on success, or NULL.
 #' @export
@@ -220,8 +239,10 @@ setGeneric(name = "get_stock_dataset",
 #'
 #' Generic function to fetch many datasets from stock_db.
 #'
-#' @param stock_db   a stock database object to operate.
-#' @param table_list a character vector of table names.
+#' @param stock_db   A stock database object to operate.
+#' @param table_list A character vector of table names.
+#'
+#' @family stock_db generics
 #'
 #' @return A list of names of table fetched successfully.
 #' @export
@@ -244,17 +265,16 @@ setGeneric(name = "fetch_table_dataset",
 #'
 #' Generic function to get stock return timeseries from stock_db.
 #'
-#' @param stock_db    a stock database object to operate.
-#' @param stock_cd_list a list of stock cd, default value of NULL means
-#'     all stock data will be returned.
-#' @param period_type date peroid for time series, e.g. "daily", "weekly",
-#'                    "monthly", "annual", default value is "daily".
-#' @param return_type a character string naming the method how the returns were computed.
-#' @param use_stock_name use stock name as field name instead of stock cd, default is TRUE.
-#' @param cumulated   calculate cumulated return, default value is FALSE.
-#' @param output_type format of output result, e.g "timeSeries", "tibble".
+#' @param stock_db    A stock database object to operate.
+#' @param stock_cd_list A list of stock cd, default value of NULL means
+#' all stock data will return.
+#' @param period_type Date peroid for time series, e.g. "day", "month",
+#' "year", by default "day".
+#' @param period_date Choose start/end date of period as the date for
+#' observation
+#' @param output_type Format of output result, e.g "timeSeries", "tibble".
 #'
-#'
+#' @family stock_db generics
 #'
 #' @return A timeseries of stock return.
 #' @export
@@ -264,10 +284,8 @@ setGeneric(name = "fetch_table_dataset",
 # S3 generic definition
 # get_stock_return <- function(stock_db,
 #                              stock_cd_list = NULL,
-#                              period_type = c("daily", "weekly", "monthly", "annual"),
-#                              return_type = c("simple", "compound"),
-#                              use_stock_name = TRUE,
-#                              cumulated = FALSE,
+#                              period_type = c("day", "month", "year"),
+#                              period_date = c("start", "end"),
 #                              output_type = c("timeSeries", "tibble"),
 #                              ...) {
 #   UseMethod("get_stock_return")
@@ -279,10 +297,8 @@ setGeneric(
   signature = c("stock_db"),
   def = get_stock_return <- function(stock_db,
                                      stock_cd_list = NULL,
-                                     period_type = c("daily", "weekly", "monthly", "annual"),
-                                     return_type = c("simple", "compound"),
-                                     use_stock_name = TRUE,
-                                     cumulated = FALSE,
+                                     period_type = c("day", "month", "year"),
+                                     period_date = c("start", "end"),
                                      output_type = c("timeSeries", "tibble"),
                                      ...) {
       standardGeneric("get_stock_return")
@@ -293,12 +309,14 @@ setGeneric(
 #'
 #' Generic function to get stock return timeseries from stock_db.
 #'
-#' @param stock_db    a stock database object to operate.
-#' @param period_type date peroid for time series, e.g. "daily", "weekly",
-#'                    "monthly", "annual", default value is  "daily".
-#' @param return_type a character string naming the method how the returns were computed.
-#' @param cumulated   calculate cumulated return, default value is FALSE.
-#' @param output_type format of output result, e.g "timeSeries", "tibble".
+#' @param stock_db    A stock database object to operate.
+#' @param period_type Date peroid for time series, e.g. "day", "month",
+#' "year", by default value is  "day".
+#' @param period_date Choose start/end date of period as the date for
+#' observation
+#' @param output_type Format of output result, e.g "timeSeries", "tibble".
+#'
+#' @family stock_db generics
 #'
 #' @return A timeseries of market return.
 #' @export
@@ -307,9 +325,8 @@ setGeneric(
 
 # S3 generic definition
 # get_market_return <- function(stock_db,
-#                               period_type = c("daily", "weekly", "monthly", "annual"),
-#                               return_type = c("simple", "compound"),
-#                               cumulated = FALSE,
+#                               period_type = c("day", "month", "year"),
+#                               period_date = c("start", "end"),
 #                               output_type = c("timeSeries", "tibble"),
 #                               ...) {
 #   UseMethod("get_market_return")
@@ -320,9 +337,8 @@ setGeneric(
   name = "get_market_return",
   signature = c("stock_db"),
   def = get_market_return <- function(stock_db,
-                                      period_type = c("daily", "weekly", "monthly", "annual"),
-                                      return_type = c("simple", "compound"),
-                                      cumulated = FALSE,
+                                      period_type = c("day", "month", "year"),
+                                      period_date = c("start", "end"),
                                       output_type = c("timeSeries", "tibble"),
                                       ...) {
     standardGeneric("get_market_return")
@@ -333,9 +349,10 @@ setGeneric(
 #'
 #' Generic function to get  factor indicator from stock_db.
 #'
-#' @param stock_db         a stock database object to operate.
+#' @param stock_db         A stock database object to operate.
 #' @param factor_list      factor name list.
 #'
+#' @family stock_db generics
 #'
 #' @return A timeseries of factor indicator
 #' @export
@@ -359,11 +376,12 @@ setGeneric(
 #'
 #' Generic function to get factors info from stock_db.
 #'
-#' @param stock_db         a stock database object to operate.
-#' @param factor_groups    a character vector of factor groups, if NULL will
+#' @param stock_db         A stock database object to operate.
+#' @param factor_groups    A character vector of factor groups, if NULL will
 #' return all factors, otherwise return factors of matched fator groups,
 #' by default NULL.
 #'
+#' @family stock_db generics
 #'
 #' @return A dataframe of factors of matched factor groups if successfully,
 #' otherwise NULL.
@@ -385,8 +403,9 @@ setGeneric(
 #'
 #' Get assets return timeseries by combining marekt return anad stocks return
 #'
-#' @param benchmark_return   a timeseries of market index
-#' @param stocks_return      a timeseries of a group stock stocks
+#' @param benchmark_return   A timeseries of market index
+#' @param stocks_return      A timeseries of a group stock stocks
+#'
 #'
 #' @return A timeseries of assets return
 #' @export
@@ -578,11 +597,13 @@ fetch_stock_field_dataset <- function(ds_source.df,
 #'
 #' Generic function to translate code into name
 #'
-#' @param x    a object containg code/name infomation
-#' @param code a code or a vector of codes to be translated
-#' @param ...  other arguments to be provided to underlyling functions
+#' @param x    A object containg code/name infomation
+#' @param code A code or a vector of codes to be translated
+#' @param ...  Other arguments to be provided to underlyling functions
 #'
-#' @return     a name or a vector of names
+#' @family stock_db generics
+#'
+#' @return     A name or a vector of names
 #' @export
 #'
 #' @examples
@@ -604,11 +625,13 @@ setGeneric(name = "code2name",
 #'
 #' Generic function to translate name into code
 #'
-#' @param x     a object containg code/name infomation
-#' @param name  a name or a vector of names to be translated
-#' @param ...   other arguments to be provided to underlyling functions
+#' @param x     A object containg code/name infomation
+#' @param name  A name or a vector of names to be translated
+#' @param ...   Other arguments to be provided to underlyling functions
 #'
-#' @return      a code or a vector of codes
+#' @family stock_db generics
+#'
+#' @return      A code or a vector of codes
 #' @export
 #'
 #' @examples

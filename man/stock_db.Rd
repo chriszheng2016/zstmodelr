@@ -7,19 +7,23 @@
 stock_db(stock_db_class, ...)
 }
 \arguments{
-\item{stock_db_class}{specific creator of stock database class,
+\item{stock_db_class}{Specific creator of stock database class,
 e.g. gta_db}
 
-\item{...}{addition params used by specific class of stock database(e.g. a dsn string
+\item{...}{Addition params used by specific class of stock database(e.g. a dsn string
 "GTA_SQLData")}
 }
 \value{
-a object of stock db
+A object of stock db
 }
 \description{
 factory for creating for subclass object of stock_db class
 }
 \examples{
+\dontrun{
+library(zstmodelr)
 stock_db <- stock_db(gta_db, "GTA_SQLData")
-
+open_stock_db(stock_db)
+close_stock_db(stock_db)
+}
 }

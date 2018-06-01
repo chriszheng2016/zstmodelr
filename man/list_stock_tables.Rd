@@ -11,10 +11,10 @@ list_stock_tables(stock_db, ...)
 \S4method{list_stock_tables}{gta_db}(stock_db, ...)
 }
 \arguments{
-\item{stock_db}{a stock database object to operate.}
+\item{stock_db}{A stock database object to operate.}
 }
 \value{
-a vectors of characters of table names.
+A vectors of characters of table names.
 }
 \description{
 Generic function to list all tables of stock_db.
@@ -29,4 +29,17 @@ stock_db <- stock_db(gta_db, "GTA_SQLData")
 open_stock_db(stock_db)
 init_stock_db(stock_db)
 list_stock_tables(stock_db)
+}
+\seealso{
+Other stock_db generics: \code{\link{close_stock_db}},
+  \code{\link{code2name}},
+  \code{\link{fetch_table_dataset}},
+  \code{\link{get_factor_indicator}},
+  \code{\link{get_factors_info}},
+  \code{\link{get_market_return}},
+  \code{\link{get_stock_dataset}},
+  \code{\link{get_stock_return}},
+  \code{\link{get_table_dataset}},
+  \code{\link{init_stock_db}}, \code{\link{name2code}},
+  \code{\link{open_stock_db}}
 }

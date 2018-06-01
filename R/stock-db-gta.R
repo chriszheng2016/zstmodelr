@@ -558,12 +558,10 @@ setMethod("fetch_table_dataset",
 #' @describeIn get_stock_return get stock return timeseries from a database of gta_db class
 #' @export
 get_stock_return.gta_db <- function(stock_db, stock_cd_list = NULL,
-                  period_type = c("daily", "weekly", "monthly", "annual"),
-                  return_type = c("simple", "compound"),
-                  use_stock_name = TRUE,
-                  cumulated = FALSE,
+                  period_type = c("day", "month", "year"),
+                  period_date = c("start", "end"),
                   output_type = c("timeSeries", "tibble")
-                  ) {
+                  ){
 
   # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
@@ -579,32 +577,26 @@ get_stock_return.gta_db <- function(stock_db, stock_cd_list = NULL,
   period_type <- match.arg(period_type)
   switch(
     period_type,
-    daily = {
+    "day" = {
       table_name   <- stock_db$table_list[["TRD_DALYR"]]
       field_date   <- rlang::quo(trddt)
       field_return <- rlang::quo(dretwd)
       date_format <- "ymd"
-      date_ceiling_unit <- "day"
+      peroid_unit <- "day"
     },
-    weekly  = {
-      table_name <- stock_db$table_list[["TRD_WEEK"]]
-      field_date   <- rlang::quo(trdwnt)
-      field_return <- rlang::quo(wretwd)
-      date_ceiling_unit <- "week"
-    },
-    monthly = {
+    "month" = {
       table_name <- stock_db$table_list[["TRD_MNTH"]]
       field_date   <- rlang::quo(trdmnt)
       field_return <- rlang::quo(mretwd)
       date_format <- "ymd"
-      date_ceiling_unit <- "month"
+      peroid_unit <- "month"
     },
-    annual  = {
+    "year" = {
       table_name <- stock_db$table_list[["TRD_YEAR"]]
       field_date   <- rlang::quo(trdynt)
       field_return <- rlang::quo(yretwd)
       date_format <- "y"
-      date_ceiling_unit <- "year"
+      peroid_unit <- "year"
     }
   )
 
@@ -618,7 +610,12 @@ get_stock_return.gta_db <- function(stock_db, stock_cd_list = NULL,
   #Warning: ds_return is simple return in database by default !!
   ds_return <- get_stock_dataset.gta_db(stock_db, table_name, stock_cd_list)
   if (!is.null(ds_return)) {
-    ds_return <- tibble::as.tibble(ds_return)
+
+    ds_return <- ds_return %>%
+      tibble::as.tibble() %>%
+      dplyr::select(date = !!field_date, stkcd = !!field_stkcd,
+                    return = !!field_return)
+
     msg <- sprintf("return table: %s , return field: %s, date field: %s",
                    table_name, rlang::quo_text(field_return), rlang::quo_text(field_date))
     message(msg)
@@ -627,94 +624,56 @@ get_stock_return.gta_db <- function(stock_db, stock_cd_list = NULL,
     success = FALSE
   }
 
+  # Set date format of date field
+  if (success) {
+
+    # Change date format: datetime --> date
+    origin_date <- lubridate::parse_date_time(as.character(ds_return$date), date_format)
+    origin_date <- lubridate::as_date(origin_date)
+
+    # Set date of peroid(start date/end date of the period)
+    period_date = match.arg(period_date)
+    switch(period_date,
+           "start" = {
+             #first day of period = floor_date
+             floor_date <- lubridate::floor_date(origin_date,
+                                                     unit = peroid_unit)
+             ds_return$date <- floor_date
+           },
+           "end" = {
+             #last day of period = ceiling_date -1
+             ceiling_date <- lubridate::ceiling_date(origin_date,
+                                                     unit = peroid_unit,
+                                                     change_on_boundary = TRUE)
+             ds_return$date <- ceiling_date - 1
+           }
+    )
+  }
+
   # Build simple return results
   ts_return <- NULL
   if (success) {
-
-    ds_return <- ds_return %>%
-      dplyr::select(date = !!field_date, stkcd = !!field_stkcd,
-                    return = !!field_return) %>%
-      tidyr::spread(key = stkcd, value = return)
-
-    # arrange colname as the order of stock_cd_list
-    if (!is.null(stock_cd_list) && length(stock_cd_list) != 0 )
-      ds_return <- dplyr::select(ds_return, date, stock_cd_list)
-
-
-    # Change date format: datetime --> date
-    # Use the last day of the period as the date for weekly, monthly, annual data
-    origin_date <- lubridate::parse_date_time(as.character(ds_return$date), date_format)
-    origin_date <- lubridate::as_date(origin_date)
-    if (period_type != "daily") {
-
-      #last day of period = ceiling_date -1
-      ceiling_date <- lubridate::ceiling_date(origin_date,
-                                           unit = date_ceiling_unit,
-                                           change_on_boundary = TRUE)
-      charvec <- ceiling_date -1
-
-    } else {
-      charvec <- origin_date
-    }
-
-    # Build time series
-    ts_return.fts <- timeSeries::timeSeries(ds_return[, -1], charvec)
-
-    # Format the colname by stkcd or stckname
-    if (use_stock_name) {
-      field_names <- code2name(stock_db, as.numeric(names(ts_return.fts)))
-    } else {
-      field_names <- sprintf("%06d", as.numeric(names(ts_return.fts)))
-    }
-    names(ts_return.fts) <- field_names
-
-  } else {
-    success <- FALSE
-  }
-
-  # transform simple return into requried return type
-  if (success) {
-    if (cumulated) {
-      ts_return.fts <- cumulated(na.omit(ts_return.fts, method = "z"), method = "simple")
-    } else {
-      if (match.arg(return_type) == "compound")
-         ts_return.fts <- simple2compound_return(ts_return.fts)
-    }
-
-  }
-
-  # Build final return results by output format
-  if (success) {
     output_type = match.arg(output_type)
-    switch( output_type,
-      tibble = {
+    switch(output_type,
+            tibble = {
+              ts_return <- ds_return
+            },
+            timeSeries = {
 
-        # take back date column from rowsname
-        ts_return.tib <- tibble::rownames_to_column(tibble::as.tibble(ts_return.fts),
-                                                    var = "date")
-        # turn width format back into long format
-        ts_return.tib <- ts_return.tib %>%
-          dplyr::mutate(date = lubridate::ymd(date)) %>%
-          tidyr::gather(key="stkcd", value = "return", -date)
+              # spread stkcd as columns
+              ds_return <- ds_return %>%
+                tidyr::spread(key = stkcd, value = return)
 
-        # rebuild stkcd coloumn
-        if (use_stock_name) {
-          # change stkname into stkcd number
-          ts_return.tib <- ts_return.tib %>%
-            dplyr::mutate(stkcd = name2code(stock_db, name = stkcd))
+              # arrange colname as the order of stock_cd_list
+              if (!is.null(stock_cd_list) && length(stock_cd_list) != 0 )
+                ds_return <- dplyr::select(ds_return, date, stock_cd_list)
 
-        } else {
-          # normalize stkcd string to stkcd number(when turn timeSeries into tibble,
-          # the stkcd were added prefix of "X" )
-          ts_return.tib <- ts_return.tib %>%
-            dplyr::mutate(stkcd = as.integer(stringr::str_replace(stkcd, "^X", "")))
-        }
+              # Build time series
+              charvec <- ds_return$date
+              ts_return.fts <- timeSeries::timeSeries(ds_return[, -1], charvec)
 
-        ts_return <- ts_return.tib
-      },
-      timeSeries = {
-        ts_return <- ts_return.fts
-      }
+              ts_return <- ts_return.fts
+            }
     )
   }
 
@@ -726,14 +685,10 @@ get_stock_return.gta_db <- function(stock_db, stock_cd_list = NULL,
 #' @export
 setMethod("get_stock_return",
           signature(stock_db = "gta_db"),
-          function (stock_db,
+          function(stock_db,
                     stock_cd_list = NULL,
-                    period_type = c("daily",
-                                    "weekly", "monthly", "annual"),
-                    return_type = c("simple",
-                                    "compound"),
-                    use_stock_name = TRUE,
-                    cumulated = FALSE,
+                    period_type = c("day", "month", "year"),
+                    period_date = c("start", "end"),
                     output_type = c("timeSeries",
                                     "tibble"),
                     ...)
@@ -741,9 +696,7 @@ setMethod("get_stock_return",
             get_stock_return.gta_db(stock_db = stock_db,
                                     stock_cd_list = stock_cd_list,
                                     period_type = period_type,
-                                    return_type = return_type,
-                                    use_stock_name = use_stock_name,
-                                    cumulated = cumulated,
+                                    period_date = period_date,
                                     output_type = output_type)
           })
 
@@ -752,9 +705,8 @@ setMethod("get_stock_return",
 #' @describeIn get_market_return get market return timeseries from a database of gta_db class
 #' @export
 get_market_return.gta_db <- function(stock_db,
-                    period_type = c("daily", "weekly", "monthly", "annual"),
-                    return_type = c("simple", "compound"),
-                    cumulated = FALSE,
+                    period_type = c("day", "month", "year"),
+                    period_date = c("start", "end"),
                     output_type = c("timeSeries", "tibble")) {
 
   # validate params
@@ -770,105 +722,90 @@ get_market_return.gta_db <- function(stock_db,
   period_type <- match.arg(period_type)
   switch(
     period_type,
-    daily = {
+    "day" = {
       table_name   <- stock_db$table_list[["TRD_CNDALYM"]]
       field_date   <- rlang::quo(trddt)
       field_return <- rlang::quo(cdretwdtl)
       date_format <- "ymd"
-      date_ceiling_unit <- "day"
+      peroid_unit <- "day"
     },
-    weekly  = {
-      table_name <- stock_db$table_list[["TRD_WEEKCM"]]
-      field_date   <- rlang::quo(trdwnt)
-      field_return <- rlang::quo(cwretwdtl)
-      date_ceiling_unit <-"week"
-    },
-    monthly = {
+    "month" = {
       table_name <- stock_db$table_list[["TRD_CNMONT"]]
       field_date   <- rlang::quo(trdmnt)
       field_return <- rlang::quo(cmretwdtl)
       date_format <- "ym"
-      date_ceiling_unit <- "month"
+      peroid_unit <- "month"
     },
-    annual  = {
+    "year"  = {
       table_name <- stock_db$table_list[["TRD_YEARCM"]]
       field_date   <- rlang::quo(trdynt)
       field_return <- rlang::quo(cyretwdtl)
       date_format <- "y"
-      date_ceiling_unit <- "year"
+      peroid_unit <- "year"
     }
   )
 
   #Warning: ds_return is simple return in database by default !!
   ds_return <- get_table_dataset.gta_db(stock_db, table_name)
   if (!is.null(ds_return)) {
-    ds_return <- tibble::as.tibble(ds_return)
+
+    ds_return <- ds_return %>%
+       tibble::as.tibble() %>%
+       dplyr::filter(!!field_markettype == 21) %>%
+       dplyr::select(date = !!field_date, market_index = !!field_return)
+
     msg <- sprintf("return table: %s , return field: %s, date field: %s",
                    table_name, rlang::quo_text(field_return), rlang::quo_text(field_date))
     message(msg)
-  }
-  else{
-    success <- FALSE
+
+  } else {
+    success = FALSE
   }
 
-
-   # Build simple return results
-  ts_return <- NULL
+  # Set date format of date field
   if (success) {
-
-    ds_return <- dplyr::filter(ds_return, UQ(field_markettype) == 21)
-    ds_return <- ds_return %>%
-      dplyr::select(date = !!field_date, market_index = !!field_return)
 
     # Change date format: datetime --> date
-    # Use the last day of the period as the date for weekly, monthly, annual data
     origin_date <- lubridate::parse_date_time(as.character(ds_return$date), date_format)
     origin_date <- lubridate::as_date(origin_date)
-    if (period_type != "daily") {
 
-      #last day of period = ceiling_date -1
-      ceiling_date <- lubridate::ceiling_date(origin_date,
-                                              unit = date_ceiling_unit,
-                                              change_on_boundary = TRUE)
-      charvec <- ceiling_date - 1
-
-    } else {
-      charvec <- origin_date
-    }
-
-    # Build timeseries
-    ts_return.fts <- timeSeries::timeSeries(ds_return[,-1], charvec)
-
-  }
-
-  # Transform simple return into requried return type
-  if (success) {
-    if (cumulated) {
-      ts_return.fts <- cumulated(na.omit(ts_return.fts, method = "z"), method = "simple")
-    } else {
-      if (match.arg(return_type) == "compound")
-        ts_return.fts <- simple2compound_return(ts_return.fts)
-    }
-  }
-
-  # Build final return results by output format
-  if (success) {
-    output_type = match.arg(output_type)
-    switch( output_type,
-            tibble = {
-              # take back date column from rowsname
-              ts_return.tib <- tibble::rownames_to_column(tibble::as.tibble(ts_return.fts),
-                                                           var = "date")
-              ts_return.tib <- ts_return.tib %>%
-                dplyr::mutate(date = lubridate::ymd(date))
-
-              ts_return <- ts_return.tib
-            },
-            timeSeries = {
-              ts_return <- ts_return.fts
-            }
+    # Set date of peroid(start date/end date of the period)
+    period_date = match.arg(period_date)
+    switch(period_date,
+           "start" = {
+             #first day of period = floor_date
+             floor_date <- lubridate::floor_date(origin_date,
+                                                 unit = peroid_unit)
+             ds_return$date <- floor_date
+           },
+           "end" = {
+             #last day of period = ceiling_date -1
+             ceiling_date <- lubridate::ceiling_date(origin_date,
+                                                     unit = peroid_unit,
+                                                     change_on_boundary = TRUE)
+             ds_return$date <- ceiling_date - 1
+           }
     )
   }
+
+  # Build simple return results
+  ts_return <- NULL
+  if (success) {
+    output_type = match.arg(output_type)
+    switch(output_type,
+           tibble = {
+             ts_return <- ds_return
+           },
+           timeSeries = {
+             # Build time series
+             charvec <- ds_return$date
+             ts_return.fts <- timeSeries::timeSeries(ds_return[, -1], charvec)
+
+             ts_return <- ts_return.fts
+           }
+    )
+  }
+
 
   return(ts_return)
 }
@@ -878,16 +815,14 @@ get_market_return.gta_db <- function(stock_db,
 setMethod("get_market_return",
           signature(stock_db = "gta_db"),
           function(stock_db,
-                    period_type = c("daily", "weekly", "monthly", "annual"),
-                    return_type = c("simple", "compound"),
-                    cumulated = FALSE,
-                    output_type = c("timeSeries", "tibble"),
-                    ...)
+                   period_type = c("day", "month", "year"),
+                   period_date = c("start", "end"),
+                   output_type = c("timeSeries", "tibble"),
+                   ...)
           {
             get_market_return.gta_db(stock_db = stock_db,
                                      period_type = period_type,
-                                     return_type = return_type,
-                                     cumulated = cumulated,
+                                     period_date = period_date,
                                      output_type = output_type)
           })
 

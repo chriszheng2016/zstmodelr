@@ -8,6 +8,7 @@ context("Tests for stock_db class - generic functions")
 # set up testing context
 stock_db <- stock_db(gta_db, "GTA_SQLData")
 suppressMessages(open_stock_db(stock_db))
+suppressMessages(init_stock_db(stock_db))
 
 test_that("Open and close stock_db", {
   stock_db1 <- stock_db(gta_db, "GTA_SQLData")
@@ -75,38 +76,20 @@ test_that("fetch_table_dataset, with various arguments", {
 
 test_that("get_stock_return, with various arguments", {
 
-  # get_stock_return with default arguments ====
-
   # get_stock_return with arguments: output_type ====
   stock_stkcds_list <- c("600066","000550", "600031", "000157", "000651", "000333")
-  stock_names_list <- code2name(stock_db,code = stock_stkcds_list, type = "stock")
   ds_stock_return <- get_stock_return(stock_db,
                                       stock_cd_list = stock_stkcds_list,
-                                      period_type = "monthly",
-                                      return_type = "simple",
-                                      use_stock_name = TRUE,
-                                      cumulated = FALSE,
-                                      output_type = "timeSeries")
-  expect_is(ds_stock_return, "timeSeries")
-  expect_true(all(names(ds_stock_return) %in% stock_names_list))
-
-
-  ds_stock_return <- get_stock_return(stock_db,
-                                      stock_cd_list = stock_stkcds_list,
-                                      period_type = "monthly",
-                                      return_type = "simple",
-                                      use_stock_name = FALSE,
-                                      cumulated = FALSE,
+                                      period_type = "month",
+                                      period_date = "start",
                                       output_type = "timeSeries")
   expect_is(ds_stock_return, "timeSeries")
   expect_true(all(names(ds_stock_return) %in% stock_stkcds_list))
 
   ds_stock_return <- get_stock_return(stock_db,
                                       stock_cd_list = stock_stkcds_list,
-                                      period_type = "monthly",
-                                      return_type = "simple",
-                                      use_stock_name = TRUE,
-                                      cumulated = FALSE,
+                                      period_type = "month",
+                                      period_date = "start",
                                       output_type = "tibble")
   expect_is(ds_stock_return, "tbl_df")
   expect_fields <- c("date", "stkcd", "return")
@@ -114,6 +97,52 @@ test_that("get_stock_return, with various arguments", {
   expect_true(all(unique(ds_stock_return$stkcd) %in% stock_stkcds_list))
   expect_true(is.character(ds_stock_return$stkcd))
 
+  # get_stock_return with arguments: period_type ====
+  stock_stkcds_list <- c("600066")
+  ds_stock_return <- get_stock_return(stock_db,
+                                      stock_cd_list = stock_stkcds_list,
+                                      period_type = "day",
+                                      period_date = "start",
+                                      output_type = "tibble")
+  # expect_true(timeDate::isDaily(timeDate::as.timeDate(ds_stock_return$date)))
+  expect_true(mean(lag(ds_stock_return$date) - ds_stock_return$date, na.rm = TRUE) < 2)
+
+  ds_stock_return <- get_stock_return(stock_db,
+                                      stock_cd_list = stock_stkcds_list,
+                                      period_type = "month",
+                                      period_date = "start",
+                                      output_type = "tibble")
+  expect_true(timeDate::isMonthly(timeDate::as.timeDate(ds_stock_return$date)))
+
+  ds_stock_return <- get_stock_return(stock_db,
+                                      stock_cd_list = stock_stkcds_list,
+                                      period_type = "year",
+                                      period_date = "start",
+                                      output_type = "tibble")
+  expect_true(timeDate::frequency(timeDate::as.timeDate(ds_stock_return$date)) == 1)
+
+
+  # get_stock_return with arguments: period_date ====
+  stock_stkcds_list <- c("600066")
+  ds_stock_return <- get_stock_return(stock_db,
+                                      stock_cd_list = stock_stkcds_list,
+                                      period_type = "month",
+                                      period_date = "start",
+                                      output_type = "tibble")
+  expect <- as.Date(timeDate::timeFirstDayInMonth
+                    (format(ds_stock_return$date, "%Y-%m-%d")))
+  actual <- ds_stock_return$date
+  expect_equivalent(expect, actual)
+
+  ds_stock_return <- get_stock_return(stock_db,
+                                      stock_cd_list = stock_stkcds_list,
+                                      period_type = "month",
+                                      period_date = "end",
+                                      output_type = "tibble")
+  expect <- as.Date(timeDate::timeLastDayInMonth
+                    (format(ds_stock_return$date, "%Y-%m-%d")))
+  actual <- ds_stock_return$date
+  expect_equivalent(expect, actual)
 
 })
 
@@ -122,22 +151,59 @@ test_that("get_market_return, with various arguments", {
 
   # get_market_return with arguments: output type ====
   ds_market_return <- get_market_return(stock_db,
-                                        period_type = "monthly",
-                                        return_type = "simple",
-                                        cumulated = FALSE,
+                                        period_type = "month",
+                                        period_date = "start",
                                         output_type = "timeSeries")
   expect_is(ds_market_return, "timeSeries")
   expect_fields <- c("market_index")
   expect_equal(names(ds_market_return), expect_fields)
 
   ds_market_return <- get_market_return(stock_db,
-                                        period_type = "monthly",
-                                        return_type = "simple",
-                                        cumulated = FALSE,
+                                        period_type = "month",
+                                        period_date = "start",
                                         output_type = "tibble")
   expect_is(ds_market_return, "tbl_df")
   expect_fields <- c("date", "market_index")
   expect_equal(names(ds_market_return), expect_fields)
+
+  # get_market_return with arguments: period_type ====
+  ds_market_return <- get_market_return(stock_db,
+                                        period_type = "day",
+                                        period_date = "start",
+                                        output_type = "tibble")
+  # expect_true(timeDate::isDaily(timeDate::as.timeDate(ds_market_return$date)))
+  expect_true(mean(lag(ds_market_return$date) - ds_market_return$date, na.rm = TRUE) < 2)
+
+  ds_market_return <- get_market_return(stock_db,
+                                        period_type = "month",
+                                        period_date = "start",
+                                        output_type = "tibble")
+  expect_true(timeDate::isMonthly(timeDate::as.timeDate(ds_market_return$date)))
+
+  ds_market_return <- get_market_return(stock_db,
+                                        period_type = "year",
+                                        period_date = "start",
+                                        output_type = "tibble")
+  expect_true(timeDate::frequency(timeDate::as.timeDate(ds_market_return$date)) == 1)
+
+  # get_market_return with arguments: period_date ====
+  ds_market_return <- get_market_return(stock_db,
+                                        period_type = "month",
+                                        period_date = "start",
+                                        output_type = "tibble")
+  expect <- as.Date(timeDate::timeFirstDayInMonth
+                    (format(ds_market_return$date, "%Y-%m-%d")))
+  actual <- ds_market_return$date
+  expect_equivalent(expect, actual)
+
+  ds_market_return <- get_market_return(stock_db,
+                                        period_type = "month",
+                                        period_date = "end",
+                                        output_type = "tibble")
+  expect <- as.Date(timeDate::timeLastDayInMonth
+                    (format(ds_market_return$date, "%Y-%m-%d")))
+  actual <- ds_market_return$date
+  expect_equivalent(expect, actual)
 
 })
 

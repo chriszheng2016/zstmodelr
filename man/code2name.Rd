@@ -11,14 +11,14 @@ code2name(x, code, ...)
 \S4method{code2name}{gta_db}(x, code, ...)
 }
 \arguments{
-\item{x}{a object containg code/name infomation}
+\item{x}{A object containg code/name infomation}
 
-\item{code}{a code or a vector of codes to be translated}
+\item{code}{A code or a vector of codes to be translated}
 
-\item{...}{other arguments to be provided to underlyling functions}
+\item{...}{Other arguments to be provided to underlyling functions}
 }
 \value{
-a name or a vector of names
+A name or a vector of names
 }
 \description{
 Generic function to translate code into name
@@ -28,3 +28,16 @@ Generic function to translate code into name
 \item \code{gta_db}: Translate code into name in a database of gta_db class
 }}
 
+\seealso{
+Other stock_db generics: \code{\link{close_stock_db}},
+  \code{\link{fetch_table_dataset}},
+  \code{\link{get_factor_indicator}},
+  \code{\link{get_factors_info}},
+  \code{\link{get_market_return}},
+  \code{\link{get_stock_dataset}},
+  \code{\link{get_stock_return}},
+  \code{\link{get_table_dataset}},
+  \code{\link{init_stock_db}},
+  \code{\link{list_stock_tables}}, \code{\link{name2code}},
+  \code{\link{open_stock_db}}
+}

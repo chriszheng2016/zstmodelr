@@ -11,9 +11,9 @@ fetch_table_dataset(stock_db, table_list, ...)
 \S4method{fetch_table_dataset}{gta_db}(stock_db, table_list, ...)
 }
 \arguments{
-\item{stock_db}{a stock database object to operate.}
+\item{stock_db}{A stock database object to operate.}
 
-\item{table_list}{a character vector of table names.}
+\item{table_list}{A character vector of table names.}
 }
 \value{
 A list of names of table fetched successfully.
@@ -26,3 +26,16 @@ Generic function to fetch many datasets from stock_db.
 \item \code{gta_db}: get many datasets from a database of gta_db class
 }}
 
+\seealso{
+Other stock_db generics: \code{\link{close_stock_db}},
+  \code{\link{code2name}},
+  \code{\link{get_factor_indicator}},
+  \code{\link{get_factors_info}},
+  \code{\link{get_market_return}},
+  \code{\link{get_stock_dataset}},
+  \code{\link{get_stock_return}},
+  \code{\link{get_table_dataset}},
+  \code{\link{init_stock_db}},
+  \code{\link{list_stock_tables}}, \code{\link{name2code}},
+  \code{\link{open_stock_db}}
+}

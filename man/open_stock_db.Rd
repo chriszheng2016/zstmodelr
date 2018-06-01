@@ -11,10 +11,10 @@ open_stock_db(stock_db, ...)
 \S4method{open_stock_db}{gta_db}(stock_db, ...)
 }
 \arguments{
-\item{stock_db}{a stock database object to operate}
+\item{stock_db}{A stock database object to operate}
 }
 \value{
-TRUE if success, else FALSE
+TRUE if success, otherwise FALSE
 }
 \description{
 Generic function to open a stock database
@@ -25,7 +25,23 @@ Generic function to open a stock database
 }}
 
 \examples{
+\dontrun{
+library(zstmodelr)
 stock_db <- stock_db(gta_db, "GTA_SQLData")
 open_stock_db(stock_db)
 close_stock_db(stock_db)
+}
+}
+\seealso{
+Other stock_db generics: \code{\link{close_stock_db}},
+  \code{\link{code2name}},
+  \code{\link{fetch_table_dataset}},
+  \code{\link{get_factor_indicator}},
+  \code{\link{get_factors_info}},
+  \code{\link{get_market_return}},
+  \code{\link{get_stock_dataset}},
+  \code{\link{get_stock_return}},
+  \code{\link{get_table_dataset}},
+  \code{\link{init_stock_db}},
+  \code{\link{list_stock_tables}}, \code{\link{name2code}}
 }

@@ -11,9 +11,9 @@ get_factors_info(stock_db, factor_groups = NULL, ...)
 \S4method{get_factors_info}{gta_db}(stock_db, factor_groups = NULL, ...)
 }
 \arguments{
-\item{stock_db}{a stock database object to operate.}
+\item{stock_db}{A stock database object to operate.}
 
-\item{factor_groups}{a character vector of factor groups, if NULL will
+\item{factor_groups}{A character vector of factor groups, if NULL will
 return all factors, otherwise return factors of matched fator groups,
 by default NULL.}
 }
@@ -29,3 +29,16 @@ Generic function to get factors info from stock_db.
 \item \code{gta_db}: get factors info from a database of gta_db class
 }}
 
+\seealso{
+Other stock_db generics: \code{\link{close_stock_db}},
+  \code{\link{code2name}},
+  \code{\link{fetch_table_dataset}},
+  \code{\link{get_factor_indicator}},
+  \code{\link{get_market_return}},
+  \code{\link{get_stock_dataset}},
+  \code{\link{get_stock_return}},
+  \code{\link{get_table_dataset}},
+  \code{\link{init_stock_db}},
+  \code{\link{list_stock_tables}}, \code{\link{name2code}},
+  \code{\link{open_stock_db}}
+}

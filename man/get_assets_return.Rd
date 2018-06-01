@@ -7,9 +7,9 @@
 get_assets_return(benchmark_return, stocks_return)
 }
 \arguments{
-\item{benchmark_return}{a timeseries of market index}
+\item{benchmark_return}{A timeseries of market index}
 
-\item{stocks_return}{a timeseries of a group stock stocks}
+\item{stocks_return}{A timeseries of a group stock stocks}
 }
 \value{
 A timeseries of assets return

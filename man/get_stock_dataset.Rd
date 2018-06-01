@@ -12,11 +12,11 @@ get_stock_dataset(stock_db, table_name, stock_cd_list = NULL, ...)
   stock_cd_list = NULL, ...)
 }
 \arguments{
-\item{stock_db}{a stock database object to operate.}
+\item{stock_db}{A stock database object to operate.}
 
-\item{table_name}{name of target table.}
+\item{table_name}{Name of target table.}
 
-\item{stock_cd_list}{a list of stock cd, default value of NULL means.
+\item{stock_cd_list}{A list of stock cd, default value of NULL means.
 all stock data will be returned.}
 }
 \value{
@@ -35,4 +35,17 @@ in a database of gta_db class
 ds_trd_dalyr.df <- get_stock_dataset(stock_db,
                             table_name = "TRD_Dalyr_日个股回报率",
                             stock_cd_list = c("600066", "000550"))
+}
+\seealso{
+Other stock_db generics: \code{\link{close_stock_db}},
+  \code{\link{code2name}},
+  \code{\link{fetch_table_dataset}},
+  \code{\link{get_factor_indicator}},
+  \code{\link{get_factors_info}},
+  \code{\link{get_market_return}},
+  \code{\link{get_stock_return}},
+  \code{\link{get_table_dataset}},
+  \code{\link{init_stock_db}},
+  \code{\link{list_stock_tables}}, \code{\link{name2code}},
+  \code{\link{open_stock_db}}
 }

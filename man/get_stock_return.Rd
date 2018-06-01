@@ -8,33 +8,29 @@
 \title{Get stock return timeseries from stock_db}
 \usage{
 get_stock_return(stock_db, stock_cd_list = NULL, period_type = c("daily",
-  "weekly", "monthly", "annual"), return_type = c("simple", "compound"),
-  use_stock_name = TRUE, cumulated = FALSE, output_type = c("timeSeries",
-  "tibble"), ...)
+  "weekly", "monthly", "annual"), period_date = c("start", "end"),
+  output_type = c("timeSeries", "tibble"), ...)
 
 \S4method{get_stock_return}{gta_db}(stock_db, stock_cd_list = NULL,
   period_type = c("daily", "weekly", "monthly", "annual"),
-  return_type = c("simple", "compound"), use_stock_name = TRUE,
-  cumulated = FALSE, output_type = c("timeSeries", "tibble"), ...)
+  period_date = c("start", "end"), output_type = c("timeSeries", "tibble"),
+  ...)
 
 \S4method{get_factor_indicator}{gta_db}(stock_db, factor_list, ...)
 }
 \arguments{
-\item{stock_db}{a stock database object to operate.}
+\item{stock_db}{A stock database object to operate.}
 
-\item{stock_cd_list}{a list of stock cd, default value of NULL means
+\item{stock_cd_list}{A list of stock cd, default value of NULL means
 all stock data will be returned.}
 
-\item{period_type}{date peroid for time series, e.g. "daily", "weekly",
+\item{period_type}{Date peroid for time series, e.g. "daily", "weekly",
 "monthly", "annual", default value is "daily".}
 
-\item{return_type}{a character string naming the method how the returns were computed.}
+\item{period_date}{Choose start/end date of period as the date for
+observation}
 
-\item{use_stock_name}{use stock name as field name instead of stock cd, default is TRUE.}
-
-\item{cumulated}{calculate cumulated return, default value is FALSE.}
-
-\item{output_type}{format of output result, e.g "timeSeries", "tibble".}
+\item{output_type}{Format of output result, e.g "timeSeries", "tibble".}
 }
 \value{
 A timeseries of stock return.
@@ -49,3 +45,16 @@ Generic function to get stock return timeseries from stock_db.
 \item \code{gta_db}: get stock return timeseries from a database of gta_db class
 }}
 
+\seealso{
+Other stock_db generics: \code{\link{close_stock_db}},
+  \code{\link{code2name}},
+  \code{\link{fetch_table_dataset}},
+  \code{\link{get_factor_indicator}},
+  \code{\link{get_factors_info}},
+  \code{\link{get_market_return}},
+  \code{\link{get_stock_dataset}},
+  \code{\link{get_table_dataset}},
+  \code{\link{init_stock_db}},
+  \code{\link{list_stock_tables}}, \code{\link{name2code}},
+  \code{\link{open_stock_db}}
+}

@@ -15,16 +15,16 @@ get_market_return(stock_db, period_type = c("daily", "weekly", "monthly",
   cumulated = FALSE, output_type = c("timeSeries", "tibble"), ...)
 }
 \arguments{
-\item{stock_db}{a stock database object to operate.}
+\item{stock_db}{A stock database object to operate.}
 
-\item{period_type}{date peroid for time series, e.g. "daily", "weekly",
+\item{period_type}{Date peroid for time series, e.g. "daily", "weekly",
 "monthly", "annual", default value is  "daily".}
 
-\item{return_type}{a character string naming the method how the returns were computed.}
+\item{return_type}{A character string naming the method how the returns were computed.}
 
-\item{cumulated}{calculate cumulated return, default value is FALSE.}
+\item{cumulated}{Calculate cumulated return, default value is FALSE.}
 
-\item{output_type}{format of output result, e.g "timeSeries", "tibble".}
+\item{output_type}{Format of output result, e.g "timeSeries", "tibble".}
 }
 \value{
 A timeseries of market return.
@@ -37,3 +37,16 @@ Generic function to get stock return timeseries from stock_db.
 \item \code{gta_db}: get market return timeseries from a database of gta_db class
 }}
 
+\seealso{
+Other stock_db generics: \code{\link{close_stock_db}},
+  \code{\link{code2name}},
+  \code{\link{fetch_table_dataset}},
+  \code{\link{get_factor_indicator}},
+  \code{\link{get_factors_info}},
+  \code{\link{get_stock_dataset}},
+  \code{\link{get_stock_return}},
+  \code{\link{get_table_dataset}},
+  \code{\link{init_stock_db}},
+  \code{\link{list_stock_tables}}, \code{\link{name2code}},
+  \code{\link{open_stock_db}}
+}
