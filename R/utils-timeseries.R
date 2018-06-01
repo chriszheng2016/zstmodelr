@@ -132,6 +132,8 @@ ts_lag <- function(ts_dataset,
   UseMethod("ts_lag")
 }
 
+
+
 # Generic function implemetaion by tibble class -------------------------------
 
 # Convert TimeSeries to specified frequency by resampling for tibble dataset
@@ -160,17 +162,31 @@ ts_resample.tbl_df <- function(ts_dataset,
       ts_df <- tibble::as.tibble(ts_dataset)
 
       success <- TRUE
+      new_timeseries <- NULL
 
-      # build date_index with the new frequency
       origin_date_index <- ts_df[[date_index_field]]
-      new_date_index <- refreq_dateindex(origin_date_index,
-                                         freq_rule = freq_rule)
-      if (is.null(new_date_index)) {
-        success <- FALSE
+
+      # judge whether to transform timeseries
+      need_refreq <- need_refreq_dateindex(origin_date_index,
+                            freq_rule = freq_rule)
+      if (!need_refreq) {
+        new_timeseries <- ts_df
       }
 
+
+      # build date_index with the new frequency
+      if (need_refreq && success) {
+
+        new_date_index <- refreq_dateindex(origin_date_index,
+                                          freq_rule = freq_rule)
+        if (is.null(new_date_index)) {
+          success <- FALSE
+        }
+      }
+
+
       # use new date_index to reindex timesereis
-      if (success) {
+      if (need_refreq && success) {
 
         if (length(unique(origin_date_index)) <= length(unique(new_date_index))) {
           # upsampling with Interpolation : from low frequency to high frequency
@@ -187,8 +203,6 @@ ts_resample.tbl_df <- function(ts_dataset,
                                                ...)
         }
 
-      } else {
-        new_timeseries = NULL
       }
 
       return(new_timeseries)
@@ -255,22 +269,32 @@ ts_asfreq.tbl_df <- function(ts_dataset,
     ts_df <- tibble::as.tibble(ts_dataset)
 
     success <- TRUE
+    new_timeseries <- NULL
 
-    # build date_index with the new frequency
     origin_date_index <- ts_df[[date_index_field]]
-    new_date_index <- refreq_dateindex(origin_date_index,
-                                       freq_rule = freq_rule)
-    if (is.null(new_date_index)) {
-      success <- FALSE
+
+    # judge whether to transform timeseries
+    need_refreq <- need_refreq_dateindex(origin_date_index,
+                          freq_rule = freq_rule)
+    if (!need_refreq) {
+      new_timeseries <- ts_df
     }
 
+    # build date_index with the new frequency
+    if (need_refreq && success) {
+      new_date_index <- refreq_dateindex(origin_date_index,
+                                         freq_rule = freq_rule)
+      if (is.null(new_date_index)) {
+        success <- FALSE
+      }
+    }
+
+
     # use new date_index to reindex timesereis
-    if (success) {
+    if (need_refreq && success) {
       new_timeseries <- reindex_by_replace.tbl_df(ts_df,
                                            new_date_index = new_date_index,
                                            fillna_method = fillna_method)
-    } else {
-      new_timeseries = NULL
     }
 
     return(new_timeseries)
@@ -411,43 +435,6 @@ ts_lag.tbl_df <- function(ts_dataset,
 
 }
 
-# Set new frequncey of date-like index
-refreq_dateindex <- function(date_index,
-                             freq_rule =c("day", "month", "quarter")) {
-
-  # validate params
-  stopifnot(!is.null(date_index), lubridate::is.Date(date_index))
-
-  origin_date_index <- timeDate::as.timeDate(date_index)
-
-  # change frequency of date index
-  freq_rule <- match.arg(freq_rule)
-  switch(freq_rule,
-    day = {
-      new_date_index <- origin_date_index %>%
-            timeDate::alignDaily(include.weekends = TRUE)
-    },
-    month = {
-      new_date_index <- origin_date_index %>%
-          timeDate::alignDaily(include.weekends = TRUE) %>%
-          timeDate::alignMonthly(include.weekends = TRUE)
-    },
-    quarter = {
-      new_date_index <- origin_date_index %>%
-        timeDate::alignDaily(include.weekends = TRUE) %>%
-        timeDate::alignQuarterly(include.weekends = TRUE)
-    }
-   )
-
-   # build new date index
-   new_date_index <- new_date_index %>%
-          lubridate::as_date() %>%
-          unique() %>%
-          sort()
-
-   return(new_date_index)
-
-}
 
 # Reindex the timesereis by replacing with new date_index for tibble dataset
 reindex_by_replace.tbl_df <- function(ts_df,
@@ -547,17 +534,28 @@ ts_resample.timeSeries <- function(ts_dataset,
   stopifnot(!is.null(ts_dataset), inherits(ts_dataset, "timeSeries"))
 
   success <- TRUE
+  new_timeseries <- NULL
+
+  origin_date_index <- lubridate::as_date(time(ts_dataset))
+
+  # judge whether to transform timeseries
+  need_refreq <- need_refreq_dateindex(origin_date_index,
+                             freq_rule = freq_rule)
+  if (!need_refreq) {
+    new_timeseries <- ts_dataset
+  }
 
   # build date_index with the new frequency
-  origin_date_index <- lubridate::as_date(time(ts_dataset))
-  new_date_index <- refreq_dateindex(origin_date_index,
+  if (need_refreq && success) {
+    new_date_index <- refreq_dateindex(origin_date_index,
                                      freq_rule = freq_rule)
-  if (is.null(new_date_index)) {
-    success <- FALSE
+    if (is.null(new_date_index)) {
+      success <- FALSE
+    }
   }
 
   # use new date_index to reindex timesereis
-  if (success) {
+  if (need_refreq && success) {
 
     if(length(unique(origin_date_index)) <= length(unique(new_date_index))) {
       # upsampling with Interpolation : from low frequency to high frequency
@@ -571,8 +569,6 @@ ts_resample.timeSeries <- function(ts_dataset,
                                                   agg_fun = agg_fun, ...)
     }
 
-  } else {
-    new_timeseries = NULL
   }
 
   return(new_timeseries)
@@ -590,22 +586,31 @@ ts_asfreq.timeSeries <- function(ts_dataset,
   stopifnot(!is.null(ts_dataset), inherits(ts_dataset, "timeSeries"))
 
   success <- TRUE
+  new_timeseries <- NULL
+
+  origin_date_index <- lubridate::as_date(time(ts_dataset))
+
+  # judge whether to transform timeseries
+  need_refreq <- need_refreq_dateindex(origin_date_index,
+                                       freq_rule = freq_rule)
+  if (!need_refreq) {
+    new_timeseries <- ts_dataset
+  }
 
   # build date_index with the new frequency
-  origin_date_index <- lubridate::as_date(time(ts_dataset))
-  new_date_index <- refreq_dateindex(origin_date_index,
+  if (need_refreq && success) {
+    new_date_index <- refreq_dateindex(origin_date_index,
                                      freq_rule = freq_rule)
-  if (is.null(new_date_index)) {
-    success <- FALSE
+    if (is.null(new_date_index)) {
+      success <- FALSE
+    }
   }
 
   # use new date_index to reindex timesereis
-  if (success) {
+  if (need_refreq && success) {
     new_timeseries <- reindex_by_replace.timeSeries(ts_dataset,
                                                 new_date_index = new_date_index,
                                                 fillna_method = fillna_method)
-  } else {
-    new_timeseries = NULL
   }
 
   return(new_timeseries)
@@ -687,3 +692,91 @@ reindex_by_regroup.timeSeries <- function(ts_timeSeries,
   return(ts_result)
 
 }
+
+# Internal tools functions --------------------------------
+
+# Judge whether to refreq dateindex to avoid unnecessary transform
+need_refreq_dateindex <- function(date_index,
+                                  freq_rule =c("day", "month", "quarter")) {
+
+  # validate params
+  stopifnot(!is.null(date_index), lubridate::is.Date(date_index))
+
+  date_index <- timeDate::as.timeDate(date_index)
+
+
+  # judge whether need to change frequency of date index
+  need_refreq <- TRUE
+  freq_rule <- match.arg(freq_rule)
+  switch(freq_rule,
+         "day" = {
+           if (timeDate::isDaily(date_index)) {
+             need_refreq <- FALSE
+           } else {
+             # no need to refeq irregluar daily time series
+             if (mean(lag(date_index) - date_index, na.rm = TRUE) <= 2) {
+               need_refreq <- FALSE
+             }
+             need_refreq <- TRUE
+           }
+         },
+         "month" = {
+           if (timeDate::isMonthly(date_index)) {
+             need_refreq <- FALSE
+           } else {
+             need_refreq <- TRUE
+           }
+         },
+         "quarter" = {
+           if (timeDate::isQuarterly(date_index)) {
+             need_refreq <- FALSE
+           } else {
+             need_refreq <- TRUE
+           }
+         }
+  )
+
+  return(need_refreq)
+
+}
+
+# Set new frequncey of date-like index
+refreq_dateindex <- function(date_index,
+                             freq_rule =c("day", "month", "quarter")) {
+
+  # validate params
+  stopifnot(!is.null(date_index), lubridate::is.Date(date_index))
+
+  origin_date_index <- timeDate::as.timeDate(date_index)
+  origin_date_index <- sort(origin_date_index)
+
+  # change frequency of date index
+  freq_rule <- match.arg(freq_rule)
+  switch(freq_rule,
+         "day" = {
+           new_date_index <- origin_date_index %>%
+             timeDate::alignDaily(include.weekends = TRUE)
+         },
+         "month" = {
+           new_date_index <- origin_date_index %>%
+             timeDate::alignDaily(include.weekends = TRUE) %>%
+             timeDate::alignMonthly(include.weekends = TRUE)
+         },
+         "quarter" = {
+           new_date_index <- origin_date_index %>%
+             timeDate::alignDaily(include.weekends = TRUE) %>%
+             timeDate::alignQuarterly(include.weekends = TRUE)
+         }
+  )
+
+  # build new date index
+  new_date_index <- new_date_index %>%
+    lubridate::as_date() %>%
+    unique() %>%
+    sort()
+
+  return(new_date_index)
+
+}
+
+

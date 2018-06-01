@@ -204,7 +204,7 @@ validate_engine_resample_refreq <- function(ds_test_origin,
   }
 
   # 2. check whether pre/next data value is ok in result data
-  if (length(unique(origin_date)) <= length(unique(result_date))) {
+  if (length(unique(origin_date)) < length(unique(result_date))) {
     # upsampling : from low frequency to high frequency
     switch( fillna_method,
             "nfill" = {
@@ -308,12 +308,27 @@ test_that("ts_resample, with various arguments", {
   # ts_resample on tibble dataset ====
 
   # downsampling resamle: from high frequency to low frequency
+
+  # -- standard agg_fun
   params_tbl <- tibble::tibble(ds_test_origin = c("ds_test_daily_df",
                                                   "ds_test_monthly_df"),
-                               freq_rules = list(c("month", "quarter"),
-                                                 c("quarter")),
+                               freq_rules = list(c("day", "month", "quarter"),
+                                                 c("month","quarter")),
                                fillna_methods = list(c("nfill", "ffill", "bfill")),
                                agg_fun = list(mean),
+                               extra_agg_fun_params = list(na.rm = TRUE),
+                               ds_type = "tibble")
+
+  .batch_valiate_resample_result(params_tbl)
+
+  # -- customized agg-fun
+  agg_method <- function(x, ...) { prod(1 + x, ...) - 1 }
+  params_tbl <- tibble::tibble(ds_test_origin = c("ds_test_daily_df",
+                                                  "ds_test_monthly_df"),
+                               freq_rules = list(c("day", "month", "quarter"),
+                                                 c("month","quarter")),
+                               fillna_methods = list(c("nfill", "ffill", "bfill")),
+                               agg_fun = list(agg_method),
                                extra_agg_fun_params = list(na.rm = TRUE),
                                ds_type = "tibble")
   .batch_valiate_resample_result(params_tbl)
@@ -333,18 +348,35 @@ test_that("ts_resample, with various arguments", {
   .batch_valiate_resample_result(params_tbl)
 
 
+
   # ts_resample on timeSeries dataset ====
 
   # downsampling resample: from high frequency to low frequency
+
+  # -- standard agg_fun
   params_tbl <- tibble::tibble(ds_test_origin = c("ds_test_daily_fts",
                                                   "ds_test_monthly_fts"),
-                               freq_rules = list(c("month", "quarter"),
-                                                 c("quarter")),
+                               freq_rules = list(c("day", "month", "quarter"),
+                                                 c("month","quarter")),
                                fillna_methods = list(c("nfill", "ffill", "bfill")),
                                agg_fun = list(mean),
                                extra_agg_fun_params = list(na.rm = TRUE),
                                ds_type = "timeSeries")
   .batch_valiate_resample_result(params_tbl)
+
+
+  # --- customized agg-fun
+  agg_method <- function(x, ...) { prod(1 + x, ...) - 1 }
+  params_tbl <- tibble::tibble(ds_test_origin = c("ds_test_daily_fts",
+                                                  "ds_test_monthly_fts"),
+                               freq_rules = list(c("day", "month", "quarter"),
+                                                 c("month","quarter")),
+                               fillna_methods = list(c("nfill", "ffill", "bfill")),
+                               agg_fun = list(agg_method),
+                               extra_agg_fun_params = list(na.rm = TRUE),
+                               ds_type = "timeSeries")
+  .batch_valiate_resample_result(params_tbl)
+
 
 
   # upsampling resample : from low frequency to high frequency
@@ -359,9 +391,6 @@ test_that("ts_resample, with various arguments", {
                                extra_agg_fun_params = list(na.rm = TRUE),
                                ds_type = "timeSeries")
   .batch_valiate_resample_result(params_tbl)
-
-
-
 
 })
 
@@ -423,10 +452,10 @@ test_that("ts_asfreq, with various arguments", {
   # downsampling refreq: from high frequency to low frequency
   params_tbl <- tibble::tibble(ds_test_origin = c("ds_test_daily_df",
                                                   "ds_test_monthly_df"),
-                                     freq_rules = list(c("month", "quarter"),
-                                                       c("quarter")),
-                                     fillna_methods = list(c("nfill", "ffill", "bfill")),
-                                     ds_type = "tibble" )
+                                freq_rules = list(c("day", "month", "quarter"),
+                                                     c("month","quarter")),
+                                fillna_methods = list(c("nfill", "ffill", "bfill")),
+                                ds_type = "tibble" )
   .batch_valiate_asfreq_result(params_tbl)
 
 
@@ -450,8 +479,8 @@ test_that("ts_asfreq, with various arguments", {
   # downsampling refreq: from high frequency to low frequency
   params_tbl <- tibble::tibble(ds_test_origin = c("ds_test_daily_fts",
                                                   "ds_test_monthly_fts"),
-                               freq_rules = list(c("month", "quarter"),
-                                                 c("quarter")),
+                               freq_rules = list(c("day", "month", "quarter"),
+                                                 c("month","quarter")),
                                fillna_methods = list(c("nfill", "ffill", "bfill")),
                                ds_type = "timeSeries" )
   .batch_valiate_asfreq_result(params_tbl)

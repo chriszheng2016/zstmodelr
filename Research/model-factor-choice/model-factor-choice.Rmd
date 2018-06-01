@@ -13,7 +13,7 @@ params:
     input: select
     label: factors list
     multiple: yes
-    value: DE, FL, TDR
+    value: GPM
   tmpfile_fundamental_factors: temp/fundamental_factors.rds
   tmpfile_fundamental_normal_factors: temp/fundamental_normal_factors.rds
   tmpfile_fundamental_normal_factors_period: temp/fundamental_normal_factors_period.rds
@@ -105,9 +105,8 @@ if (!params$debug_mode) {
   # Get stocks return
   stocks_return <- get_stock_return(stock_db, 
                                     stock_cd_list = NULL, 
-                                    period_type = "monthly", 
-                                    return_type = "simple",
-                                    use_stock_name = FALSE,
+                                    period_type = "month",
+                                    period_date = "end",
                                     output_type = "tibble")
   # Save temp file for debug
   saveRDS(fundamental_factors, file = params$tmpfile_fundamental_factors)
@@ -145,7 +144,7 @@ if (!params$debug_mode) {
   stocks_return_period <- stocks_return %>%
     dplyr::filter( date >= start_date & date <= end_date ) %>%
     ts_resample( by_group = "stkcd", freq_rule = "month", 
-                     fillna_method = "ffill", 
+                     fillna_method = "nfill", 
                      agg_method = function(x) prod(1 + x, na.rm = TRUE) - 1)
   
   # Lag factors to avoid peeking ahead bias                                                
@@ -192,7 +191,8 @@ summary_fundamental_normal_factors <- fundamental_normal_factors %>%
      tidyr::gather(key = "factor_name", value = "factor_exposure", fundamental_factors_list) %>%
      dplyr::group_by(factor_name, date) %>%
      dplyr::summarise_at("factor_exposure", 
-                          funs( NAs = sum(is.na(.)),
+                          funs( obs = mean(length(.)),
+                                NAs = sum(is.na(.)),
                                 mean,
                                 sd,
                                 median,
