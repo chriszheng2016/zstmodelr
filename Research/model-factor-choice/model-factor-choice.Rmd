@@ -90,14 +90,20 @@ end_date <- params$backtest_end_date
 ## Load facotrs data (加载因子数据)
 ```{r fetch_factors_data}
 
-if (!params$debug_mode) {
   # Open gta stock databse
   stock_db <- stock_db(gta_db, "GTA_SQLData")
   open_stock_db(stock_db)
   
   # Initate the stock database
   invisible(init_stock_db(stock_db))
-  
+
+  # Get factors info
+  factors_info <- get_factors_info(stock_db, factor_groups = NULL)
+ 
+
+if (!params$debug_mode) {
+    
+   
   # Get fundamental indicators
   fundamental_factors <- get_factor_indicator(stock_db, 
                                   factor_list = fundamental_factors_list)
@@ -118,7 +124,19 @@ if (!params$debug_mode) {
   fundamental_factors <- readRDS(params$tmpfile_fundamental_factors)
   stocks_return <- readRDS(params$tmpfile_stocks_return)
 }
-
+  
+ # Display target factors information  
+ target_factors_info <- factors_info %>%
+     dplyr::filter(factor_code %in% fundamental_factors_list)
+ 
+ knitr::kable(
+  target_factors_info,
+  format = "pandoc",
+  align = "c",
+  digits = 3,
+  caption = "目标因子信息"
+)
+  
 ```
 
 
