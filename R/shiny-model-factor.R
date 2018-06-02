@@ -1,24 +1,16 @@
 
 # Load factors UI
 #' @export
-loadFactorsUI <- function(id, factors_list) {
+loadFactorsUI <- function(id, factors_info) {
+
+  #Prepare factor groups/factor list
+  factors_info_by_group <- factors_info %>%
+    dplyr::group_by(factor_group) %>%
+    dplyr::summarise(factors_list = list(factor_code))
 
   ns <- shiny::NS(id)
 
   shiny::tagList(
-
-    #   sidebarPanel(
-    #   selectInput(inputId = ns("factors"), label = strong("Factors:"),
-    #               choices = unique(factors_list),
-    #               multiple = TRUE),
-    #
-    #   actionButton(inputId = ns("load_factors"), label = "Load Factors")
-    #
-    # ),
-    #
-    # mainPanel(
-    #    DT::dataTableOutput(outputId = ns("factors_table"))
-    # )
 
     shinydashboard::box(status = "primary",
         title = "Parameters",
@@ -26,30 +18,87 @@ loadFactorsUI <- function(id, factors_list) {
         collapsible = TRUE,
         width = 12,
 
-        shiny::selectInput(inputId = ns("factors"),
-                           label = shiny::strong("Factors:"),
-                           choices = unique(factors_list),
+        shiny::selectInput(inputId = ns("factor_groups"),
+                           label = shiny::strong("Factor Groups:"),
+                           choices = unique(factors_info_by_group$factor_group),
+                           selected = head(factors_info_by_group$factor_group,n = 1),
+                           multiple = TRUE),
+
+        shiny::selectizeInput(inputId = ns("factors_in_group"),
+                           label = shiny::strong("Factors in Group:"),
+                           choices = NULL,
+                           multiple = TRUE),
+
+        shiny::selectInput(inputId = ns("select_factors"),
+                           label = shiny::strong("Selected Factors:"),
+                           choices = NULL,
                            multiple = TRUE),
 
         shiny::actionButton(inputId = ns("load_factors"),
-                     label = shiny::strong("Load Factors")
+                     label = shiny::strong("Load Factors Data")
         )
     ),
 
-    DT::dataTableOutput(outputId = ns("factors_table"))
+    # Output: Tabset of output tables
+    shiny::tabsetPanel(type = "tabs",
+                       shiny::tabPanel("Factor Info",
+                         DT::dataTableOutput(outputId = ns("factors_info_table"))
+                         ),
+                       shiny::tabPanel("Factor Data",
+                         DT::dataTableOutput(outputId = ns("factors_data_table"))
+                         )
    )
+  )
 }
 
 # Load factors Server Function
 #' @export
-loadFactors <- function(input, output, session) {
+loadFactors <- function(input, output, session, factors_info) {
+
+  # Update factors_in_group input according selected factor group
+  shiny::observe({
+
+    # get new selected factor group
+    selected_factor_groups <- shiny::req(input$factor_groups)
+
+    factors_info <- factors_info()
+
+    #Prepare factor groups/factor list
+    factors_in_selected_group <- factors_info %>%
+      dplyr::filter(factor_group %in% !!selected_factor_groups)
+
+    select_factor_code <- factors_in_selected_group$factor_code
+    names(select_factor_code) <- factors_in_selected_group$factor_name
+    # select_factor_code <- list(a = select_factor_code)
+
+    # Update factors in group input by specified groups
+    shiny::updateSelectizeInput(session, inputId = "factors_in_group",
+                      choices = select_factor_code )
+    })
+
+  # Update select_factors input according new selected factors
+  shiny::observe({
+
+    # get new selected factors
+    new_select_factors <- shiny::req(input$factors_in_group)
+
+    # construct current select factors by new and old selected factors
+    current_select_factors <- shiny::isolate(input$select_factors)
+    current_select_factors <- unique(c(current_select_factors, new_select_factors))
+
+    # Update factors in group by specified groups
+    shiny::updateSelectInput(session, inputId = "select_factors",
+                             selected = current_select_factors,
+                             choices = current_select_factors)
+  })
+
 
   # load factors
   load_factors <- shiny::reactive({
 
     shiny::req(input$load_factors)
 
-    factors_list <- shiny::isolate(shiny::req(input$factors))
+    factors_list <- shiny::isolate(shiny::req(input$select_factors))
 
     shiny::withProgress(message = 'Load Factors', value = 0, {
 
@@ -83,8 +132,18 @@ loadFactors <- function(input, output, session) {
 
   })
 
+  # Display factors Info
+  output$factors_info_table <- DT::renderDataTable(
+    DT::datatable(
+      factors_info(), options = list(
+        columnDefs = list(list(className = 'dt-center')),
+        pageLength = 25
+      )
+    )
+  )
+
   # Display loaded factors
-  output$factors_table <- DT::renderDataTable(
+  output$factors_data_table <- DT::renderDataTable(
     DT::datatable(
       load_factors(), options = list(
         columnDefs = list(list(className = 'dt-center')),
@@ -330,7 +389,7 @@ exploreFactorsDistribution <- function(input, output, session, ds_factors) {
   })
 
   # Filter data of factors
-  select_dataset <-shiny::reactive({
+  select_dataset <- shiny::reactive({
 
     ds_factors <- ds_transform_factors()
 
@@ -380,6 +439,11 @@ exploreFactorsDistribution <- function(input, output, session, ds_factors) {
         binwidth = input$bins_adjust
       )
     )
+
+    # Add some plot decorations
+    result_plot <- result_plot +
+                   geom_vline(xintercept = 0, colour = "grey50", alpha = 0.5)
+
     return(result_plot)
   })
 
@@ -392,6 +456,7 @@ exploreFactorsDistribution <- function(input, output, session, ds_factors) {
       dplyr::summarise_at(
         "factor_exposure",
         dplyr::funs(
+          obs = mean(length(.)),
           NAs = sum(is.na(.)),
           mean,
           sd,

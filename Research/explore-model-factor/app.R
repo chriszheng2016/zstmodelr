@@ -16,7 +16,13 @@ fundamental_normal_factors <- NULL
 # fundamental_normal_factors <- fundamental_normal_factors %>%
 #   tidyr::gather(key = "factor_name", value = "factor_exposure", -(date:indcd))
 
-fundamental_factors_list <- c("GPM", "ROCE", "PE", "PB", "CUR", "QR")
+# fundamental_factors_list <- c("GPM", "ROCE", "PE", "PB", "CUR", "QR")
+
+# 读取因子信息
+stock_db <- stock_db(gta_db, "GTA_SQLData")
+open_stock_db(stock_db)
+factors_info <- get_factors_info(stock_db, factor_groups = NULL)
+
 
 # Define UI for application that draws a histogram
 ui <- dashboardPage(
@@ -34,7 +40,7 @@ ui <- dashboardPage(
         tabName = "prepare_factors",
         tabsetPanel(
           tabPanel("加载因子", loadFactorsUI("load_factors",
-                   factors_list = fundamental_factors_list)),
+                   factors_info = factors_info)),
           tabPanel("标准化因子", normalizeFactorsUI("normalize_factors"))
         )
       ),
@@ -65,9 +71,9 @@ ui <- dashboardPage(
 # Define server logic required to draw a histogram
 server <- function(input, output) {
 
-  # browser()
 
-  fundamental_factors <- callModule(loadFactors, "load_factors")
+  fundamental_factors <- callModule(loadFactors, "load_factors",
+                                    factors_info = reactive(factors_info))
 
   fundamental_normal_factors <- callModule(normalizeFactors, "normalize_factors",
               ds_factors = fundamental_factors)
