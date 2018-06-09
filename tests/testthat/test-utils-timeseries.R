@@ -499,77 +499,143 @@ test_that("ts_asfreq, with various arguments", {
 
 })
 
-test_that("ts_lag, with various arguments", {
+test_that("ts_lag, with various normal arguments", {
 
   # valiate lag results
   .validate_lag_result <- function(ds_test_origin, ds_test_result,
-                                   ds_type = c("tibble", "timeSeries"), k = 1) {
+                                   ds_type = c("tibble", "timeSeries"),
+                                   k = 1,
+                                   trim = TRUE) {
 
     ds_type = match.arg(ds_type)
     switch(ds_type,
            "tibble" = {
-              origin_date = ds_test_origin$date
-              origin_value = ds_test_origin$value
-              result_date = ds_test_result$date
-              result_value = ds_test_result$value
+              origin_date <- ds_test_origin$date
+              origin_value <- ds_test_origin$value
+              result_date <- ds_test_result$date
+              result_value <- ds_test_result$value
            },
            "timeSeries" = {
-              origin_date = as.Date(time(ds_test_origin))
-              origin_value = ds_test_origin$value
-              result_date = as.Date(time(ds_test_result))
-              result_value = ds_test_result$value
+              origin_date <- as.Date(time(ds_test_origin))
+              origin_value <- ds_test_origin$value
+
+              result_date <- if (length(ds_test_result) != 0) {
+                as.Date(time(ds_test_result))
+              } else {
+                lubridate::as_date(numeric(0))
+              }
+
+              result_value <- as.vector(timeSeries::series(ds_test_result))
            })
 
+    origin_length <- length(origin_value)
+    result_length <- length(result_value)
+
     # valiate the result
-    if (k >= 0 ) {
+    expect_equal(class(ds_test_origin), class(ds_test_result))
 
-      expect_date <- origin_date[(1 + k):length(origin_date)]
-      expect_value <- origin_value[1:(length(origin_value) - k)]
+    # case: normal k setting (abs(k) < length of ds_test_origin)
+    if (abs(k) < origin_length) {
+      # validate value of result
+      if (k >= 0 ) {
+        if (trim == TRUE) {
+          # trim: no NA is allowed
+          expect_date <- origin_date[(1 + k):length(origin_date)]
+          expect_value <- origin_value[1:(length(origin_value) - k)]
+        } else {
+          # not trim: pad NAs in the head
+          expect_date <- origin_date
+          expect_value <- origin_value[1:(length(origin_value) - k)]
+          expect_value <- c(rep(NA, k), expect_value)
+        }
 
-      actual_date <- result_date
-      actual_value <- result_value
+        actual_date <- result_date
+        actual_value <- result_value
 
-      expect_equivalent(expect_date, actual_date)
-      expect_equal(expect_value, actual_value)
+        expect_equivalent(expect_date, actual_date)
+        expect_equal(expect_value, actual_value)
 
-    }else{
-      expect_date <- origin_date[1:(length(origin_value) + k)]
-      expect_value <- origin_value[(1 + (-k)):length(origin_value)]
+      } else {
+        if (trim == TRUE) {
+          # trim: no NA is allowed
+          expect_date <- origin_date[1:(length(origin_value) + k)]
+          expect_value <- origin_value[(1 + (-k)):length(origin_value)]
+        } else {
+          # not trim: pad NA in then end
+          expect_date <- origin_date
+          expect_value <- origin_value[(1 + (-k)):length(origin_value)]
+          expect_value <- c(expect_value, rep(NA, (-k)))
+        }
 
-      actual_date <- result_date
-      actual_value <- result_value
-      expect_equivalent(expect_date, actual_date)
-      expect_equal(expect_value, actual_value)
+        actual_date <- result_date
+        actual_value <- result_value
+        expect_equivalent(expect_date, actual_date)
+        expect_equal(expect_value, actual_value)
+      }
+
+      # validate length of result
+      if (trim == TRUE) {
+        expect_gte(origin_length, result_length)
+      } else {
+        expect_equal(origin_length, result_length)
+      }
+
+    }
+
+    # case: anormal k setting (abs(k) < length of ds_test_origin)
+    if (abs(k) >= origin_length) {
+      if (trim == TRUE) {
+        # result must be null object
+        expect_equal(result_length, 0)
+      } else {
+        # result must be NA with same length of origin dataset
+        expect_equal(origin_length, result_length)
+        expect_true(all(is.na(result_value)))
+      }
     }
   }
 
 
 
   # ts_lag on tibble dataset ====
-  k <- c(-2, -1, 0, 1, 2)
   ds_type = "tibble"
   ds_test_origin <- ds_test_yearly_df
+  length_ds <- nrow(ds_test_origin)
+  k <- seq(from = -(length_ds + 1), to = (length_ds + 1), by = 1)
   for (i in k) {
-    ds_test_lag <- na.omit(ts_lag(ds_test_origin, k = i,trim = FALSE))
-    .validate_lag_result(ds_test_origin, ds_test_lag, ds_type = ds_type, k = i)
+    # When trim is FALSE
+    trim = FALSE
+    ds_test_lag <- ts_lag(ds_test_origin, k = i,trim = trim)
+    .validate_lag_result(ds_test_origin, ds_test_lag, ds_type = ds_type,
+                         k = i, trim = trim )
 
-    ds_test_lag <- na.omit(ts_lag(ds_test_origin, k = i,trim = TRUE))
-    .validate_lag_result(ds_test_origin, ds_test_lag, ds_type = ds_type, k = i)
+    # When trim is TRUE
+    trim = TRUE
+    ds_test_lag <- ts_lag(ds_test_origin, k = i,trim = trim)
+    .validate_lag_result(ds_test_origin, ds_test_lag, ds_type = ds_type,
+                         k = i, trim = trim)
   }
 
-
   # ts_lag on timeSeries dataset ====
-  k <- c(-2, -1, 0, 1, 2)
   ds_type = "timeSeries"
   ds_test_origin <- ds_test_yearly_fts
+  length_ds <- nrow(ds_test_origin)
+  k <- seq(from = -(length_ds + 1), to = (length_ds + 1), by = 1)
   for (i in k) {
+    # When trim is FALSE
+    trim = FALSE
+    ds_test_lag <- ts_lag(ds_test_origin, k = i,trim = trim)
+    .validate_lag_result(ds_test_origin, ds_test_lag, ds_type = ds_type,
+                         k = i, trim = trim)
 
-    ds_test_lag <- na.omit(ts_lag(ds_test_origin, k = i,trim = FALSE))
-    .validate_lag_result(ds_test_origin, ds_test_lag, ds_type = ds_type, k = i)
-
-    ds_test_lag <- na.omit(ts_lag(ds_test_origin, k = i,trim = TRUE))
-    .validate_lag_result(ds_test_origin, ds_test_lag, ds_type = ds_type, k = i)
+    # When trim is TRUE
+    trim = TRUE
+    ds_test_lag <- ts_lag(ds_test_origin, k = i,trim = trim)
+    .validate_lag_result(ds_test_origin, ds_test_lag, ds_type = ds_type,
+                         k = i, trim = trim)
   }
 
 
 })
+
+

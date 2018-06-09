@@ -232,7 +232,7 @@ ts_resample.tbl_df <- function(ts_dataset,
                                agg_fun = agg_fun,
                                ...,
                                date_index_field = date_index_field,
-                               .parallel = TRUE,
+                               .parallel = FALSE,
                                .progress = plyr::progress_win(title = "Resampling..."))
     }
 
@@ -319,8 +319,8 @@ ts_asfreq.tbl_df <- function(ts_dataset,
                              freq_rule = freq_rule,
                              fillna_method = fillna_method,
                              date_index_field = date_index_field,
-                             .parallel = TRUE,
-                             .progress = plyr::progress_win(title = "Working..."))
+                             .parallel = FALSE,
+                             .progress = plyr::progress_win(title = "Refreqencing..."))
   }
 
   result_ts <- tibble::as.tibble(result_ts)
@@ -351,12 +351,6 @@ ts_lag.tbl_df <- function(ts_dataset,
     stopifnot(!is.null(ts_dataset), inherits(ts_dataset, "data.frame"))
     ts_df <- tibble::as.tibble(ts_dataset)
 
-    if (abs(k) > nrow(ts_dataset)) {
-      msg <- sprintf("Absolute shift offset(%d) mustn't be longer than length of dataset(%d)",
-                     abs(k), nrow(ts_dataset))
-      stop(msg)
-    }
-
     # Shift data at current timeline
     origin_group_vars <- dplyr::group_vars(ts_df)
     date_index_field <- rlang::parse_quosure(date_index_field)
@@ -365,7 +359,10 @@ ts_lag.tbl_df <- function(ts_dataset,
       lag_ts <- ts_df %>%
         dplyr::ungroup() %>%
         dplyr::arrange(!!date_index_field) %>%
-        dplyr::mutate_at(.vars = dplyr::vars(-!!date_index_field), .fun = dplyr::lag, n = k)
+        dplyr::mutate_at(.vars = dplyr::vars(-!!date_index_field),
+                               .fun = dplyr::lag,
+                               n = k,
+                               order_by = rlang::quo_expr(date_index_field))
 
 
     } else if (k < 0) {
@@ -373,7 +370,10 @@ ts_lag.tbl_df <- function(ts_dataset,
       lag_ts <- ts_df %>%
         dplyr::ungroup() %>%
         dplyr::arrange(!!date_index_field) %>%
-        dplyr::mutate_at(.vars = dplyr::vars(-!!date_index_field), .fun = dplyr::lead, n = abs(k))
+        dplyr::mutate_at(.vars = dplyr::vars(-!!date_index_field),
+                         .fun = dplyr::lead,
+                         n = abs(k),
+                         order_by = rlang::quo_expr(date_index_field))
 
     } else {
       # don't shift
@@ -383,7 +383,7 @@ ts_lag.tbl_df <- function(ts_dataset,
     # trim NA rows from shifting
     if (trim) {
       ts_length <- nrow(lag_ts)
-      if (abs(k) != ts_length) {
+      if (abs(k) < ts_length) {
         if ( k >= 0) {
           lag_ts <- lag_ts[(k + 1):ts_length, ]
         } else {
@@ -425,8 +425,8 @@ ts_lag.tbl_df <- function(ts_dataset,
                              k = k,
                              trim = trim,
                              date_index_field = date_index_field,
-                             .parallel = TRUE,
-                             .progress = plyr::progress_win(title = "Working..."))
+                             .parallel = FALSE,
+                             .progress = plyr::progress_win(title = "Lagging..."))
   }
 
   result_ts <- tibble::as.tibble(result_ts)
@@ -502,7 +502,7 @@ reindex_by_regroup.tbl_df <- function(ts_df,
   #aggregaing non-number fields by using value of first observatio of each group
   ts_result_non_numbers <- ts_new_df %>%
     dplyr::group_by(group_index) %>%
-    dplyr::summarise_if(~!inherits(., "numeric"), "first")
+    dplyr::summarise_if(~!inherits(., "numeric"), dplyr::first)
 
   #combine non_number and number fields
   ts_result <- ts_result_non_numbers %>%
@@ -628,16 +628,29 @@ ts_lag.timeSeries <- function(ts_dataset,
   # validate params
   stopifnot(!is.null(ts_dataset), inherits(ts_dataset, "timeSeries"))
 
-  if (abs(k) > nrow(ts_dataset)) {
-    msg <- sprintf("Absolute shift offset(%d) mustn't be longer than length of dataset(%d)",
-                   abs(k), nrow(ts_dataset))
-    stop(msg)
-  }
+  # if (abs(k) > nrow(ts_dataset)) {
+  #   msg <- sprintf("Absolute shift offset(%d) mustn't be longer than length of dataset(%d)",
+  #                  abs(k), nrow(ts_dataset))
+  #   stop(msg)
+  # }
 
   origin_colnames <- timeSeries::colnames(ts_dataset)
 
   # compute lag timeseries
-  lag_ts <- timeSeries::lag(ts_dataset, k = k, trim = trim, ...)
+  if (abs(k) < nrow(ts_dataset)) {
+    # use normal lag operation of timeSeries
+    lag_ts <- timeSeries::lag(ts_dataset, k = k, trim = trim, ...)
+  } else {
+    # when abs(k) is larger than length of ts, produce result according trim
+    if (trim != TRUE) {
+      # set data as NA but keep date, because timeSeries::lag can't deal with the cases
+      lag_ts <- ts_dataset
+      lag_ts[,] <- NA
+    } else {
+      # return a null timeSeries because all data are NA
+      lag_ts <- ts_dataset[0,]
+    }
+  }
 
   timeSeries::colnames(lag_ts) <- origin_colnames
 
