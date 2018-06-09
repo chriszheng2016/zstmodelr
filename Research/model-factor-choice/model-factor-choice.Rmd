@@ -1,5 +1,5 @@
 ---
-title: "R Notebook"
+title: "研究分析：有效因子筛选识别"
 params:
   backtest_start_date:
     label: 'backtest start date:'
@@ -52,25 +52,35 @@ library(shiny)
 library(zstmodelr)
 
 
-# Set global options for knitr 
+# Set global options for knitr
 knitr::opts_chunk$set(
-comment = "#>",
-echo = FALSE,
-warning = FALSE,
-message = FALSE,
-collapse = TRUE
+  comment = "#>",
+  echo = FALSE,
+  warning = FALSE,
+  message = FALSE,
+  collapse = TRUE
 )
 
 options(tibble.print_min = 10L, tibble.print_max = 20L)
 
 # options(digits = 3)
-
 ```
 
+# 研究工作概要
 
-# 数据准备
+  在因子原始数据采集和计算基础，针对目标因子进行测试筛选，以初步识别有效的因子。
+  主要工作包括：
+  
+  * **数据规范化(Normalization)：**
+  由于原始数据的量纲不一致，为保证数据之间的可比性和可叠加性，要对原始数据进行标准化、去量纲的工作。
 
-## Set Study Params (设置研究参数)
+  * **因子有效性测试：**
+  原始因子集合是在逻辑上被认为与股票收益率存在关联性的因素，实证中并不是每个原始因子和股票收益率都存在相关性，因此需要对原始因子进行有效性检验，排除跟收益率相关性不高的因子。
+
+# 数据准备(Data Preparation)
+
+
+## 研究参数设置(Study Params)
 ```{r set_params}
 # Set params of study
 
@@ -80,67 +90,163 @@ fundamental_factors_list <- params$factors_list
 # period of backtest
 start_date <- params$backtest_start_date
 end_date <- params$backtest_end_date
-
 ```
-* __测试因子:__ `r params$factors_list`
 
-* __回测期间:__ `r params$backtest_start_date` ~ `r params$backtest_end_date`
+主要测试参数如下：
+
+* **测试因子:** `r params$factors_list`
+
+* **回测期间:** `r params$backtest_start_date` ~ `r params$backtest_end_date`
 
 
-## Load facotrs data (加载因子数据)
+## 目标因子概要(Target Factor Summary)
+
+   因子主要是指基本面因素，按投资风险的风格分类，分为如下**类别(Style Factors)**:
+   
+* **估值因子(Valuation Factors)：**
+
+  用于衡量股票价格是否相对偏高或偏低，因素值较大的公司，意味公司股票可能被高估或具有较高的未来成长性。
+
+* **清偿能力因子(Solvency Factors)：**
+
+  用于衡量一个公司不同类别的流动资金偿还负债的能力。清偿能力因素值较大的公司具有更好的资金流动性或清偿债务的能力，并且较少受到于由支付债务和其它负债而破产的威胁。
+
+* **营运效率因子(Operating Efficency Factors)**
+
+  用于描述公司对短期和长期资产的运营绩效。因素值较大的公司，比较充分地利用了资产。
+
+* **营运盈利能力因子(Operating Profitability Factors)**
+
+  用于衡量公司获取利润的能力。因素值较大的公司，具有较强的竞争能力，可获得较好的较高的利润。
+
+* **财务风险因子(Finacial Risk Factors)**
+
+  用于衡量公司可能面临破产的风险，即对应对销售暂时放缓或突遇经济时，公司能会较大  的利润波动和面临较高的财务压力，以至于导致破产。
+
+* **流动性风险因子(Liquidity Factors)**
+
+  用于衡量股票交易的难易程度。
+
+* **技术因子(Technical Factors)**
+  
+  用于捕捉股票相对价格的短期波动。
+
+
+
+   本次测试目标因子如下：
 ```{r fetch_factors_data}
 
-  # Open gta stock databse
-  stock_db <- stock_db(gta_db, "GTA_SQLData")
-  open_stock_db(stock_db)
-  
-  # Initate the stock database
-  invisible(init_stock_db(stock_db))
+# Open gta stock databse
+stock_db <- stock_db(gta_db, "GTA_SQLData")
+open_stock_db(stock_db)
 
-  # Get factors info
-  factors_info <- get_factors_info(stock_db, factor_groups = NULL)
- 
+# Initate the stock database
+invisible(init_stock_db(stock_db))
+
+# Get factors info
+factors_info <- get_factors_info(stock_db, factor_groups = NULL)
+
 
 if (!params$debug_mode) {
-    
-   
+
+
   # Get fundamental indicators
-  fundamental_factors <- get_factor_indicator(stock_db, 
-                                  factor_list = fundamental_factors_list)
-  
+  fundamental_factors <- get_factor_indicator(stock_db,
+    factor_list = fundamental_factors_list
+  )
+
   # Get stocks return
-  stocks_return <- get_stock_return(stock_db, 
-                                    stock_cd_list = NULL, 
-                                    period_type = "month",
-                                    period_date = "end",
-                                    output_type = "tibble")
+  stocks_return <- get_stock_return(stock_db,
+    stock_cd_list = NULL,
+    period_type = "month",
+    period_date = "end",
+    output_type = "tibble"
+  )
   # Save temp file for debug
   saveRDS(fundamental_factors, file = params$tmpfile_fundamental_factors)
   saveRDS(stocks_return, file = params$tmpfile_stocks_return)
-  
 } else {
-  
+
   # Use temp file to debug
   fundamental_factors <- readRDS(params$tmpfile_fundamental_factors)
   stocks_return <- readRDS(params$tmpfile_stocks_return)
 }
-  
- # Display target factors information  
- target_factors_info <- factors_info %>%
-     dplyr::filter(factor_code %in% fundamental_factors_list)
- 
- knitr::kable(
+
+# Display target factors information
+target_factors_info <- factors_info %>%
+  dplyr::filter(factor_code %in% fundamental_factors_list)
+
+knitr::kable(
   target_factors_info,
   format = "pandoc",
   align = "c",
   digits = 3,
   caption = "目标因子信息"
 )
-  
 ```
 
 
 ## 因子数据规范化(Factors Normalization)
+
+   由于各因子的量纳不同，为方便比较和回归，需要对因子进行规范化处理，主要分为
+两步：
+
+* **第一步、剔除异常极值**
+
+  由于少数异极值对因子和收益率之间相关系数估计造成严重干扰，故需要对异常极值进行处理，处理方式包括：保留极值、用边界值替换、删除极值。
+  
+  判断异常极值方法主要有：
+  
+  - **均值标准差法**
+  
+  这种想法的思路来自于正态分布, 假设$X\sim N(\mu,\sigma^{2})$, 则
+  
+  $$P(|X-\mu| > k*\sigma  =\begin{cases}
+      0.317 & k=1\\
+      0.046 & k=2\\
+      0.03 & k=3
+  \end{cases})$$
+  
+  通常把偏离均值**三倍标准差**以外的数据作为异常值数据。
+  
+  不过要注意的是样本均值和样本标准差都不是稳健统计量，其计算本身受极值的影响就非常大，所以可能会出现一种情况，那就是我们从数据分布图上能非常明显的看到异常点，但按照上面的计算方法，这个异常点可能仍在均值三倍标准差的范围内。因此按照这种方法剔除掉异常值后，需要重新观察数据的分布情况，看是否仍然存在显著异常点，若存在则继续重复上述步骤寻找异常点。
+
+  在样本数据不符合正态分布的情况下，根据Chebyshev不等式，我们仍然可以对均值三倍标准差外的样本数据数量占比做出估计：
+  $$P(|X-\mu|\geq k\cdot\sigma)\leq1/k^{2}$$
+
+  但不等式右边的上界数值过于偏大，在数据分布的偏度和峰度影响下，这种方法可能会把过量的数据认定为异常点。
+  
+  + **中位数去极值法：**
+  
+  MAD 法是针对均值标准差方法的改进，把均值和标准差替换成稳健统计量，样本均值用样本中位数代替，样本标准差用样本MAD （Median Absolute Deviation）代替：
+  $md = median(\{ x_{i},i=1,2,3\cdots n\} )$(相当于mean),$MAD = median(\{|x_{i}-md|, i = 1,2,3\cdots n\})$(相关于std),即：
+  
+  
+  通常把离中值**三倍MAD**以外的数据作为异常值数据。
+  
+  + **Boxplot法**
+  
+  TODO
+
+* **第二步、标准化**
+
+  + **直接标准化：**
+  
+  直接对因子(去极值后)进行直接进行标准化处理，
+  $$\tilde{x}_{i}=\frac{x_{_{i}-\mu}}{\sigma}$$
+  $\mu$: 序列$x_{i}$的均值，$\sigma$: 序列$x_{i}$的标准差，$\tilde{x}_{i}$: 序列$x_{i}$标准化后的值。
+  
+  + **排序标准化**
+  
+  将原始因子序列(去极值后)转换成序关系序列：$\tilde{x}_{i} = rank({x}_{i})$，再进行计算标准得分。
+  
+
+本报告中因子数据规范化处理：
+
+- 对采用“均值标准差法”检测异常极端值，对检测异常值用边界值替换;
+
+- 对去除异常值的因子序列采用“直接标准化”.
+
 
 ```{r factors_Normalization }
 
@@ -148,84 +254,90 @@ if (!params$debug_mode) {
 
   # Normalize the factor indicators
   fundamental_normal_factors <- fundamental_factors %>%
-  dplyr::filter( date >= start_date & date <= end_date ) %>%
-  normalize_factors( group_by = c("date"), 
-                     clean_extremes_method = "sigma",
-                     standard_method = "normal")
-   
+    dplyr::filter(date >= start_date & date <= end_date) %>%
+    normalize_factors(
+      group_by = c("date"),
+      clean_extremes_method = "sigma",
+      standard_method = "normal"
+    )
+
   # Resample factors by specified frequency
   fundamental_normal_factors_period <- fundamental_normal_factors %>%
-    ts_resample( by_group = "stkcd", freq_rule = "month", 
-                     fillna_method = "ffill", agg_method = mean)
-  
+    ts_resample(
+      by_group = "stkcd", freq_rule = "month",
+      fillna_method = "ffill", agg_method = mean
+    )
+
   # Resample return by specified frequency
   stocks_return_period <- stocks_return %>%
-    dplyr::filter( date >= start_date & date <= end_date ) %>%
-    ts_resample( by_group = "stkcd", freq_rule = "month", 
-                     fillna_method = "nfill", 
-                     agg_method = function(x) prod(1 + x, na.rm = TRUE) - 1)
-  
-  # Lag factors to avoid peeking ahead bias                                                
+    dplyr::filter(date >= start_date & date <= end_date) %>%
+    ts_resample(
+      by_group = "stkcd", freq_rule = "month",
+      fillna_method = "nfill",
+      agg_method = function(x) prod(1 + x, na.rm = TRUE) - 1
+    )
+
+  # Lag factors to avoid peeking ahead bias
   fundamental_normal_factors_pre_period <- ts_lag(
-                                          fundamental_normal_factors_period,
-                                          k = 1,
-                                          trim = TRUE,
-                                          by_group = "stkcd")  
-  
+    fundamental_normal_factors_period,
+    k = 1,
+    trim = TRUE,
+    by_group = "stkcd"
+  )
+
   # Save temp file for debug
-  saveRDS(fundamental_normal_factors, 
-          file = params$tmpfile_fundamental_normal_factors)
-  saveRDS(fundamental_normal_factors_period, 
-          file = params$tmpfile_fundamental_normal_factors_period)
-  saveRDS(stocks_return_period, 
-          file = params$tmpfile_stocks_return_period)
-  saveRDS(fundamental_normal_factors_pre_period, 
-          file = params$tmpfile_fundamental_normal_factors_pre_period)
-  
+  saveRDS(fundamental_normal_factors,
+    file = params$tmpfile_fundamental_normal_factors
+  )
+  saveRDS(fundamental_normal_factors_period,
+    file = params$tmpfile_fundamental_normal_factors_period
+  )
+  saveRDS(stocks_return_period,
+    file = params$tmpfile_stocks_return_period
+  )
+  saveRDS(fundamental_normal_factors_pre_period,
+    file = params$tmpfile_fundamental_normal_factors_pre_period
+  )
 } else {
-  
+
   # Use temp file to debug
   fundamental_normal_factors <- readRDS(params$tmpfile_fundamental_normal_factors)
   fundamental_normal_factors_period <- readRDS(params$tmpfile_fundamental_normal_factors_period)
   stocks_return_period <- readRDS(params$tmpfile_stocks_return_period)
   fundamental_normal_factors_pre_period <- readRDS(params$tmpfile_fundamental_normal_factors_pre_period)
-  
 }
-
-                                   
-
 ```
 
+## 因子分布状况(Factor Distribution Exploration)
 
-
-# Uinivariate Factors Test(因子筛选与检测)
-
-## Factor Distribution Exploration(因子分布状况)
+  对规范化后因子数据，计算在每个时间截面的因子分布参数(平均值等)，对计算参数时间序列的平均值，获得分布参数如下：
 
 ```{r factor_test_summarize_dataset}
 
 # summarize facgtor
 summary_fundamental_normal_factors <- fundamental_normal_factors %>%
-     tidyr::gather(key = "factor_name", value = "factor_exposure", fundamental_factors_list) %>%
-     dplyr::group_by(factor_name, date) %>%
-     dplyr::summarise_at("factor_exposure", 
-                          funs( obs = mean(length(.)),
-                                NAs = sum(is.na(.)),
-                                mean,
-                                sd,
-                                median,
-                                mad,
-                                min,
-                                Q1 = quantile(., 0.25),
-                                Q3 = quantile(., 0.75),
-                                max,
-                                skewness,
-                                kurtosis
-                              ),
-                              na.rm = TRUE) %>%
-     dplyr::select(-date) %>%
-     dplyr::group_by(factor_name) %>%
-     dplyr::summarise_all(mean)
+  tidyr::gather(key = "factor_name", value = "factor_exposure", fundamental_factors_list) %>%
+  dplyr::group_by(factor_name, date) %>%
+  dplyr::summarise_at("factor_exposure",
+    funs(
+      obs = mean(length(.)),
+      NAs = sum(is.na(.)),
+      mean,
+      sd,
+      median,
+      mad,
+      min,
+      Q1 = quantile(., 0.25),
+      Q3 = quantile(., 0.75),
+      max,
+      skewness = PerformanceAnalytics::skewness,
+      kurtosis = PerformanceAnalytics::kurtosis
+    ),
+    na.rm = TRUE
+  ) %>%
+  dplyr::select(-date) %>%
+  dplyr::group_by(factor_name) %>%
+  dplyr::summarise_all(mean)
 
 
 knitr::kable(
@@ -235,18 +347,49 @@ knitr::kable(
   digits = 3,
   caption = "因子分布情况总览"
 )
-
 ```
 
+注意：kurtosis 为超过正态分布峰度的数值。
 
-## Pooling Univariate Regression Test(单因子池回归)
+
+
+# 单因子筛选检测(Uinivariate Factors Test)
+
+按有效性因子分为：
+
+- **收益率因子(alpha因子)**：
+  因子对股票的收益率具有显著的且稳定的影响的某些变量，即因子的收益率序列均值显著不为零，且方向明确。对于下一期的因子的收益率预测相对较为准确。
+
+- **风险类因子**：
+  因子对于股票收益率的影响并不明显，因子收益率序列的均值在0值附近，正负方向并不明确。
+
+
+检验单个因子的有效性方法包括：
+
+* **单因子池回归法**
+
+* **Bara单因子截面回归法**
+
+  对单因子的横截面回归方程系数(因子收益)形成序列的平均值进行$t$检验，根据因素收益平均值是否著不为零，来判断因子有效程度。
+
+* **单因子信息系数(IC)评估法**
+
+  对单因子的信息系数序列(Information Coefficients ，因子截面暴露值序列和截面超额收益率序列的相关系数)均值进行$t$检验，根据IC平均值是否显著不为零，来判定因子有效程度，即IC序列均值当显著不为0且超过某一阀值即认定为alpha源。
+
+* **投资组合分类法 **
+
+  根据因子值对股票进行排序后分成N种投资组合，并构建多空组合（具有最高因素值的组合与最低因素值组合之间收益差），对多空组合的收益率的平均值进行$t$检验，根据多空组合平均收益是否显著不为零来判定因子的有效程度。另外，还可对各投资组合使用年化收益率，夏普比率，年化波动率，最大回撤等进行评测。
+
+* **因子组合法**
+
+## 单因子池回归(Pooling Univariate Regression Test)
 ```{r factor_test_Uniregression_pooling}
 
 # Build test data dataset
 ds_test_uniregression_pooling <- stocks_return_period %>%
-    dplyr::inner_join(fundamental_normal_factors_pre_period, by = c("date", "stkcd")) %>%
-    tidyr::gather(-(date:indcd), key = "factor_name", value = "factor_exposure") %>%
-    dplyr::select(date, stkcd, indcd, return , factor_name, factor_exposure)
+  dplyr::inner_join(fundamental_normal_factors_pre_period, by = c("date", "stkcd")) %>%
+  tidyr::gather(-(date:indcd), key = "factor_name", value = "factor_exposure") %>%
+  dplyr::select(date, stkcd, indcd, return, factor_name, factor_exposure)
 
 # Model of conducting univariate regression test
 model_univariate_regression_pooling <- function(df) {
@@ -255,65 +398,70 @@ model_univariate_regression_pooling <- function(df) {
 
 # Condcut factor uniregress test
 result_test_uniregression_pooling <- factor_test_uniregress(ds_test_uniregression_pooling,
-                                                regress_method = "pooling",                  
-                                                regress_fun = model_univariate_regression_pooling,
-                                                factor_field = "factor_name",
-                                                output_type = "summary",
-                                                date_field = "date")
-                               
+  regress_method = "pooling",
+  regress_fun = model_univariate_regression_pooling,
+  factor_field = "factor_name",
+  output_type = "summary",
+  date_field = "date"
+)
+
 # Disply test result
 # summary(result_test_uniregression_pooling)
 
 knitr::kable(
-   summary(result_test_uniregression_pooling),
-   format = "pandoc",
-   align = "c",
-   digits = 3,
-   caption = "Uniregression Pooling Factor Test"
+  summary(result_test_uniregression_pooling),
+  format = "pandoc",
+  align = "c",
+  digits = 3,
+  caption = "Uniregression Pooling Factor Test"
 )
-
-
 ```
 
 
-## Barra Univarate Reggression Test(Barra单因子截面回归)
+## Barra单因子截面回归(Barra Univarate Reggression Test)
 
 因子测试内容：
 
 * **步骤1、单因子回归确定每个因子每期的因子收益**
 
-* **步骤2、因子收益率序列检验**
+  在指定时期内的每个时点上进行横截面回归：
+  $$r_{i,t} = \beta_{i,t}*f_{t} + \varepsilon_{i,t}, i = 1,2,\cdots,N$$
+  获得各横截面上的斜率(因子收益$f_{t}$)和残差($\varepsilon_{i,t}$)所形成的序列。
 
-  - **t值绝对值序列的均值**：
-      对于每一期的截面回归，都可以得到一个因子收益率$\tilde{f^{t}_{k}}$的值。对于$\tilde{f^{t}_{k}}$值序列，首先取绝对值$|t|$，然后计算$|t|$的均值，$t$是判断因子是否为有效因子的重要指标，之所以要取绝对值，是因为只要t值显著不等于0，即可以认为在当期因子和收益率存在明显的相关性。但是这种相关性有的时候为正，有的时候为负，如果不取绝对值，则很多正负抵消，会低估因子的有效性。
-  - **t值经对值充列大于2的比例**：检验$|t|>2$的比例主要是为了保证$|t|$平均值的稳定性，避免出现少数数值特别大的样本值拉高均值；
-  - **因子收益率$\tilde{f^{t}_{k}}$序列t值检验**：对于每一期的截面回归，都可以得到一个因子收益率$\tilde{f^{t}_{k}}$，对于$\tilde{f^{t}_{k}}$序列同样需要进行检验，以观察因子收益率序列的方向一致性。
+* **步骤2、因子收益率序列$t$检验**
 
+  对因子收益序列($f_{t}$)进行$t$检验，判断因子的平均收益的显著性, 同时统计正值/负值比例，对观察因子收益的方向。
 
 
 
 测试结果字段说明：
 
-* factor_name: 因子名称
-* r.squared: 
-* f_pvalue:
-* beta_t_abs_mean:
-* beta_t_sig_ratio:
-* beta_t_mean:
-* beta_t_sd:
-* beta_t_mean_std_ratio:
-* factor_return:
-* factor_return_tvalue:
-* factor_return_pvalue:
+* factor: 因子名称
+* return_avg: 因子收益序例样本均值
+* return_med: 因子收益序例样本中数
+* return_min: 因子收益序例样本最小值
+* return_min: 因子收益序例样本最大值
+* return_std：因子收益序例样本标准差
+* return_skew: 因子收益序例样本偏度
+* return_kurt: 因子收益序例样本超额峰度
+
+* t.test_t: 对因子收益序列均值非零$t$检验的$t$统计量
+* t.test_p: 对因子收益序列均值非零$t$检验的$p$概率值
+* pct_pos: 因子收益序列中正值比例
+* pct_neg: 因子收益序列中负值比例
+
+* n.test_p: 正态分布检验(Shapiro-Wilk)$p$概率值 
+
+
 
 
 ```{r factor_test_Uniregression_barra}
 
 # Build test data dataset
 ds_test_uniregression_barra <- stocks_return_period %>%
-    dplyr::inner_join(fundamental_normal_factors_pre_period, by = c("date", "stkcd")) %>%
-    tidyr::gather(-(date:indcd), key = "factor_name", value = "factor_exposure") %>%
-    dplyr::select(date, stkcd, indcd, return , factor_name, factor_exposure)
+  dplyr::inner_join(fundamental_normal_factors_pre_period, by = c("date", "stkcd")) %>%
+  tidyr::gather(-(date:indcd), key = "factor_name", value = "factor_exposure") %>%
+  dplyr::select(date, stkcd, indcd, return, factor_name, factor_exposure)
 
 
 # Model of conducting univariate regression test
@@ -322,110 +470,151 @@ model_univariate_regression_barra <- function(df, ...) {
 }
 
 # Condcut factor uniregress test
-result_test_uniregression_barra <- factor_test_uniregress( ds_test_uniregression_barra,
-                                                regress_method = "cross_section",                  
-                                                regress_fun = model_univariate_regression_barra,
-                                                output_type = "summary",
-                                                factor_field = "factor_name",
-                                                date_field = "date")
+result_test_uniregression_barra <- factor_test_uniregress(ds_test_uniregression_barra,
+  regress_method = "cross_section",
+  regress_fun = model_univariate_regression_barra,
+  output_type = "summary",
+  factor_field = "factor_name",
+  date_field = "date"
+)
 
 # Disply test result
 # summary(result_test_uniregression_barra)
 knitr::kable(
-   summary(result_test_uniregression_barra),
-   format = "pandoc",
-   align = "c",
-   digits = 3,
-   caption = "Uniregression Barra Factor Test"
+  summary(result_test_uniregression_barra),
+  format = "pandoc",
+  align = "c",
+  digits = 3,
+  caption = "Uniregression Barra Factor Test"
 )
 
-# Plot test result                               
+# Plot test result
 plot(result_test_uniregression_barra)
-
 ```
 
 
 
 
-## Information Coefficients Test（IC值评估）
+## 因子IC值评估(Information Coefficients Test)
+
+
+* factor: 因子名称
+* IC_avg: 因子收益序例样本均值
+* IC_med: 因子收益序例样本中数
+* IC_min: 因子收益序例样本最小值
+* IC_min: 因子收益序例样本最大值
+* IC_std：因子收益序例样本标准差
+* IC_skew: 因子收益序例样本偏度
+* IC_kurt: 因子收益序例样本超额峰度
+
+* t.test_t: 对因子收益序列均值非零$t$检验的$t$统计量
+* t.test_p: 对因子收益序列均值非零$t$检验的$p$概率值
+* pct_pos: 因子收益序列中正值比例
+* pct_neg: 因子收益序列中负值比例
+
+* n.test_p: 正态分布检验(Shapiro-Wilk)$p$概率值
+
 ```{r factor_test_IC}
 
 # Build test data dataset
 ds_test_IC <- stocks_return_period %>%
-    dplyr::inner_join(fundamental_normal_factors_pre_period, by = c("date", "stkcd")) %>%
-    tidyr::gather(-(date:indcd), key = "factor_name", value = "factor_exposure") %>%
-    dplyr::select(date, stkcd, indcd, return , factor_name, factor_exposure)
+  dplyr::inner_join(fundamental_normal_factors_pre_period, by = c("date", "stkcd")) %>%
+  tidyr::gather(-(date:indcd), key = "factor_name", value = "factor_exposure") %>%
+  dplyr::select(date, stkcd, indcd, return, factor_name, factor_exposure)
 
 
 # Method of conducting IC test
 Model_compute_IC <- function(df, ...) {
-  cor.test(x = df$return, y = df$factor_exposure, ... )
+  cor.test(x = df$return, y = df$factor_exposure, ...)
 }
 
 # Condcut factor IC test
-result_test_IC <- factor_test_IC( ds_test_IC,
-                                  IC_fun = Model_compute_IC,
-                                  method = "pearson",
-                                  output_type = "summary",
-                                  factor_field = "factor_name",
-                                  date_field = "date")
+result_test_IC <- factor_test_IC(ds_test_IC,
+  IC_fun = Model_compute_IC,
+  method = "pearson",
+  output_type = "summary",
+  factor_field = "factor_name",
+  date_field = "date"
+)
 
 # Disply test result
 # summary(result_test_IC)
 knitr::kable(
-   summary(result_test_IC),
-   format = "pandoc",
-   align = "c",
-   digits = 3,
-   caption = "IC Factor Test"
+  summary(result_test_IC),
+  format = "pandoc",
+  align = "c",
+  digits = 3,
+  caption = "IC Factor Test"
 )
-
 ```
 
-## Factor Sort Portfolios Test(因子组合分类法)
+## 因子组合分类法(Factor Sort Portfolios Test)
+
+* factor: 因子名称
+* return_avg: 因子收益序例样本均值
+* return_med: 因子收益序例样本中数
+* return_min: 因子收益序例样本最小值
+* return_min: 因子收益序例样本最大值
+* return_std：因子收益序例样本标准差
+* return_skew: 因子收益序例样本偏度
+* return_kurt: 因子收益序例样本超额峰度
+
+* t.test_t: 对因子收益序列均值非零$t$检验的$t$统计量
+* t.test_p: 对因子收益序列均值非零$t$检验的$p$概率值
+* pct_pos: 因子收益序列中正值比例
+* pct_neg: 因子收益序列中负值比例
+
+* n.test_p: 正态分布检验(Shapiro-Wilk)$p$概率值
+
 ```{r factor_test_portfolio_sorts}
 
 # Build test data dataset
 ds_test_sort_portfolios <- stocks_return_period %>%
-    dplyr::inner_join(fundamental_normal_factors_pre_period, by = c("date", "stkcd")) %>%
-    tidyr::gather(-(date:indcd), key = "factor_name", value = "factor_exposure") %>%
-    dplyr::select(date, stkcd, indcd, return , factor_name, factor_exposure)
+  dplyr::inner_join(fundamental_normal_factors_pre_period, by = c("date", "stkcd")) %>%
+  tidyr::gather(-(date:indcd), key = "factor_name", value = "factor_exposure") %>%
+  dplyr::select(date, stkcd, indcd, return, factor_name, factor_exposure)
 
 
 # Method to build sort portfolios
 model_sort_portfolios <- function(df, ...) {
-  
+
   # build portfolio group by portfolio groups
-  sort_portfolios <- build_sort_portfolios(stocks_list = df$stkcd,
-                                           factor_value_list = df$factor_exposure,
-                                           ngroup = 5,
-                                           first_group_index = 1,
-                                           factor_group_order = "asc" )
+  sort_portfolios <- build_sort_portfolios(
+    stocks_list = df$stkcd,
+    factor_value_list = df$factor_exposure,
+    ngroup = 5,
+    first_group_index = 1,
+    factor_group_order = "asc"
+  )
   return(sort_portfolios)
 }
 
 # Condcut portfolio sorts test
 result_sort_portfolios <- factor_test_sort_portfolios(ds_test_sort_portfolios,
-                                  sort_portfolios_fun = model_sort_portfolios,
-                                  output_type = "summary",
-                                  factor_field = "factor_name",
-                                  date_field = "date",
-                                  stkcd_field = "stkcd",
-                                  return_field = "return")
+  sort_portfolios_fun = model_sort_portfolios,
+  output_type = "summary",
+  factor_field = "factor_name",
+  date_field = "date",
+  stkcd_field = "stkcd",
+  return_field = "return"
+)
 
 
 # Disply test result
 # summary(result_sort_portfolios)
 knitr::kable(
-   summary(result_sort_portfolios),
-   format = "pandoc",
-   align = "c",
-   digits = 3,
-   caption = "Sort Portfolios Factor Test"
+  summary(result_sort_portfolios),
+  format = "pandoc",
+  align = "c",
+  digits = 3,
+  caption = "Sort Portfolios Factor Test"
 )
 
 # Plot test result
 plot(result_sort_portfolios)
-
 ```
+
+
+
+# 测试结果汇总(Test Result Summary)
 
