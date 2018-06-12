@@ -13,7 +13,7 @@ params:
     input: select
     label: factors list
     multiple: yes
-    value: GPM
+    value: [GPM, ROCE]
   tmpfile_fundamental_factors: temp/fundamental_factors.rds
   tmpfile_fundamental_normal_factors: temp/fundamental_normal_factors.rds
   tmpfile_fundamental_normal_factors_period: temp/fundamental_normal_factors_period.rds
@@ -22,9 +22,11 @@ params:
   tmpfile_stocks_return_period: temp/stocks_return_period.rds
 output:
   html_notebook:
+    fig_caption: yes
     number_sections: yes
     toc: yes
   word_document:
+    fig_caption: yes
     toc: yes
   html_document:
     fig_caption: yes
@@ -284,6 +286,8 @@ if (!params$debug_mode) {
     trim = TRUE,
     by_group = "stkcd"
   )
+  
+  
 
   # Save temp file for debug
   saveRDS(fundamental_normal_factors,
@@ -321,7 +325,7 @@ summary_fundamental_normal_factors <- fundamental_normal_factors %>%
   dplyr::summarise_at("factor_exposure",
     funs(
       obs = mean(length(.)),
-      NAs = sum(is.na(.)),
+      nas = sum(is.na(.)),
       mean,
       sd,
       median,
@@ -366,9 +370,8 @@ knitr::kable(
 
 检验单个因子的有效性方法包括：
 
-* **单因子池回归法**
 
-* **Bara单因子截面回归法**
+* **单因子截面回归法**
 
   对单因子的横截面回归方程系数(因子收益)形成序列的平均值进行$t$检验，根据因素收益平均值是否著不为零，来判断因子有效程度。
 
@@ -382,43 +385,8 @@ knitr::kable(
 
 * **因子组合法**
 
-## 单因子池回归(Pooling Univariate Regression Test)
-```{r factor_test_Uniregression_pooling}
 
-# Build test data dataset
-ds_test_uniregression_pooling <- stocks_return_period %>%
-  dplyr::inner_join(fundamental_normal_factors_pre_period, by = c("date", "stkcd")) %>%
-  tidyr::gather(-(date:indcd), key = "factor_name", value = "factor_exposure") %>%
-  dplyr::select(date, stkcd, indcd, return, factor_name, factor_exposure)
-
-# Model of conducting univariate regression test
-model_univariate_regression_pooling <- function(df) {
-  lm(return ~ factor_exposure, data = df)
-}
-
-# Condcut factor uniregress test
-result_test_uniregression_pooling <- factor_test_uniregress(ds_test_uniregression_pooling,
-  regress_method = "pooling",
-  regress_fun = model_univariate_regression_pooling,
-  factor_field = "factor_name",
-  output_type = "summary",
-  date_field = "date"
-)
-
-# Disply test result
-# summary(result_test_uniregression_pooling)
-
-knitr::kable(
-  summary(result_test_uniregression_pooling),
-  format = "pandoc",
-  align = "c",
-  digits = 3,
-  caption = "Uniregression Pooling Factor Test"
-)
-```
-
-
-## Barra单因子截面回归(Barra Univarate Reggression Test)
+## 因子截面回归(Factor Test of Barra Univarate Regression)
 
 因子测试内容：
 
@@ -428,91 +396,101 @@ knitr::kable(
   $$r_{i,t} = \beta_{i,t}*f_{t} + \varepsilon_{i,t}, i = 1,2,\cdots,N$$
   获得各横截面上的斜率(因子收益$f_{t}$)和残差($\varepsilon_{i,t}$)所形成的序列。
 
-* **步骤2、因子收益率序列$t$检验**
+* **步骤2、对因子收益率序列进行$t$检验**
 
   对因子收益序列($f_{t}$)进行$t$检验，判断因子的平均收益的显著性, 同时统计正值/负值比例，对观察因子收益的方向。
 
 
-
 测试结果字段说明：
 
-* factor: 因子名称
-* return_avg: 因子收益序例样本均值
-* return_med: 因子收益序例样本中数
-* return_min: 因子收益序例样本最小值
-* return_min: 因子收益序例样本最大值
-* return_std：因子收益序例样本标准差
-* return_skew: 因子收益序例样本偏度
-* return_kurt: 因子收益序例样本超额峰度
-
-* t.test_t: 对因子收益序列均值非零$t$检验的$t$统计量
-* t.test_p: 对因子收益序列均值非零$t$检验的$p$概率值
-* pct_pos: 因子收益序列中正值比例
-* pct_neg: 因子收益序列中负值比例
-
-* n.test_p: 正态分布检验(Shapiro-Wilk)$p$概率值 
-
-
+* factor_name: 因子名称
+* obs: 因子收益序列中样本数;
+* nas: 因子收益序列中NA数；
+* avg: 因子收益序例样本均值;
+* med: 因子收益序例样本中数；
+* min: 因子收益序例样本最小值;
+* max: 因子收益序例样本最大值；
+* std：因子收益序例样本标准差;
+* skew: 因子收益序例样本偏度；
+* kurt: 因子收益序例样本超额峰度;
+* pos_pct: 因子收益序列中正值比例；
+* neg_pct: 因子收益序列中负值比例;
+* t.test_t: 对因子收益序列均值非零$t$检验的$t$统计量 绝对值大于2时均值显著不为0;
+* t.test_p: 对因子收益序列均值非零$t$检验的$p$概率值, 小于0.05时均值显著不为0
+* normal.test_p: 正态分布检验(Shapiro-Wilk)$p$概率值，小于0.05时判定因子收益序列非正态分布。 
 
 
-```{r factor_test_Uniregression_barra}
+
+
+```{r factor_test_Uniregression, fig.align= "center"}
 
 # Build test data dataset
-ds_test_uniregression_barra <- stocks_return_period %>%
+ds_test_uniregression <- stocks_return_period %>%
   dplyr::inner_join(fundamental_normal_factors_pre_period, by = c("date", "stkcd")) %>%
   tidyr::gather(-(date:indcd), key = "factor_name", value = "factor_exposure") %>%
   dplyr::select(date, stkcd, indcd, return, factor_name, factor_exposure)
 
 
 # Model of conducting univariate regression test
-model_univariate_regression_barra <- function(df, ...) {
+model_univariate_crossection_regression <- function(df, ...) {
   lm(return ~ factor_exposure, data = df, ...)
 }
 
 # Condcut factor uniregress test
-result_test_uniregression_barra <- factor_test_uniregress(ds_test_uniregression_barra,
-  regress_method = "cross_section",
-  regress_fun = model_univariate_regression_barra,
+result_test_uniregression <- factor_test_uniregress(ds_test_uniregression,
+  regress_fun = model_univariate_crossection_regression,
   output_type = "summary",
   factor_field = "factor_name",
   date_field = "date"
 )
 
 # Disply test result
-# summary(result_test_uniregression_barra)
 knitr::kable(
-  summary(result_test_uniregression_barra),
+  summary(result_test_uniregression),
   format = "pandoc",
   align = "c",
   digits = 3,
-  caption = "Uniregression Barra Factor Test"
+  caption = "Factor Test of Uniregression"
 )
 
 # Plot test result
-plot(result_test_uniregression_barra)
+plot(result_test_uniregression)
 ```
 
 
 
 
-## 因子IC值评估(Information Coefficients Test)
+## 因子信息系数(IC)评估(Factor Test of Information Coefficients)
 
+因子测试内容：
 
-* factor: 因子名称
-* IC_avg: 因子收益序例样本均值
-* IC_med: 因子收益序例样本中数
-* IC_min: 因子收益序例样本最小值
-* IC_min: 因子收益序例样本最大值
-* IC_std：因子收益序例样本标准差
-* IC_skew: 因子收益序例样本偏度
-* IC_kurt: 因子收益序例样本超额峰度
+* **步骤1、计算每期因子与随后实现收益之间的横截面相关性**
 
-* t.test_t: 对因子收益序列均值非零$t$检验的$t$统计量
-* t.test_p: 对因子收益序列均值非零$t$检验的$p$概率值
-* pct_pos: 因子收益序列中正值比例
-* pct_neg: 因子收益序列中负值比例
+  在指定时期内的每个时点，单个因素与其后k期实现收益的横截面相关性：
+  $$IC_{t,t+k} = corr(f_{t}, r_{t, t+k})$$
+ 其中$f_{t}$是在$t$时刻的横截面因素值向量，$r_{t, t+k}$是$t$时刻到$t+k$时刻收益率向量。IC值介于-1与+1之间，正IC值表因素与收益率之间存在正相关，负的IC表示因素与收益之间存在负向关的关系。 获得各横截面上的IC值形成IC序列。
 
-* n.test_p: 正态分布检验(Shapiro-Wilk)$p$概率值
+* **步骤2、对IC序列进行$t$检验**
+
+  对信息系数(IC)序列进行$t$检验，判断因子的平均IC的显著性, 同时统计正值/负值比例，对观察IC相关性的方向。
+
+测试结果字段说明：
+
+* factor_name: 因子名称
+* obs: 信息系数序列中样本数;
+* nas: 信息系数序列中NA数；
+* avg: 信息系数序例样本均值;
+* med: 信息系数序例样本中数；
+* min: 信息系数序例样本最小值;
+* max: 信息系数序例样本最大值；
+* std：信息系数序例样本标准差;
+* skew: 信息系数序例样本偏度；
+* kurt: 信息系数序例样本超额峰度;
+* pos_pct: 信息系数序列中正值比例；
+* neg_pct: 信息系数序列中负值比例;
+* t.test_t: 对信息系数序列均值非零$t$检验的$t$统计量 绝对值大于2时均值显著不为0;
+* t.test_p: 对信息系数序列均值非零$t$检验的$p$概率值, 小于0.05时均值显著不为0
+* normal.test_p: 正态分布检验(Shapiro-Wilk)$p$概率值，小于0.05时判定信息系数序列非正态分布。
 
 ```{r factor_test_IC}
 
@@ -531,7 +509,7 @@ Model_compute_IC <- function(df, ...) {
 # Condcut factor IC test
 result_test_IC <- factor_test_IC(ds_test_IC,
   IC_fun = Model_compute_IC,
-  method = "pearson",
+  method = "spearman",
   output_type = "summary",
   factor_field = "factor_name",
   date_field = "date"
@@ -544,27 +522,32 @@ knitr::kable(
   format = "pandoc",
   align = "c",
   digits = 3,
-  caption = "IC Factor Test"
+  caption = "Factor Test of Information Coefficients(IC)"
 )
+
+# Plot test result
+plot(result_test_IC)
 ```
 
 ## 因子组合分类法(Factor Sort Portfolios Test)
 
-* factor: 因子名称
-* return_avg: 因子收益序例样本均值
-* return_med: 因子收益序例样本中数
-* return_min: 因子收益序例样本最小值
-* return_min: 因子收益序例样本最大值
-* return_std：因子收益序例样本标准差
-* return_skew: 因子收益序例样本偏度
-* return_kurt: 因子收益序例样本超额峰度
+测试结果字段说明：
 
-* t.test_t: 对因子收益序列均值非零$t$检验的$t$统计量
-* t.test_p: 对因子收益序列均值非零$t$检验的$p$概率值
-* pct_pos: 因子收益序列中正值比例
-* pct_neg: 因子收益序列中负值比例
-
-* n.test_p: 正态分布检验(Shapiro-Wilk)$p$概率值
+* factor_name: 因子名称
+* obs: 因子收益序列中样本数;
+* nas: 因子收益序列中NA数；
+* avg: 因子收益序例样本均值;
+* med: 因子收益序例样本中数；
+* min: 因子收益序例样本最小值;
+* min: 因子收益序例样本最大值；
+* std：因子收益序例样本标准差;
+* skew: 因子收益序例样本偏度；
+* kurt: 因子收益序例样本超额峰度;
+* pos_pct: 因子收益序列中正值比例；
+* neg_pct: 因子收益序列中负值比例;
+* t.test_t: 对因子收益序列均值非零$t$检验的$t$统计量 绝对值大于2时均值显著不为0;
+* t.test_p: 对因子收益序列均值非零$t$检验的$p$概率值, 小于0.05时均值显著不为0
+* normal.test_p: 正态分布检验(Shapiro-Wilk)$p$概率值，小于0.05时判定因子收益序列非正态分布。
 
 ```{r factor_test_portfolio_sorts}
 
@@ -590,7 +573,7 @@ model_sort_portfolios <- function(df, ...) {
 }
 
 # Condcut portfolio sorts test
-result_sort_portfolios <- factor_test_sort_portfolios(ds_test_sort_portfolios,
+result_test_sort_portfolios <- factor_test_sort_portfolios(ds_test_sort_portfolios,
   sort_portfolios_fun = model_sort_portfolios,
   output_type = "summary",
   factor_field = "factor_name",
@@ -601,20 +584,110 @@ result_sort_portfolios <- factor_test_sort_portfolios(ds_test_sort_portfolios,
 
 
 # Disply test result
-# summary(result_sort_portfolios)
+
+# sumary of test
 knitr::kable(
-  summary(result_sort_portfolios),
+  summary(result_test_sort_portfolios),
   format = "pandoc",
   align = "c",
   digits = 3,
-  caption = "Sort Portfolios Factor Test"
+  caption = "Factor Test of Sort Portfolios"
+)
+
+# summary of portfolio performance
+knitr::kable(
+  result_test_sort_portfolios@portfolios_summary,
+  format = "pandoc",
+  align = "c",
+  digits = 3,
+  caption = "Summary of Portfolios Performance"
 )
 
 # Plot test result
-plot(result_sort_portfolios)
+plot(result_test_sort_portfolios)
 ```
 
 
 
 # 测试结果汇总(Test Result Summary)
+
+汇总各项测试结果，评估因子的统计显著性和方向性：
+
+* **统计显著性**
+
+通过因子测试结果序列进行$t$检验，当概率p值小于0.05时，说时序列均值显著不为0，即因子是统计显著的。
+
+* **方向性**
+
+当因子序列均值统计显著不为0时，可判断因子对股票回报的影响：
+
+ - 序列均值大于0时，因子与股票为正相关；
+ - 序列均值小于0时，因子与股票为负相关；
+
+
+```{r summarize_test_result}
+
+# Integrate results for evaluation
+summary_test_uniregression <- result_test_uniregression@summary %>%
+                        dplyr::mutate(test = "uniregression_test") %>%
+                        dplyr::select(test, dplyr::everything())
+
+summary_test_IC <- result_test_IC@summary %>%
+             dplyr::mutate(test = "IC_test")  %>%
+             dplyr::select(test, dplyr::everything())
+
+summary_test_sort_portfolios <- result_test_sort_portfolios@summary %>%
+                          dplyr::mutate(test = "sort_portfolios_test") %>%
+                          dplyr::select(test, dplyr::everything())
+
+summary_all_test <- summary_test_uniregression %>%
+        dplyr::bind_rows(summary_test_IC) %>%
+        dplyr::bind_rows(summary_test_sort_portfolios) 
+        
+
+# Significancy evaluation
+signif_level <- 0.05
+eval_signifcancy <- summary_all_test %>%
+  dplyr::select(test, factor_name, t.test_p) %>%
+  tidyr::spread(key = test, value = t.test_p) %>%
+  dplyr::mutate(signifcant = ifelse(all((uniregression_test <= signif_level), 
+                                    (IC_test <= signif_level), 
+                                    (sort_portfolios_test <= signif_level)), 
+                                    TRUE, FALSE)) %>%
+  dplyr::select(factor_name, uniregression_test, IC_test, sort_portfolios_test, 
+                signifcant)
+
+signicant_factors <- eval_signifcancy %>%
+    dplyr::filter(signifcant == TRUE)%>%
+    dplyr::select(factor_name) 
+
+signicant_factors <- signicant_factors$factor_name
+
+knitr::kable(
+  eval_signifcancy,
+  format = "pandoc",
+  align = "c",
+  digits = 3,
+  caption = "Signifancy of Factors"
+)
+
+# Direction evaluation for siginficant factors
+if (length(signicant_factors)>0) {
+  eval_direction <- summary_all_test %>%
+  dplyr::filter(factor_name %in% signicant_factors) %>%
+  dplyr::select(test, factor_name, avg) %>%
+  tidyr::spread(key = test, value = avg) %>%
+  dplyr::select(factor_name, uniregression_test, IC_test, sort_portfolios_test)
+
+  knitr::kable(
+    eval_direction,
+    format = "pandoc",
+    align = "c",
+    digits = 3,
+    caption = "Direction of Factors"
+  )
+}
+
+
+```
 
