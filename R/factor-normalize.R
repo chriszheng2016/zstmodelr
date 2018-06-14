@@ -140,6 +140,15 @@ normalize <- function(x, clean_extremes_method = c("sigma","mad"),
 #' Identify extremes in data vector by normal sigma method, and repalce extremes
 #' by NA or max/min limitation
 #'
+#' Basing on assumption of data as normal distribution, i.e., \eqn{X~N(\mu,\sigma^2)}
+#' \deqn{P(|X-\mu|) > k*\sigma = \begin{cases}
+#'       0.317 & k=1 \\
+#'       0.046 & k=2 \\
+#'       0.03 & k=3 \\
+#'       \end{cases}}
+#' So we could take data beyond \eqn{|3 sigma|} as extremes.
+#'
+#'
 #' @param x  a vector of data.
 #' @param n_sigma numbers of sigma to identify extemes, by default 3.
 #' @param extreme_value  value to replace extremes, i.e. "limit","NA",
@@ -294,7 +303,7 @@ standardize_normal_scale <- function(x) {
 
 #' Standardize data vector by applying rank scale method
 #'
-#' Use data rank as new data
+#' Scale the ranked data by order
 #'
 #'
 #' @param x  a vector of data.
@@ -311,8 +320,11 @@ standardize_rank_scale <- function(x) {
   assertive::assert_is_vector(x)
   assertive::assert_is_numeric(x)
 
-  # Standardize x by ranking
-  x_result <- rank(x, na.last = "keep")
+  # Firstly, rank x
+  x_rank <- rank(x, na.last = "keep")
+
+  # Secondly, standardize ranked x by scaling
+  x_result <- scale(x_rank)
 
   return(x_result)
 
