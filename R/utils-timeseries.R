@@ -727,10 +727,11 @@ need_refreq_dateindex <- function(date_index,
              need_refreq <- FALSE
            } else {
              # no need to refeq irregluar daily time series
-             if (mean(lag(date_index) - date_index, na.rm = TRUE) <= 2) {
+             if (mean(timeSeries::lag(date_index) - date_index, na.rm = TRUE) <= 2) {
                need_refreq <- FALSE
+             } else {
+               need_refreq <- TRUE
              }
-             need_refreq <- TRUE
            }
          },
          "month" = {

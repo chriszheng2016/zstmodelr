@@ -148,8 +148,26 @@ validate_engine_resample_refreq <- function(ds_test_origin,
   freq_rule = match.arg(freq_rule)
   switch(freq_rule,
          "day" = {
-           expect_true(timeDate::isDaily(
-             timeDate::as.timeDate(result_date)))
+           # Judge result_date is daily timeseries according to following criteria:
+           # 1) regular daily time
+           # 2) irregular daily time but average difference between consective
+           #    dates is smaller than 2 days
+           daily_date <- timeDate::as.timeDate(result_date)
+           if (timeDate::isDaily(daily_date)) {
+             is_daily <- TRUE
+           } else {
+             if (mean(timeSeries::lag(daily_date)
+                      - daily_date, na.rm = TRUE) <= 2) {
+               is_daily <- TRUE
+             } else {
+               is_daily <- FALSE
+             }
+           }
+
+           expect_true(is_daily)
+
+           # expect_true(timeDate::isDaily(
+           #   timeDate::as.timeDate(result_date)))
          },
          "month" = {
            expect_true(timeDate::isMonthly(
