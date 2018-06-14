@@ -232,7 +232,7 @@ ts_resample.tbl_df <- function(ts_dataset,
                                agg_fun = agg_fun,
                                ...,
                                date_index_field = date_index_field,
-                               .parallel = FALSE,
+                               .parallel = TRUE,
                                .progress = plyr::progress_win(title = "Resampling..."))
     }
 
@@ -319,7 +319,7 @@ ts_asfreq.tbl_df <- function(ts_dataset,
                              freq_rule = freq_rule,
                              fillna_method = fillna_method,
                              date_index_field = date_index_field,
-                             .parallel = FALSE,
+                             .parallel = TRUE,
                              .progress = plyr::progress_win(title = "Refreqencing..."))
   }
 
@@ -425,7 +425,7 @@ ts_lag.tbl_df <- function(ts_dataset,
                              k = k,
                              trim = trim,
                              date_index_field = date_index_field,
-                             .parallel = FALSE,
+                             .parallel = TRUE,
                              .progress = plyr::progress_win(title = "Lagging..."))
   }
 
