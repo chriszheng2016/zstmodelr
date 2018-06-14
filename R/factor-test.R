@@ -106,7 +106,8 @@ factor_test_uniregress <- function(ds_test,
       skew = PerformanceAnalytics::skewness(estimate, na.rm = TRUE),
       kurt = PerformanceAnalytics::kurtosis(estimate, na.rm = TRUE),
       pos_pct = mean(estimate >= 0, na.rm = TRUE),
-      neg_pct = mean(estimate < 0, na.rm = TRUE)
+      neg_pct = mean(estimate < 0, na.rm = TRUE),
+      odds = ifelse((neg_pct != 0),pos_pct / neg_pct, NA)
     )
 
 
@@ -236,7 +237,8 @@ factor_test_IC <- function(ds_test,
        skew = PerformanceAnalytics::skewness(estimate, na.rm = TRUE),
        kurt = PerformanceAnalytics::kurtosis(estimate, na.rm = TRUE),
        pos_pct = mean(estimate >= 0, na.rm = TRUE),
-       neg_pct = mean(estimate < 0, na.rm = TRUE)
+       neg_pct = mean(estimate < 0, na.rm = TRUE),
+       odds = ifelse((neg_pct != 0),pos_pct / neg_pct, NA)
      )
 
   # t-test for estimation of mean of factor IC series
@@ -341,7 +343,8 @@ factor_test_sort_portfolios <- function(ds_test,
     portfolios_return <- sort_portfolios %>%
       dplyr::left_join(ds_crosssection, by = c("stkcd" = stkcd_field)) %>%
       dplyr::group_by(portfolio_group) %>%
-      dplyr::summarise(return = sum((!!return_field) * weight, na.rm = TRUE))
+      dplyr::summarise(return = sum((!!return_field) * weight, na.rm = TRUE)
+                                     / sum(weight, na.rm = TRUE))
 
     return(portfolios_return)
 
@@ -367,25 +370,11 @@ factor_test_sort_portfolios <- function(ds_test,
     annual_sharpe <- PerformanceAnalytics::SharpeRatio.annualized(ts_portfolios_return)
     max_drawdown <- PerformanceAnalytics::maxDrawdown(ts_portfolios_return)
 
-    #z test for zero portfolio
-    # ttest_result_list <- ts_portfolios_return %>%
-    #   plyr::llply(t.test)
-    #
-    # ttest_result_df <- ttest_result_list %>%
-    #   plyr::ldply(function(x) tibble::tibble(t_estimate = x$estimate,
-    #                                          t_statistic = as.numeric(x$statistic),
-    #                                          t_pvalue = as.numeric(x$p.value)))
-    #
-    # ttest_result_df <- ttest_result_df %>%
-    #        tidyr::gather(key="indicator", value="value",-.id) %>%
-    #        tidyr::spread(key = .id, value = value)
 
     #build summary table
     summary_table <- rbind(annual_returns, anuual_std, annual_sharpe, max_drawdown)
     summary_table <- as.data.frame(summary_table)
     summary_table <- tibble::rownames_to_column(summary_table, var = "indicator")
-
-    # summary_table <- rbind(summary_table, ttest_result_df)
 
     return(summary_table)
   }
@@ -419,15 +408,11 @@ factor_test_sort_portfolios <- function(ds_test,
     tidyr::unnest(sort_portpolio_return,.drop = TRUE) %>%
     tidyr::spread(key = portfolio_group, value = return)
 
-  # Build zero-portfolio to complete portfolios return dataset
-  col_names <- colnames(ds_portfolios_return_raw)
-  max_group_id <- length(na.omit(stringr::str_extract(col_names,"group")))
-  last_group_name <- paste("group", max_group_id, sep = "_")
-  last_group <- rlang::parse_quosure(last_group_name)
-  first_group <- rlang::parse_quosure("group_1")
-  ds_portfolios_return <- ds_portfolios_return_raw %>%
-    dplyr::mutate(group_zero = (!!first_group) - (!!last_group))
 
+  # Build zero-portfolio to complete portfolios return dataset
+  # group_zero = group_hi - group_low
+  ds_portfolios_return <- ds_portfolios_return_raw %>%
+   dplyr::mutate(group_zero = group_hi - group_lo)
 
 
   # Build Result of portfolios return summary
@@ -454,7 +439,8 @@ factor_test_sort_portfolios <- function(ds_test,
       skew = PerformanceAnalytics::skewness(group_zero, na.rm = TRUE),
       kurt = PerformanceAnalytics::kurtosis(group_zero, na.rm = TRUE),
       pos_pct = mean(group_zero >= 0, na.rm = TRUE),
-      neg_pct = mean(group_zero < 0, na.rm = TRUE)
+      neg_pct = mean(group_zero < 0, na.rm = TRUE),
+      odds = ifelse((neg_pct != 0),pos_pct / neg_pct, NA)
     )
 
   # t-test for estimation of mean of zero-portfolio return series
@@ -519,18 +505,14 @@ factor_test_sort_portfolios <- function(ds_test,
 #' use stocks list and factor value list to build sort portfoilos by sorting
 #' factor value and cutting in n groups.
 #'
-#' @param stocks_list           a list of stkcds of stocks.
-#' @param factor_value_list     a list of factor value of corresponding stocks.
-#' @param ngroup                numbers of groups to cut stocks into, default 3.
-#' @param first_group_index     index number of group name, default 1 for group_1.
-#' @param factor_group_order    order of factor group_order:
-#'      \itemize{
-#'      \item asc:  group_1(smallest factor) ... group_N(largest factor)
-#'      \item desc: group_1(largest factor)  ... group_N(smallest factor)
-#'      }
+#' @param stocks_list           A list of stkcds of stocks.
+#' @param factor_value_list     A list of factor value of corresponding stocks.
+#' @param stocks_weight_list    A list of stocks weight or NULL for equal weight of 1,
+#' by default NULL.
+#' @param ngroup                Numbers of groups to cut stocks, by default 5.
 #'
 #'
-#' @return                 a tibble dataset of portfolio_group, stkcd, weight,
+#' @return                 A tibble dataset of portfolio_group, stkcd, weight,
 #'                         factor_value.
 #'
 #' @export
@@ -539,9 +521,8 @@ factor_test_sort_portfolios <- function(ds_test,
 
 build_sort_portfolios <- function(stocks_list,
                                   factor_value_list,
-                                  ngroup = 3,
-                                  first_group_index = 1,
-                                  factor_group_order = c("desc", "asc")){
+                                  stocks_weight_list = NULL,
+                                  ngroup = 5){
 
   # Validate params
   stopifnot(!is.null(stocks_list), length(stocks_list) != 0)
@@ -552,40 +533,40 @@ build_sort_portfolios <- function(stocks_list,
     stop("length of stock_list is different with factor_value_list")
   }
 
+  if (!is.null(stocks_weight_list)) {
+    if (length(stocks_list) != length(stocks_weight_list)) {
+      stop("length of stock_list is different with stocks_weight_list")
+    }
+  } else {
+    # Set each weight as 1
+    stocks_weight_list = rep(1, length(stocks_list))
+  }
+
+
   # create sort portfolios
   sort_portfolios <- tibble::tibble( stkcd = stocks_list,
+                                     weight = stocks_weight_list,
                                      factor_value = factor_value_list)
 
 
-  # build factor groups
+  # Build factor groups
+
   # Notice: rank always return order numbers from smallest to largest
   factor_value_rank <- rank(sort_portfolios$factor_value)
   factor_groups <- cut(factor_value_rank, breaks = ngroup, ordered_result = TRUE)
 
-  # Set the name of group by asc/desc order number(group_1...group_N)
-  # by sorting factor value.
-  # Since the order of factor is from small to large, so we need
-  # build group name basing on the sort order
-  # asc:  group_1(smallest factor) ... group_N(largest factor)
-  # desc: group_1(largest factor)  ... group_N(smallest factor)
-  #
-  factor_group_order = match.arg(factor_group_order)
-  if (factor_group_order == "asc") {
-    levels(factor_groups) <- paste("group",
-                                   first_group_index:(first_group_index + nlevels(factor_groups) - 1),
-                                   sep = "_")
-  } else {
-    levels(factor_groups) <- paste("group",
-                                   ((first_group_index + nlevels(factor_groups) - 1):first_group_index),
-                                   sep = "_")
-  }
+  # set name of groups/levels
+  levels_count <- nlevels(factor_groups)
+  groups_name <- paste("group", 1:levels_count, sep = "_")
+  groups_name[1] <- paste("group", "lo", sep = "_")
+  groups_name[levels_count] <- paste("group", "hi", sep = "_")
+  levels(factor_groups) <- groups_name
 
   # Finalize sort portfolios
   sort_portfolios <- sort_portfolios %>%
-    dplyr::mutate(portfolio_group = as.character(factor_groups)) %>%
+    dplyr::mutate(portfolio_group = factor_groups) %>%
     dplyr::arrange(portfolio_group, stkcd) %>%
     dplyr::group_by(portfolio_group) %>%
-    dplyr::mutate(weight = 1 / n() ) %>%
     dplyr::select(portfolio_group, stkcd, weight, factor_value)
 
   return(sort_portfolios)
