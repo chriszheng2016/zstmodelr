@@ -43,7 +43,7 @@ ds_test_timeseries <- function(from = "2015-01-01",
   output = match.arg(output)
   switch(output,
          "tibble" = {
-           ds_test <- tibble::tibble(date = date, value = value)
+           ds_test <- tibble::tibble(date = date, key = "000001", value = value)
            },
          "timeSeries" = {
            ds_test <- timeSeries::timeSeries(data = value,
@@ -130,21 +130,23 @@ validate_engine_resample_refreq <- function(ds_test_origin,
   ds_type = match.arg(ds_type)
   switch(ds_type,
          "tibble" = {
-           origin_date = ds_test_origin$date
-           origin_value = ds_test_origin$value
-           result_date = ds_test_result$date
-           result_value = ds_test_result$value
+           origin_date <- ds_test_origin$date
+           origin_value <- ds_test_origin$value
+           origin_key <- ds_test_origin$key
+           result_date <- ds_test_result$date
+           result_value <- ds_test_result$value
+           result_key <- ds_test_result$key
          },
          "timeSeries" = {
-           origin_date = as.Date(time(ds_test_origin))
-           origin_value = ds_test_origin$value
-           result_date = as.Date(time(ds_test_result))
-           result_value = ds_test_result$value
+           origin_date <- as.Date(time(ds_test_origin))
+           origin_value <- ds_test_origin$value
+           result_date <- as.Date(time(ds_test_result))
+           result_value <- ds_test_result$value
          })
 
-  # validate result
+  # Validate result
 
-  # check time frequency of result ds by freq_rule
+  #Validate time frequency of result ds by freq_rule
   freq_rule = match.arg(freq_rule)
   switch(freq_rule,
          "day" = {
@@ -178,7 +180,7 @@ validate_engine_resample_refreq <- function(ds_test_origin,
              timeDate::as.timeDate(result_date)))
          })
 
-  # check value of result ds by fill_method
+  # Validate value of result ds by fill_method
   # 1. check whether original data is in result date
   fillna_method <- match.arg(fillna_method)
   if (length(unique(origin_date)) <= length(unique(result_date))) {
@@ -256,6 +258,14 @@ validate_engine_resample_refreq <- function(ds_test_origin,
     )
 
   }
+
+  # Validate key value for tibble
+  if (ds_type == "tibble") {
+    # No NAs and has value same as key value of origin
+    expect_true(all(!is.na(result_key)))
+    expect_true(all(result_key %in% origin_key))
+  }
+
 }
 
 test_that("ts_resample, with various arguments", {
@@ -304,6 +314,7 @@ test_that("ts_resample, with various arguments", {
               freq_rule = freq_rule,
               fillna_method = fillna_method,
               agg_fun = agg_fun,
+              key_fields = "key",
               !!!extra_agg_fun_params )
           ))
 
@@ -415,14 +426,14 @@ test_that("ts_resample, with various arguments", {
 
 test_that("ts_asfreq, with various arguments", {
 
-  # conduct one test
+  # Conduct one test
   .validate_asfreq_result <- function(ds_test_origin,
                                     ds_test_result,
                                     freq_rule = c("day", "month", "quarter"),
                                     fillna_method = c("nfill", "ffill", "bfill"),
                                     ds_type = c("tibble", "timeSeries")) {
 
-  # call test engine to work
+    #call test engine to work
     validate_engine_resample_refreq(ds_test_origin = ds_test_origin,
                                     ds_test_result = ds_test_result,
                                     freq_rule = freq_rule,
@@ -434,7 +445,7 @@ test_that("ts_asfreq, with various arguments", {
   }
 
 
-  # conduct multi-tests in a btach mode
+  # Conduct multi-tests in a btach mode
   .batch_valiate_asfreq_result <- function(params_tbl){
 
     for (i in 1:nrow(params_tbl))
@@ -452,7 +463,8 @@ test_that("ts_asfreq, with various arguments", {
           # compute the result
           ds_test_asfreq <- ts_asfreq(ds_test_origin,
                                       freq_rule = freq_rule,
-                                      fillna_method = fillna_method)
+                                      fillna_method = fillna_method,
+                                      key_fields = "key")
 
           # validate the result
           .validate_asfreq_result(ds_test_origin, ds_test_asfreq,
@@ -519,7 +531,7 @@ test_that("ts_asfreq, with various arguments", {
 
 test_that("ts_lag, with various normal arguments", {
 
-  # valiate lag results
+  # Valiate lag results
   .validate_lag_result <- function(ds_test_origin, ds_test_result,
                                    ds_type = c("tibble", "timeSeries"),
                                    k = 1,
@@ -530,8 +542,10 @@ test_that("ts_lag, with various normal arguments", {
            "tibble" = {
               origin_date <- ds_test_origin$date
               origin_value <- ds_test_origin$value
+              origin_key <- ds_test_origin$key
               result_date <- ds_test_result$date
               result_value <- ds_test_result$value
+              result_key <- ds_test_result$key
            },
            "timeSeries" = {
               origin_date <- as.Date(time(ds_test_origin))
@@ -549,10 +563,11 @@ test_that("ts_lag, with various normal arguments", {
     origin_length <- length(origin_value)
     result_length <- length(result_value)
 
-    # valiate the result
+    # Validate clss of result
     expect_equal(class(ds_test_origin), class(ds_test_result))
 
-    # case: normal k setting (abs(k) < length of ds_test_origin)
+    # Validate value of result
+    # Case: normal k setting (abs(k) < length of ds_test_origin)
     if (abs(k) < origin_length) {
       # validate value of result
       if (k >= 0 ) {
@@ -598,10 +613,23 @@ test_that("ts_lag, with various normal arguments", {
         expect_equal(origin_length, result_length)
       }
 
+      # validate key value for tibble
+      if (ds_type == "tibble") {
+        if (trim == TRUE) {
+          # trim: key field of result is shorter than origin,
+          # but key value of that of origin
+          expect_true(all(result_key %in% origin_key))
+        } else {
+          # not trim: key field of result is same as that of origin
+          expect_equal(result_key, origin_key)
+        }
+      }
+
     }
 
-    # case: anormal k setting (abs(k) < length of ds_test_origin)
+    # Case: abnormal k setting (abs(k) < length of ds_test_origin)
     if (abs(k) >= origin_length) {
+      # Validate value of result
       if (trim == TRUE) {
         # result must be null object
         expect_equal(result_length, 0)
@@ -610,10 +638,17 @@ test_that("ts_lag, with various normal arguments", {
         expect_equal(origin_length, result_length)
         expect_true(all(is.na(result_value)))
       }
+
+      # Validate key value for tibble
+      if (ds_type == "tibble") {
+        if (trim != TRUE) {
+          # not trim: key field of result is same as that of origin
+          expect_equal(result_key, origin_key)
+        }
     }
   }
 
-
+  }
 
   # ts_lag on tibble dataset ====
   ds_type = "tibble"
@@ -623,13 +658,17 @@ test_that("ts_lag, with various normal arguments", {
   for (i in k) {
     # When trim is FALSE
     trim = FALSE
-    ds_test_lag <- ts_lag(ds_test_origin, k = i,trim = trim)
+    ds_test_lag <- ts_lag(ds_test_origin, k = i,trim = trim,
+                          date_index_field = c("date"),
+                          key_fields = "key")
     .validate_lag_result(ds_test_origin, ds_test_lag, ds_type = ds_type,
                          k = i, trim = trim )
 
     # When trim is TRUE
     trim = TRUE
-    ds_test_lag <- ts_lag(ds_test_origin, k = i,trim = trim)
+    ds_test_lag <- ts_lag(ds_test_origin, k = i,trim = trim,
+                          date_index_field = c("date"),
+                          key_fields = "key")
     .validate_lag_result(ds_test_origin, ds_test_lag, ds_type = ds_type,
                          k = i, trim = trim)
   }

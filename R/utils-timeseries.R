@@ -11,23 +11,23 @@
 #' resample is more appropriate if an operation, such as summarization, is
 #' necessary to represent the data at the new frequency.
 #'
-#' @param ts_dataset a timeseries of tibble or timeSeries.
+#' @param ts_dataset A timeseries of tibble or timeSeries.
 #'
-#' @param freq_rule  the offset string or object representing target conversion,
+#' @param freq_rule  The offset string or object representing target conversion,
 #'  e.g. "day", "month", "quarter", default "Day".
 #' @param fillna_method method to fill holes in reindexed Series, e.g.
 #' "nfill", "bfill","ffill", default nafill(fill NA)
-#' @param agg_fun    function to aggregate values of group data for new timestamp,
+#' @param agg_fun    Function to aggregate values of group data for new timestamp,
 #' default setting is mean
-#' @param ...        argments passed to agg_fun
+#' @param ...        Argments passed to agg_fun
 #'
-#' @param date_index_field the name of date index field of ts_df for resample,
+#' @param date_index_field Name of date index field of ts_df for resample,
 #' default 'date', Column must be date-like.
 #' Only be used for tibble dataset.
-#' @param by_group   a character vector of fields as group data for resampling.
-#' Only be used for tibble dataset.
+#' @param key_fields    A character vector of key fields, which identify unique
+#' observation in each date. Only be used for tibble dataset.
 #'
-#' @return           a converted timeseres.
+#' @return           A converted timeseres.
 #' @export
 #'
 #' @examples
@@ -58,22 +58,21 @@ ts_resample <- function(ts_dataset,freq_rule = c("day", "month", "quarter"),
 #'
 #' Convert timeseries to specified frequency by refrequencing date index.
 #' Optionally provide filling method to pad/backfill missing values.
-#' Return originaldata conformed to a new index with the specified frequency.
+#' Return original data conformed to a new index with the specified frequency.
 #'
 #' ts_asfreq is more appropriate if use original the data at the new frequency.
 #'
-#' @param ts_dataset   a timeseries of tibble/timeSeries.#
-#' @param freq_rule,   the offset string or object representing target conversion,
+#' @param ts_dataset   A timeseries of tibble/timeSeries.#
+#' @param freq_rule    The offset string or object representing target conversion,
 #' e.g. "Day", "Month", "Quarter", default "Day".
-#' @param fillna_method, method to fill holes in reindexed Series, e.g.
+#' @param fillna_method  Method to fill holes in reindexed Series, e.g.
 #' "nfill", "bfill","ffill", default nfill(fiil with NA).
-#' @param date_index_field the name of date index field of ts_df for resample,
-#' default 'date', Column must be date-like.
-#' Only be used for tibble dataset.
-#' @param by_group    a character vector of fields as group data for asfreq.
-#' Only be used for tibble dataset.
+#' @param date_index_field Name of date index field of ts_df for refrequecy,
+#' default 'date', Column must be date-like. Only be used for tibble dataset.
+#' @param key_fields    A character vector of key fields, which identify unique
+#' observation in each date. Only be used for tibble dataset.
 #'
-#' @return            a converted timeseres
+#' @return            A converted timeseres
 #' @export
 #'
 #' @examples
@@ -110,16 +109,17 @@ ts_asfreq <- function(ts_dataset,
 #' }
 #' see details for more info.
 #'
-#' @param trim             a logical value. By default TRUE, the first missing observation in the return series
+#' @param trim             A logical value. By default TRUE, the first missing observation in the return series
 #' will be removed.
-#' @param ...              argments passed to other methods
-#' @param date_index_field the name of date index field of ts_df for resample,
+#' @param ...              Argments passed to other methods
+#' @param date_index_field Name of date index field of ts_df for resample,
 #' default 'date', Column must be date-like.
 #' Only be used for tibble dataset.
-#' @param by_group         a character vector of fields as group data for asfreq.
-#' Only be used for tibble dataset.
+#' @param key_fields    A character vector of key fields, which identify unique
+#' observation in each date. Only be used for tibble dataset.
+
 #'
-#' @return            a lagged timeseres
+#' @return            A lagged timeseres
 #' @export
 #'
 #' @examples
@@ -146,7 +146,7 @@ ts_resample.tbl_df <- function(ts_dataset,
                               agg_fun = mean,
                               ...,
                               date_index_field = c("date"),
-                              by_group = NULL) {
+                              key_fields = NULL) {
 
     # define internal function to process single group dataset
     .ts_resample_single_df <- function(ts_dataset,
@@ -154,7 +154,8 @@ ts_resample.tbl_df <- function(ts_dataset,
                                  fillna_method = c("nfill", "ffill", "bfill"),
                                  agg_fun = mean,
                                  ...,
-                                 date_index_field = c("date")
+                                 date_index_field = c("date"),
+                                 key_fields = NULL
                                  ) {
 
       # validate params
@@ -205,12 +206,18 @@ ts_resample.tbl_df <- function(ts_dataset,
 
       }
 
+      # Fix key value since some NAs may exist in key caused by above process
+      if (!is.null(key_fields) && !(is.null(new_timeseries))) {
+        new_timeseries <- fix_key_field(new_timeseries, key_fields)
+      }
+
       return(new_timeseries)
 
     }
 
+    # -- Main function --
     # work for single/multi group dataset
-    if (is.null(by_group)) {
+    if (is.null(key_fields)) {
 
       # for single group process
       result_ts <- .ts_resample_single_df(ts_dataset,
@@ -218,20 +225,22 @@ ts_resample.tbl_df <- function(ts_dataset,
                                     fillna_method = fillna_method,
                                     agg_fun = agg_fun,
                                     ...,
-                                    date_index_field = date_index_field)
+                                    date_index_field = date_index_field,
+                                    key_fields = key_fields)
 
     } else {
 
       # for multi groups process
 
       result_ts <- plyr::ddply(ts_dataset,
-                               .variables =  by_group,
+                               .variables = key_fields,
                                .fun = .ts_resample_single_df,
                                freq_rule = freq_rule,
                                fillna_method = fillna_method,
                                agg_fun = agg_fun,
                                ...,
                                date_index_field = date_index_field,
+                               key_fields = key_fields,
                                .parallel = TRUE,
                                .progress = plyr::progress_win(title = "Resampling..."))
     }
@@ -256,13 +265,14 @@ ts_asfreq.tbl_df <- function(ts_dataset,
                           freq_rule =c("day", "month", "quarter"),
                           fillna_method = c("nfill", "ffill", "bfill"),
                           date_index_field = c("date"),
-                          by_group = NULL){
+                          key_fields = NULL){
 
   # define internal function to process single group dataset
   .ts_asfreq_single_df <- function(ts_dataset,
                              freq_rule =c("day", "month", "quarter"),
                              fillna_method = c("nfill", "ffill", "bfill"),
-                             date_index_field = c("date")){
+                             date_index_field = c("date"),
+                             key_fields = NULL){
 
     # validate params
     stopifnot(!is.null(ts_dataset), inherits(ts_dataset, "data.frame"))
@@ -297,28 +307,36 @@ ts_asfreq.tbl_df <- function(ts_dataset,
                                            fillna_method = fillna_method)
     }
 
+    # Fix key value since some NAs may exist in key caused by above process
+    if (!is.null(key_fields) && !(is.null(new_timeseries))) {
+      new_timeseries <- fix_key_field(new_timeseries, key_fields)
+    }
+
     return(new_timeseries)
 
   }
 
+  # -- Main function --
   # work for single/multi group dataset
-  if (is.null(by_group)) {
+  if (is.null(key_fields)) {
 
     # for single group
     result_ts <- .ts_asfreq_single_df(ts_dataset,
                                 freq_rule = freq_rule,
                                 fillna_method = fillna_method,
-                                date_index_field = date_index_field)
+                                date_index_field = date_index_field,
+                                key_fields = key_fields,)
 
   } else {
 
     # for multi groups
     result_ts <- plyr::ddply(ts_dataset,
-                             .variables =  by_group,
+                             .variables =  key_fields,
                              .fun = .ts_asfreq_single_df,
                              freq_rule = freq_rule,
                              fillna_method = fillna_method,
                              date_index_field = date_index_field,
+                             key_fields = key_fields,
                              .parallel = TRUE,
                              .progress = plyr::progress_win(title = "Refreqencing..."))
   }
@@ -338,14 +356,15 @@ ts_lag.tbl_df <- function(ts_dataset,
                           trim = TRUE,
                           ...,
                           date_index_field = c("date"),
-                          by_group = NULL) {
+                          key_fields = NULL) {
 
   # compute lag timeseries for single group dataset
   .ts_lag_single_df <- function(ts_dataset,
                           k = 1,
                           trim = TRUE,
                           ...,
-                          date_index_field = c("date")) {
+                          date_index_field = c("date"),
+                          key_fields = NULL) {
 
     # validate params
     stopifnot(!is.null(ts_dataset), inherits(ts_dataset, "data.frame"))
@@ -353,16 +372,18 @@ ts_lag.tbl_df <- function(ts_dataset,
 
     # Shift data at current timeline
     origin_group_vars <- dplyr::group_vars(ts_df)
-    date_index_field <- rlang::parse_quosure(date_index_field)
+
+    date_index_field <- rlang::parse_quo(date_index_field, env = caller_env())
+
     if (k > 0) {
       # shift backward
       lag_ts <- ts_df %>%
         dplyr::ungroup() %>%
         dplyr::arrange(!!date_index_field) %>%
-        dplyr::mutate_at(.vars = dplyr::vars(-!!date_index_field),
-                               .fun = dplyr::lag,
-                               n = k,
-                               order_by = rlang::quo_expr(date_index_field))
+        dplyr::mutate_at(.vars = dplyr::vars(-!!date_index_field, -!!key_fields),
+                         .fun = dplyr::lag,
+                         n = k,
+                         order_by = rlang::quo_expr(date_index_field))
 
 
     } else if (k < 0) {
@@ -370,7 +391,7 @@ ts_lag.tbl_df <- function(ts_dataset,
       lag_ts <- ts_df %>%
         dplyr::ungroup() %>%
         dplyr::arrange(!!date_index_field) %>%
-        dplyr::mutate_at(.vars = dplyr::vars(-!!date_index_field),
+        dplyr::mutate_at(.vars = dplyr::vars(-!!date_index_field, -!!key_fields),
                          .fun = dplyr::lead,
                          n = abs(k),
                          order_by = rlang::quo_expr(date_index_field))
@@ -401,30 +422,36 @@ ts_lag.tbl_df <- function(ts_dataset,
         dplyr::group_by(!!origin_group_vars)
     }
 
-
+    # Fix key value since some NAs may exist in key caused by above process
+    if (!is.null(key_fields) && !(is.null(lag_ts))) {
+      lag_ts <- fix_key_field(lag_ts, key_fields)
+    }
 
     return(lag_ts)
 
   }
 
+  # -- Main function --
   # work for single/multi group dataset
-  if (is.null(by_group)) {
+  if (is.null(key_fields)) {
 
     # for single group
     result_ts <- .ts_lag_single_df(ts_dataset,
                                 k = k,
                                 trim = trim,
-                                date_index_field = date_index_field)
+                                date_index_field = date_index_field,
+                                key_fields = key_fields)
 
   } else {
 
     # for multi groups
     result_ts <- plyr::ddply(ts_dataset,
-                             .variables =  by_group,
+                             .variables =  key_fields,
                              .fun = .ts_lag_single_df,
                              k = k,
                              trim = trim,
                              date_index_field = date_index_field,
+                             key_fields = key_fields,
                              .parallel = TRUE,
                              .progress = plyr::progress_win(title = "Lagging..."))
   }
@@ -581,7 +608,8 @@ ts_resample.timeSeries <- function(ts_dataset,
 #' @export
 ts_asfreq.timeSeries <- function(ts_dataset,
                              freq_rule =c("day", "month", "quarter"),
-                             fillna_method = c("nfill", "ffill", "bfill")){
+                             fillna_method = c("nfill", "ffill", "bfill"),
+                             ...){
   # validate params
   stopifnot(!is.null(ts_dataset), inherits(ts_dataset, "timeSeries"))
 
@@ -657,10 +685,13 @@ ts_lag.timeSeries <- function(ts_dataset,
   return(lag_ts)
 }
 
+
+# Internal tools functions --------------------------------
+
 # Reindex the timesereis by replacing with new date_index for timeSeries dataset
 reindex_by_replace.timeSeries <- function(ts_timeSeries,
-                                      new_date_index,
-                                      fillna_method = c("nfill", "ffill", "bfill")) {
+                                          new_date_index,
+                                          fillna_method = c("nfill", "ffill", "bfill")) {
 
   # validate params
   stopifnot(!is.null(ts_timeSeries), inherits(ts_timeSeries, "timeSeries"))
@@ -669,13 +700,13 @@ reindex_by_replace.timeSeries <- function(ts_timeSeries,
   # Expand timeseries into daily series
   fillna_method <- match.arg(fillna_method)
   timeSeries_method <- switch(fillna_method,
-         nfill = "fillNA",
-         ffill = "before",
-         bfill = "after"
+                              nfill = "fillNA",
+                              ffill = "before",
+                              bfill = "after"
   )
   ts_align_daily <- timeSeries::alignDailySeries(ts_timeSeries,
-                                            method = timeSeries_method,
-                                            include.weekends = TRUE )
+                                                 method = timeSeries_method,
+                                                 include.weekends = TRUE )
 
   # filter daily sereis according new_date_index
   filter_index <- (lubridate::as_date(timeSeries::time(ts_align_daily)))  %in% new_date_index
@@ -688,9 +719,9 @@ reindex_by_replace.timeSeries <- function(ts_timeSeries,
 
 # Reindex the timesereis by gouping into new date_index for timeSeries dataset
 reindex_by_regroup.timeSeries <- function(ts_timeSeries,
-                                      new_date_index,
-                                      agg_fun = mean,
-                                      ...) {
+                                          new_date_index,
+                                          agg_fun = mean,
+                                          ...) {
   # validate params
   stopifnot(!is.null(ts_timeSeries), inherits(ts_timeSeries, "timeSeries"))
   stopifnot(!is.null(new_date_index), lubridate::is.Date(new_date_index))
@@ -698,15 +729,13 @@ reindex_by_regroup.timeSeries <- function(ts_timeSeries,
 
 
   # Aggregate time sereis according new_date_index
-   ts_result <- timeSeries::aggregate(ts_timeSeries,
+  ts_result <- timeSeries::aggregate(ts_timeSeries,
                                      by = timeDate::as.timeDate(new_date_index),
                                      FUN = agg_fun, ...)
 
   return(ts_result)
 
 }
-
-# Internal tools functions --------------------------------
 
 # Judge whether to refreq dateindex to avoid unnecessary transform
 need_refreq_dateindex <- function(date_index,
@@ -793,4 +822,29 @@ refreq_dateindex <- function(date_index,
 
 }
 
+# fix key fields of tibble timeseries
+fix_key_field <- function(ts_dataset, key_fields) {
+  # Validate params
+  stopifnot(!is.null(ts_dataset), inherits(ts_dataset, "data.frame"))
+  ts_df <- tibble::as.tibble(ts_dataset)
+
+  # check key filed is valid field of dataset
+  stopifnot(!is.null(key_fields), is.character(key_fields))
+  is_valid_field <- key_fields %in% names(ts_df)
+  if (!all(is_valid_field)) {
+     msg <- sprintf("%s: not valid field of %s",
+                    stringr::str_c(key_fields[!is_valid_field],
+                                   collapse = ","),
+                    deparse(substitute(ts_dataset)))
+       stop(msg)
+  }
+
+  # replace NA is key fields
+  fix_df <- ts_df %>%
+         tidyr::fill(key_fields, .direction = "down") %>%
+         tidyr::fill(key_fields, .direction = "up")
+
+  return(fix_df)
+
+}
 
