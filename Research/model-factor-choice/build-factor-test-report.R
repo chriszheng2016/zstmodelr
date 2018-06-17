@@ -8,7 +8,7 @@ factor_test_report <- function(
          backtest_start_date = "2016-01-01",
          backtest_end_date  =  "2017-12-31",
          report_type = c("batch", "single"),
-         report_template = "Research/model-factor-choice/model-factor-choice.Rmd",
+         report_template = "research/model-factor-choice/model-factor-choice.Rmd",
          output_format = "html_document",
          output_dir = "output"
          )
