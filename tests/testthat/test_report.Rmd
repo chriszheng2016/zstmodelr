@@ -3,8 +3,9 @@ title: "Untitled"
 author: "Chris Zheng"
 date:  "2015-05-01"
 output:
-  word_document:
+  html_document:
     fig_caption: yes
+    number_sections: yes
     toc: yes
   html_notebook:
     number_sections: yes
@@ -16,9 +17,8 @@ output:
     includes:
       in_header: header.tex
     latex_engine: xelatex
-  html_document:
+  word_document:
     fig_caption: yes
-    number_sections: yes
     toc: yes
 params:
   custom_argument: "Hello Chris Zheng"
