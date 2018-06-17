@@ -21,3 +21,12 @@ a vector of data without extremes
 Identify extremes in data vector by normal sigma method, and repalce extremes
 by NA or max/min limitation
 }
+\details{
+Basing on assumption of data as normal distribution, i.e., \eqn{X~N(\mu,\sigma^2)}
+\deqn{P(|X-\mu|) > k*\sigma = \begin{cases}
+      0.317 & k=1 \\
+      0.046 & k=2 \\
+      0.03 & k=3 \\
+      \end{cases}}
+So we could take data beyond \eqn{|3 sigma|} as extremes.
+}

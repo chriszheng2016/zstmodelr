@@ -11,35 +11,35 @@ ts_resample(ts_dataset, freq_rule = c("day", "month", "quarter"),
 
 \method{ts_resample}{tbl_df}(ts_dataset, freq_rule = c("day", "month",
   "quarter"), fillna_method = c("nfill", "ffill", "bfill"), agg_fun = mean,
-  ..., date_index_field = c("date"), by_group = NULL)
+  ..., date_index_field = c("date"), key_fields = NULL)
 
 \method{ts_resample}{timeSeries}(ts_dataset, freq_rule = c("day", "month",
   "quarter"), fillna_method = c("nfill", "ffill", "bfill"),
   agg_fun = c("mean", "sum"), ...)
 }
 \arguments{
-\item{ts_dataset}{a timeseries of tibble or timeSeries.}
+\item{ts_dataset}{A timeseries of tibble or timeSeries.}
 
-\item{freq_rule}{the offset string or object representing target conversion,
+\item{freq_rule}{The offset string or object representing target conversion,
 e.g. "day", "month", "quarter", default "Day".}
 
 \item{fillna_method}{method to fill holes in reindexed Series, e.g.
 "nfill", "bfill","ffill", default nafill(fill NA)}
 
-\item{agg_fun}{function to aggregate values of group data for new timestamp,
+\item{agg_fun}{Function to aggregate values of group data for new timestamp,
 default setting is mean}
 
-\item{...}{argments passed to agg_fun}
+\item{...}{Argments passed to agg_fun}
 
-\item{date_index_field}{the name of date index field of ts_df for resample,
+\item{date_index_field}{Name of date index field of ts_df for resample,
 default 'date', Column must be date-like.
 Only be used for tibble dataset.}
 
-\item{by_group}{a character vector of fields as group data for resampling.
-Only be used for tibble dataset.}
+\item{key_fields}{A character vector of key fields, which identify unique
+observation in each date. Only be used for tibble dataset.}
 }
 \value{
-a converted timeseres.
+A converted timeseres.
 }
 \description{
 Convert TimeSeries to specified frequency by resamploing date index

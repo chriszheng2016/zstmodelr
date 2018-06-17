@@ -9,27 +9,27 @@ factor_test_sort_portfolios(ds_test, sort_portfolios_fun, ...,
   date_field = "date", stkcd_field = "stkcd", return_field = "return")
 }
 \arguments{
-\item{ds_test}{a timeseries dataset with descriptors of factors for test.}
+\item{ds_test}{A timeseries dataset with descriptors of factors for test.}
 
-\item{sort_portfolios_fun}{a function to sort descriptors of factors to build.
+\item{sort_portfolios_fun}{A function to sort descriptors of factors to build.
 portfolios for test}
 
-\item{...}{argments passed to sort_portfolios_fun.}
+\item{...}{Argments passed to sort_portfolios_fun.}
 
-\item{output_type}{type of output data, i.e."summary", "raw", if "raw",
+\item{output_type}{Type of output data, i.e."summary", "raw", if "raw",
 raw data will be append to output object for dignosis.}
 
-\item{factor_field}{the name of factor field of ds_test, by default "factor_name"}
+\item{factor_field}{Name of factor field of ds_test, by default "factor_name"}
 
-\item{date_field}{the name of date field of ds_test, by default "date",
+\item{date_field}{Name of date field of ds_test, by default "date",
 Column must be date-like.}
 
-\item{stkcd_field}{the name of stkcd_field of ds_test, by default "stkcd".}
+\item{stkcd_field}{Name of stkcd field of ds_test, by default "stkcd".}
 
-\item{return_field}{the name of return_field of ds_test, by default "return".}
+\item{return_field}{Name of return field of ds_test, by default "return".}
 }
 \value{
-a object of factor_test_sort_portfolios class.
+A object of factor_test_sort_portfolios class.
 }
 \description{
 Conduct factor sort portfolios test for descriptors of factors and build object

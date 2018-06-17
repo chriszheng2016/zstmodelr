@@ -11,29 +11,28 @@ ts_asfreq(ts_dataset, freq_rule = c("day", "month", "quarter"),
 
 \method{ts_asfreq}{tbl_df}(ts_dataset, freq_rule = c("day", "month",
   "quarter"), fillna_method = c("nfill", "ffill", "bfill"),
-  date_index_field = c("date"), by_group = NULL)
+  date_index_field = c("date"), key_fields = NULL)
 
 \method{ts_asfreq}{timeSeries}(ts_dataset, freq_rule = c("day", "month",
-  "quarter"), fillna_method = c("nfill", "ffill", "bfill"))
+  "quarter"), fillna_method = c("nfill", "ffill", "bfill"), ...)
 }
 \arguments{
-\item{ts_dataset}{a timeseries of tibble/timeSeries.#}
+\item{ts_dataset}{A timeseries of tibble/timeSeries.#}
 
-\item{freq_rule, }{the offset string or object representing target conversion,
+\item{freq_rule}{The offset string or object representing target conversion,
 e.g. "Day", "Month", "Quarter", default "Day".}
 
-\item{fillna_method, }{method to fill holes in reindexed Series, e.g.
+\item{fillna_method}{Method to fill holes in reindexed Series, e.g.
 "nfill", "bfill","ffill", default nfill(fiil with NA).}
 
-\item{date_index_field}{the name of date index field of ts_df for resample,
-default 'date', Column must be date-like.
-Only be used for tibble dataset.}
+\item{date_index_field}{Name of date index field of ts_df for refrequecy,
+default 'date', Column must be date-like. Only be used for tibble dataset.}
 
-\item{by_group}{a character vector of fields as group data for asfreq.
-Only be used for tibble dataset.}
+\item{key_fields}{A character vector of key fields, which identify unique
+observation in each date. Only be used for tibble dataset.}
 }
 \value{
-a converted timeseres
+A converted timeseres
 }
 \description{
 Convert timeseries at specified frequency by setting new frequency of data index
@@ -41,7 +40,7 @@ Convert timeseries at specified frequency by setting new frequency of data index
 \details{
 Convert timeseries to specified frequency by refrequencing date index.
 Optionally provide filling method to pad/backfill missing values.
-Return originaldata conformed to a new index with the specified frequency.
+Return original data conformed to a new index with the specified frequency.
 
 ts_asfreq is more appropriate if use original the data at the new frequency.
 }

@@ -11,12 +11,13 @@
 #' @param output_sn  NULL, serial number or id for output file.
 #' @param output_dir  dir to save output file, i.e. "output", if NULL,
 #' save in directory of template file, otherwise in outpout_dir
-#' @quiet TRUE to suppress printing of the pandoc command line.
+#' @param quiet TRUE to suppress printing of the pandoc command line.
 #'
 #' @return
 #' @export
 #'
 #' @examples
+
 build_report <- function(report_template ,
                          report_params = NULL,
                          output_format = c("html_document", "pdf_document",
