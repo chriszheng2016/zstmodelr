@@ -21,6 +21,8 @@ by default "html_document".}
 
 \item{output_dir}{dir to save output file, i.e. "output", if NULL,
 save in directory of template file, otherwise in outpout_dir}
+
+\item{quiet}{TRUE to suppress printing of the pandoc command line.}
 }
 \description{
 Use data rank as new data

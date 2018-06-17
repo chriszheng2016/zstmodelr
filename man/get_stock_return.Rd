@@ -7,14 +7,13 @@
 \alias{get_factor_indicator,gta_db-method}
 \title{Get stock return timeseries from stock_db}
 \usage{
-get_stock_return(stock_db, stock_cd_list = NULL, period_type = c("daily",
-  "weekly", "monthly", "annual"), period_date = c("start", "end"),
+get_stock_return(stock_db, stock_cd_list = NULL, period_type = c("day",
+  "month", "year"), period_date = c("start", "end"),
   output_type = c("timeSeries", "tibble"), ...)
 
 \S4method{get_stock_return}{gta_db}(stock_db, stock_cd_list = NULL,
-  period_type = c("daily", "weekly", "monthly", "annual"),
-  period_date = c("start", "end"), output_type = c("timeSeries", "tibble"),
-  ...)
+  period_type = c("day", "month", "year"), period_date = c("start", "end"),
+  output_type = c("timeSeries", "tibble"), ...)
 
 \S4method{get_factor_indicator}{gta_db}(stock_db, factor_list, ...)
 }
@@ -22,10 +21,10 @@ get_stock_return(stock_db, stock_cd_list = NULL, period_type = c("daily",
 \item{stock_db}{A stock database object to operate.}
 
 \item{stock_cd_list}{A list of stock cd, default value of NULL means
-all stock data will be returned.}
+all stock data will return.}
 
-\item{period_type}{Date peroid for time series, e.g. "daily", "weekly",
-"monthly", "annual", default value is "daily".}
+\item{period_type}{Date peroid for time series, e.g. "day", "month",
+"year", by default "day".}
 
 \item{period_date}{Choose start/end date of period as the date for
 observation}

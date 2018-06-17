@@ -6,23 +6,22 @@
 \alias{get_market_return,gta_db-method}
 \title{Get market return timesereis from stock_db}
 \usage{
-get_market_return(stock_db, period_type = c("daily", "weekly", "monthly",
-  "annual"), return_type = c("simple", "compound"), cumulated = FALSE,
-  output_type = c("timeSeries", "tibble"), ...)
+get_market_return(stock_db, period_type = c("day", "month", "year"),
+  period_date = c("start", "end"), output_type = c("timeSeries", "tibble"),
+  ...)
 
-\S4method{get_market_return}{gta_db}(stock_db, period_type = c("daily",
-  "weekly", "monthly", "annual"), return_type = c("simple", "compound"),
-  cumulated = FALSE, output_type = c("timeSeries", "tibble"), ...)
+\S4method{get_market_return}{gta_db}(stock_db, period_type = c("day", "month",
+  "year"), period_date = c("start", "end"), output_type = c("timeSeries",
+  "tibble"), ...)
 }
 \arguments{
 \item{stock_db}{A stock database object to operate.}
 
-\item{period_type}{Date peroid for time series, e.g. "daily", "weekly",
-"monthly", "annual", default value is  "daily".}
+\item{period_type}{Date peroid for time series, e.g. "day", "month",
+"year", by default value is  "day".}
 
-\item{return_type}{A character string naming the method how the returns were computed.}
-
-\item{cumulated}{Calculate cumulated return, default value is FALSE.}
+\item{period_date}{Choose start/end date of period as the date for
+observation}
 
 \item{output_type}{Format of output result, e.g "timeSeries", "tibble".}
 }

@@ -75,23 +75,20 @@ test_that("normalize, with various arguments", {
   # standardize with rank method but not clean extremes ====
   x_result <- normalize(x, clean_extremes_method = NULL,
                                   standard_method = "rank")
-  expect_equal(median(x_result), 50.5 )
-  expect_equal(min(x_result), 1)
-  expect_equal(max(x_result), 100)
+  expect_equal(mean(x_result), 0)
+  expect_equal(sd(x_result), 1)
 
   # clean extremes and standize with default arguments ====
   x_result <- normalize(x)
   expect_equal(mean(x_result), 0)
   expect_equal(sd(x_result), 1)
 
-
   # clean extremes and standize with non-default arguments ====
   x_result <- normalize(x, clean_extremes_method = "mad", n_dmad = 1,
                         extreme_value = "NA",standard_method = "rank")
-  expect_equal(min(x_result, na.rm = TRUE), 1)
-  expect_equal(max(x_result, na.rm = TRUE), sum(!is.na(x_result)))
+  expect_equal(mean(x_result, na.rm = TRUE), 0)
+  expect_equal(sd(x_result, na.rm = TRUE), 1)
 
-  # clean extremes and standize with explict arguments ====
   x_result <- normalize(x, clean_extremes_method = "sigma", n_sigma = 1,
                         extreme_value = "NA",standard_method = "normal")
   expect_equal(mean(x_result, na.rm = TRUE), 0)
@@ -180,12 +177,12 @@ context("Tests for normalizing factors functions - standardize_rank_scale")
 test_that("standardize_rank_scale, with various arguments", {
 
   set.seed(1234)
-  x <- rnorm(100, mean = 5, sd = 5)
+  x <- runif(100,min = 1, max = 10)
+  # x <- rnorm(100, mean = 5, sd = 5)
 
   # standardize with default arguments ====
   x_result <- standardize_rank_scale(x)
-  expect_equal(median(x_result), 50.5 )
-  expect_equal(min(x_result), 1)
-  expect_equal(max(x_result), 100)
+  expect_equal(mean(x_result), 0)
+  expect_equal(sd(x_result), 1)
 
 })

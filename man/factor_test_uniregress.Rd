@@ -4,30 +4,26 @@
 \alias{factor_test_uniregress}
 \title{Creator of factor_test_unigress class}
 \usage{
-factor_test_uniregress(ds_test, regress_method = c("cross_section",
-  "pooling"), regress_fun, ..., output_type = c("summary", "raw"),
-  factor_field = "factor_name", date_field = "date")
+factor_test_uniregress(ds_test, regress_fun, ..., output_type = c("summary",
+  "raw"), factor_field = "factor_name", date_field = "date")
 }
 \arguments{
-\item{ds_test}{a timeseries dataset with descriptors of factors for test}
-
-\item{regress_method}{method of partitioning data for regression, i.e.
-"cross_section", "pooling", by default "cross_section".}
+\item{ds_test}{A timeseries dataset with descriptors of factors for test}
 
 \item{regress_fun}{a function to conduct regress.}
 
-\item{...}{argments passed to regress_fun.}
+\item{...}{Argments passed to regress_fun.}
 
-\item{output_type}{type of output data, i.e."summary", "raw", if "raw",
+\item{output_type}{Type of output data, i.e."summary", "raw", if "raw",
 raw data will be append to output object for dignosis.}
 
-\item{factor_field}{the name of factor field of ds_test, by default "factor_name".}
+\item{factor_field}{Name of factor field of ds_test, by default "factor_name".}
 
-\item{date_field}{the name of date field of ds_test, by default "date",
+\item{date_field}{Name of date field of ds_test, by default "date",
 Column must be date-like.}
 }
 \value{
-a object of factor_test_uniregress class.
+A object of factor_test_uniregress class.
 }
 \description{
 Conduct univarate reggression test for descriptors of factors and build object

@@ -8,22 +8,22 @@ factor_test_IC(ds_test, IC_fun, ..., output_type = c("summary", "raw"),
   factor_field = "factor_name", date_field = "date")
 }
 \arguments{
-\item{ds_test}{a timeseries dataset with descriptors of factors for test.}
+\item{ds_test}{A timeseries dataset with descriptors of factors for test.}
 
-\item{IC_fun}{a function to compute information coefficients.}
+\item{IC_fun}{A function to compute information coefficients.}
 
 \item{...}{argments passed to IC_fun.}
 
-\item{output_type}{type of output data, i.e."summary", "raw", if "raw",
+\item{output_type}{Type of output data, i.e."summary", "raw", if "raw",
 raw data will be append to output object for dignosis.}
 
-\item{factor_field}{the name of factor field of ds_test, by default "factor_name".}
+\item{factor_field}{Name of factor field of ds_test, by default "factor_name".}
 
-\item{date_field}{the name of date field of ds_test, by default "date",
+\item{date_field}{Name of date field of ds_test, by default "date",
 Column must be date-like.}
 }
 \value{
-a object of factor_test_IC class.
+A object of factor_test_IC class.
 }
 \description{
 Conduct information coefficients test for descriptors of factors and build object

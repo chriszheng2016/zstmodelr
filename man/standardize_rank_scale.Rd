@@ -13,5 +13,5 @@ standardize_rank_scale(x)
 a vector of standardized data
 }
 \description{
-Use data rank as new data
+Scale the ranked data by order
 }
