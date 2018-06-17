@@ -108,13 +108,6 @@ options(tibble.print_min = 10L, tibble.print_max = 20L)
 
 
 ## 研究参数设置(Study Params)
-  * **因子有效性测试：**
-  原始因子集合是在逻辑上被认为与股票收益率存在关联性的因素，实证中并不是每个原始因子和股票收益率都存在相关性，因此需要对原始因子进行有效性检验，排除跟收益率相关性不高的因子。
-
-# 数据准备(Data Preparation)
-
-
-## 研究参数设置(Study Params)
 ```{r set_params}
 # Set params of study
 
@@ -781,6 +774,7 @@ knitr::kable(
   digits = 3,
   caption = "单因子信息系数(IC)评估结果(行业中性评估)"
 )
+
 # Plot test result
 plot(result_test_IC_industry)
 
@@ -903,7 +897,7 @@ ds_test_sort_portfolios <- stocks_return_period %>%
 model_sort_portfolios <- function(df, ngroup = 5, 
                                   neutralize = c("non", "industry"),
                                   ... ) {
-
+  
   # Build portfolio group by portfolio groups
   neutralize = match.arg(neutralize)
   switch(neutralize,
@@ -984,6 +978,7 @@ knitr::kable(
 # Plot test result
 plot(result_test_sort_portfolios)
 ```
+
 #### 行业中性评估结果
 
 
