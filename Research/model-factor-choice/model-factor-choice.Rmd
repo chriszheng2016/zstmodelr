@@ -9,7 +9,7 @@ geometry:
 editor_options:
   chunk_output_type: inline
 output:
-  rticles::ctex:
+  html_document:
     fig_caption: yes
     number_sections: yes
     toc: yes
@@ -19,12 +19,11 @@ output:
     number_sections: yes
     toc: yes
     toc_depth: 4
-  html_document:
+  rticles::ctex:
     fig_caption: yes
     number_sections: yes
     toc: yes
     toc_depth: 4
-    code_folding: none
   pdf_document:
     toc: yes
     toc_depth: 4
@@ -84,7 +83,7 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   fig.align = "center",
   fig.show = 'hold',
-  out.width = '49%',
+  out.width = '80%',
   tidy = TRUE
 )
 
@@ -129,7 +128,7 @@ end_date <- params$backtest_end_date
 * **股票池:** 全A股，剔除ST、PT股票，剔除每个截面期一下交易日停牌的股票。
 
 
-```{r fetch_factors_data}
+```{r fetch_factors_data, cache=TRUE, cache.extra = list(params$debug_mode, params$factors_list, params$backtest_start_date, params$backtest_end_date)}
 
 # Open gta stock databse
 stock_db <- stock_db(gta_db, "GTA_SQLData")
@@ -162,7 +161,7 @@ if (!params$debug_mode) {
   saveRDS(stocks_return, file = params$tmpfile_stocks_return)
 } else {
 
-  # Use temp file to debug
+  # Use read temp file to debug
   fundamental_factors <- readRDS(params$tmpfile_fundamental_factors)
   stocks_return <- readRDS(params$tmpfile_stocks_return)
 }
@@ -287,7 +286,7 @@ knitr::kable(
 - 对去除异常值的因子序列采用“直接标准化”.
 
 
-```{r factors_Normalization }
+```{r factors_Normalization, cache=TRUE, autodep= TRUE}
 
 if (!params$debug_mode) {
 
@@ -303,7 +302,7 @@ if (!params$debug_mode) {
   # Resample factors by specified frequency
   fundamental_normal_factors_period <- fundamental_normal_factors %>%
     ts_resample(
-      by_group = "stkcd", freq_rule = "month",
+      key_fields = "stkcd", freq_rule = "month",
       fillna_method = "ffill", agg_method = mean
     )
 
@@ -311,7 +310,7 @@ if (!params$debug_mode) {
   stocks_return_period <- stocks_return %>%
     dplyr::filter(date >= start_date & date <= end_date) %>%
     ts_resample(
-      by_group = "stkcd", freq_rule = "month",
+      key_fields = "stkcd", freq_rule = "month",
       fillna_method = "nfill",
       agg_method = function(x) prod(1 + x, na.rm = TRUE) - 1
     )
@@ -320,12 +319,10 @@ if (!params$debug_mode) {
   fundamental_normal_factors_lag_period <- ts_lag(
     fundamental_normal_factors_period,
     k = 1,
-    trim = TRUE,
-    by_group = "stkcd"
+    trim = FALSE,
+    key_fields = c("stkcd", "periodtype", "indcd")
   )
   
-  
-
   # Save temp file for debug
   saveRDS(fundamental_normal_factors,
     file = params$tmpfile_fundamental_normal_factors
@@ -341,7 +338,7 @@ if (!params$debug_mode) {
   )
 } else {
 
-  # Use temp file to debug
+  # Read temp file to debug
   fundamental_normal_factors <- readRDS(params$tmpfile_fundamental_normal_factors)
   fundamental_normal_factors_period <- readRDS(params$tmpfile_fundamental_normal_factors_period)
   stocks_return_period <- readRDS(params$tmpfile_stocks_return_period)
@@ -462,10 +459,7 @@ knitr::kable(
 * t.test_p: 对因子收益序列均值非零$t$检验的$p$概率值, 小于0.05时均值显著不为0
 * normal.test_p: 正态分布检验(Shapiro-Wilk)$p$概率值，小于0.05时判定因子收益序列非正态分布。 
 
-
-#### 综合评估结果
-
-```{r factor_test_Uniregression_overall, fig.cap = '因子截面回归评估结果(综合评估)'}
+```{r factor_test_Uniregression_common, cache=TRUE, autodep= TRUE}
 
 # Build test data dataset
 ds_test_uniregression <- stocks_return_period %>%
@@ -500,7 +494,17 @@ model_univariate_crossection_regression <- function(df,
          })
   
   return(regress_result)
+  
 }
+
+
+```
+
+
+#### 综合评估结果
+
+```{r factor_test_Uniregression_overall, fig.cap = '因子截面回归评估结果(综合评估)'}
+
 
 # Condcut factor uniregress test
 result_test_uniregression <- factor_test_uniregress(ds_test_uniregression,
@@ -521,8 +525,12 @@ knitr::kable(
 )
 
 # Plot test result
+
 plot(result_test_uniregression)
+
+
 ```
+
 
 #### 行业中性评估结果
 
@@ -574,6 +582,11 @@ plot(result_test_uniregression_industry)
 * **步骤2、对IC序列进行$t$检验**
 
   对信息系数(IC)序列进行$t$检验，判断因子的平均IC是否显著不为零, 同时统计正值/负值比例，结合IC平值的正负，来观察IC相关性的方向。
+  
+* **步骤2、评估因子的多时期IC序列均值变化趋势**
+  
+  由于因子收益实现的时间通常不一样，所以需要对因子随不同时期跨度$k(1~12)$IC均值变化趋势进行比较。针对每个时期跨度$k$, 对应的IC系例均值为:
+  $$\overline{IC}=mean(IC_{t,t+k})$$
 
 ### 因子评估结果
 
@@ -596,18 +609,33 @@ plot(result_test_uniregression_industry)
 * t.test_p: 对信息系数序列均值非零$t$检验的$p$概率值, 小于0.05时均值显著不为0
 * normal.test_p: 正态分布检验(Shapiro-Wilk)$p$概率值，小于0.05时判定信息系数序列非正态分布。
 
+```{r factor_test_IC_common, cache=TRUE, autodep= TRUE}
 
-#### 综合评估结果 
-
-
-```{r factor_test_IC_overall, fig.cap = '因子信息系数(IC)评估结果(综合评估)'}
-
-# Build test data dataset
+# Build test dataset for single period test
 ds_test_IC <- stocks_return_period %>%
   dplyr::inner_join(fundamental_normal_factors_lag_period, by = c("date", "stkcd")) %>%
   tidyr::gather(-(date:indcd), key = "factor_name", value = "factor_exposure") %>%
   dplyr::select(date, stkcd, indcd, return, factor_name, factor_exposure)
 
+
+# Build test dataset for multiperiod test
+k_periods <- 12
+ds_test_IC_multiperiod <- tibble::tibble(k = 1:k_periods, ds_test_IC = list(0))
+for (k in seq_along(ds_test_IC_multiperiod$k)) {
+  
+  # Lag factors datase k periods
+  factors_lag_k_period <- ts_lag(fundamental_normal_factors_period,
+                                 k = k,
+                                 trim = FALSE,
+                                 key_fields = c("stkcd", "periodtype", "indcd"))
+  # Combine return and factors
+  ds_test_IC <- stocks_return_period %>%
+    dplyr::inner_join(factors_lag_k_period, by = c("date", "stkcd")) %>%
+    tidyr::gather(-(date:indcd), key = "factor_name", value = "factor_exposure") %>%
+    dplyr::select(date, stkcd, indcd, return, factor_name, factor_exposure)
+  
+  ds_test_IC_multiperiod$ds_test_IC[[k]] <- ds_test_IC
+}
 
 # Method of conducting IC test
 model_compute_IC <- function(df, 
@@ -619,7 +647,8 @@ model_compute_IC <- function(df,
   switch(neutralize,
          "non" = {
            # Overall test
-           IC_result <- cor.test(x = df$return, y = df$factor_exposure, ...)
+           suppressWarnings({
+             IC_result <- cor.test(x = df$return, y = df$factor_exposure, ...)                })
          },
          "industry" = {
            
@@ -630,12 +659,23 @@ model_compute_IC <- function(df,
            
            # Use residual to conduct test
            neutral_factor_exposure <- residuals(lm_deindustrialize)
-           IC_result <- cor.test(x = df$return,
-                                 y = neutral_factor_exposure, ...)
+           suppressWarnings({
+             IC_result <- cor.test(x = df$return, 
+                                   y = neutral_factor_exposure, ...)
+           })
          })
   
   return(IC_result)
 }
+
+```
+
+
+#### 综合评估结果 
+
+**因子信息系数(IC)单期评估结果如下：**
+
+```{r factor_test_IC_single_period_overall, fig.cap='因子信息系数(IC)单期评估结果(综合评估)'}
 
 # Condcut factor IC test
 result_test_IC <- factor_test_IC(ds_test_IC,
@@ -660,9 +700,61 @@ knitr::kable(
 plot(result_test_IC)
 ```
 
+**因子信息系数(IC)多期评估结果如下：**
+
+```{r factor_test_IC_multi_period_overall, fig.cap='因子信息系数(IC)多期评估结果(综合评估)'}
+
+# Condcut factor IC test of multiperiods
+result_test_IC_multiperiod <- tibble::tibble(k = 1:k_periods, 
+                                             result_test_IC = list(0))
+for (k in seq_along(result_test_IC_multiperiod$k)) {
+  result_test_IC <-  factor_test_IC(ds_test_IC_multiperiod$ds_test_IC[[k]],
+                                      IC_fun = model_compute_IC,
+                                      neutralize = "non", 
+                                      method = "spearman",
+                                      output_type = "summary",
+                                      factor_field = "factor_name",
+                                      date_field = "date")
+  
+  result_test_IC_multiperiod$result_test_IC[[k]] <- result_test_IC@summary
+}
+
+# Reshape result datasets
+result_test_IC_multiperiod <- result_test_IC_multiperiod %>%
+     tidyr::unnest(result_test_IC) %>%
+     dplyr::arrange(factor_name, k)
+ 
+# Plot tendency of ICs in term of k periods
+result_test_IC_multiperiod  %>%
+    ggplot(aes(x = k)) +
+    geom_line(aes( y = avg)) +
+    facet_wrap( ~ factor_name ) +
+    scale_x_continuous(breaks = seq(1,k_periods,1)) +
+    labs( title = "因子IC均值在不同期限变化趋势",
+          x = "时期k",
+          y = "IC均值") +
+    theme(plot.title = element_text(hjust = 0.5)) 
+
+# Plot t.test siginificancy of ICs in term of k periods
+result_test_IC_multiperiod  %>%
+    ggplot(aes(x = k)) +
+    geom_bar(aes(y = t.test_p), stat = "identity") +
+    geom_hline(yintercept = 0.05, color = "red", linetype = "dashed") +
+    facet_wrap( ~ factor_name ) +
+    scale_x_continuous(breaks = seq(1,k_periods,1)) +
+    labs( title = "因子IC均值在不同期限T测试显著性",
+          x = "时期k",
+          y = "IC序列t检测p值") + 
+    theme(plot.title = element_text(hjust = 0.5)) 
+
+```
+
+
 #### 行业中性评估结果
 
-```{r factor_test_IC_industry, fig.cap = '因子信息系数(IC)评估结果(行业中性评估)'}
+**因子信息系数(IC)单期评估结果如下：**
+
+```{r factor_test_IC_single_period_industry, fig.cap = '因子信息系数(IC)单期评估结果(行业中性评估)'}
 
 # Condcut factor IC test
 result_test_IC_industry <- factor_test_IC(ds_test_IC,
@@ -688,6 +780,57 @@ plot(result_test_IC_industry)
 
 ```
 
+**因子信息系数(IC)多期评估结果如下：**
+
+
+
+
+```{r factor_test_IC_multi_period_industry, fig.cap='因子信息系数(IC)多期评估结果(行业中性评估)'}
+
+# Condcut factor IC test of multiperiods
+result_test_IC_multiperiod <- tibble::tibble(k = 1:k_periods, 
+                                             result_test_IC = list(0))
+for (k in seq_along(result_test_IC_multiperiod$k)) {
+  result_test_IC <-  factor_test_IC(ds_test_IC_multiperiod$ds_test_IC[[k]],
+                                      IC_fun = model_compute_IC,
+                                      neutralize = "industry", 
+                                      method = "spearman",
+                                      output_type = "summary",
+                                      factor_field = "factor_name",
+                                      date_field = "date")
+  
+  result_test_IC_multiperiod$result_test_IC[[k]] <- result_test_IC@summary
+}
+
+# Reshape result datasets
+result_test_IC_multiperiod <- result_test_IC_multiperiod %>%
+     tidyr::unnest(result_test_IC) %>%
+     dplyr::arrange(factor_name, k)
+ 
+# Plot tendency of ICs in term of k periods
+result_test_IC_multiperiod  %>%
+    ggplot(aes(x = k)) +
+    geom_line(aes( y = avg)) +
+    facet_wrap( ~ factor_name ) +
+    scale_x_continuous(breaks = seq(1,k_periods,1)) +
+    labs( title = "因子IC均值在不同期限变化趋势",
+          x = "时期k",
+          y = "IC均值") +
+    theme(plot.title = element_text(hjust = 0.5)) 
+
+# Plot t.test siginificancy of ICs in term of k periods
+result_test_IC_multiperiod  %>%
+    ggplot(aes(x = k)) +
+    geom_bar(aes( y = t.test_p), stat = "identity") +
+    geom_hline(yintercept = 0.05, color = "red", linetype = "dashed") +
+    facet_wrap( ~ factor_name ) +
+    scale_x_continuous(breaks = seq(1,k_periods,1)) +
+    labs( title = "因子IC均值在不同期限T测试显著性",
+          x = "时期k",
+          y = "IC序列t检测p值") + 
+    theme(plot.title = element_text(hjust = 0.5))
+
+```
 
 ## 因子组合分类法(Factor Test of Sort Portfolios)
 
@@ -742,12 +885,7 @@ plot(result_test_IC_industry)
   * Annualized Standard Deviation：组合的年化收益的标准差；
   * Annualized Sharpe Ratio (Rf=0%)：组合的年化夏普比率。
 
-
-#### 综合评估结果
-
-   
-```{r factor_test_portfolio_sorts_overall, fig.cap = '因子组合分类评估结果(综合评估)'}
-
+```{r factor_test_portfolio_sorts_common, cache=TRUE, autodep= TRUE}
 # Build test data dataset
 ds_test_sort_portfolios <- stocks_return_period %>%
   dplyr::inner_join(fundamental_normal_factors_lag_period, by = c("date", "stkcd")) %>%
@@ -795,6 +933,13 @@ model_sort_portfolios <- function(df, ngroup = 5,
   return(sort_portfolios)
 }
 
+```
+
+
+#### 综合评估结果
+
+   
+```{r factor_test_portfolio_sorts_overall, fig.cap = '因子组合分类评估结果(综合评估)'}
 
 
 # Condcut portfolio sorts test
@@ -900,7 +1045,7 @@ plot(result_test_sort_portfolios_industry)
    当负相关时，如果胜率(odds)小于1时，则相关性较强，否则较弱。
 
 
-```{r evalute_test_result_functions}
+```{r evalute_test_result_common}
 
 # Evalue test result to find petential significant factors
 evalute_test_result <- function(summary_test_result,

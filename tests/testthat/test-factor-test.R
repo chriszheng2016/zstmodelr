@@ -3,96 +3,54 @@ library(withr)
 # Tests for factor_test classes - factor_test_uniregress ----
 context("Tests for factor_test classes - factor_test_uniregress")
 
-test_that("factor_test_uniregress, with regress_method = 'pooling'", {
+test_that("factor_test_uniregress, with general arguments", {
 
   #Load test data
-  ds_test_uniregression_pooling <- readRDS("ds_test_uniregression_pooling.rds")
+  ds_test_uniregression <- readRDS("ds_test_uniregression.rds")
 
   # Model of conducting univariate regression test
-  model_univariate_regression_pooling <- function(df) {
-    lm(return ~ factor_exposure, data = df)
-  }
-
-  # Condcut factor uniregress test with summary ouput ====
-  result_test_uniregression_pooling <- factor_test_uniregress(ds_test_uniregression_pooling,
-                                                              regress_method = "pooling",
-                                                              regress_fun = model_univariate_regression_pooling,
-                                                              factor_field = "factor_name",
-                                                              output_type = "summary",
-                                                              date_field = "date")
-
-  # Validate results
-  expect_is(result_test_uniregression_pooling, "factor_test_uniregress")
-  expect_not_null(result_test_uniregression_pooling@factor_returns)
-  expect_not_null(result_test_uniregression_pooling@summary)
-  expect_null(result_test_uniregression_pooling@raw_result)
-
-  # fields of summary info
-  expected <- c("factor_name", "r.squared", "f_pvalue", "beta_t_abs_mean",
-                "beta_t_sig_ratio", "beta_t_mean", "beta_t_sd", "beta_t_mean_std_ratio",
-                "factor_return", "factor_return_tvalue", "factor_return_pvalue")
-  actual   <- names(result_test_uniregression_pooling@summary)
-  expect_equal(actual, expected)
-
-  # Condcut factor uniregress test with raw ouput ====
-  result_test_uniregression_pooling <- factor_test_uniregress(ds_test_uniregression_pooling,
-                                                              regress_method = "pooling",
-                                                              regress_fun = model_univariate_regression_pooling,
-                                                              factor_field = "factor_name",
-                                                              output_type = "raw",
-                                                              date_field = "date")
-  expect_is(result_test_uniregression_pooling, "factor_test_uniregress")
-  expect_not_null(result_test_uniregression_pooling@factor_returns)
-  expect_not_null(result_test_uniregression_pooling@summary)
-  expect_not_null(result_test_uniregression_pooling@raw_result)
-
-})
-
-test_that("factor_test_uniregress, with regress_method = 'cross_section'", {
-
-  #Load test data
-  ds_test_uniregression_barra <- readRDS("ds_test_uniregression_barra.rds")
-
-  # Model of conducting univariate regression test
-  model_univariate_regression_barra <- function(df, ...) {
+  model_univariate_regression <- function(df, ...) {
     lm(return ~ factor_exposure, data = df, ...)
   }
 
   # Condcut factor uniregress test with summary ouput ====
-  result_test_uniregression_barra <- factor_test_uniregress( ds_test_uniregression_barra,
-                                                             regress_method = "cross_section",
-                                                             regress_fun = model_univariate_regression_barra,
-                                                             output_type = "summary",
-                                                             factor_field = "factor_name",
-                                                             date_field = "date")
+  result_test_uniregression <- factor_test_uniregress( ds_test_uniregression,
+                                    regress_fun = model_univariate_regression,
+                                    output_type = "summary",
+                                    factor_field = "factor_name",
+                                    date_field = "date")
+
 
   # Validate results
-  expect_is(result_test_uniregression_barra, "factor_test_uniregress")
-  expect_not_null(result_test_uniregression_barra@factor_returns)
-  expect_not_null(result_test_uniregression_barra@summary)
-  expect_null(result_test_uniregression_barra@raw_result)
+  expect_is(result_test_uniregression, "factor_test_uniregress")
+  expect_not_null(result_test_uniregression@summary)
+  expect_not_null(result_test_uniregression@factor_returns)
+  expect_null(result_test_uniregression@raw_result)
 
   # fields of summary info
-  expected <- c("factor_name", "r.squared", "f_pvalue", "beta_t_abs_mean",
-                "beta_t_sig_ratio", "beta_t_mean", "beta_t_sd",
-                "beta_t_mean_std_ratio", "factor_return",
-                "factor_return_tvalue", "factor_return_pvalue" )
-  actual   <- names(result_test_uniregression_barra@summary)
-  expect_equal(actual, expected)
+  expected <- c("factor_name","obs", "nas", "avg", "med", "min", "max","std",
+                "skew", "kurt", "pos_pct", "neg_pct", "odds", "t.test_t",
+                "t.test_p", "normal.test_p")
+  actual   <- names(result_test_uniregression@summary)
+  expect_true(setequal(actual, expected))
+
+  # fields of factor return
+  expected <- c("date", unique(ds_test_uniregression$factor_name))
+  actual  <- names(result_test_uniregression@factor_returns)
+  expect_true(setequal(actual, expected))
 
   # Condcut factor uniregress test with raw ouput ====
-  result_test_uniregression_barra <- factor_test_uniregress( ds_test_uniregression_barra,
-                                                             regress_method = "cross_section",
-                                                             regress_fun = model_univariate_regression_barra,
-                                                             output_type = "raw",
-                                                             factor_field = "factor_name",
-                                                             date_field = "date")
+  result_test_uniregression <- factor_test_uniregress( ds_test_uniregression,
+                                    regress_fun = model_univariate_regression,
+                                    output_type = "raw",
+                                    factor_field = "factor_name",
+                                    date_field = "date")
 
   # Validate results
-  expect_is(result_test_uniregression_barra, "factor_test_uniregress")
-  expect_not_null(result_test_uniregression_barra@factor_returns)
-  expect_not_null(result_test_uniregression_barra@summary)
-  expect_not_null(result_test_uniregression_barra@raw_result)
+  expect_is(result_test_uniregression, "factor_test_uniregress")
+  expect_not_null(result_test_uniregression@factor_returns)
+  expect_not_null(result_test_uniregression@summary)
+  expect_not_null(result_test_uniregression@raw_result)
 
 })
 
@@ -120,13 +78,21 @@ test_that("factor_test_IC, with general arguments", {
   # Validate results
   expect_is(result_test_IC, "factor_test_IC")
   expect_not_null(result_test_IC@summary)
+  expect_not_null(result_test_IC@factor_ICs)
   expect_null(result_test_IC@raw_result)
 
   # fields of summary info
-  expected <- c("factor_name", "IC_mean", "IC_std", "IR",
-                "IC_positive_ratio", "IC_avg_pvalue")
+  expected <- c("factor_name","obs", "nas", "avg", "med", "min", "max","std",
+                "skew", "kurt", "pos_pct", "neg_pct", "odds", "t.test_t",
+                "t.test_p", "normal.test_p")
   actual   <- names(result_test_IC@summary)
-  expect_equal(actual, expected)
+  expect_true(setequal(actual, expected))
+
+  # field of factor_ICs
+  expected <- c("date", unique(ds_test_IC$factor_name))
+  actual  <- names(result_test_IC@factor_ICs)
+  expect_true(setequal(actual, expected))
+
 
   # Conduct factor IC test with raw ouput ====
   result_test_IC <- factor_test_IC( ds_test_IC,
@@ -139,6 +105,7 @@ test_that("factor_test_IC, with general arguments", {
   # Validate results
   expect_is(result_test_IC, "factor_test_IC")
   expect_not_null(result_test_IC@summary)
+  expect_not_null(result_test_IC@factor_ICs)
   expect_not_null(result_test_IC@raw_result)
 
 })
@@ -152,15 +119,15 @@ test_that("factor_test_sort_portfolios, with general arguments", {
   ds_test_sort_portfolios <- readRDS("ds_test_sort_portfolios.rds")
 
   # Method to build sort portfolios
-  model_sort_portfolios <- function(df, ...) {
+  model_sort_portfolios <- function(df, ngroup = 5, ...) {
     # build portfolio group by portfolio groups
     sort_portfolios <- build_sort_portfolios(
         stocks_list = df$stkcd,
         factor_value_list = df$factor_exposure,
-        ngroup = 5,
-        first_group_index = 1,
-        factor_group_order = "asc"
+        stocks_weight_list = NULL,
+        ngroup = ngroup
       )
+
     return(sort_portfolios)
   }
 
@@ -169,52 +136,79 @@ test_that("factor_test_sort_portfolios, with general arguments", {
   # c(warn = -1),
   #   {
   #     result_sort_portfolios <- factor_test_sort_portfolios(ds_test_sort_portfolios,
-  #                                                           sort_portfolios_fun = model_sort_portfolios,
-  #                                                           output_type = "summary",
-  #                                                           factor_field = "factor_name",
-  #                                                           date_field = "date",
-  #                                                           stkcd_field = "stkcd",
-  #                                                           return_field = "return")
+  #                                        sort_portfolios_fun = model_sort_portfolios,
+  #                                        ngroup = 5,
+  #                                        output_type = "summary",
+  #                                        factor_field = "factor_name",
+  #                                        date_field = "date",
+  #                                        stkcd_field = "stkcd",
+  #                                        return_field = "return")
   #
   #   }
   # )
 
   suppressWarnings(
     result_sort_portfolios <- factor_test_sort_portfolios(ds_test_sort_portfolios,
-                                                          sort_portfolios_fun = model_sort_portfolios,
-                                                          output_type = "summary",
-                                                          factor_field = "factor_name",
-                                                          date_field = "date",
-                                                          stkcd_field = "stkcd",
-                                                          return_field = "return")
+                                    sort_portfolios_fun = model_sort_portfolios,
+                                    ngroup = 5,
+                                    output_type = "summary",
+                                    factor_field = "factor_name",
+                                    date_field = "date",
+                                    stkcd_field = "stkcd",
+                                    return_field = "return")
   )
 
   # Validate results
   expect_is(result_sort_portfolios, "factor_test_sort_portfolios")
-  expect_not_null(result_sort_portfolios@portfolios_return)
   expect_not_null(result_sort_portfolios@summary)
+  expect_not_null(result_sort_portfolios@factor_returns)
+  expect_not_null(result_sort_portfolios@portfolios_summary)
+  expect_not_null(result_sort_portfolios@portfolios_return)
   expect_null(result_sort_portfolios@raw_result)
 
   # fields of summary info
-  expected <- c("factor_name", "indicator", "group_1", "group_2", "group_3",
-                "group_4", "group_5", "group_zero" )
+  expected <- c("factor_name","obs", "nas", "avg", "med", "min", "max","std",
+                "skew", "kurt", "pos_pct", "neg_pct", "odds", "t.test_t",
+                "t.test_p", "normal.test_p")
   actual   <- names(result_sort_portfolios@summary)
-  expect_equal(actual, expected)
+  expect_true(setequal(actual, expected))
+
+  # fields of factor_returns
+  expected <- c("date", unique(ds_test_sort_portfolios$factor_name))
+  actual   <- names(result_sort_portfolios@factor_returns)
+  expect_true(setequal(actual, expected))
+
+  # fields of portfolios_summary
+  expected <- c("factor_name", "indicator", "group_lo", "group_2", "group_3",
+                "group_4", "group_hi", "group_zero" )
+  actual   <- names(result_sort_portfolios@portfolios_summary)
+  expect_true(setequal(actual, expected))
+
+  # fields of portfolios_return
+  expected <- c("factor_name", "date", "group_lo", "group_2", "group_3",
+                "group_4", "group_hi", "group_zero" )
+  actual   <- names(result_sort_portfolios@portfolios_return)
+  expect_true(setequal(actual, expected))
+
+
 
   # Conduct portfolio sorts test with raw ouput ====
   result_sort_portfolios <- factor_test_sort_portfolios(ds_test_sort_portfolios,
-                                                            sort_portfolios_fun = model_sort_portfolios,
-                                                            output_type = "raw",
-                                                            factor_field = "factor_name",
-                                                            date_field = "date",
-                                                            stkcd_field = "stkcd",
-                                                            return_field = "return")
+                                    sort_portfolios_fun = model_sort_portfolios,
+                                    ngroup = 5,
+                                    output_type = "raw",
+                                    factor_field = "factor_name",
+                                    date_field = "date",
+                                    stkcd_field = "stkcd",
+                                    return_field = "return")
 
 
   # Validate results
   expect_is(result_sort_portfolios, "factor_test_sort_portfolios")
-  expect_not_null(result_sort_portfolios@portfolios_return)
   expect_not_null(result_sort_portfolios@summary)
+  expect_not_null(result_sort_portfolios@factor_returns)
+  expect_not_null(result_sort_portfolios@portfolios_summary)
+  expect_not_null(result_sort_portfolios@portfolios_return)
   expect_not_null(result_sort_portfolios@raw_result)
 
 
