@@ -1,0 +1,402 @@
+---
+title: "研究分析：大类因子分析"
+documentclass: ctexart
+geometry:
+  - tmargin=2cm
+  - bmargin=2cm
+  - lmargin=2cm
+  - rmargin=2cm
+editor_options:
+  chunk_output_type: inline
+output:
+  html_notebook:
+    fig_caption: yes
+    number_sections: yes
+    toc: yes
+    toc_depth: 4
+  html_document:
+    fig_caption: yes
+    number_sections: yes
+    toc: yes
+    toc_depth: 4
+  rticles::ctex:
+    fig_caption: yes
+    number_sections: yes
+    toc: yes
+    toc_depth: 4
+  pdf_document:
+    toc: yes
+    toc_depth: 4
+  word_document:
+    fig_caption: yes
+    toc: yes
+    toc_depth: 4
+params:
+  backtest_end_date:
+    label: 'backtest end date:'
+    value: '2017-12-31'
+  backtest_start_date:
+    label: 'backtest start date:'
+    value: '2016-01-01'
+  debug_mode: no
+  factors_list:
+    choices:
+    - GPM
+    - ROCE
+    - PE
+    - PB
+    - CUR
+    - QR
+    input: select
+    label: factors list
+    multiple: yes
+    value:
+    - GPM
+    - ROCE
+  tmpfile_fundamental_factors: temp/fundamental_factors.rds
+  tmpfile_fundamental_normal_factors: temp/fundamental_normal_factors.rds
+  tmpfile_fundamental_normal_factors_lag_period: temp/fundamental_normal_factors_lag_period.rds
+  tmpfile_fundamental_normal_factors_period: temp/fundamental_normal_factors_period.rds
+  tmpfile_stocks_return: temp/stocks_return.rds
+  tmpfile_stocks_return_period: temp/stocks_return_period.rds
+classoption: hyperref,
+---
+
+
+```{r setup, include=FALSE  }
+
+library(fPortfolio)
+library(PerformanceAnalytics)
+library(tidyverse)
+library(lubridate)
+library(stringr)
+library(shiny)
+library(zstmodelr)
+
+
+# Set global options for knitr
+knitr::opts_chunk$set(
+  comment = "#>",
+  echo = FALSE,
+  warning = FALSE,
+  message = FALSE,
+  collapse = TRUE,
+  fig.align = "center",
+  fig.show = 'hold',
+  out.width = '80%',
+  tidy = TRUE
+)
+
+options(tibble.print_min = 10L, tibble.print_max = 20L)
+
+# options(digits = 3)
+```
+
+# 研究工作概要
+
+  在因子原始数据采集和计算基础，针对目标因子进行评估筛选，以初步识别有效的因子。 主要工作包括：
+  
+  * **数据规范化(Normalization)**
+  
+    由于原始数据的量纲不一致，为保证数据之间的可比性和可叠加性，要对原始数据进行标准化、去量纲的工作。
+
+  * **因子有效性评估**
+  
+    原始因子集合是在逻辑上被认为与股票收益率存在关联性的因素，实证中并不是每个原始因子和股票收益率都存在相关性，因此需要对原始因子进行有效性检验，排除跟收益率相关性不高的因子。
+
+# 数据准备(Data Preparation)
+
+
+## 研究参数设置(Study Params)
+
+
+# 数据准备(Data Preparation)
+
+
+## 研究参数设置(Study Params)
+```{r set_params}
+# Set params of study
+
+# fundamental_factors_list <- c("GPM", "ROCE", "PE", "PB", "CUR", "QR")
+fundamental_factors_list <- params$factors_list
+
+# period of backtest
+start_date <- params$backtest_start_date
+end_date <- params$backtest_end_date
+```
+
+主要评估参数如下：
+
+* **评估因子:** `r params$factors_list`
+
+* **回溯期间:** `r params$backtest_start_date` ~ `r params$backtest_end_date`
+
+* **股票池:** 全A股，剔除ST、PT股票，剔除每个截面期一下交易日停牌的股票。
+
+
+```{r fetch_factors_data, cache=TRUE, cache.extra = list(params$debug_mode, params$factors_list, params$backtest_start_date, params$backtest_end_date)}
+
+# Open gta stock databse
+stock_db <- stock_db(gta_db, "GTA_SQLData")
+open_stock_db(stock_db)
+
+# Initate the stock database
+invisible(init_stock_db(stock_db))
+
+# Get factors info
+factors_info <- get_factors_info(stock_db, factor_groups = NULL)
+
+
+if (!params$debug_mode) {
+
+
+  # Get fundamental indicators
+  fundamental_factors <- get_factor_indicator(stock_db,
+    factor_list = fundamental_factors_list
+  )
+
+  # Get stocks return
+  stocks_return <- get_stock_return(stock_db,
+    stock_cd_list = NULL,
+    period_type = "month",
+    period_date = "end",
+    output_type = "tibble"
+  )
+  # Save temp file for debug
+  saveRDS(fundamental_factors, file = params$tmpfile_fundamental_factors)
+  saveRDS(stocks_return, file = params$tmpfile_stocks_return)
+} else {
+
+  # Use read temp file to debug
+  fundamental_factors <- readRDS(params$tmpfile_fundamental_factors)
+  stocks_return <- readRDS(params$tmpfile_stocks_return)
+}
+
+```
+
+## 目标因子概要(Target Factor Summary)
+
+因子主要是指基本面因素，按投资风险的风格分类，分为如下**类别(Style Factors)**:
+   
+* **估值因子(Valuation Factors)：**
+
+    用于衡量股票价格是否相对偏高或偏低，因素值较大的公司，意味公司股票可能被高估或具有较高的未来成长性。
+
+* **清偿能力因子(Solvency Factors)：**
+
+    用于衡量一个公司不同类别的流动资金偿还负债的能力。清偿能力因素值较大的公司具有更好的资金流动性或清偿债务的能力，并且较少受到于由支付债务和其它负债而破产的威胁。
+
+* **营运效率因子(Operating Efficency Factors)**
+
+    用于描述公司对短期和长期资产的运营绩效。因素值较大的公司，比较充分地利用了资产。
+
+* **营运盈利能力因子(Operating Profitability Factors)**
+
+    用于衡量公司获取利润的能力。因素值较大的公司，具有较强的竞争能力，可获得较好的较高的利润。
+
+* **财务风险因子(Finacial Risk Factors)**
+
+    用于衡量公司可能面临破产的风险，即对应对销售暂时放缓或突遇经济时，公司能会较大  的利润波动和面临较高的财务压力，以至于导致破产。
+
+* **流动性风险因子(Liquidity Factors)**
+
+    用于衡量股票交易的难易程度。
+
+* **技术因子(Technical Factors)**
+  
+    用于捕捉股票相对价格的短期波动。
+
+
+   本次评估目标因子如下：
+```{r factor_info}
+
+# Display target factors information
+target_factors_info <- factors_info %>%
+  dplyr::filter(factor_code %in% fundamental_factors_list)
+
+knitr::kable(
+  target_factors_info,
+  format = "pandoc",
+  align = "c",
+  digits = 3,
+  caption = "目标因子信息"
+)
+
+```
+
+
+
+## 因子数据规范化(Factors Normalization)
+
+由于各因子的量纳不同，为方便比较和回归，需要对因子进行规范化处理，主要分为
+两步：
+
+* **第一步、剔除异常极值**
+
+  由于少数异极值对因子和收益率之间相关系数估计造成严重干扰，故需要对异常极值进行处理，处理方式包括：保留极值、用边界值替换、删除极值。
+  
+  判断异常极值方法主要有：
+  
+  - **均值标准差法**
+  
+    这种想法的思路来自于正态分布, 假设$X\sim N(\mu,\sigma^{2})$, 则
+  
+  $$P(|X-\mu| > k*\sigma  =\begin{cases}
+      0.317 & k=1\\
+      0.046 & k=2\\
+      0.03 & k=3
+  \end{cases})$$
+  
+  通常把偏离均值**三倍标准差**以外的数据作为异常值数据。
+  
+  不过要注意的是样本均值和样本标准差都不是稳健统计量，其计算本身受极值的影响就非常大，所以可能会出现一种情况，那就是我们从数据分布图上能非常明显的看到异常点，但按照上面的计算方法，这个异常点可能仍在均值三倍标准差的范围内。因此按照这种方法剔除掉异常值后，需要重新观察数据的分布情况，看是否仍然存在显著异常点，若存在则继续重复上述步骤寻找异常点。
+
+  在样本数据不符合正态分布的情况下，根据Chebyshev不等式，我们仍然可以对均值三倍标准差外的样本数据数量占比做出估计：
+  $$P(|X-\mu|\geq k\cdot\sigma)\leq1/k^{2}$$
+
+  但不等式右边的上界数值过于偏大，在数据分布的偏度和峰度影响下，这种方法可能会把过量的数据认定为异常点。
+  
+  + **中位数去极值法：**
+  
+    MAD 法是针对均值标准差方法的改进，把均值和标准差替换成稳健统计量，样本均值用样本中位数代替，样本标准差用样本MAD （Median Absolute Deviation）代替：
+  $md = median(\{ x_{i},i=1,2,3\cdots n\} )$(相当于mean),$MAD = median(\{|x_{i}-md|, i = 1,2,3\cdots n\})$(相关于std),即：
+  
+  
+  通常把离中值**三倍MAD**以外的数据作为异常值数据。
+  
+  + **Boxplot法**
+  
+    TODO
+
+* **第二步、标准化**
+
+  + **直接标准化：**
+  
+    直接对去极值后因子暴露进行直接进行标准化处理，
+  $$\tilde{x}_{i}=\frac{x_{_{i}-\mu}}{\sigma}$$
+  $\mu$: 序列$x_{i}$的均值，$\sigma$: 序列$x_{i}$的标准差，$\tilde{x}_{i}$: 序列$x_{i}$标准化后的值。
+  
+  + **排序标准化**
+  
+    将去极值原始因子暴露序列转换成序关系序列：$\tilde{x}_{i} = rank({x}_{i})$后，再进行计算标准得分，计算方法同上。
+  
+
+* **第三步、缺失值处理**
+
+    得到标准化的因子暴露序列后，将因子暴露缺失的地方设为零（这里解释一下，由于不同因子可能在不同个股处存在缺失值，若不对缺失值进行处理则每个单因子回归的票池并不完全相同，不同单因子回归结果的可比性较差，但如果将所有出现缺失值的个股都从回归票池中剔除，当数据源质量不佳时可能会造成票池大幅减少，回归结果同样不可信，所以这里折中处理，将因子暴露缺失的地方设为新序列的均值，即设为零，可视作当存在缺失值时我们认为此个股的因子值与全市场平均情况相同，即持中性看法）。
+
+本报告中因子数据规范化处理：
+
+- 对采用“均值标准差法”检测异常极端值，对检测异常值用边界值替换；
+
+- 对去除异常值的因子序列采用“直接标准化”.
+
+
+```{r factors_Normalization, cache=TRUE, autodep= TRUE}
+
+if (!params$debug_mode) {
+
+  # Normalize the factor indicators
+  fundamental_normal_factors <- fundamental_factors %>%
+    dplyr::filter(date >= start_date & date <= end_date) %>%
+    normalize_factors(
+      group_by = c("date"),
+      clean_extremes_method = "sigma",
+      standard_method = "normal"
+    )
+
+  # Resample factors by specified frequency
+  fundamental_normal_factors_period <- fundamental_normal_factors %>%
+    ts_resample(
+      key_fields = "stkcd", freq_rule = "month",
+      fillna_method = "ffill", agg_method = mean
+    )
+
+  # Resample return by specified frequency
+  stocks_return_period <- stocks_return %>%
+    dplyr::filter(date >= start_date & date <= end_date) %>%
+    ts_resample(
+      key_fields = "stkcd", freq_rule = "month",
+      fillna_method = "nfill",
+      agg_method = function(x) prod(1 + x, na.rm = TRUE) - 1
+    )
+
+  # Lag factors to avoid peeking ahead bias
+  fundamental_normal_factors_lag_period <- ts_lag(
+    fundamental_normal_factors_period,
+    k = 1,
+    trim = FALSE,
+    key_fields = c("stkcd", "periodtype", "indcd")
+  )
+  
+  # Save temp file for debug
+  saveRDS(fundamental_normal_factors,
+    file = params$tmpfile_fundamental_normal_factors
+  )
+  saveRDS(fundamental_normal_factors_period,
+    file = params$tmpfile_fundamental_normal_factors_period
+  )
+  saveRDS(stocks_return_period,
+    file = params$tmpfile_stocks_return_period
+  )
+  saveRDS(fundamental_normal_factors_lag_period,
+    file = params$tmpfile_fundamental_normal_factors_lag_period
+  )
+} else {
+
+  # Read temp file to debug
+  fundamental_normal_factors <- readRDS(params$tmpfile_fundamental_normal_factors)
+  fundamental_normal_factors_period <- readRDS(params$tmpfile_fundamental_normal_factors_period)
+  stocks_return_period <- readRDS(params$tmpfile_stocks_return_period)
+  fundamental_normal_factors_lag_period <- readRDS(params$tmpfile_fundamental_normal_factors_lag_period)
+}
+```
+
+## 因子分布状况(Factor Distribution Exploration)
+
+  对规范化后因子数据，计算在每个时间截面的因子分布参数(平均值等)，对计算参数时间序列的平均值，获得分布参数如下：
+
+```{r factor_test_summarize_factors}
+
+# summarize factors distribution
+summary_fundamental_normal_factors <- fundamental_normal_factors %>%
+  tidyr::gather(key = "factor_name", value = "factor_exposure", 
+                fundamental_factors_list) %>%
+  dplyr::group_by(factor_name, date) %>%
+  dplyr::summarise_at("factor_exposure",
+    funs(
+      obs = mean(length(.)),
+      nas = sum(is.na(.)),
+      mean,
+      sd,
+      median,
+      mad,
+      min,
+      Q1 = quantile(., 0.25),
+      Q3 = quantile(., 0.75),
+      max,
+      skewness = PerformanceAnalytics::skewness,
+      kurtosis = PerformanceAnalytics::kurtosis
+    ),
+    na.rm = TRUE
+  ) %>%
+  dplyr::select(-date) %>%
+  dplyr::group_by(factor_name) %>%
+  dplyr::summarise_all(mean)
+
+
+knitr::kable(
+  summary_fundamental_normal_factors,
+  format = "pandoc",
+  align = "c",
+  digits = 3,
+  caption = "因子分布情况总览"
+)
+```
+
+注意：kurtosis 为超过正态分布峰度的数值。
+
+
+# 因子分析
+
+# 分析汇总

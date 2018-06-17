@@ -1,0 +1,7 @@
+output
+temp
+*.pdf
+*.html
+*.docx
+model-factor-analyses_cache
+model-factor-analyses_files
