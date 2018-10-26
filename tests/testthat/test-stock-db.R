@@ -219,13 +219,14 @@ test_that("get_factor_indicator, with various arguments", {
 
 })
 
-test_that("get_factors_info_info, with various arguments", {
+test_that("get_factors_info, with various arguments", {
 
   # get_factors_info with default arguments ====
   ds_matched_factors <- get_factors_info(stock_db)
   expect_is(ds_matched_factors, "data.frame")
   # data.frame fields
-  expected_fields <- c("factor_code", "factor_name", "factor_type", "factor_group")
+  expected_fields <- c("factor_code", "factor_name", "factor_type",
+                       "factor_group", "factor_description")
   actual_fields   <- names(ds_matched_factors)
   expect_equal(actual_fields, expected_fields)
 
