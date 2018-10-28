@@ -32,7 +32,7 @@ RoxygenNote: 6.0.1
 Collate: 
     'stock-db.R'
     'code-name-list.R'
-    'factor-analyse.R'
+    'factor-analyses.R'
     'factor-composite.R'
     'factor-normalize.R'
     'factor-test.R'
