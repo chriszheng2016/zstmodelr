@@ -91,9 +91,10 @@ open_stock_db.gta_db <- function(stock_db) {
   #                           error = function(e) e)
 
   # Use data-engine of DBI:odbc
-  con_stock_db <- tryCatch(DBI::dbConnect(odbc::odbc(), "GTA_SQLDATA",
-                                      encoding = "CP936"),
-                             error = function(e) e)
+  con_stock_db <- tryCatch(DBI::dbConnect(odbc::odbc(), dsn = stock_db$dsn,
+                                          encoding = "CP936"),
+                              error = function(e) e)
+
 
   if (inherits(con_stock_db, "error")) {
     msg <- conditionMessage(con_stock_db)
@@ -148,7 +149,7 @@ init_stock_db.gta_db <- function(stock_db) {
       msg = sprintf("failed to load %s from %", table_name_id,
                     gta_profile_name)
       stop(msg)
-      success = FALSE
+      success <- FALSE
 
     } else {
       stock_db$table_list[table_name_id] <- table_name_value
@@ -160,7 +161,7 @@ init_stock_db.gta_db <- function(stock_db) {
     stock_db$stock_field_list <- stock_field_list.gta_db(stock_db)
     if (is.null(stock_db$stock_field_list)) {
       warning("failed to set up field_name_list")
-      success = FALSE
+      success <- FALSE
     }
   }
 
@@ -169,7 +170,7 @@ init_stock_db.gta_db <- function(stock_db) {
     stock_db$stock_name_list <- stock_name_list.gta_db(stock_db)
     if (is.null(stock_db$stock_name_list)) {
       warning("failed to set up stock_name_list")
-      success = FALSE
+      success <- FALSE
     }
   }
 
@@ -178,7 +179,7 @@ init_stock_db.gta_db <- function(stock_db) {
     stock_db$industry_name_list <- industry_name_list.gta_db(stock_db)
     if (is.null(stock_db$industry_name_list)) {
       warning("failed to set up industry_name_list")
-      success = FALSE
+      success <- FALSE
     }
   }
 
@@ -262,7 +263,7 @@ list_stock_tables.gta_db <- function(stock_db) {
 
   # Use data-engine of DBI:odbc
   db_tables <- DBI::dbListTables(stock_db$connection, schema_name = "dbo")
-  db_tables <- iconv(db_tables, from = "UTF-8", to ="CP936")
+  db_tables <- iconv(db_tables, from = "UTF-8", to = "CP936")
 
   return(db_tables)
 }
@@ -570,7 +571,7 @@ get_stock_return.gta_db <- function(stock_db, stock_cd_list = NULL,
     stop("Stock db isn't connected, try to connect db again")
   }
 
-  success = TRUE
+  success <- TRUE
 
   # get stock return dataset
   field_stkcd <- rlang::quo(stkcd)
@@ -588,7 +589,7 @@ get_stock_return.gta_db <- function(stock_db, stock_cd_list = NULL,
       table_name <- stock_db$table_list[["TRD_MNTH"]]
       field_date   <- rlang::quo(trdmnt)
       field_return <- rlang::quo(mretwd)
-      date_format <- "ymd"
+      date_format <- "ym"
       peroid_unit <- "month"
     },
     "year" = {
@@ -621,7 +622,7 @@ get_stock_return.gta_db <- function(stock_db, stock_cd_list = NULL,
     message(msg)
 
   } else {
-    success = FALSE
+    success <- FALSE
   }
 
   # Set date format of date field
@@ -715,7 +716,7 @@ get_market_return.gta_db <- function(stock_db,
     stop("Stock db isn't connected, try to connect db again")
   }
 
-  success = TRUE
+  success <- TRUE
 
   # get market return dataset
   field_markettype <- rlang::quo(markettype)
@@ -759,7 +760,7 @@ get_market_return.gta_db <- function(stock_db,
     message(msg)
 
   } else {
-    success = FALSE
+    success <- FALSE
   }
 
   # Set date format of date field
@@ -841,7 +842,7 @@ get_factor_indicator.gta_db <- function(stock_db, factor_list){
 
   stopifnot(!is.null(factor_list))
 
-  success = TRUE
+  success <- TRUE
 
   # get file table name mapping for referece
   gta_profile_name <- system.file(.GTA_RPROFILE_DIR,
@@ -852,7 +853,7 @@ get_factor_indicator.gta_db <- function(stock_db, factor_list){
                   .GTA_RPROFILE_DIR,
                   .PACKAGE_NAME)
     stop(msg)
-    success = FALSE
+    success <- FALSE
   }
 
 
@@ -869,14 +870,14 @@ get_factor_indicator.gta_db <- function(stock_db, factor_list){
         tidyr::nest()
 
     } else {
-      success = FALSE
+      success <- FALSE
     }
   }
 
   # get indicators dataset from indicator_data_table
   if (success) {
 
-    ds_all_indicators = NULL
+    ds_all_indicators <- NULL
     for (i in seq_len(nrow(indicator_table_list))) {
 
       indicator_table <- indicator_table_list[i,]$indicator_table
@@ -960,7 +961,7 @@ get_factor_indicator.gta_db <- function(stock_db, factor_list){
 
 
   # Build final indicator results
-  ts_indicator = NULL
+  ts_indicator <- NULL
   if (success) {
 
     # sort resutls by time and stkcd
@@ -998,7 +999,7 @@ get_factors_info.gta_db <- function(stock_db, factor_groups = NULL) {
     stop("Stock db isn't connected, try to connect db again")
   }
 
-  success = TRUE
+  success <- TRUE
 
   # get file table name mapping for referece
   gta_profile_name <- system.file(.GTA_RPROFILE_DIR,
@@ -1009,13 +1010,23 @@ get_factors_info.gta_db <- function(stock_db, factor_groups = NULL) {
                   .GTA_RPROFILE_DIR,
                   .PACKAGE_NAME)
     stop(msg)
-    success = FALSE
+    success <- FALSE
   }
 
   # get factors info of matched factor_group
+  ds_matched_factors <- NULL
   if (success) {
     ds_matched_factors <- .get_db_profile_group_factors(gta_profile_name,
                                                           factor_groups)
+
+    # build specified result of matched factors
+    ds_matched_factors <- ds_matched_factors %>%
+      dplyr::select(factor_code = factor_code,
+                    factor_name = factor_name,
+                    factor_type = factor_type,
+                    factor_group = factor_group,
+                    factor_description = factor_description
+                    )
 
   }
 

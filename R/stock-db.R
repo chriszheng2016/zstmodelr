@@ -40,7 +40,7 @@ stock_db <- function(stock_db_class, ...) {
 # Generic functions for stock_db operation ---------------------------------
 
 #' Generic function for stock_db
-#
+#'
 #' Generic function of operating stock database
 #'
 #' A group generic function to deal with a stock_db object
@@ -388,11 +388,15 @@ setGeneric(
 #' @export
 #'
 #' @examples
+# S3 generic definition
+# get_factors_info <- function(stock_db, factor_group = NULL,...){
+#   UseMethod("get_factors_info")
+# }
 # S4 generic definition
 setGeneric(
   name = "get_factors_info",
   signature = c("stock_db"),
-  def = get_factors_info <- function(stock_db, factor_groups =NULL, ...) {
+  def = get_factors_info <- function(stock_db, factor_groups = NULL, ...) {
     standardGeneric("get_factors_info")
   }
 )
