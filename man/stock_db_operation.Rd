@@ -2,9 +2,11 @@
 % Please edit documentation in R/stock-db.R
 \name{stock_db_operation}
 \alias{stock_db_operation}
-\title{Generic function for stock_db
-Generic function of operating stock database}
+\title{Generic function for stock_db}
 \description{
+Generic function of operating stock database
+}
+\details{
 A group generic function to deal with a stock_db object
 }
 \examples{

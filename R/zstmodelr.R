@@ -21,7 +21,7 @@
 #'
 #' @import rlang
 #' @import ggplot2
-#' @@import methods
+#' @import methods
 NULL
 
 

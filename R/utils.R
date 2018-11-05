@@ -68,7 +68,7 @@ magrittr::`%>%`
     if (!is.null(factor_groups)) {
       # get sepcified factor groups
       matched_factors <- factor_indicator_map %>%
-      dplyr::filter(factor_group %in% factor_groups )
+      dplyr::filter(factor_group %in% factor_groups)
       if ( nrow(matched_factors) == 0 ) {
         msg <- sprintf("No entry matched '%s' was found in %s",
                        factor_groups, profile_name )
@@ -80,14 +80,23 @@ magrittr::`%>%`
       # get all factor_groups
       matched_factors <- factor_indicator_map
     }
-
-    matched_factors <- matched_factors %>%
-       dplyr::select(dplyr::contains("factor"))
-
   }
 
   return(matched_factors)
 
+}
+
+# get data source for importing raw data
+.get_db_datasource_files <- function(profile_name) {
+
+  stopifnot(!is.null(profile_name), is.character(profile_name))
+
+  # Get Data source setting
+  datasource_files <- readxl::read_excel(profile_name,
+                                             sheet = "DataSource_Files")
+
+
+  return(datasource_files)
 }
 
 
