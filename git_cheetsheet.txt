@@ -1,0 +1,60 @@
+
+
+1.当你从 remote 去 pull 的时候，永远使用 rebase（除了一个例外，后面会讲）
+
+git checout master #切换本地master分支
+git pull --rebase=preserve remote/master #从远端获得取最新版本并rebase，并保留合并merge的commit历史
+
+or: 
+
+git checout master #切换本地master分支
+
+git fetch remote/master #获取远端的最新版本
+
+git rebase -p remote/master  #用远端最新版本rebase当前版本
+
+2. 当你建立一个本地分支, 使用git rebase合并主分支变化
+
+git checkout -b feature/branch #建立一个新的分支feature/branch
+
+git rebase -p master  #用master 来rebase本分支，并保留merge的commit历史
+
+3.当你完成了一个功能（假定你是单独开本地分支去做的）后打算合并到主干分支的时候，永远使用 merge
+
+git checkout master  #切换本地master分支
+git merge --no-off feature/branch  #合并feature/branch分支，并保留merge commit(当FF也要保留merge commit)
+
+git status   #查看合并状态
+
+git mergetool conflict_file  #解决冲突
+git add conflict_file  # 确认冲突已解决
+git merge continue     # 完成合并
+
+git merge abort        # 取消未完成的合并
+
+git reset --merge ORIG_HEAD  #取消已完成的合并
+
+git checkout feature/branch      # 切换已合并的feature branch
+git branch -d  feature/branch    # 删除feature branch
+
+4. 当远成本地分支(master), 同步远端分支(master)
+
+git checkout master   #切换本地master分支
+git push              #推送当前分支到对应远端分支
+
+git push -u origin master #在远端origin上建立master分支
+
+git push origin master    #推送本地master至远端master
+git push origin master:master    #推送本地master至远端master
+
+git push --delete origin/branch # 删除远端分支
+
+5.其它
+git branch -a -vv #查看所有分支
+git log --oneline --graph - 10 #查看分支历史
+
+
+
+
+
+
