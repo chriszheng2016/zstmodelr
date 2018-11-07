@@ -32,10 +32,8 @@ build_report <- function(report_template ,
 
   working_dir = dirname(normalizePath(report_template))
 
-  output_dir <- if (!is.null(output_dir)) {
-    paste0(working_dir, "/" , output_dir)
-  } else {
-    working_dir
+  if (is.null(output_dir)) {
+    output_dir <- working_dir
   }
 
   output_filename_main <- stringr::str_split(basename(report_template), pattern = "\\.")[[1]][1]
