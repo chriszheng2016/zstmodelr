@@ -297,8 +297,8 @@ context("Tests for stock_db class - non generic functions")
 test_that("get_assets_return, with various arguments", {
 
   # get_assets_return with default arguments ====
-  ts_stocks_return <- readRDS("ts_stocks_return.rds")
-  ts_market_return <- readRDS("ts_market_return.rds")
+  ts_stocks_return <- readRDS("./data/ts_stocks_return.rds")
+  ts_market_return <- readRDS("./data/ts_market_return.rds")
   ts_assets_return <- get_assets_return(
     benchmark_return = ts_market_return,
     stocks_return = ts_stocks_return
@@ -317,7 +317,7 @@ test_that("get_assets_return, with various arguments", {
 test_that("get_stock_field_dataset, with various arguments", {
 
   # load test dataset
-  ds_trd_mnth.df <- readRDS("ds_trd_mnth.df.RDS")
+  ds_trd_mnth.df <- readRDS("./data/ds_trd_mnth.df.rds")
 
   # get_assets_return with default arguments: tseries_type = "timeSeries" ====
   ds_stock_mretnd.fts <- get_stock_field_dataset(
@@ -344,7 +344,7 @@ test_that("get_stock_field_dataset, with various arguments", {
 test_that("fetch_stock_field_dataset, with various arguments", {
 
   # load test dataset
-  ds_trd_mnth.df <- readRDS("ds_trd_mnth.df.RDS")
+  ds_trd_mnth.df <- readRDS("./data/ds_trd_mnth.df.rds")
   stock_cd_list <- c("600066", "000550", "600031", "000157", "000651", "000333")
 
   ds_stocks_mretnd.fts <- fetch_stock_field_dataset(

@@ -3,7 +3,7 @@ context("Tests for z-score model functions")
 test_that("factors_zscore, with various arguments", {
 
   #Load test data
-  ds_test_factors <- readRDS("ds_test_factors.rds")
+  ds_test_factors <- readRDS("./data/ds_test_factors.rds")
 
   # compute zscore with default argments ====
   result_factors_zscore <- factors_zscore(ds_test_factors)
@@ -81,7 +81,7 @@ test_that("factors_zscore, with various arguments", {
 test_that("zscore_filter_stocks, with varous argments", {
 
   #Load test data
-  ds_test_factors <- readRDS("ds_test_factors.rds")
+  ds_test_factors <- readRDS("./data/ds_test_factors.rds")
 
   # filter stocks with default argments ====
 

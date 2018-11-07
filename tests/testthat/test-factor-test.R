@@ -6,7 +6,7 @@ context("Tests for factor_test classes - factor_test_uniregress")
 test_that("factor_test_uniregress, with general arguments", {
 
   #Load test data
-  ds_test_uniregression <- readRDS("ds_test_uniregression.rds")
+  ds_test_uniregression <- readRDS("./data/ds_test_uniregression.rds")
 
   # Model of conducting univariate regression test
   model_univariate_regression <- function(df, ...) {
@@ -60,7 +60,7 @@ context("Tests for factor_test classes - factor_test_IC")
 test_that("factor_test_IC, with general arguments", {
 
   #Load test data
-  ds_test_IC <- readRDS("ds_test_IC.rds")
+  ds_test_IC <- readRDS("./data/ds_test_IC.rds")
 
   # Method of conducting IC test
   Model_compute_IC <- function(df, ...) {
@@ -116,7 +116,7 @@ context("Tests for factor_test classes - factor_test_sort_portfolios")
 test_that("factor_test_sort_portfolios, with general arguments", {
 
   #Load test data
-  ds_test_sort_portfolios <- readRDS("ds_test_sort_portfolios.rds")
+  ds_test_sort_portfolios <- readRDS("./data/ds_test_sort_portfolios.rds")
 
   # Method to build sort portfolios
   model_sort_portfolios <- function(df, ngroup = 5, ...) {

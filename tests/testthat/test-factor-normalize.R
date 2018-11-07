@@ -5,7 +5,7 @@ context("Tests for normalizing factors functions - normalize_factors")
 test_that("normalize_factors, with various arguments", {
 
   #Load test data
-  ds_test_factors <- readRDS("ds_test_factors.rds")
+  ds_test_factors <- readRDS("./data/ds_test_factors.rds")
 
   # normalize factors with default arguments ====
   result_normalize_factors <- normalize_factors(ds_test_factors)

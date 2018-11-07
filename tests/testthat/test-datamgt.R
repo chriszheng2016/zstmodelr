@@ -32,9 +32,9 @@ test_that("get_datasource, with various arguments", {
 test_that("import_table, with various arguments", {
 
   # import_table with default arguments ====
-  input_file <- "test_table01.csv"
+  input_file <- "./data/test_table01.csv"
   target_table <- "test_table01"
-  problems_dir <- "./problems"
+  problems_dir <- "./log"
   original_data <- readr::read_csv(input_file,
     locale = readr::locale(encoding = "CP936")
   )
@@ -64,7 +64,7 @@ test_that("import_table, with various arguments", {
   }
 
   # import_table with arguments: input_type====
-  input_file <- "test_table02.txt"
+  input_file <- "./data/test_table02.txt"
   target_table <- "test_table02"
   problems_dir <- "./output"
   original_data <- readr::read_tsv(input_file,
@@ -129,14 +129,14 @@ test_that("update_db, with various arguments", {
       target_table = "test_table01",
       input_file = "test_table01.csv",
       input_type = "csv",
-      input_dir = "./",
+      input_dir = "./data/",
       start_index = 2
     ) %>%
     tibble::add_row(
       target_table = "test_table02",
       input_file = "test_table02.txt",
       input_type = "txt",
-      input_dir = "./",
+      input_dir = "./data/",
       start_index = 4
     )
 

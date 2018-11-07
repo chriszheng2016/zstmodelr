@@ -3,7 +3,7 @@ context("Tests for factors classification functions")
 test_that("composite_factor, with various arguments", {
 
   #Load test data
-  ds_classify_factors <- readRDS("ds_composite_factors.rds")
+  ds_classify_factors <- readRDS("./data/ds_composite_factors.rds")
   factors_list <- c("GPM", "ROCE", "PE", "PB", "CUR", "QR")
   factors_weight_formula <- weight_formula(
                           factors_weight_equal(factors_list),
