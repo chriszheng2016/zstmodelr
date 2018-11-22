@@ -20,6 +20,7 @@ Imports: fPortfolio,
     PerformanceAnalytics,
     plyr,
     tidyverse,
+    tibbletime,
     modelr,
     broom,
     car,
@@ -30,6 +31,8 @@ Imports: fPortfolio,
     odbc
 RoxygenNote: 6.1.0
 Collate: 
+    'Indicator-define.R'
+    'Indicator-generate.R'
     'stock-db.R'
     'code-name-list.R'
     'stock-db-gta.R'
