@@ -1,8 +1,9 @@
+# Tools for updating database periodically
+
 library(zstmodelr)
 
-
-# Conduct data management
-main <- function() {
+# Main function to conduct data management
+data_manager <- function() {
 
   # Conect to target stock db
   # stock_db <- stock_db(gta_db, "GTA_SQLData_TEST")
@@ -12,8 +13,9 @@ main <- function() {
 
   # Update all tables
   update_db(stock_db,
-            retry_log = NULL,
-            log_dir = "Z:/Stock/GTA/SQL_Data/Data/Source/log")
+    retry_log = NULL,
+    log_dir = "Z:/Stock/GTA/SQL_Data/Data/Source/log"
+  )
 
   # Update only faild tables recored in th log file
   # update_db(stock_db,
@@ -23,10 +25,7 @@ main <- function() {
 
   # Close stock db
   close_stock_db(stock_db)
-
 }
 
-
-main()
-
-
+# run data manager
+data_manager()
