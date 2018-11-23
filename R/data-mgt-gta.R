@@ -1,4 +1,4 @@
-#' @include datamgt.R
+#' @include data-mgt.R
 #' @include stock-db-gta.R
 
 
