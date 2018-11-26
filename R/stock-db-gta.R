@@ -1,34 +1,30 @@
 
 # CONSTANT DEFINATION -----------------------------------------------------
 
-.PACKAGE_NAME <- "zstmodelr"
-
 # profile variable defination
 # Since R devtools dosen't suport loading Chinese charaters in script file, we
 # have to use reference name of varible in profile for refering Chinese table
 # name in DB
-.GTA_RPROFILE_DIR <- "etc"
 .GTA_PROFILE_FILE <- "gta_profile.xlsx"
 
 
-.GTA_TABLE_NAME_LIST = list(
-
+.GTA_TABLE_NAME_LIST <- list(
   "gta_fieldname_list", # name for gta_fieldname_list
 
-  "TRD_Co",        # name for TRD_Co_公司基本情况
+  "TRD_Co", # name for TRD_Co_公司基本情况
 
-  "TRD_DALYR",        # name for TRD_Dalyr_日个股回报率
-  "TRD_WEEK",        # name for TRD_Week_周个股回报率
-  "TRD_MNTH",        # name for TRD_Mnth_月个股回报率
-  "TRD_YEAR",        # name for TRD_Year_年个股回报率
+  "TRD_DALYR", # name for TRD_Dalyr_日个股回报率
+  "TRD_WEEK", # name for TRD_Week_周个股回报率
+  "TRD_MNTH", # name for TRD_Mnth_月个股回报率
+  "TRD_YEAR", # name for TRD_Year_年个股回报率
 
-  "TRD_CNDALYM",     # name for TRD_Cndalym_综合市场日度回报
-  "TRD_WEEKCM",      # name for TRD_Weekcm_综合市场周度回报
-  "TRD_CNMONT",      # name for TRD_Cnmont_综合市场月度回报
-  "TRD_YEARCM"       # name for TRD_Yearcm_综合市场年度回报
+  "TRD_CNDALYM", # name for TRD_Cndalym_综合市场日度回报
+  "TRD_WEEKCM", # name for TRD_Weekcm_综合市场周度回报
+  "TRD_CNMONT", # name for TRD_Cnmont_综合市场月度回报
+  "TRD_YEARCM" # name for TRD_Yearcm_综合市场年度回报
 )
 
-.GTA_XXXX <- "中文字符"  # not supported
+.GTA_XXXX <- "中文字符" # not supported
 
 # Class definition of gta_db class -----------------------------------------
 
@@ -38,12 +34,14 @@
 
 # Definition of gta_db class
 setRefClass("gta_db",
-            fields = list(table_list = "list",
-                          stock_field_list = "code_name_listOrNull",
-                          stock_name_list = "code_name_listOrNull",
-                          industry_name_list = "code_name_listOrNull"
-            ),
-            contains = "stock_db")
+  fields = list(
+    table_list = "list",
+    stock_field_list = "code_name_listOrNull",
+    stock_name_list = "code_name_listOrNull",
+    industry_name_list = "code_name_listOrNull"
+  ),
+  contains = "stock_db"
+)
 
 
 #' Creator of gta_db class
@@ -57,7 +55,6 @@ setRefClass("gta_db",
 #' @examples
 #' gta_db <- gta_db()
 gta_db <- function(dsn = "GTA_SQLData") {
-
   stopifnot(!is.null(dsn))
 
   # use envir for class member storage - created only for s3 class
@@ -72,7 +69,6 @@ gta_db <- function(dsn = "GTA_SQLData") {
   stock_db <- new("gta_db", dsn = dsn, connection = NULL)
 
   return(stock_db)
-
 }
 
 # Generic functions implemetation by gta_db class ------------------------
@@ -82,7 +78,6 @@ gta_db <- function(dsn = "GTA_SQLData") {
 #' @describeIn open_stock_db Open a database of gta_db class
 #' @export
 open_stock_db.gta_db <- function(stock_db) {
-
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
   success <- TRUE
 
@@ -91,9 +86,12 @@ open_stock_db.gta_db <- function(stock_db) {
   #                           error = function(e) e)
 
   # Use data-engine of DBI:odbc
-  con_stock_db <- tryCatch(DBI::dbConnect(odbc::odbc(), dsn = stock_db$dsn,
-                                          encoding = "CP936"),
-                              error = function(e) e)
+  con_stock_db <- tryCatch(DBI::dbConnect(odbc::odbc(),
+    dsn = stock_db$dsn,
+    encoding = "CP936"
+  ),
+  error = function(e) e
+  )
 
 
   if (inherits(con_stock_db, "error")) {
@@ -108,49 +106,125 @@ open_stock_db.gta_db <- function(stock_db) {
   message(msg)
 
   return(invisible(success))
-
 }
 # Method definition for s4 generic
 #' @describeIn open_stock_db Open a database of gta_db class
 #' @export
-setMethod("open_stock_db",
-          signature(stock_db = "gta_db"),
-          function(stock_db, ...) {
-            open_stock_db.gta_db(stock_db, ...)
-          })
+setMethod(
+  "open_stock_db",
+  signature(stock_db = "gta_db"),
+  function(stock_db, ...) {
+    open_stock_db.gta_db(stock_db, ...)
+  }
+)
+
+# Close the stock database
+# Method definition for s3 generic
+#' @describeIn close_stock_db Close a database of gta_db class
+#' @export
+close_stock_db.gta_db <- function(stock_db) {
+  stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
+  success <- TRUE
+
+  if (!is.null(stock_db$connection)) {
+
+    # Use data-engine of RODBC
+    # success <- tryCatch(RODBC::odbcClose(stock_db$connection),
+    #                     error = function(e) e)
+
+    # Use data-engine of DBI:odbc
+    success <- tryCatch(DBI::dbDisconnect(stock_db$connection),
+      error = function(e) e
+    )
+
+    if (inherits(success, "error")) {
+
+      # fail to close the connect
+      msg <- sprintf("fail to close the connection of %s", stock_db$dsn)
+      success <- FALSE
+    } else {
+
+      # close the connection succesfully
+      msg <- sprintf("close the connection of %s successfully", stock_db$dsn)
+      stock_db$connection <- NULL
+      success <- TRUE
+    }
+
+    message(msg)
+  }
+
+  return(invisible(success))
+}
+# Method definition for s4 generic
+#' @describeIn close_stock_db Close a database of gta_db class
+#' @export
+setMethod(
+  "close_stock_db",
+  signature(stock_db = "gta_db"),
+  function(stock_db, ...) {
+    close_stock_db.gta_db(stock_db, ...)
+  }
+)
+
+
+
+# Get profile of stock_db
+# Method definition for s3 generic
+#' @describeIn get_profile get profile of a database of gta_db class
+#' @export
+get_profile.gta_db <- function(stock_db, profile_name = .GTA_PROFILE_FILE) {
+
+  # validate params
+  stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
+  if (is.null(stock_db$connection)) {
+    stop("Stock db isn't connected, try to connect db again")
+  }
+
+  # set default profile_name
+  if (missing(profile_name)) {
+    profile_name <- .GTA_PROFILE_FILE
+  }
+
+  gta_profile <- get_profile_path(profile_name)
+
+  return(gta_profile)
+}
+
+# Method definition for s4 generic
+#' @describeIn get_profile get profile of a database of gta_db class
+#' @export
+setMethod(
+  "get_profile",
+  signature(stock_db = "gta_db"),
+  function(stock_db, profile_name, ...) {
+    get_profile.gta_db(stock_db, profile_name)
+  }
+)
 
 # Init param of stock db
 # Method definition for s3 generic
 #' @describeIn init_stock_db Init param of database of gta_db class
 #' @export
 init_stock_db.gta_db <- function(stock_db) {
-
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
 
   success <- TRUE
 
   # set up table name mapping for referece
-  gta_profile_name <- system.file(.GTA_RPROFILE_DIR,
-                                  .GTA_PROFILE_FILE, package = .PACKAGE_NAME )
-  if (gta_profile_name == "") {
-    msg = sprintf("No profile of % exisits in % for %",
-                  .GTA_PROFILE_FILE,
-                  .GTA_RPROFILE_DIR,
-                  .PACKAGE_NAME)
-    stop(msg)
-  }
+  gta_profile_name <- get_profile.gta_db(stock_db)
 
   # set up table name list
   stock_db$table_list <- list()
   for (i in seq_along(.GTA_TABLE_NAME_LIST)) {
     table_name_id <- .GTA_TABLE_NAME_LIST[[i]]
-    table_name_value <- .get_db_profile_varible_setting(gta_profile_name, table_name_id)
+    table_name_value <- profile_get_varible_setting(gta_profile_name, table_name_id)
     if (is.null(table_name_value)) {
-      msg = sprintf("failed to load %s from %", table_name_id,
-                    gta_profile_name)
+      msg <- sprintf(
+        "failed to load %s from %", table_name_id,
+        gta_profile_name
+      )
       stop(msg)
       success <- FALSE
-
     } else {
       stock_db$table_list[table_name_id] <- table_name_value
     }
@@ -184,73 +258,25 @@ init_stock_db.gta_db <- function(stock_db) {
   }
 
   return(invisible(success))
-
 }
 # Method definition for s4 generic
 #' @describeIn init_stock_db Init param of database of gta_db class
 #' @export
-setMethod("init_stock_db",
-          signature(stock_db = "gta_db"),
-          function(stock_db, ...) {
-            init_stock_db.gta_db(stock_db, ...)
-          })
-
-
-# Close the stock database
-# Method definition for s3 generic
-#' @describeIn close_stock_db Close a database of gta_db class
-#' @export
-close_stock_db.gta_db <- function(stock_db) {
-
-  stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
-  success <- TRUE
-
-  if (!is.null(stock_db$connection)) {
-
-    # Use data-engine of RODBC
-    # success <- tryCatch(RODBC::odbcClose(stock_db$connection),
-    #                     error = function(e) e)
-
-    # Use data-engine of DBI:odbc
-    success <- tryCatch(DBI::dbDisconnect(stock_db$connection),
-                        error = function(e) e)
-
-    if (inherits(success, "error")) {
-
-      # fail to close the connect
-      msg <- sprintf("fail to close the connection of %s", stock_db$dsn)
-      success <- FALSE
-
-    } else {
-
-      # close the connection succesfully
-      msg <- sprintf("close the connection of %s successfully", stock_db$dsn)
-      stock_db$connection <- NULL
-      success <- TRUE
-
-    }
-
-    message(msg)
+setMethod(
+  "init_stock_db",
+  signature(stock_db = "gta_db"),
+  function(stock_db, ...) {
+    init_stock_db.gta_db(stock_db, ...)
   }
+)
 
-  return(invisible(success))
 
-}
-# Method definition for s4 generic
-#' @describeIn close_stock_db Close a database of gta_db class
-#' @export
-setMethod("close_stock_db",
-          signature(stock_db = "gta_db"),
-          function(stock_db, ...) {
-            close_stock_db.gta_db(stock_db, ...)
-          })
 
 # List all tables of stck_db
 # Method definition for s3 generic
 #' @describeIn list_stock_tables List names of tables in database of gta_db class
 #' @export
 list_stock_tables.gta_db <- function(stock_db) {
-
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
 
   if (is.null(stock_db$connection)) {
@@ -270,11 +296,13 @@ list_stock_tables.gta_db <- function(stock_db) {
 # Method definition for s4 generic
 #' @describeIn list_stock_tables List names of tables in database of gta_db class
 #' @export
-setMethod("list_stock_tables",
-          signature(stock_db = "gta_db"),
-          function(stock_db, ...) {
-            list_stock_tables.gta_db(stock_db, ...)
-          })
+setMethod(
+  "list_stock_tables",
+  signature(stock_db = "gta_db"),
+  function(stock_db, ...) {
+    list_stock_tables.gta_db(stock_db, ...)
+  }
+)
 
 
 # Translate name into code for field or stock
@@ -282,45 +310,43 @@ setMethod("list_stock_tables",
 #' @describeIn name2code Translate name into code in a database of gta_db class
 #' @export
 name2code.gta_db <- function(stock_db, name,
-                             type=c("stock", "field", "industry")) {
+                             type = c("stock", "field", "industry")) {
+  stopifnot(inherits(stock_db, "gta_db"), !missing(name))
 
-    stopifnot(inherits(stock_db, "gta_db"), !missing(name))
+  target_type <- match.arg(type)
+  code <- switch(target_type,
+    field = name2code(stock_db$stock_field_list, name = name),
+    stock = name2code(stock_db$stock_name_list, name = name),
+    industry = name2code(stock_db$industry_name_list, name = name)
+  )
 
-    target_type <- match.arg(type)
-    code = switch(target_type,
-              field = name2code(stock_db$stock_field_list, name = name),
-              stock = name2code(stock_db$stock_name_list, name = name),
-              industry = name2code(stock_db$industry_name_list, name = name)
-
-    )
-
-    return(code)
-
+  return(code)
 }
 # Method definition for s4 generic
 # Translate name into code for field or stock
 #' @describeIn name2code Translate name into code in a database of gta_db class
 #' @export
-setMethod("name2code",
-          signature(x = "gta_db"),
-          function(x, name,...) {
-            name2code.gta_db(stock_db = x, name, ...)
-          })
+setMethod(
+  "name2code",
+  signature(x = "gta_db"),
+  function(x, name, ...) {
+    name2code.gta_db(stock_db = x, name, ...)
+  }
+)
 
 # Translate code into name for field or stock
 # Method definition for s3 generic
 #' @describeIn code2name Translate code into name in a database of gta_db class
 #' @export
 code2name.gta_db <- function(stock_db, code,
-                             type=c("stock", "field", "industry")) {
-
+                             type = c("stock", "field", "industry")) {
   stopifnot(inherits(stock_db, "gta_db"), !missing(code))
 
   target_type <- match.arg(type)
-  name = switch(target_type,
-                field = code2name(stock_db$stock_field_list, code = code),
-                stock = code2name(stock_db$stock_name_list, code = code),
-                industry = code2name(stock_db$industry_name_list, code = code)
+  name <- switch(target_type,
+    field = code2name(stock_db$stock_field_list, code = code),
+    stock = code2name(stock_db$stock_name_list, code = code),
+    industry = code2name(stock_db$industry_name_list, code = code)
   )
 
   return(name)
@@ -328,17 +354,18 @@ code2name.gta_db <- function(stock_db, code,
 # Method definition for s4 generic
 #' @describeIn code2name Translate code into name in a database of gta_db class
 #' @export
-setMethod("code2name",
-          signature(x = "gta_db"),
-          function (x, code, ...)
-          {
-            code2name.gta_db(stock_db = x, code, ...)
-          })
+setMethod(
+  "code2name",
+  signature(x = "gta_db"),
+  function(x, code, ...) {
+    code2name.gta_db(stock_db = x, code, ...)
+  }
+)
 # Get a dataset from a table in stock_db
 # Method definition for s3 generic
 #' @describeIn get_table_dataset get a table dataset from a database of gta_db class
 #' @export
-get_table_dataset.gta_db <- function(stock_db, table_name ) {
+get_table_dataset.gta_db <- function(stock_db, table_name) {
 
   # Validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
@@ -347,7 +374,7 @@ get_table_dataset.gta_db <- function(stock_db, table_name ) {
     stop("Stock db isn't connected, try to connect db again")
   }
 
-  if (missing(table_name) || !is.character(table_name) ) {
+  if (missing(table_name) || !is.character(table_name)) {
     stop("Table name must be character string")
   }
 
@@ -361,7 +388,8 @@ get_table_dataset.gta_db <- function(stock_db, table_name ) {
   # Use data-engine of DBI:odbc
   table_name <- iconv(table_name, from = "UTF-8", to = "CP936")
   ds_result <- tryCatch(DBI::dbReadTable(stock_db$connection, table_name),
-                         error = function(e) e)
+    error = function(e) e
+  )
   if (inherits(ds_result, "error")) {
     msg <- conditionMessage(ds_result)
     ds_result <- NULL
@@ -377,10 +405,11 @@ get_table_dataset.gta_db <- function(stock_db, table_name ) {
     stkcd_names <- field_names[field_names %in% c("stkcd")]
     if (length(stkcd_names) != 0) {
       if (!is.character(ds_result[, stkcd_names])) {
-          ds_result[, stkcd_names] <- stringr::str_pad(ds_result[, stkcd_names],
-                                                       width = 6, pad = "0")
-          msg <- "Coerce stock cd to character of 6 digits if it were number"
-          warnings(msg)
+        ds_result[, stkcd_names] <- stringr::str_pad(ds_result[, stkcd_names],
+          width = 6, pad = "0"
+        )
+        msg <- "Coerce stock cd to character of 6 digits if it were number"
+        warnings(msg)
       }
     }
   }
@@ -390,12 +419,13 @@ get_table_dataset.gta_db <- function(stock_db, table_name ) {
 # Method definition for s4 generic
 #' @describeIn get_table_dataset get a table dataset from a database of gta_db class
 #' @export
-setMethod("get_table_dataset",
-          signature(stock_db = "gta_db"),
-          function (stock_db, table_name, ...)
-          {
-            get_table_dataset.gta_db(stock_db, table_name)
-          })
+setMethod(
+  "get_table_dataset",
+  signature(stock_db = "gta_db"),
+  function(stock_db, table_name, ...) {
+    get_table_dataset.gta_db(stock_db, table_name)
+  }
+)
 
 # Get a dataset of a list of stock_cd from table in stock
 # Method definition for s3 generic
@@ -411,7 +441,7 @@ get_stock_dataset.gta_db <- function(stock_db, table_name, stock_cd_list = NULL)
     stop("Stock db isn't connected, try to connect db again")
   }
 
-  if (missing(table_name) || !is.character(table_name) ) {
+  if (missing(table_name) || !is.character(table_name)) {
     stop("Table name must be character string")
   }
 
@@ -425,24 +455,26 @@ get_stock_dataset.gta_db <- function(stock_db, table_name, stock_cd_list = NULL)
 
     # Coerce stock code to 6 digit of characters
     if (!is.character(stock_cd_list)) {
-        stock_cd_list <- stringr::str_pad(stock_cd_list, width = 6, pad = "0")
-        msg <- "Coerce stock cd to character of 6 digits if it were number"
-        warnings(msg)
+      stock_cd_list <- stringr::str_pad(stock_cd_list, width = 6, pad = "0")
+      msg <- "Coerce stock cd to character of 6 digits if it were number"
+      warnings(msg)
     }
 
     # build stock_cd list string
     for (stock_cd in stock_cd_list) {
       if (is.null(stock_cd_list_str)) {
-         stock_cd_list_str = stock_cd
+        stock_cd_list_str <- stock_cd
       } else {
-         stock_cd_list_str = paste(stock_cd_list_str, stock_cd,sep = ",")
+        stock_cd_list_str <- paste(stock_cd_list_str, stock_cd, sep = ",")
       }
     }
   }
 
-  if (length(stock_cd_list_str) != 0 ) {
-    sql_cmd <- sprintf("select * from %s where Stkcd in (%s)",
-                       table_name, stock_cd_list_str)
+  if (length(stock_cd_list_str) != 0) {
+    sql_cmd <- sprintf(
+      "select * from %s where Stkcd in (%s)",
+      table_name, stock_cd_list_str
+    )
   } else {
     sql_cmd <- sprintf("select * from %s", table_name)
   }
@@ -455,16 +487,19 @@ get_stock_dataset.gta_db <- function(stock_db, table_name, stock_cd_list = NULL)
   #                       error = function(e) e)
 
   # Use data-engine of DBI:odbc
-  sql_cmd <- iconv(sql_cmd, from="UTF-8", to = "CP936")
+  sql_cmd <- iconv(sql_cmd, from = "UTF-8", to = "CP936")
   ds_result <- tryCatch(DBI::dbGetQuery(stock_db$connection, sql_cmd),
-                        error = function(e) e)
+    error = function(e) e
+  )
 
   if (inherits(ds_result, "error")) {
     msg <- conditionMessage(ds_result)
     ds_result <- NULL
   } else {
-    msg <- sprintf("get stock data of(%s) from %s successfully", stock_cd_list_str,
-                   table_name)
+    msg <- sprintf(
+      "get stock data of(%s) from %s successfully", stock_cd_list_str,
+      table_name
+    )
     colnames(ds_result) <- tolower(colnames(ds_result))
   }
   message(msg)
@@ -475,28 +510,29 @@ get_stock_dataset.gta_db <- function(stock_db, table_name, stock_cd_list = NULL)
     stkcd_names <- field_names[field_names %in% c("stkcd")]
     if (length(stkcd_names) != 0) {
       if (!is.character(ds_result[, stkcd_names])) {
-          ds_result[, stkcd_names] <- stringr::str_pad(ds_result[, stkcd_names],
-                                                       width = 6, pad = "0")
-          msg <- "Coerce stock cd to character of 6 digits if it were number"
-          warnings(msg)
+        ds_result[, stkcd_names] <- stringr::str_pad(ds_result[, stkcd_names],
+          width = 6, pad = "0"
+        )
+        msg <- "Coerce stock cd to character of 6 digits if it were number"
+        warnings(msg)
       }
     }
   }
 
 
   return(invisible(ds_result))
-
 }
 # Method definition for s4 generic
 #' @describeIn get_stock_dataset get a dataset of a list of stock_cd from table
 #' in a database of gta_db class
 #' @export
-setMethod("get_stock_dataset",
-          signature(stock_db = "gta_db"),
-          function(stock_db, table_name, stock_cd_list = NULL, ...)
-          {
-            get_stock_dataset.gta_db(stock_db, table_name, stock_cd_list)
-          })
+setMethod(
+  "get_stock_dataset",
+  signature(stock_db = "gta_db"),
+  function(stock_db, table_name, stock_cd_list = NULL, ...) {
+    get_stock_dataset.gta_db(stock_db, table_name, stock_cd_list)
+  }
+)
 
 # Fetch many datasets from stock_db
 # Method definition for s3 generic
@@ -511,18 +547,18 @@ fetch_table_dataset.gta_db <- function(stock_db, table_list) {
     stop("Stock db isn't connected, try to connect db again")
   }
 
-  if (missing(table_list) || length(table_list) == 0 ) {
+  if (missing(table_list) || length(table_list) == 0) {
     stop("table_list must contain one table at least")
   }
 
   # get datasets from stock db
   result_table_list <- list(length(table_list))
   for (table_index in seq_along(table_list)) {
-
     the_table <- table_list[table_index]
     # get stock data for specified stock
     ds_result <- get_table_dataset.gta_db(stock_db,
-                                          table_name = the_table)
+      table_name = the_table
+    )
 
     # keep the result_ts in GlobalEnv for debug check
     if (!is.null(ds_result)) {
@@ -536,33 +572,30 @@ fetch_table_dataset.gta_db <- function(stock_db, table_list) {
 
       # fail to get table
       result_table_list[table_index] <- NULL
-
     }
-
   }
 
   return(result_table_list)
-
 }
 # Method definition for s4 generic
 #' @describeIn fetch_table_dataset get many datasets from a database of gta_db class
 #' @export
-setMethod("fetch_table_dataset",
-          signature(stock_db = "gta_db"),
-          function (stock_db, table_list, ...)
-          {
-            fetch_table_dataset.gta_db(stock_db, table_list)
-          })
+setMethod(
+  "fetch_table_dataset",
+  signature(stock_db = "gta_db"),
+  function(stock_db, table_list, ...) {
+    fetch_table_dataset.gta_db(stock_db, table_list)
+  }
+)
 
 # Get stock return timeseries from stock_db
 # Method definition for s3 generic
 #' @describeIn get_stock_return get stock return timeseries from a database of gta_db class
 #' @export
 get_stock_return.gta_db <- function(stock_db, stock_cd_list = NULL,
-                  period_type = c("day", "month", "year"),
-                  period_date = c("start", "end"),
-                  output_type = c("timeSeries", "tibble")
-                  ){
+                                    period_type = c("day", "month", "year"),
+                                    period_date = c("start", "end"),
+                                    output_type = c("timeSeries", "tibble")) {
 
   # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
@@ -579,48 +612,50 @@ get_stock_return.gta_db <- function(stock_db, stock_cd_list = NULL,
   switch(
     period_type,
     "day" = {
-      table_name   <- stock_db$table_list[["TRD_DALYR"]]
-      field_date   <- rlang::quo(trddt)
+      table_name <- stock_db$table_list[["TRD_DALYR"]]
+      field_date <- rlang::quo(trddt)
       field_return <- rlang::quo(dretwd)
       date_format <- "ymd"
-      peroid_unit <- "day"
+      period_unit <- "day"
     },
     "month" = {
       table_name <- stock_db$table_list[["TRD_MNTH"]]
-      field_date   <- rlang::quo(trdmnt)
+      field_date <- rlang::quo(trdmnt)
       field_return <- rlang::quo(mretwd)
       date_format <- "ym"
-      peroid_unit <- "month"
+      period_unit <- "month"
     },
     "year" = {
       table_name <- stock_db$table_list[["TRD_YEAR"]]
-      field_date   <- rlang::quo(trdynt)
+      field_date <- rlang::quo(trdynt)
       field_return <- rlang::quo(yretwd)
       date_format <- "y"
-      peroid_unit <- "year"
+      period_unit <- "year"
     }
   )
 
   # Coerce stock code to 6 digit of characters
   if (!is.null(stock_cd_list) && !is.character(stock_cd_list)) {
-      stock_cd_list <- stringr::str_pad(stock_cd_list, width = 6, pad = "0")
-      msg <- "Coerce stock cd to character of 6 digits if it were number"
-      warnings(msg)
+    stock_cd_list <- stringr::str_pad(stock_cd_list, width = 6, pad = "0")
+    msg <- "Coerce stock cd to character of 6 digits if it were number"
+    warnings(msg)
   }
 
-  #Warning: ds_return is simple return in database by default !!
+  # Warning: ds_return is simple return in database by default !!
   ds_return <- get_stock_dataset.gta_db(stock_db, table_name, stock_cd_list)
   if (!is.null(ds_return)) {
-
     ds_return <- ds_return %>%
       tibble::as.tibble() %>%
-      dplyr::select(date = !!field_date, stkcd = !!field_stkcd,
-                    return = !!field_return)
+      dplyr::select(
+        date = !!field_date, stkcd = !!field_stkcd,
+        return = !!field_return
+      )
 
-    msg <- sprintf("return table: %s , return field: %s, date field: %s",
-                   table_name, rlang::quo_text(field_return), rlang::quo_text(field_date))
+    msg <- sprintf(
+      "return table: %s , return field: %s, date field: %s",
+      table_name, rlang::quo_text(field_return), rlang::quo_text(field_date)
+    )
     message(msg)
-
   } else {
     success <- FALSE
   }
@@ -632,83 +667,90 @@ get_stock_return.gta_db <- function(stock_db, stock_cd_list = NULL,
     origin_date <- lubridate::parse_date_time(as.character(ds_return$date), date_format)
     origin_date <- lubridate::as_date(origin_date)
 
-    # Set date of peroid(start date/end date of the period)
-    period_date = match.arg(period_date)
+    # Set date of period(start date/end date of the period)
+    period_date <- match.arg(period_date)
     switch(period_date,
-           "start" = {
-             #first day of period = floor_date
-             floor_date <- lubridate::floor_date(origin_date,
-                                                     unit = peroid_unit)
-             ds_return$date <- floor_date
-           },
-           "end" = {
-             #last day of period = ceiling_date -1
-             ceiling_date <- lubridate::ceiling_date(origin_date,
-                                                     unit = peroid_unit,
-                                                     change_on_boundary = TRUE)
-             ds_return$date <- ceiling_date - 1
-           }
+      "start" = {
+        # first day of period = floor_date
+        floor_date <- lubridate::floor_date(origin_date,
+          unit = period_unit
+        )
+        ds_return$date <- floor_date
+      },
+      "end" = {
+        # last day of period = ceiling_date -1
+        ceiling_date <- lubridate::ceiling_date(origin_date,
+          unit = period_unit,
+          change_on_boundary = TRUE
+        )
+        ds_return$date <- ceiling_date - 1
+      }
     )
   }
 
   # Build simple return results
   ts_return <- NULL
   if (success) {
-    output_type = match.arg(output_type)
+    output_type <- match.arg(output_type)
     switch(output_type,
-            tibble = {
-              ts_return <- ds_return
-            },
-            timeSeries = {
+      tibble = {
+        ts_return <- ds_return
+      },
+      timeSeries = {
 
-              # spread stkcd as columns
-              ds_return <- ds_return %>%
-                tidyr::spread(key = stkcd, value = return)
+        # spread stkcd as columns
+        ds_return <- ds_return %>%
+          tidyr::spread(key = stkcd, value = return)
 
-              # arrange colname as the order of stock_cd_list
-              if (!is.null(stock_cd_list) && length(stock_cd_list) != 0 )
-                ds_return <- dplyr::select(ds_return, date, stock_cd_list)
+        # arrange colname as the order of stock_cd_list
+        if (!is.null(stock_cd_list) && length(stock_cd_list) != 0) {
+          ds_return <- dplyr::select(ds_return, date, stock_cd_list)
+        }
 
-              # Build time series
-              charvec <- ds_return$date
-              ts_return.fts <- timeSeries::timeSeries(ds_return[, -1], charvec)
+        # Build time series
+        charvec <- ds_return$date
+        ts_return.fts <- timeSeries::timeSeries(ds_return[, -1], charvec)
 
-              ts_return <- ts_return.fts
-            }
+        ts_return <- ts_return.fts
+      }
     )
   }
 
   return(ts_return)
-
 }
 # Method definition for s4 generic
 #' @describeIn get_stock_return get stock return timeseries from a database of gta_db class
 #' @export
-setMethod("get_stock_return",
-          signature(stock_db = "gta_db"),
-          function(stock_db,
-                    stock_cd_list = NULL,
-                    period_type = c("day", "month", "year"),
-                    period_date = c("start", "end"),
-                    output_type = c("timeSeries",
-                                    "tibble"),
-                    ...)
-          {
-            get_stock_return.gta_db(stock_db = stock_db,
-                                    stock_cd_list = stock_cd_list,
-                                    period_type = period_type,
-                                    period_date = period_date,
-                                    output_type = output_type)
-          })
+setMethod(
+  "get_stock_return",
+  signature(stock_db = "gta_db"),
+  function(stock_db,
+             stock_cd_list = NULL,
+             period_type = c("day", "month", "year"),
+             period_date = c("start", "end"),
+             output_type = c(
+               "timeSeries",
+               "tibble"
+             ),
+             ...) {
+    get_stock_return.gta_db(
+      stock_db = stock_db,
+      stock_cd_list = stock_cd_list,
+      period_type = period_type,
+      period_date = period_date,
+      output_type = output_type
+    )
+  }
+)
 
 # Get market return timesereis from stock_db
 # Method definition for s3 generic
 #' @describeIn get_market_return get market return timeseries from a database of gta_db class
 #' @export
 get_market_return.gta_db <- function(stock_db,
-                    period_type = c("day", "month", "year"),
-                    period_date = c("start", "end"),
-                    output_type = c("timeSeries", "tibble")) {
+                                     period_type = c("day", "month", "year"),
+                                     period_date = c("start", "end"),
+                                     output_type = c("timeSeries", "tibble")) {
 
   # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
@@ -724,41 +766,41 @@ get_market_return.gta_db <- function(stock_db,
   switch(
     period_type,
     "day" = {
-      table_name   <- stock_db$table_list[["TRD_CNDALYM"]]
-      field_date   <- rlang::quo(trddt)
+      table_name <- stock_db$table_list[["TRD_CNDALYM"]]
+      field_date <- rlang::quo(trddt)
       field_return <- rlang::quo(cdretwdtl)
       date_format <- "ymd"
-      peroid_unit <- "day"
+      period_unit <- "day"
     },
     "month" = {
       table_name <- stock_db$table_list[["TRD_CNMONT"]]
-      field_date   <- rlang::quo(trdmnt)
+      field_date <- rlang::quo(trdmnt)
       field_return <- rlang::quo(cmretwdtl)
       date_format <- "ym"
-      peroid_unit <- "month"
+      period_unit <- "month"
     },
-    "year"  = {
+    "year" = {
       table_name <- stock_db$table_list[["TRD_YEARCM"]]
-      field_date   <- rlang::quo(trdynt)
+      field_date <- rlang::quo(trdynt)
       field_return <- rlang::quo(cyretwdtl)
       date_format <- "y"
-      peroid_unit <- "year"
+      period_unit <- "year"
     }
   )
 
-  #Warning: ds_return is simple return in database by default !!
+  # Warning: ds_return is simple return in database by default !!
   ds_return <- get_table_dataset.gta_db(stock_db, table_name)
   if (!is.null(ds_return)) {
-
     ds_return <- ds_return %>%
-       tibble::as.tibble() %>%
-       dplyr::filter(!!field_markettype == 21) %>%
-       dplyr::select(date = !!field_date, market_index = !!field_return)
+      tibble::as.tibble() %>%
+      dplyr::filter(!!field_markettype == 21) %>%
+      dplyr::select(date = !!field_date, market_index = !!field_return)
 
-    msg <- sprintf("return table: %s , return field: %s, date field: %s",
-                   table_name, rlang::quo_text(field_return), rlang::quo_text(field_date))
+    msg <- sprintf(
+      "return table: %s , return field: %s, date field: %s",
+      table_name, rlang::quo_text(field_return), rlang::quo_text(field_date)
+    )
     message(msg)
-
   } else {
     success <- FALSE
   }
@@ -770,40 +812,42 @@ get_market_return.gta_db <- function(stock_db,
     origin_date <- lubridate::parse_date_time(as.character(ds_return$date), date_format)
     origin_date <- lubridate::as_date(origin_date)
 
-    # Set date of peroid(start date/end date of the period)
-    period_date = match.arg(period_date)
+    # Set date of period(start date/end date of the period)
+    period_date <- match.arg(period_date)
     switch(period_date,
-           "start" = {
-             #first day of period = floor_date
-             floor_date <- lubridate::floor_date(origin_date,
-                                                 unit = peroid_unit)
-             ds_return$date <- floor_date
-           },
-           "end" = {
-             #last day of period = ceiling_date -1
-             ceiling_date <- lubridate::ceiling_date(origin_date,
-                                                     unit = peroid_unit,
-                                                     change_on_boundary = TRUE)
-             ds_return$date <- ceiling_date - 1
-           }
+      "start" = {
+        # first day of period = floor_date
+        floor_date <- lubridate::floor_date(origin_date,
+          unit = period_unit
+        )
+        ds_return$date <- floor_date
+      },
+      "end" = {
+        # last day of period = ceiling_date -1
+        ceiling_date <- lubridate::ceiling_date(origin_date,
+          unit = period_unit,
+          change_on_boundary = TRUE
+        )
+        ds_return$date <- ceiling_date - 1
+      }
     )
   }
 
   # Build simple return results
   ts_return <- NULL
   if (success) {
-    output_type = match.arg(output_type)
+    output_type <- match.arg(output_type)
     switch(output_type,
-           tibble = {
-             ts_return <- ds_return
-           },
-           timeSeries = {
-             # Build time series
-             charvec <- ds_return$date
-             ts_return.fts <- timeSeries::timeSeries(ds_return[, -1], charvec)
+      tibble = {
+        ts_return <- ds_return
+      },
+      timeSeries = {
+        # Build time series
+        charvec <- ds_return$date
+        ts_return.fts <- timeSeries::timeSeries(ds_return[, -1], charvec)
 
-             ts_return <- ts_return.fts
-           }
+        ts_return <- ts_return.fts
+      }
     )
   }
 
@@ -813,26 +857,313 @@ get_market_return.gta_db <- function(stock_db,
 # Method definition for s4 generic
 #' @describeIn get_market_return get market return timeseries from a database of gta_db class
 #' @export
-setMethod("get_market_return",
-          signature(stock_db = "gta_db"),
-          function(stock_db,
-                   period_type = c("day", "month", "year"),
-                   period_date = c("start", "end"),
-                   output_type = c("timeSeries", "tibble"),
-                   ...)
-          {
-            get_market_return.gta_db(stock_db = stock_db,
-                                     period_type = period_type,
-                                     period_date = period_date,
-                                     output_type = output_type)
-          })
+setMethod(
+  "get_market_return",
+  signature(stock_db = "gta_db"),
+  function(stock_db,
+             period_type = c("day", "month", "year"),
+             period_date = c("start", "end"),
+             output_type = c("timeSeries", "tibble"),
+             ...) {
+    get_market_return.gta_db(
+      stock_db = stock_db,
+      period_type = period_type,
+      period_date = period_date,
+      output_type = output_type
+    )
+  }
+)
 
-# Get Get factor indicator timeseries from stock_db
+# Get indicators from specified data source(table/file) in stock_db
 # Method definition for s3 generic
-#' @describeIn get_factor_indicator get factor indicator timeseries from a
-#' database of gta_db class
+#' @describeIn get_indicators   get indicators timeseries from
+#' a database of gta_db class
 #' @export
-get_factor_indicator.gta_db <- function(stock_db, factor_list){
+get_indicators.gta_db <- function(stock_db,
+                                  source_name,
+                                  indicator_list = NULL,
+                                  ouput_format = c("long", "wide"),
+                                  report_type_field = c("Typrep"),
+                                  date_fields = c(
+                                    "date", "Accper",
+                                    "Trddt", "Trdmnt", "Trdynt",
+                                    "Clsdt", "Shrchdgt"
+                                  ),
+                                  retain_fields = c("Stkcd", "Indcd")) {
+
+  # validate params
+  stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
+  if (is.null(stock_db$connection)) {
+    stop("Stock db isn't connected, try to connect db again")
+  }
+
+  if (missing(source_name) || !is.character(source_name)) {
+    stop("data source name must be character string")
+  }
+
+  if (!is.null(indicator_list) & !is.character(indicator_list)) {
+    stop("indicator_list name must be character vector")
+  }
+
+  success <- TRUE
+  ds_indicators <- NULL
+
+  # get dataset according different type of data source
+  # if source_name is not a filename, data source should be a table
+  is_table <- (tools::file_ext("source_name") == "")
+  ds_indicators_raw <- NULL
+  if (is_table) {
+    ds_indicators_raw <- get_table_dataset(stock_db,
+      table_name = source_name
+    )
+    if (is.null(ds_indicators_raw)) success <- FALSE
+  } else {
+    # TODO: get dataset from file
+  }
+
+
+  # transform indicators data
+  if (success) {
+    ds_indicators <- tibble::as.tibble(ds_indicators_raw)
+    ds_field_names <- names(ds_indicators)
+    output_fields <- NULL
+    output_indicators <- NULL
+    output_non_indicators <- NULL
+
+    # determine indicators output
+    if (!is.null(indicator_list)) {
+      # output specified indicators
+      indicator_list <- tolower(indicator_list)
+      indicators_is_existed <- indicator_list %in% ds_field_names
+      output_indicators <- c(indicator_list)
+    } else {
+      # output all indicators if indicator_list is null
+      indicators_is_existed <- TRUE
+      output_indicators <- c("dplyr::everything()")
+    }
+
+    # tranfrom fields for output
+    if (all(indicators_is_existed)) {
+
+      # filter consolidated report data
+      if (!is.null(report_type_field) & is.character(report_type_field)) {
+        typrep <- tolower(report_type_field)[[1]]
+        if (typrep %in% ds_field_names) {
+          # typrep == "A" means consolidated report
+          ds_indicators <- dplyr::filter(
+            ds_indicators,
+            !!rlang::sym(typrep) == "A"
+          )
+          if (NROW(ds_indicators) == 0) {
+            success <- FALSE
+            # invalid typrep field
+            msg <- sprintf(
+              "there isn't data of consolidated report, since %s field doesn't contain 'A'",
+              typrep
+            )
+            stop(msg)
+          }
+        }
+      }
+
+      # rename and transform date-related field if needed
+      if (!is.null(date_fields) & (length(date_fields) > 0) &
+        is.character(date_fields)) {
+        date_fields <- tolower(date_fields)
+        match_date_fields <- ds_field_names[ds_field_names %in% date_fields]
+        if (length(match_date_fields) >= 1) {
+          # rename date field as "date" if needed
+          date_field <- match_date_fields[[1]]
+          ds_indicators <- dplyr::rename(ds_indicators, date = !!date_field)
+
+          # put "date" field into output non-indicator field
+          output_non_indicators <- c(output_non_indicators, "date")
+
+          if (length(match_date_fields) > 1) {
+            msg <- sprintf(
+              "More than one possible date field(%s), the first field(%s) is renamed to 'date'",
+              stringr::str_c(match_date_fields, collapse = ","),
+              date_field
+            )
+          } else {
+            msg <- sprintf("date field(%s) is renamed to 'date'", date_field)
+          }
+
+          message(msg)
+        }
+      }
+
+
+      # transform date field
+      if ("date" %in% names(ds_indicators)) {
+        ts_date <- NULL
+
+        # transform date field into date format
+        if (lubridate::is.timepoint(ds_indicators$date)) {
+          # translate all time format into date format
+          ts_date <- lubridate::as_date(ds_indicators$date)
+        } else if (is.character(ds_indicators$date)) {
+          # try translate charactor date as possible
+          ts_date <- lubridate::parse_date_time(ds_indicators$date,
+            orders = c("y", "ym", "yW", "ymd")
+          )
+          ts_date <- lubridate::as_date(ts_date)
+        } else {
+          # invalid type for date field
+          msg <- sprintf(
+            "fail to translate date field of type of %s",
+            typeof(ds_indicators$date)
+          )
+          stop(msg)
+        }
+
+        # translate date into last day of period, add period field
+        if (!is.null(ts_date)) {
+
+          # turn it into the last day of period
+          dates_period <- guess_dates_period(ts_date)
+          switch(dates_period,
+            "D" = {
+              period_unit <- "day"
+            },
+            "M" = {
+              period_unit <- "month"
+            },
+            "Q" = {
+              period_unit <- "quarter"
+            },
+            "Y" = {
+              period_unit <- "year"
+            },
+            "U" = {
+              period_unit <- "day"
+            }
+          )
+
+          # last day of period = ceiling_date -1
+          ceiling_date <- lubridate::ceiling_date(ts_date,
+            unit = period_unit,
+            change_on_boundary = TRUE
+          )
+          ts_date <- ceiling_date - 1
+
+          # add period field and translated date field
+          ds_indicators <- dplyr::mutate(ds_indicators,
+            period = period_unit,
+            date = ts_date
+          )
+
+          # put "period" field into output non-indicators field
+          output_non_indicators <- c(output_non_indicators, "period")
+        }
+      }
+
+      # Output indicators fields from dataset
+
+      # put remain fields into output field
+      if (!is.null(retain_fields) & (length(retain_fields) > 0) &
+        is.character(retain_fields)) {
+        retain_fields <- tolower(retain_fields)
+        match_retain_fields <- ds_field_names[ds_field_names %in% retain_fields]
+
+        # put "retain" field into output non-indicators field
+        if (length(match_retain_fields) >= 1) {
+          output_non_indicators <- c(output_non_indicators, match_retain_fields)
+        }
+      }
+
+      # output select fields
+      output_fields <- c(output_non_indicators, output_indicators)
+      ds_indicators <- dplyr::select(
+        ds_indicators,
+        !!!rlang::parse_exprs(output_fields)
+      )
+
+      # message results
+      if (!is.null(indicator_list)) {
+        msg <- sprintf(
+          "get indicators: %s(%s) from %s",
+          stringr::str_c(indicator_list, collapse = ","),
+          stringr::str_c(code2name(stock_db, indicator_list, type = "field"),
+            collapse = ","
+          ),
+          source_name
+        )
+      } else {
+        msg <- sprintf(
+          "get all indicators from %s",
+          source_name
+        )
+      }
+
+      message(msg)
+    } else {
+
+      # some indicators miss from result dataset
+      msg <- sprintf(
+        "indicators: %s aren't in the table of %s",
+        stringr::str_c(indicator_list[!indicators_is_existed], collapse = ","),
+        source_name
+      )
+      warn(msg)
+
+      success <- FALSE
+    }
+  } else {
+    success <- FALSE
+  }
+
+  # trasnform by ouptput format
+  if (success) {
+    ouput_format <- match.arg(ouput_format)
+
+    # by default, ds_indicatgor is shortrer and wider format
+    # transform it into longer and narrower format if specified
+    if (ouput_format == "long") {
+      is_numeric_field <- purrr::map_lgl(
+        ds_indicators,
+        ~inherits(., "numeric")
+      )
+      value_fields <- names(ds_indicators)[is_numeric_field]
+      if (length(value_fields) > 0) {
+        ds_indicators <- ds_indicators %>%
+          tidyr::gather(
+            key = "ind_name",
+            value = "ind_value",
+            !!value_fields
+          )
+      } else {
+        # raise error for no numeric fields
+        msg <- sprintf(
+          "can't tranfrom into long-formt dataset, since no numeric field in the table of %s",
+          source_name
+        )
+        stop(msg)
+      }
+    }
+  }
+
+  return(ds_indicators)
+}
+# Method definition for s4 generic
+#' @describeIn get_indicators  get indicators timeseries from
+#'  a database of gta_db class
+#' @export
+setMethod(
+  "get_indicators",
+  signature(stock_db = "gta_db"),
+  function(stock_db, source_name, indicator_list, ouput_format, ...) {
+    get_indicators.gta_db(stock_db, source_name,
+                          indicator_list, ouput_format)
+  }
+)
+
+# Get factors timeseries from stock_db
+# Method definition for s3 generic
+#' @describeIn get_factors get factor timeseries from
+#'  a database of gta_db class
+#' @export
+get_factors.gta_db <- function(stock_db, factor_list) {
 
   # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
@@ -845,30 +1176,21 @@ get_factor_indicator.gta_db <- function(stock_db, factor_list){
   success <- TRUE
 
   # get file table name mapping for referece
-  gta_profile_name <- system.file(.GTA_RPROFILE_DIR,
-                                  .GTA_PROFILE_FILE, package = .PACKAGE_NAME )
-  if (gta_profile_name == "") {
-    msg = sprintf("No file of % exisits in % for %",
-                  .GTA_PROFILE_FILE,
-                  .GTA_RPROFILE_DIR,
-                  .PACKAGE_NAME)
-    stop(msg)
-    success <- FALSE
-  }
-
+  gta_profile_name <- get_profile.gta_db(stock_db)
 
   # get indcator info of matched factor
   if (success) {
-    matched_indicator_map <- .get_db_profile_factor_indicator_map(gta_profile_name,
-                                                                  factor_list)
+    matched_indicator_map <- profile_get_factor_indicator_map(
+      gta_profile_name,
+      factor_list
+    )
     if (!is.null(matched_indicator_map)) {
 
       # build table_list for fetching indicators
       indicator_table_list <- matched_indicator_map %>%
         dplyr::filter(factor_list %in% factor_code) %>%
-        dplyr::group_by(indicator_table) %>%
+        dplyr::group_by(indicator_source) %>%
         tidyr::nest()
-
     } else {
       success <- FALSE
     }
@@ -876,84 +1198,58 @@ get_factor_indicator.gta_db <- function(stock_db, factor_list){
 
   # get indicators dataset from indicator_data_table
   if (success) {
-
-    ds_all_indicators <- NULL
+    ds_all_factors <- NULL
     for (i in seq_len(nrow(indicator_table_list))) {
-
-      indicator_table <- indicator_table_list[i,]$indicator_table
+      indicator_source <- indicator_table_list[i, ]$indicator_source
       indicator_params <- indicator_table_list[i, ]$data[[1]]
-      indicator_code_list <- indicator_params$indicator_code
+      indicator_code_list <- tolower(indicator_params$indicator_code)
       factor_code_list <- indicator_params$factor_code
 
-      # Get a indicator dataset from database
-      if (success) {
-        ds_indicators <- get_table_dataset(stock_db,
-                                          table_name = indicator_table)
-        if (!is.null(ds_indicators)) {
-
-          indicators_is_existed <- indicator_code_list %in% colnames(ds_indicators)
-          if (all(indicators_is_existed)) {
-
-            # proceed only if all indicators exists in result dataset
-
-            ds_indicators <- tibble::as.tibble(ds_indicators)
-
-            # filter consolidated report data
-            if ( "typrep" %in% names(ds_indicators)) {
-              ds_indicators <- dplyr::filter(ds_indicators, typrep == 'A')
-            }
-
-            # get indicators from dataset
-            ds_indicators <- ds_indicators %>%
-              dplyr::mutate( date = lubridate::as_date(accper),
-                  periodtype = ifelse(lubridate::month(accper) == 12, "annual","quarter")) %>%
-              dplyr::select(date , periodtype, stkcd, indcd, indicator_code_list)
-
-            # rename indicator_code to factor_code
-            col_names <- colnames(ds_indicators)
-            col_names <- col_names[1:(length(col_names) - length(indicator_code_list))]
-            col_names <- c(col_names, factor_code_list)
-            colnames(ds_indicators) <- col_names
-
-            # message
-            msg <- sprintf("get factor: %s from indicator table: %s at indicator field: %s(%s)",
-                           stringr::str_c(factor_code_list, collapse = ","),
-                           indicator_table,
-                           stringr::str_c(indicator_code_list, collapse = ","),
-                           stringr::str_c(code2name(stock_db,
-                                                    indicator_code_list,
-                                                    type = "field"),
-                                          collapse = ","))
-            message(msg)
-
-          } else {
-
-            # some indicators miss from result dataset
-            msg <- sprintf("indicator fields: %s aren't in the table of %s",
-                           stringr::str_c(indicator_code_list[!indicators_is_existed], collapse = ","),
-                           indicator_table)
-            warn(msg)
-
-            success <- FALSE
-
-          }
-
-        } else {
-          success <- FALSE
-        }
+      if (length(factor_code_list) != length(indicator_code_list)) {
+        msg <- sprintf("length of factors should be equal to that of indicators for %s!!",
+                       indicator_source)
+        stop(msg)
 
       }
 
-
-      # combine the indicators dataset into all indicators datasets
+      # Get a indicator dataset from database
       if (success) {
-        if (is.null(ds_all_indicators)) {
-          ds_all_indicators <- ds_indicators
+        ds_indicators <- get_indicators.gta_db(stock_db,
+          source_name = indicator_source,
+          indicator_list = indicator_code_list,
+          ouput_format = "long"
+        )
+        if (!is.null(ds_indicators)) {
         } else {
-          ds_all_indicators <- ds_all_indicators %>%
-              dplyr::full_join(ds_indicators,
-                               by = c("date", "periodtype", "stkcd", "indcd"))
+          success <- FALSE
+        }
+      }
 
+      # translate indicator into factor
+      if (success) {
+
+        # change ind_name/value into factor_name/value
+        ds_factors <- ds_indicators %>%
+          dplyr::rename(
+            factor_name = ind_name,
+            factor_value = ind_value
+          )
+
+        # use lookup table to translate ind_name into factor_name
+        lookup <- factor_code_list
+        names(lookup) <- indicator_code_list
+        ds_factors <- ds_factors %>%
+          dplyr::mutate(factor_name = unname(lookup[factor_name]))
+      }
+
+      # bind the factors dataset
+      if (success) {
+        if (is.null(ds_all_factors)) {
+          ds_all_factors <- ds_factors
+        } else {
+          ds_all_factors <- ds_all_factors %>%
+            dplyr::bind_rows(ds_factors)
+          # dplyr::bind_rows(ds_factors, .id = "table")
         }
       }
     }
@@ -963,27 +1259,21 @@ get_factor_indicator.gta_db <- function(stock_db, factor_list){
   # Build final indicator results
   ts_indicator <- NULL
   if (success) {
-
-    # sort resutls by time and stkcd
-    ds_all_indicators <- ds_all_indicators %>%
-              dplyr::arrange(date, indcd, stkcd)
-
-    ts_indicator = ds_all_indicators
-
+    ts_indicator <- ds_all_factors
   }
 
   return(ts_indicator)
-
 }
 # Method definition for s4 generic
-#' @describeIn get_stock_return get stock return timeseries from a database of gta_db class
+#' @describeIn get_factors get factor timeseries from
+#'  a database of gta_db class
 #' @export
-setMethod("get_factor_indicator",
-          signature(stock_db = "gta_db"),
-          function(stock_db, factor_list, ...)
-          {
-            get_factor_indicator.gta_db(stock_db, factor_list)
-          }
+setMethod(
+  "get_factors",
+  signature(stock_db = "gta_db"),
+  function(stock_db, factor_list, ...) {
+    get_factors.gta_db(stock_db, factor_list)
+  }
 )
 
 # Get factors info of matched factor_groups
@@ -1002,32 +1292,26 @@ get_factors_info.gta_db <- function(stock_db, factor_groups = NULL) {
   success <- TRUE
 
   # get file table name mapping for referece
-  gta_profile_name <- system.file(.GTA_RPROFILE_DIR,
-                                  .GTA_PROFILE_FILE, package = .PACKAGE_NAME )
-  if (gta_profile_name == "") {
-    msg = sprintf("No file of % exisits in % for %",
-                  .GTA_PROFILE_FILE,
-                  .GTA_RPROFILE_DIR,
-                  .PACKAGE_NAME)
-    stop(msg)
-    success <- FALSE
-  }
+  gta_profile_name <- get_profile.gta_db(stock_db)
+
 
   # get factors info of matched factor_group
   ds_matched_factors <- NULL
   if (success) {
-    ds_matched_factors <- .get_db_profile_group_factors(gta_profile_name,
-                                                          factor_groups)
+    ds_matched_factors <- profile_get_group_factors(
+      gta_profile_name,
+      factor_groups
+    )
 
     # build specified result of matched factors
     ds_matched_factors <- ds_matched_factors %>%
-      dplyr::select(factor_code = factor_code,
-                    factor_name = factor_name,
-                    factor_type = factor_type,
-                    factor_group = factor_group,
-                    factor_description = factor_description
-                    )
-
+      dplyr::select(
+        factor_code = factor_code,
+        factor_name = factor_name,
+        factor_type = factor_type,
+        factor_group = factor_group,
+        factor_description = factor_description
+      )
   }
 
   return(ds_matched_factors)
@@ -1036,85 +1320,77 @@ get_factors_info.gta_db <- function(stock_db, factor_groups = NULL) {
 # Method definition for s4 generic
 #' @describeIn get_factors_info get factors info from a database of gta_db class
 #' @export
-setMethod("get_factors_info",
-          signature(stock_db = "gta_db"),
-          function (stock_db, factor_groups, ...)
-          {
-            get_factors_info.gta_db(stock_db, factor_groups)
-          }
+setMethod(
+  "get_factors_info",
+  signature(stock_db = "gta_db"),
+  function(stock_db, factor_groups, ...) {
+    get_factors_info.gta_db(stock_db, factor_groups)
+  }
 )
 
-# Non-generic functions for gta_db operation ---------------------------------
+
+
+# Non-generic internal functions for gta_db operation ---------------------------------
 
 #' Create a stock_filed_list for a database of gta_db class
 stock_field_list.gta_db <- function(stock_db) {
-
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
 
   # build field_name list
   field_name_list <- NULL
   table_name <- stock_db$table_list[["gta_fieldname_list"]]
-  field_list.df <- get_table_dataset.gta_db(stock_db, table_name )
+  field_list.df <- get_table_dataset.gta_db(stock_db, table_name)
   if (!is.null(field_list.df)) {
-
     codes <- field_list.df[, "field_code"]
     codes <- tolower(codes)
     names <- field_list.df[, "field_name"]
 
     field_name_list <- code_name_list(codes, names)
-
   } else {
     warning("can't create code_name_list due to failing
             to get data from stock db")
   }
 
   return(field_name_list)
-
 }
 
 #' Create a stock_name_list for a database of gta_db class
 stock_name_list.gta_db <- function(stock_db) {
-
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
 
-  #build stock_name_list
+  # build stock_name_list
   stock_name_list <- NULL
   table_name <- stock_db$table_list[["TRD_Co"]]
   ds_trd_company.df <- get_table_dataset.gta_db(stock_db, table_name)
   if (!is.null(ds_trd_company.df)) {
-
     codes <- ds_trd_company.df[, "stkcd"]
     # Coerce stock code to 6 digit of characters of format of "xxxxxxx"
     if (!is.character(codes)) {
-        codes <- stringr::str_pad(codes, width = 6, pad = "0")
-        msg <- "Coerce stock cd to character of 6 digits if it were number"
-        warnings(msg)
+      codes <- stringr::str_pad(codes, width = 6, pad = "0")
+      msg <- "Coerce stock cd to character of 6 digits if it were number"
+      warnings(msg)
     }
 
     names <- ds_trd_company.df[, "stknme"]
 
     stock_name_list <- code_name_list(codes, names)
-
   } else {
     warning("can't create code_name_list due to failing
             to get data from stock db")
   }
 
   return(stock_name_list)
-
 }
 
 #' Create a industry_name_list for a database of gta_db class
 industry_name_list.gta_db <- function(stock_db) {
-
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
 
-  #build stock_name_list
+  # build stock_name_list
   stock_name_list <- NULL
   table_name <- stock_db$table_list[["TRD_Co"]]
   ds_trd_company.df <- get_table_dataset.gta_db(stock_db, table_name)
   if (!is.null(ds_trd_company.df)) {
-
     ds_indistry <- ds_trd_company.df %>%
       dplyr::select(nnindcd, nnindnme) %>%
       dplyr::distinct()
@@ -1124,15 +1400,10 @@ industry_name_list.gta_db <- function(stock_db) {
     names <- ds_indistry[, "nnindnme"]
 
     stock_name_list <- code_name_list(codes, names)
-
   } else {
     warning("can't create code_name_list due to failing
             to get data from stock db")
   }
 
   return(stock_name_list)
-
 }
-
-
-

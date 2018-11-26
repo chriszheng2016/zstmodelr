@@ -15,10 +15,10 @@ setRefClass("stock_db",
 #'
 #' @param stock_db_class   Specific creator of stock database class,
 #' e.g. gta_db
-#' @param ... Addition params used by specific class of stock database(e.g. a dsn string
-#' "GTA_SQLData")
+#' @param ... Addition params used by specific class of stock database
+#'      (e.g. a dsn string "GTA_SQLData").
 #'
-#' @return A object of stock db
+#' @return A object of stock db.
 #' @export
 #'
 #' @examples
@@ -55,6 +55,7 @@ stock_db <- function(stock_db_class, ...) {
 #' }
 NULL
 
+
 #' Open stock database
 #'
 #' Generic function to open a stock database
@@ -62,7 +63,7 @@ NULL
 #' @param stock_db A stock database object to operate
 #'
 #' @family stock_db generics
-#' @return TRUE if success, otherwise FALSE
+#' @return TRUE if succeed otherwise FALSE
 #' @export
 #' @examples
 #' \dontrun{
@@ -93,7 +94,7 @@ setGeneric(name = "open_stock_db",
 #'
 #' @family stock_db generics
 #'
-#' @return TRUE if success, else FALSE.
+#' @return TRUE if succeed else FALSE.
 #' @export
 #'
 #' @examples
@@ -111,6 +112,31 @@ setGeneric(name = "close_stock_db",
              standardGeneric("close_stock_db")
            })
 
+#' Get profile of stock_db
+#'
+#' Generic function to get path of profile of stock_db.
+#'
+#' @param stock_db     A stock database object to operate.
+#'
+#' @family stock_db generics
+#'
+#' @return  full path of profile of stock db if successfully,
+#' otherwise raise a error
+#' @export
+#'
+#' @examples
+# S3 generic definition
+# get_profile <- function(stock_db, profile_name, ...){
+#   UseMethod("get_profile")
+# }
+# S4 generic definition
+setGeneric(
+  name = "get_profile",
+  signature = c("stock_db"),
+  def = get_profile <- function(stock_db, profile_name, ...) {
+    standardGeneric("get_profile")
+  }
+)
 
 #' Init param of stock db
 #'
@@ -120,7 +146,7 @@ setGeneric(name = "close_stock_db",
 #'
 #' @family stock_db generics
 #'
-#' @return TRUE if success, else FALSE.
+#' @return TRUE if succeed else FALSE.
 #' @export
 #'
 #' @examples
@@ -179,7 +205,7 @@ setGeneric(name = "list_stock_tables",
 #'
 #' @family stock_db generics
 #'
-#' @return A data frame on success, or NULL.
+#' @return A data frame if succeed, otherwise NULL.
 #' @export
 #'
 #' @examples
@@ -208,7 +234,7 @@ setGeneric(name = "get_table_dataset",
 #'
 #' @family stock_db generics
 #'
-#' @return A data frame on success, or NULL.
+#' @return A data frame on succeed otherwise NULL.
 #' @export
 #'
 #' @examples
@@ -345,29 +371,76 @@ setGeneric(
   }
 )
 
-#' Get factor indicator timeseries from stock_db
+#' Get indicators timeseries from stock_db
 #'
-#' Generic function to get  factor indicator from stock_db.
+#' Generic function to get indicators from stock_db.
 #'
-#' @param stock_db         A stock database object to operate.
-#' @param factor_list      factor name list.
+#' @param stock_db            A stock database object to operate.
+#' @param source_name         A name of table or file(with extension) of
+#'  from which indicators were read.
+#'
+#' @param indicator_list      A vector of inicator code, if NULL, will return
+#'  all indicators in the source.
+#' @param ouput_format        Output format for data frame, i.e "long" and "wide":
+#'   \itemize{
+#'       \item in long format: name of indicator is stored in "ind_name", value of indicator
+#'  is stored in "ind_value";
+#'       \item in wide format: value of indicator is stored in
+#'  field named with the name of indicator.
+#'   }
+#'
 #'
 #' @family stock_db generics
 #'
-#' @return A timeseries of factor indicator
+#' @return A data frame of factors timeseries if succeed, otherwise NULL.
 #' @export
 #'
 #' @examples
 # S3 generic definition
-# get_factor_indicator <- function(stock_db, factor_group,...){
+# get_indicators <- function(stock_db, factor_group,...){
 #   UseMethod("get_factors")
 # }
 # S4 generic definition
 setGeneric(
-  name = "get_factor_indicator",
+  name = "get_indicators",
   signature = c("stock_db"),
-  def = get_factor_indicator <- function(stock_db, factor_list,...) {
-    standardGeneric("get_factor_indicator")
+  def = get_indicators <- function(stock_db, source_name,
+                                indicator_list = NULL,
+                                ouput_format = c("long", "wide"),
+                                ...) {
+    standardGeneric("get_indicators")
+  }
+)
+
+
+
+#' Get factors timeseries from stock_db
+#'
+#' Generic function to get factors from stock_db.
+#'
+#' @param stock_db         A stock database object to operate.
+#' @param factor_list      A vector of factor names.
+#'
+#' @family stock_db generics
+#'
+#' @return A dataframe of factor timeseries if succeed, otherwise NULL.
+#'   In order to store multi-factors with different periods(day,
+#'   month, quarter, year), returned data frame adap longer format,
+#'   which means name of factor is stored in "factor_name", value of factor
+#'   is stored in "factor_value".
+#' @export
+#'
+#' @examples
+# S3 generic definition
+# get_factors <- function(stock_db, factor_list,...){
+#   UseMethod("get_factors")
+# }
+# S4 generic definition
+setGeneric(
+  name = "get_factors",
+  signature = c("stock_db"),
+  def = get_factors <- function(stock_db, factor_list,...) {
+    standardGeneric("get_factors")
   }
 )
 
@@ -401,6 +474,8 @@ setGeneric(
   }
 )
 
+
+
 # Non-generic functions for stock db operation ---------------------------------
 
 #' Get assets return from market and stocks return
@@ -411,7 +486,7 @@ setGeneric(
 #' @param stocks_return      A timeseries of a group stock stocks
 #'
 #'
-#' @return A timeseries of assets return
+#' @return A timeseries of assets return.
 #' @export
 #'
 #' @examples
@@ -607,7 +682,7 @@ fetch_stock_field_dataset <- function(ds_source.df,
 #'
 #' @family stock_db generics
 #'
-#' @return     A name or a vector of names
+#' @return     A name or a vector of names.
 #' @export
 #'
 #' @examples
@@ -629,13 +704,13 @@ setGeneric(name = "code2name",
 #'
 #' Generic function to translate name into code
 #'
-#' @param x     A object containg code/name infomation
-#' @param name  A name or a vector of names to be translated
-#' @param ...   Other arguments to be provided to underlyling functions
+#' @param x     A object containg code/name infomation.
+#' @param name  A name or a vector of names to be translated.
+#' @param ...   Other arguments to be provided to underlyling functions.
 #'
 #' @family stock_db generics
 #'
-#' @return      A code or a vector of codes
+#' @return      A code or a vector of codes.
 #' @export
 #'
 #' @examples

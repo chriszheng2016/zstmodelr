@@ -29,15 +29,15 @@ Imports: fPortfolio,
     shinydashboard,
     DBI,
     odbc
-RoxygenNote: 6.1.0
+RoxygenNote: 6.1.0.9000
 Collate: 
     'Indicator-define.R'
     'Indicator-generate.R'
     'stock-db.R'
     'code-name-list.R'
     'stock-db-gta.R'
-    'datamgt.R'
-    'datamgt-gta.R'
+    'data-mgt.R'
+    'data-mgt-gta.R'
     'factor-analyses.R'
     'factor-composite.R'
     'factor-normalize.R'
@@ -51,6 +51,8 @@ Collate:
     'shiny-factor-tools.R'
     'stock-db-default.R'
     'testthat-extends.R'
+    'utils-dates.R'
+    'utils-profile.R'
     'utils-report.R'
     'utils-timeseries.R'
     'utils.R'

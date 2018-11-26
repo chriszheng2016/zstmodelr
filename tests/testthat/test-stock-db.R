@@ -1,12 +1,12 @@
 # unit testing for stock_db (generic class of stock database)
 
-library(zstmodelr)
-
 # Tests for stock_db class - generic functions ----
 context("Tests for stock_db class - generic functions")
 
 # set up testing context
 dsn <- "GTA_SQLData"
+DB_PROFILE_FILE <- "gta_profile.xlsx"
+
 stock_db <- stock_db(gta_db, dsn)
 suppressMessages(db_ready <- open_stock_db(stock_db))
 # skip tests if test dsn is not ready
@@ -17,6 +17,8 @@ suppressMessages(init_stock_db(stock_db))
 
 
 test_that("Open and close stock_db", {
+
+  # open_stock_db/close_stock_db with default arguments ====
   stock_db1 <- stock_db(gta_db, "GTA_SQLData")
   expect_is(stock_db1, "stock_db")
   expect_true(open_stock_db(stock_db1))
@@ -24,9 +26,24 @@ test_that("Open and close stock_db", {
   expect_true(close_stock_db(stock_db1))
 })
 
+test_that("get profile of stock db", {
+
+  # get_profile with default arguments ====
+  expect_true(file.exists(get_profile(stock_db)))
+
+  # get_profile with various arguments ====
+  expect_true(file.exists(get_profile(stock_db, DB_PROFILE_FILE)))
+  expect_error(get_profile(stock_db, "invalid_profile.xlsx"))
+
+})
+
+
 test_that("Init param of stock db", {
+
+  # init_stock_db with default arguments ====
   expect_true(init_stock_db(stock_db))
   expect_error(init_stock_db(non_stock_db))
+
 })
 
 
@@ -226,14 +243,49 @@ test_that("get_market_return, with various arguments", {
   expect_equivalent(expect, actual)
 })
 
-test_that("get_factor_indicator, with various arguments", {
+test_that("get_indicators, with various arguments", {
 
-  # get_factor_indicator with default arguments ====
+
+
+  # get_indicators with default arguments ====
+  ds_indicators <- get_indicators(stock_db, source_name = "TRD_Year")
+
+  expect_fields <- c("date", "period", "stkcd", "ind_name", "ind_value")
+  expect_true(all(expect_fields %in% names(ds_indicators)))
+  expect_true(inherits(ds_indicators$date, "Date"))
+  expect_true(unique(ds_indicators$period) == "year")
+  expect_true(is.character(ds_indicators$stkcd))
+
+  # get_indicators with various arguments: table of predfined indicator ====
+  source_name <- "FR_T1"
+  indicator_list <- c("F010101A", "F010201A")
+
+  ds_indicators <- get_indicators(stock_db,
+                                  source_name = source_name,
+                                  indicator_list = indicator_list,
+                                  ouput_format = "wide")
+  expect_fields <- c("date", "period", "stkcd", "indcd",
+                     tolower(indicator_list))
+  expect_true(all(expect_fields %in% names(ds_indicators)))
+  expect_true(inherits(ds_indicators$date, "Date"))
+  expect_true(unique(ds_indicators$period) == "quarter")
+  expect_true(is.character(ds_indicators$stkcd))
+
+  # get_indicators with various arguments: file of customized indicator ====
+
+})
+
+
+test_that("get_factors, with various arguments", {
+
+  # get_factors with default arguments ====
   factor_list <- c("FAT", "ROCE")
-  ds_factors <- get_factor_indicator(stock_db, factor_list)
-  expect_fields <- c("date", "periodtype", "stkcd", "indcd", "ROCE", "FAT")
-  expect_true(all(names(ds_factors) %in% expect_fields))
-  expect_true(is.character(ds_factors$stkcd))
+  ds_factors <- get_factors(stock_db, factor_list)
+  expect_fields <- c("date", "period", "stkcd", "indcd",
+                     "factor_name", "factor_value")
+  expect_true(all(expect_fields %in% names(ds_factors)))
+  expect_true(all(factor_list %in% unique(ds_factors$factor_name)))
+
 })
 
 test_that("get_factors_info, with various arguments", {
