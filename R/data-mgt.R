@@ -12,7 +12,7 @@
 #'
 #' @family data managment functions
 #'
-#' @return A dataframe of info about importing raw data if successfully,
+#' @return A dataframe of info about importing raw data if succeed,
 #' otherwise NULL.
 #'
 #' @export

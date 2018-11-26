@@ -20,34 +20,23 @@ get_datasource.gta_db <- function(stock_db) {
   success <- TRUE
 
   # Get file table name mapping for referece
-  gta_profile_name <- system.file(.GTA_RPROFILE_DIR,
-    .GTA_PROFILE_FILE,
-    package = .PACKAGE_NAME
-  )
-  if (gta_profile_name == "") {
-    msg <- sprintf(
-      "No file of % exisits in % for %",
-      .GTA_PROFILE_FILE,
-      .GTA_RPROFILE_DIR,
-      .PACKAGE_NAME
-    )
-    stop(msg)
+  gta_profile_name <- get_profile(stock_db)
+  if (is.null(gta_profile_name)) {
     success <- FALSE
   }
 
   # Get data source info from setting
   ds_datasource <- NULL
   if (success) {
-    ds_datasource_files <- .get_db_datasource_files(gta_profile_name)
+    ds_datasource_files <- profile_get_datasource_files(gta_profile_name)
 
     # build specified result of datasource
     ds_datasource <- ds_datasource_files %>%
-      dplyr::filter(is_valid == TRUE) %>%
       dplyr::select(
         target_table = target_table,
         input_file = input_file,
         input_type = input_type,
-        input_dir = input_dir,
+        input_dir  = input_dir,
         start_index = start_index
       )
   }
