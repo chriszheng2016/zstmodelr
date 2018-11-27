@@ -11,7 +11,7 @@
 #' @export
 get_datasource.gta_db <- function(stock_db) {
 
-  # Validate params
+  # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
   if (is.null(stock_db$connection)) {
     stop("Stock db isn't connected, try to connect db again")
@@ -19,13 +19,13 @@ get_datasource.gta_db <- function(stock_db) {
 
   success <- TRUE
 
-  # Get file table name mapping for referece
+  # get profile of stock_db
   gta_profile_name <- get_profile(stock_db)
   if (is.null(gta_profile_name)) {
     success <- FALSE
   }
 
-  # Get data source info from setting
+  # get data source info from profile
   ds_datasource <- NULL
   if (success) {
     ds_datasource_files <- profile_get_datasource_files(gta_profile_name)
@@ -45,7 +45,8 @@ get_datasource.gta_db <- function(stock_db) {
 }
 
 # Method definition for s4 generic
-#' @describeIn get_factors_info get factors info from a database of gta_db class
+#' @describeIn get_datasource get data source for importing raw data into
+#'   database of gta_db class
 #' @export
 setMethod(
   "get_datasource",
@@ -61,22 +62,22 @@ setMethod(
 #' @export
 clear_tables.gta_db <- function(stock_db) {
 
-  # Validate params
+  # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
   if (is.null(stock_db$connection)) {
     stop("Stock db isn't connected, try to connect db again")
   }
 
-  # Get target database info
+  # get target database info
   db_info <- DBI::dbGetInfo(stock_db$connection)
   target_database <- db_info$dbname
   assertive::assert_is_not_null(target_database)
 
-  # Clear old data in all tables
+  # clear old data in all tables
   sql_cmd <- "EXEC sp_MSforeachtable \"truncate table ?\""
   DBI::dbExecute(stock_db$connection, sql_cmd)
 
-  # Shrink database log
+  # shrink database log
   sql_cmd <- sprintf("DBCC ShrinkDatabase(%s, 0, TRUNCATEONLY)", target_database)
   # sql_cmd <- sprintf("DBCC ShrinkFile(%s_log, 1, TRUNCATEONLY)", target_database)
   DBI::dbExecute(stock_db$connection, sql_cmd)
@@ -102,7 +103,7 @@ update_db.gta_db <- function(stock_db,
                              retry_log = NULL,
                              log_dir = "./log") {
 
-  # Validate params
+  # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "stock_db"))
   if (is.null(stock_db$connection)) {
     stop("Stock db isn't connected, try to connect db again")
@@ -112,19 +113,19 @@ update_db.gta_db <- function(stock_db,
 
   success <- TRUE
 
-  # Get target database info
+  # get target database info
   db_info <- DBI::dbGetInfo(stock_db$connection)
   target_database <- db_info$dbname
   assertive::assert_is_not_null(target_database)
 
 
-  # Build target tables info
+  # build target tables info
   ds_data_source <- data_source
   ds_log <- data_source %>%
     dplyr::select(target_table, input_file) %>%
     dplyr::mutate(success = FALSE)
 
-  # Collect failed tables from log file
+  # collect failed tables from log file
   faild_tables <- NULL
   retry_log_path <- NULL
   if (!is.null(retry_log)) {
@@ -151,12 +152,12 @@ update_db.gta_db <- function(stock_db,
     }
   }
 
-  # Import data from data source
+  # import data from data source
   need_clear_dblog <- FALSE
   for (i in seq_len(nrow(ds_data_source))) {
     data_source <- ds_data_source[i, ]
 
-    # Conduct update for all tables or faied tables recording in retry log
+    # conduct update for all tables or faied tables recording in retry log
     if (is.null(faild_tables) || data_source$target_table %in% faild_tables) {
       msg <- sprintf("Import data into %s ...\n", data_source$target_table)
       message(msg)
@@ -183,7 +184,7 @@ update_db.gta_db <- function(stock_db,
     }
   }
 
-  # Shrink database log if needed
+  # shrink database log if needed
   if (need_clear_dblog) {
     # sql_cmd <- sprintf("DBCC ShrinkDatabase(%s, 0)", target_database )
     sql_cmd <- sprintf(
@@ -194,7 +195,7 @@ update_db.gta_db <- function(stock_db,
   }
 
 
-  # Write log for update operation
+  # write log for update operation
   if (!is.null(log_dir)) {
     if (!file.exists(log_dir)) {
       dir.create(log_dir)
@@ -224,7 +225,7 @@ update_db.gta_db <- function(stock_db,
       )
     }
 
-    # Write a new log file
+    # write a new log file
     readr::write_excel_csv(ds_log, log_file)
 
     msg <- sprintf(
@@ -258,7 +259,7 @@ import_table.gta_db <- function(stock_db,
                                 ignore_problems = TRUE,
                                 log_dir = "./log") {
 
-  # Validate params
+  # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
   if (is.null(stock_db$connection)) {
     stop("Stock db isn't connected, try to connect db again")
@@ -270,20 +271,20 @@ import_table.gta_db <- function(stock_db,
 
   success <- TRUE
 
-  # Get full path of input file
+  # get full path of input file
   if (!is.null(input_dir)) {
     input_file <- paste0(input_dir, "/", basename(input_file))
   } else {
     input_file <- normalizePath(input_file, winslash = "/")
   }
 
-  # Get data object name
+  # get data object name
   object_name <- basename(input_file)
   object_name <- stringr::str_split(object_name, "\\.",
     simplify = TRUE
   )[1, 1]
 
-  # Read data from raw file into dataframe
+  # read data from raw file into dataframe
   input_type <- match.arg(input_type)
   # Get colnames of rawdata header
   suppressMessages(
@@ -310,7 +311,7 @@ import_table.gta_db <- function(stock_db,
     stop(msg)
   }
 
-  # Read raw data into dataframe
+  # read raw data into dataframe
   suppressMessages({
     skip <- start_index - 1L
 
@@ -369,7 +370,7 @@ import_table.gta_db <- function(stock_db,
     }
   }
 
-  # Transfer raw data dataframe to table in stcok database
+  # transfer raw data dataframe to table in stcok database
   if (success) {
     if (is.null(target_table)) {
       target_table <- object_name

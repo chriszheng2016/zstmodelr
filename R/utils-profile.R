@@ -40,65 +40,65 @@ profile_get_varible_setting <- function(profile_name, variable) {
   return(setting_value)
 }
 
-# Get mapping between factor and indicator from profile of database
-profile_get_factor_indicator_map <- function(profile_name, factor_code_list) {
+# Get info of indicators from profile of database
+profile_get_factors <- function(profile_name, factor_codes = NULL,
+                                              factor_groups = NULL) {
   stopifnot(!is.null(profile_name), is.character(profile_name))
-  stopifnot(!is.null(factor_code_list))
 
   factor_indicator_map <- readxl::read_excel(profile_name,
     sheet = "Factor_Indicator_Map"
   )
-  matched_indicators <- NULL
-  if (!is.null(factor_indicator_map)) {
 
-    # get indicator info for mapped factor
-    matched_indicators <- factor_indicator_map %>%
-      dplyr::filter(factor_code %in% factor_code_list)
-    if (nrow(matched_indicators) == 0) {
+  # get factors info for matched factor_codes
+  matched_factors <- factor_indicator_map
+  if (!is.null(factor_codes)) {
+    # get scpeficed factor_codes
+    matched_factors <- matched_factors %>%
+      dplyr::filter(factor_code %in% factor_codes)
+    if (nrow(matched_factors) == 0) {
       msg <- sprintf(
         "No entry matched '%s' was found in %s",
-        factor_code_list, profile_name
+        factor_codes, profile_name
       )
       warning(msg)
-      matched_indicators <- NULL
+      matched_factors <- NULL
     }
   }
 
-  return(matched_indicators)
-}
-
-# Get factors of matched groups from profile of database
-profile_get_group_factors <- function(profile_name, factor_groups) {
-  stopifnot(!is.null(profile_name), is.character(profile_name))
-
-  factor_indicator_map <- readxl::read_excel(profile_name,
-    sheet = "Factor_Indicator_Map"
-  )
-
-  matched_factors <- NULL
-  if (!is.null(factor_indicator_map)) {
-
-    # get factors info for mapped factor group
-    if (!is.null(factor_groups)) {
-      # get sepcified factor groups
-      matched_factors <- factor_indicator_map %>%
-        dplyr::filter(factor_group %in% factor_groups)
-      if (nrow(matched_factors) == 0) {
-        msg <- sprintf(
-          "No entry matched '%s' was found in %s",
-          factor_groups, profile_name
-        )
-        warning(msg)
-        matched_factors <- NULL
-      }
-    } else {
-      # get all factor_groups
-      matched_factors <- factor_indicator_map
+  # get factors info for matched factor_groups
+  if (!is.null(factor_groups) & !is.null(matched_factors)) {
+    # get sepcified factor groups
+    matched_factors <- matched_factors %>%
+      dplyr::filter(factor_group %in% factor_groups)
+    if (nrow(matched_factors) == 0) {
+      msg <- sprintf(
+        "No entry matched '%s' was found in %s",
+        factor_groups, profile_name
+      )
+      warning(msg)
+      matched_factors <- NULL
     }
+  }
+
+  # validate results
+  if (!is.null(matched_factors)) {
+
+    #check whether any indicator_code is NA
+    indicator_is_na <- is.na(matched_factors$indicator_code)
+    if (any(indicator_is_na)) {
+      msg <- sprintf(
+        "factor(%s) didn't have vaild indicaotr_code, please check!!",
+        matched_factors$factor_code[indicator_is_na]
+      )
+      stop(msg)
+    }
+
   }
 
   return(matched_factors)
 }
+
+
 
 # Get data source for importing raw data
 profile_get_datasource_files <- function(profile_name) {
@@ -108,6 +108,7 @@ profile_get_datasource_files <- function(profile_name) {
   datasource_files <- readxl::read_excel(profile_name,
     sheet = "DataSource_Files"
   )
+
   # output valid info
   datasource_files <- datasource_files %>%
     dplyr::filter(is_valid == TRUE)
@@ -116,7 +117,9 @@ profile_get_datasource_files <- function(profile_name) {
 }
 
 # Get info of indicators from profile of database
-profile_get_indicators <- function(profile_name) {
+profile_get_indicators <- function(profile_name, indicator_codes = NULL) {
+
+  #validate params
   stopifnot(!is.null(profile_name), is.character(profile_name))
 
   # get Data source setting
@@ -124,7 +127,24 @@ profile_get_indicators <- function(profile_name) {
     sheet = "Indicator_list"
   )
 
-  return(indicators_info)
+  if (!is.null(indicator_codes)) {
+    # get matched indicators info
+    matched_indicators <- indicators_info %>%
+      dplyr::filter(field_code %in% indicator_codes)
+    if (nrow(matched_indicators) == 0) {
+      msg <- sprintf(
+        "No entry matched '%s' was found in %s",
+        indicator_codes, profile_name
+      )
+      warning(msg)
+      matched_indicators <- NULL
+    }
+  } else {
+    # get all indicators info
+    matched_indicators <- indicators_info
+  }
+
+  return(matched_indicators)
 }
 
 # Get info of customized indicators from profile of database
