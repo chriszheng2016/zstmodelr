@@ -31,8 +31,6 @@ Imports: fPortfolio,
     odbc
 RoxygenNote: 6.1.0.9000
 Collate: 
-    'Indicator-define.R'
-    'Indicator-generate.R'
     'stock-db.R'
     'code-name-list.R'
     'stock-db-gta.R'
@@ -43,6 +41,9 @@ Collate:
     'factor-normalize.R'
     'factor-test.R'
     'factor-tools.R'
+    'indicator-define.R'
+    'indicator-define-gta.R'
+    'indicator-generate.R'
     'model-backtest.R'
     'model-predict.R'
     'model-zscore.R'

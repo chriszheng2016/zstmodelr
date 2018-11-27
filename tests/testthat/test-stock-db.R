@@ -34,7 +34,6 @@ test_that("get profile of stock db", {
   # get_profile with various arguments ====
   expect_true(file.exists(get_profile(stock_db, DB_PROFILE_FILE)))
   expect_error(get_profile(stock_db, "invalid_profile.xlsx"))
-
 })
 
 
@@ -43,7 +42,6 @@ test_that("Init param of stock db", {
   # init_stock_db with default arguments ====
   expect_true(init_stock_db(stock_db))
   expect_error(init_stock_db(non_stock_db))
-
 })
 
 
@@ -243,12 +241,11 @@ test_that("get_market_return, with various arguments", {
   expect_equivalent(expect, actual)
 })
 
-test_that("get_indicators, with various arguments", {
+test_that("get_indicators_from_source, with various arguments", {
 
-
-
-  # get_indicators with default arguments ====
-  ds_indicators <- get_indicators(stock_db, source_name = "TRD_Year")
+  # get_indicators_from_source with default arguments ====
+  ds_indicators <- get_indicators_from_source(stock_db,
+                                              indicator_source = "TRD_Year")
 
   expect_fields <- c("date", "period", "stkcd", "ind_name", "ind_value")
   expect_true(all(expect_fields %in% names(ds_indicators)))
@@ -256,35 +253,50 @@ test_that("get_indicators, with various arguments", {
   expect_true(unique(ds_indicators$period) == "year")
   expect_true(is.character(ds_indicators$stkcd))
 
-  # get_indicators with various arguments: table of predfined indicator ====
-  source_name <- "FR_T1"
-  indicator_list <- c("F010101A", "F010201A")
+  # get_indicators_from_source with various arguments: table of predfined indicator ====
+  indicator_source <- "FR_T1"
+  indicator_codes <- c("F010101A", "F010201A")
 
-  ds_indicators <- get_indicators(stock_db,
-                                  source_name = source_name,
-                                  indicator_list = indicator_list,
-                                  ouput_format = "wide")
-  expect_fields <- c("date", "period", "stkcd", "indcd",
-                     tolower(indicator_list))
+  ds_indicators <- get_indicators_from_source(stock_db,
+    indicator_source = indicator_source,
+    indicator_list = indicator_codes,
+    ouput_format = "wide"
+  )
+  expect_fields <- c(
+    "date", "period", "stkcd", "indcd",
+    tolower(indicator_codes)
+  )
   expect_true(all(expect_fields %in% names(ds_indicators)))
   expect_true(inherits(ds_indicators$date, "Date"))
   expect_true(unique(ds_indicators$period) == "quarter")
   expect_true(is.character(ds_indicators$stkcd))
 
-  # get_indicators with various arguments: file of customized indicator ====
+  # get_indicators_from_source with various arguments: file of customized indicator ====
+
 
 })
 
+test_that("get_indicators, with various arguments", {
+
+  # get_indicators with default arguments ====
+  indicator_codes <- c("F010101A", "F010201A")
+  ds_indicators <- get_indicators(stock_db, indicator_codes)
+  expect_fields <- c("date", "period", "stkcd", "ind_name", "ind_value")
+  expect_true(all(expect_fields %in% names(ds_indicators)))
+  expect_true(all(ds_indicators$ind_name %in% tolower(indicator_codes)))
+})
 
 test_that("get_factors, with various arguments", {
 
   # get_factors with default arguments ====
-  factor_list <- c("FAT", "ROCE")
-  ds_factors <- get_factors(stock_db, factor_list)
-  expect_fields <- c("date", "period", "stkcd", "indcd",
-                     "factor_name", "factor_value")
+  factor_codes <- c("FAT", "ROCE")
+  ds_factors <- get_factors(stock_db, factor_codes)
+  expect_fields <- c(
+    "date", "period", "stkcd", "indcd",
+    "factor_name", "factor_value"
+  )
   expect_true(all(expect_fields %in% names(ds_factors)))
-  expect_true(all(factor_list %in% unique(ds_factors$factor_name)))
+  expect_true(all(ds_factors$factor_name %in% factor_codes))
 
 })
 
@@ -293,7 +305,6 @@ test_that("get_factors_info, with various arguments", {
   # get_factors_info with default arguments ====
   ds_matched_factors <- get_factors_info(stock_db)
   expect_is(ds_matched_factors, "data.frame")
-  # data.frame fields
   expected_fields <- c(
     "factor_code", "factor_name", "factor_type",
     "factor_group", "factor_description"
@@ -301,39 +312,42 @@ test_that("get_factors_info, with various arguments", {
   actual_fields <- names(ds_matched_factors)
   expect_equal(actual_fields, expected_fields)
 
-  # get_factors_info with one factor group ====
-  factor_groups <- "Operating Profitability"
+  # get_factors_info with factor_codes ====
+  factor_codes <- c("GPM", "OPM")
   ds_matched_factors <- get_factors_info(stock_db,
-    factor_groups = factor_groups
+                                         factor_codes = factor_codes
   )
-  expect_is(ds_matched_factors, "data.frame")
-  # data.frame fields
-  actual_fields <- names(ds_matched_factors)
-  expect_equal(actual_fields, expected_fields)
-  # fetched factor_groups
-  expect_true(all(unique(ds_matched_factors$factor_group) %in% factor_groups))
+  if (!is.null(ds_matched_factors)) {
+    expect_is(ds_matched_factors, "data.frame")
+    actual_fields <- names(ds_matched_factors)
+    expect_equal(actual_fields, expected_fields)
+    expect_true(all(ds_matched_factors$factor_code %in% factor_codes))
+  }
 
-  # get_factors_info with multi factor groups ====
+  # get_factors_info with factor_groups ====
   factor_groups <- c("Operating Profitability", "Valuation")
   ds_matched_factors <- get_factors_info(stock_db,
     factor_groups = factor_groups
   )
-  expect_is(ds_matched_factors, "data.frame")
-  # data.frame fields
-  actual_fields <- names(ds_matched_factors)
-  expect_equal(actual_fields, expected_fields)
-  # fetched factor_groups
-  expect_true(all(unique(ds_matched_factors$factor_group) %in% factor_groups))
+  if (!is.null(ds_matched_factors)) {
+    expect_is(ds_matched_factors, "data.frame")
+    actual_fields <- names(ds_matched_factors)
+    expect_equal(actual_fields, expected_fields)
+    expect_true(all(ds_matched_factors$factor_group %in% factor_groups))
+  }
 
-  # get_factors_info with all factor groups ====
-  ds_matched_factors <- get_factors_info(stock_db, factor_groups = NULL)
-  expect_is(ds_matched_factors, "data.frame")
-  # data.frame fields
-  actual_fields <- names(ds_matched_factors)
-  expect_equal(actual_fields, expected_fields)
-
-  # fetched factor_groups
-  expect_gte(length(unique(ds_matched_factors$factor_group)), 0)
+  # get_factors_info with factor_codes and factor_groups ====
+  factor_codes <- c("GPM", "OPM")
+  factor_groups <- c("Operating Profitability", "Valuation")
+  ds_matched_factors <- get_factors_info(stock_db,
+                                         factor_groups = factor_groups
+  )
+  if (!is.null(ds_matched_factors)) {
+    expect_is(ds_matched_factors, "data.frame")
+    actual_fields <- names(ds_matched_factors)
+    expect_equal(actual_fields, expected_fields)
+    expect_true(all(ds_matched_factors$factor_group %in% factor_groups))
+  }
 })
 
 test_that("Translation between code and name", {

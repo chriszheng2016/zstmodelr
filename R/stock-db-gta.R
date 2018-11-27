@@ -876,20 +876,21 @@ setMethod(
 
 # Get indicators from specified data source(table/file) in stock_db
 # Method definition for s3 generic
-#' @describeIn get_indicators   get indicators timeseries from
-#' a database of gta_db class
+#' @describeIn get_indicators_from_source   get indicator timeseries from
+#' specified source in a database of gta_db class
+#'
 #' @export
-get_indicators.gta_db <- function(stock_db,
-                                  source_name,
-                                  indicator_list = NULL,
-                                  ouput_format = c("long", "wide"),
-                                  report_type_field = c("Typrep"),
-                                  date_fields = c(
-                                    "date", "Accper",
-                                    "Trddt", "Trdmnt", "Trdynt",
-                                    "Clsdt", "Shrchdgt"
-                                  ),
-                                  retain_fields = c("Stkcd", "Indcd")) {
+get_indicators_from_source.gta_db <- function(stock_db,
+                                              indicator_source,
+                                              indicator_codes = NULL,
+                                              ouput_format = c("long", "wide"),
+                                              report_type_field = c("Typrep"),
+                                              date_fields = c(
+                                                "date", "Accper",
+                                                "Trddt", "Trdmnt", "Trdynt",
+                                                "Clsdt", "Shrchdgt"
+                                              ),
+                                              retain_fields = c("Stkcd", "Indcd")) {
 
   # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
@@ -897,16 +898,15 @@ get_indicators.gta_db <- function(stock_db,
     stop("Stock db isn't connected, try to connect db again")
   }
 
-  if (missing(source_name) || !is.character(source_name)) {
+  if (missing(indicator_source) || !is.character(indicator_source)) {
     stop("data source name must be character string")
   }
 
-  if (!is.null(indicator_list) & !is.character(indicator_list)) {
+  if (!is.null(indicator_codes) & !is.character(indicator_codes)) {
     stop("indicator_list name must be character vector")
   }
 
   success <- TRUE
-  ds_indicators <- NULL
 
   # get dataset according different type of data source
   # if source_name is not a filename, data source should be a table
@@ -914,7 +914,7 @@ get_indicators.gta_db <- function(stock_db,
   ds_indicators_raw <- NULL
   if (is_table) {
     ds_indicators_raw <- get_table_dataset(stock_db,
-      table_name = source_name
+      table_name = indicator_source
     )
     if (is.null(ds_indicators_raw)) success <- FALSE
   } else {
@@ -923,6 +923,7 @@ get_indicators.gta_db <- function(stock_db,
 
 
   # transform indicators data
+  ds_indicators <- NULL
   if (success) {
     ds_indicators <- tibble::as.tibble(ds_indicators_raw)
     ds_field_names <- names(ds_indicators)
@@ -931,11 +932,11 @@ get_indicators.gta_db <- function(stock_db,
     output_non_indicators <- NULL
 
     # determine indicators output
-    if (!is.null(indicator_list)) {
+    if (!is.null(indicator_codes)) {
       # output specified indicators
-      indicator_list <- tolower(indicator_list)
-      indicators_is_existed <- indicator_list %in% ds_field_names
-      output_indicators <- c(indicator_list)
+      indicator_codes <- tolower(indicator_codes)
+      indicators_is_existed <- indicator_codes %in% ds_field_names
+      output_indicators <- c(indicator_codes)
     } else {
       # output all indicators if indicator_list is null
       indicators_is_existed <- TRUE
@@ -1080,19 +1081,19 @@ get_indicators.gta_db <- function(stock_db,
       )
 
       # message results
-      if (!is.null(indicator_list)) {
+      if (!is.null(indicator_codes)) {
         msg <- sprintf(
           "get indicators: %s(%s) from %s",
-          stringr::str_c(indicator_list, collapse = ","),
-          stringr::str_c(code2name(stock_db, indicator_list, type = "field"),
+          stringr::str_c(indicator_codes, collapse = ","),
+          stringr::str_c(code2name(stock_db, indicator_codes, type = "field"),
             collapse = ","
           ),
-          source_name
+          indicator_source
         )
       } else {
         msg <- sprintf(
           "get all indicators from %s",
-          source_name
+          indicator_source
         )
       }
 
@@ -1102,10 +1103,10 @@ get_indicators.gta_db <- function(stock_db,
       # some indicators miss from result dataset
       msg <- sprintf(
         "indicators: %s aren't in the table of %s",
-        stringr::str_c(indicator_list[!indicators_is_existed], collapse = ","),
-        source_name
+        stringr::str_c(indicator_codes[!indicators_is_existed], collapse = ","),
+        indicator_source
       )
-      warn(msg)
+      warning(msg)
 
       success <- FALSE
     }
@@ -1136,7 +1137,7 @@ get_indicators.gta_db <- function(stock_db,
         # raise error for no numeric fields
         msg <- sprintf(
           "can't tranfrom into long-formt dataset, since no numeric field in the table of %s",
-          source_name
+          indicator_source
         )
         stop(msg)
       }
@@ -1146,24 +1147,26 @@ get_indicators.gta_db <- function(stock_db,
   return(ds_indicators)
 }
 # Method definition for s4 generic
-#' @describeIn get_indicators  get indicators timeseries from
-#'  a database of gta_db class
+#' @describeIn get_indicators_from_source  get indicator timeseries from
+#'  specified source in a database of gta_db class
 #' @export
 setMethod(
-  "get_indicators",
+  "get_indicators_from_source",
   signature(stock_db = "gta_db"),
-  function(stock_db, source_name, indicator_list, ouput_format, ...) {
-    get_indicators.gta_db(stock_db, source_name,
-                          indicator_list, ouput_format)
+  function(stock_db, indicator_source, indicator_codes, ouput_format, ...) {
+    get_indicators_from_source.gta_db(
+      stock_db, indicator_source,
+      indicator_codes, ouput_format
+    )
   }
 )
 
-# Get factors timeseries from stock_db
+# Get indicators timeseries from stock_db
 # Method definition for s3 generic
-#' @describeIn get_factors get factor timeseries from
+#' @describeIn get_indicators get indicator timeseries from
 #'  a database of gta_db class
 #' @export
-get_factors.gta_db <- function(stock_db, factor_list) {
+get_indicators.gta_db <- function(stock_db, indicator_codes) {
 
   # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
@@ -1171,7 +1174,8 @@ get_factors.gta_db <- function(stock_db, factor_list) {
     stop("Stock db isn't connected, try to connect db again")
   }
 
-  stopifnot(!is.null(factor_list))
+  assertive::assert_is_not_null(indicator_codes)
+  assertive::assert_is_character(indicator_codes)
 
   success <- TRUE
 
@@ -1179,44 +1183,34 @@ get_factors.gta_db <- function(stock_db, factor_list) {
   gta_profile_name <- get_profile.gta_db(stock_db)
 
   # get indcator info of matched factor
-  if (success) {
-    matched_indicator_map <- profile_get_factor_indicator_map(
-      gta_profile_name,
-      factor_list
-    )
-    if (!is.null(matched_indicator_map)) {
-
-      # build table_list for fetching indicators
-      indicator_table_list <- matched_indicator_map %>%
-        dplyr::filter(factor_list %in% factor_code) %>%
-        dplyr::group_by(indicator_source) %>%
-        tidyr::nest()
-    } else {
-      success <- FALSE
-    }
+  matched_indicators <- profile_get_indicators(
+    gta_profile_name,
+    indicator_codes
+  )
+  if (!is.null(matched_indicators)) {
+    # build table_list for fetching indicators
+    indicator_sources <- matched_indicators %>%
+      dplyr::filter(field_code %in% indicator_codes) %>%
+      dplyr::group_by(field_source) %>%
+      tidyr::nest()
+  } else {
+    success <- FALSE
   }
 
-  # get indicators dataset from indicator_data_table
+
+  # get indicators dataset from indicator sources
+  ds_combined_indicators <- NULL
   if (success) {
-    ds_all_factors <- NULL
-    for (i in seq_len(nrow(indicator_table_list))) {
-      indicator_source <- indicator_table_list[i, ]$indicator_source
-      indicator_params <- indicator_table_list[i, ]$data[[1]]
-      indicator_code_list <- tolower(indicator_params$indicator_code)
-      factor_code_list <- indicator_params$factor_code
-
-      if (length(factor_code_list) != length(indicator_code_list)) {
-        msg <- sprintf("length of factors should be equal to that of indicators for %s!!",
-                       indicator_source)
-        stop(msg)
-
-      }
+    for (i in seq_len(nrow(indicator_sources))) {
+      indicator_source <- indicator_sources[i, ]$field_source
+      indicator_params <- indicator_sources[i, ]$data[[1]]
+      indicator_codes <- indicator_params$field_code
 
       # Get a indicator dataset from database
       if (success) {
-        ds_indicators <- get_indicators.gta_db(stock_db,
-          source_name = indicator_source,
-          indicator_list = indicator_code_list,
+        ds_indicators <- get_indicators_from_source.gta_db(stock_db,
+          indicator_source = indicator_source,
+          indicator_codes = indicator_codes,
           ouput_format = "long"
         )
         if (!is.null(ds_indicators)) {
@@ -1225,44 +1219,93 @@ get_factors.gta_db <- function(stock_db, factor_list) {
         }
       }
 
-      # translate indicator into factor
-      if (success) {
-
-        # change ind_name/value into factor_name/value
-        ds_factors <- ds_indicators %>%
-          dplyr::rename(
-            factor_name = ind_name,
-            factor_value = ind_value
-          )
-
-        # use lookup table to translate ind_name into factor_name
-        lookup <- factor_code_list
-        names(lookup) <- indicator_code_list
-        ds_factors <- ds_factors %>%
-          dplyr::mutate(factor_name = unname(lookup[factor_name]))
-      }
-
       # bind the factors dataset
       if (success) {
-        if (is.null(ds_all_factors)) {
-          ds_all_factors <- ds_factors
+        if (is.null(ds_combined_indicators)) {
+          ds_combined_indicators <- ds_indicators
         } else {
-          ds_all_factors <- ds_all_factors %>%
-            dplyr::bind_rows(ds_factors)
-          # dplyr::bind_rows(ds_factors, .id = "table")
+          ds_combined_indicators <- ds_combined_indicators %>%
+            dplyr::bind_rows(ds_indicators)
+          # dplyr::bind_rows(ds_indicators, .id = "table")
         }
       }
     }
   }
 
+  return(ds_combined_indicators)
+}
+# Method definition for s4 generic
+#' @describeIn get_indicators get indicator timeseries from
+#'  a database of gta_db class
+#' @export
+setMethod(
+  "get_indicators",
+  signature(stock_db = "gta_db"),
+  function(stock_db, indicator_codes, ...) {
+    get_indicators.gta_db(stock_db, indicator_codes)
+  }
+)
 
-  # Build final indicator results
-  ts_indicator <- NULL
-  if (success) {
-    ts_indicator <- ds_all_factors
+# Get factors timeseries from stock_db
+# Method definition for s3 generic
+#' @describeIn get_factors get factor timeseries from
+#'  a database of gta_db class
+#' @export
+get_factors.gta_db <- function(stock_db, factor_codes) {
+
+  # validate params
+  stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
+  if (is.null(stock_db$connection)) {
+    stop("Stock db isn't connected, try to connect db again")
   }
 
-  return(ts_indicator)
+  assertive::assert_is_not_null(factor_codes)
+  assertive::assert_is_character(factor_codes)
+
+  success <- TRUE
+
+  # get file table name mapping for referece
+  gta_profile_name <- get_profile.gta_db(stock_db)
+
+  # get indcator info of matched factor
+  matched_factors_info <- profile_get_factors(gta_profile_name, factor_codes)
+  if (is.null(matched_factors_info)) {
+    success <- FALSE
+  }
+
+  # get indicators for matched factors
+  ds_indicators <- NULL
+  if (success) {
+    indicator_codes <- matched_factors_info$indicator_code
+    ds_indicators <- get_indicators.gta_db(stock_db,
+      indicator_codes = indicator_codes
+    )
+    if (is.null(ds_indicators)) {
+      success <- FALSE
+    }
+  }
+
+  # translate indicators into factors
+  ds_factors <- NULL
+  if (success) {
+
+    # use lookup table to translate value of ind_name to value of factor_name
+    lookup <- factor_codes
+    names(lookup) <- tolower(indicator_codes)
+    ds_factors <- ds_indicators %>%
+      dplyr::mutate(ind_name = unname(lookup[ind_name]))
+
+    # change colname: ind_name/value into factor_name/value
+    ds_factors <- ds_factors %>%
+      dplyr::rename(
+        factor_name = ind_name,
+        factor_value = ind_value
+      )
+
+
+  }
+
+  return(ds_factors)
 }
 # Method definition for s4 generic
 #' @describeIn get_factors get factor timeseries from
@@ -1271,17 +1314,18 @@ get_factors.gta_db <- function(stock_db, factor_list) {
 setMethod(
   "get_factors",
   signature(stock_db = "gta_db"),
-  function(stock_db, factor_list, ...) {
-    get_factors.gta_db(stock_db, factor_list)
+  function(stock_db, factor_codes, ...) {
+    get_factors.gta_db(stock_db, factor_codes)
   }
 )
 
-# Get factors info of matched factor_groups
+# Get factors Info from stock_db
 # Method definition for s3 generic
-#' @describeIn get_factors_info get factors info of matched factor groups from a
-#' database of gta_db class
+#' @describeIn get_factors_info get factors info from a database of gta_db class
 #' @export
-get_factors_info.gta_db <- function(stock_db, factor_groups = NULL) {
+get_factors_info.gta_db <- function(stock_db,
+                                    factor_codes = NULL,
+                                    factor_groups = NULL) {
 
   # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
@@ -1289,32 +1333,26 @@ get_factors_info.gta_db <- function(stock_db, factor_groups = NULL) {
     stop("Stock db isn't connected, try to connect db again")
   }
 
-  success <- TRUE
-
   # get file table name mapping for referece
   gta_profile_name <- get_profile.gta_db(stock_db)
 
+  # get factors info of matched by factor_codes/factor_group
+  matched_factors_info <- profile_get_factors(gta_profile_name,
+    factor_codes = factor_codes,
+    factor_groups = factor_groups
+  )
 
-  # get factors info of matched factor_group
-  ds_matched_factors <- NULL
-  if (success) {
-    ds_matched_factors <- profile_get_group_factors(
-      gta_profile_name,
-      factor_groups
+  # build specified result of matched factors
+  matched_factors_info <- matched_factors_info %>%
+    dplyr::select(
+      factor_code = factor_code,
+      factor_name = factor_name,
+      factor_type = factor_type,
+      factor_group = factor_group,
+      factor_description = factor_description
     )
 
-    # build specified result of matched factors
-    ds_matched_factors <- ds_matched_factors %>%
-      dplyr::select(
-        factor_code = factor_code,
-        factor_name = factor_name,
-        factor_type = factor_type,
-        factor_group = factor_group,
-        factor_description = factor_description
-      )
-  }
-
-  return(ds_matched_factors)
+  return(matched_factors_info)
 }
 
 # Method definition for s4 generic
@@ -1323,8 +1361,8 @@ get_factors_info.gta_db <- function(stock_db, factor_groups = NULL) {
 setMethod(
   "get_factors_info",
   signature(stock_db = "gta_db"),
-  function(stock_db, factor_groups, ...) {
-    get_factors_info.gta_db(stock_db, factor_groups)
+  function(stock_db, factor_codes, factor_groups, ...) {
+    get_factors_info.gta_db(stock_db, factor_codes, factor_groups)
   }
 )
 
