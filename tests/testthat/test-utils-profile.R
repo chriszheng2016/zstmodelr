@@ -104,9 +104,9 @@ test_that("profile_get_indicators, with various arguments", {
   # profile_get_indicators with default argurments ====
   result_value <- profile_get_indicators(profile)
   if (!is.null(result_value)) {
-    expect_fields <- c("field_code", "field_type", "field_name",
-                       "field_category", "field_source",
-                       "field_description")
+    expect_fields <- c("ind_code", "ind_type", "ind_name",
+                       "ind_category", "ind_source",
+                       "ind_description")
 
     expect_true(all(expect_fields %in% names(result_value)))
   }
@@ -116,12 +116,12 @@ test_that("profile_get_indicators, with various arguments", {
   result_value <- profile_get_indicators(profile,
                             indicator_codes = c("B001100000", "B001101000"))
   if (!is.null(result_value)) {
-    expect_fields <- c("field_code", "field_type", "field_name",
-                       "field_category", "field_source",
-                       "field_description")
+    expect_fields <- c("ind_code", "ind_type", "ind_name",
+                       "ind_category", "ind_source",
+                       "ind_description")
 
     expect_true(all(expect_fields %in% names(result_value)))
-    expect_true(all(result_value$field_code %in% indicator_codes))
+    expect_true(all(result_value$ind_code %in% indicator_codes))
   }
 
 })
@@ -133,9 +133,9 @@ test_that("profile_get_customized_indicators, with various arguments", {
   # profile_get_customized_indicators with various argurments ====
   result_value <- profile_get_customized_indicators(profile)
   if (!is.null(result_value)) {
-    expect_fields <- c("field_code", "field_type", "field_name",
-                       "field_category", "field_source", "field_description",
-                       "field_formula", "rolling_window", "period",
+    expect_fields <- c("ind_code", "ind_type", "ind_name",
+                       "ind_category", "ind_source", "ind_description",
+                       "ind_formula", "rolling_window", "period",
                        "is_active")
 
     expect_true(all(expect_fields %in% names(result_value)))

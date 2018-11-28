@@ -1190,8 +1190,8 @@ get_indicators.gta_db <- function(stock_db, indicator_codes) {
   if (!is.null(matched_indicators)) {
     # build table_list for fetching indicators
     indicator_sources <- matched_indicators %>%
-      dplyr::filter(field_code %in% indicator_codes) %>%
-      dplyr::group_by(field_source) %>%
+      dplyr::filter(ind_code %in% indicator_codes) %>%
+      dplyr::group_by(ind_source) %>%
       tidyr::nest()
   } else {
     success <- FALSE
@@ -1202,9 +1202,9 @@ get_indicators.gta_db <- function(stock_db, indicator_codes) {
   ds_combined_indicators <- NULL
   if (success) {
     for (i in seq_len(nrow(indicator_sources))) {
-      indicator_source <- indicator_sources[i, ]$field_source
+      indicator_source <- indicator_sources[i, ]$ind_source
       indicator_params <- indicator_sources[i, ]$data[[1]]
-      indicator_codes <- indicator_params$field_code
+      indicator_codes <- indicator_params$ind_code
 
       # Get a indicator dataset from database
       if (success) {

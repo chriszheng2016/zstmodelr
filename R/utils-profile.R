@@ -129,22 +129,31 @@ profile_get_indicators <- function(profile_name, indicator_codes = NULL) {
 
   if (!is.null(indicator_codes)) {
     # get matched indicators info
-    matched_indicators <- indicators_info %>%
+    matched_indicators_info <- indicators_info %>%
       dplyr::filter(field_code %in% indicator_codes)
-    if (nrow(matched_indicators) == 0) {
+    if (nrow(matched_indicators_info) == 0) {
       msg <- sprintf(
         "No entry matched '%s' was found in %s",
         indicator_codes, profile_name
       )
       warning(msg)
-      matched_indicators <- NULL
+      matched_indicators_info <- NULL
     }
   } else {
     # get all indicators info
-    matched_indicators <- indicators_info
+    matched_indicators_info <- indicators_info
   }
 
-  return(matched_indicators)
+  # reformat colname from field_* to ind_*
+  if (!is.null(matched_indicators_info)) {
+    origin_colnames <- names(matched_indicators_info)
+    new_colnames <- stringr::str_replace(origin_colnames,
+                                         pattern = "field_",
+                                         replacement = "ind_")
+    names(matched_indicators_info) <- new_colnames
+  }
+
+  return(matched_indicators_info)
 }
 
 # Get info of customized indicators from profile of database
@@ -159,6 +168,15 @@ profile_get_customized_indicators <- function(profile_name) {
   # output only active indicators info
   customized_indicators_info <- customized_indicators_info %>%
     dplyr::filter(is_active == TRUE)
+
+  # reformat colname from field_* to ind_*
+  if (!is.null(customized_indicators_info)) {
+    origin_colnames <- names(customized_indicators_info)
+    new_colnames <- stringr::str_replace(origin_colnames,
+                                         pattern = "field_",
+                                         replacement = "ind_")
+    names(customized_indicators_info) <- new_colnames
+  }
 
   return(customized_indicators_info)
 }
