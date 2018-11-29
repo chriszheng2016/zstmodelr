@@ -276,10 +276,32 @@ test_that("get_indicators_from_source, with various arguments", {
 
 })
 
+test_that("save_indicators_to_source, with various arguments", {
+
+  # save_indicators_to_source with default arguments ====
+
+  ts_dates <- seq(as.Date("2018/1/1"), as.Date("2018/12/31"), by = "month")
+  ts_indicators <- tibble::tibble(date = ts_dates,
+                                  ind1 = 1:12)
+  indicator_source <- "test-ind01.rds"
+
+  result <- save_indicators_to_source(stock_db,
+                                      indicator_source = indicator_source,
+                                      ts_indicators = ts_indicators)
+
+  if ( result == TRUE) {
+    path_indicators <- dir_path_db(stock_db,
+                                dir_id = "DIR_DB_DATA_INDICATOR")
+    path_indicator_source <- file.path(path_indicators, indicator_source)
+    expect_true(file.exists(path_indicator_source))
+  }
+
+})
+
 test_that("get_indicators, with various arguments", {
 
   # get_indicators with default arguments ====
-  indicator_codes <- c("F010101A", "F010201A")
+  indicator_codes <- c("f010101a", "f010201a")
   ds_indicators <- get_indicators(stock_db, indicator_codes)
   expect_fields <- c("date", "period", "stkcd", "ind_name", "ind_value")
   expect_true(all(expect_fields %in% names(ds_indicators)))
@@ -348,6 +370,22 @@ test_that("get_factors_info, with various arguments", {
     expect_equal(actual_fields, expected_fields)
     expect_true(all(ds_matched_factors$factor_group %in% factor_groups))
   }
+})
+
+test_that("dir_path_db, with various arguments", {
+
+  # dir_path with default arguments ====
+  dir_id = c("DIR_DB_DATA",
+             "DIR_DB_DATA_SOURCE",
+             "DIR_DB_DATA_ORIGIN",
+             "DIR_DB_DATA_LOG",
+             "DIR_DB_DATA_INDICATOR")
+
+  for (i in seq_along(dir_id)) {
+     dir_path <- dir_path_db(stock_db, dir_id = dir_id[i])
+     expect_true(dirname(dir_path) != "")
+  }
+
 })
 
 test_that("Translation between code and name", {

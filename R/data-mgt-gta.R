@@ -29,14 +29,16 @@ get_datasource.gta_db <- function(stock_db) {
   ds_datasource <- NULL
   if (success) {
     ds_datasource_files <- profile_get_datasource_files(gta_profile_name)
+    input_dir <- dir_path_db(stock_db, dir_id = "DIR_DB_DATA_ORIGIN")
 
     # build specified result of datasource
     ds_datasource <- ds_datasource_files %>%
+      dplyr::mutate(input_dir = input_dir) %>%
       dplyr::select(
         target_table = target_table,
         input_file = input_file,
         input_type = input_type,
-        input_dir  = input_dir,
+        input_dir = input_dir,
         start_index = start_index
       )
   }
@@ -162,7 +164,7 @@ update_db.gta_db <- function(stock_db,
       msg <- sprintf("Import data into %s ...\n", data_source$target_table)
       message(msg)
 
-      success <- import_table.gta_db(stock_db,
+      success <- import_table(stock_db,
         input_file = data_source$input_file,
         input_type = data_source$input_type,
         input_dir = data_source$input_dir,

@@ -10,17 +10,18 @@ data_manager <- function() {
   stock_db <- stock_db(gta_db, "GTA_SQLData")
   open_stock_db(stock_db)
 
+  log_dir <- dir_path_db(stock_db, dir_id = "DIR_DB_DATA_LOG")
 
   # Update all tables
   update_db(stock_db,
     retry_log = NULL,
-    log_dir = "Z:/Stock/GTA/SQL_Data/Data/Source/log"
+    log_dir = log_dir
   )
 
   # Update only faild tables recored in th log file
   # update_db(stock_db,
   #           retry_log = "update_log_GTA_SQLDATA(current).csv",
-  #           log_dir = "Z:/Stock/GTA/SQL_Data/Data/Source/log")
+  #           log_dir = log_dir)
 
 
   # Close stock db
