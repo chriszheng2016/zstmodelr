@@ -389,7 +389,7 @@ setGeneric(
 
 #' Get indicators from specified source in stock_db
 #'
-#' Generic function to get indicator timeseries from from specified source in stock_db.
+#' Generic function to get indicator timeseries from specified source in stock_db.
 #'
 #' @param stock_db            A stock database object to operate.
 #' @param indicator_source    A name of table or file(with extension)
@@ -430,6 +430,38 @@ setGeneric(
     standardGeneric("get_indicators_from_source")
   }
 )
+
+#' Save indicators to specified source in stock_db
+#'
+#' Generic function to save indicator timeseries to specified source in stock_db.
+#'
+#' @param stock_db            A stock database object to operate.
+#' @param indicator_source    A name of table or file(with extension)
+#'  in which indicators are stored.
+#' @param ts_indicators       A dataframe of indicator timeseries
+#'
+#' @family stock_db generics
+#'
+#' @return A data frame of indicator timeseries if succeed, otherwise NULL.
+#' @export
+#'
+#' @examples
+# S3 generic definition
+# save_indicators_to_source <- function(stock_db, indicator_source,
+#                                       ts_indicators, ...)
+#   UseMethod("save_indicators_to_source")
+# }
+# S4 generic definition
+setGeneric(
+  name = "save_indicators_to_source",
+  signature = c("stock_db"),
+  def = save_indicators_to_source <- function(stock_db, indicator_source,
+                                              ts_indicators, ...) {
+    standardGeneric("save_indicators_to_source")
+  }
+)
+
+
 
 #' Get indicators from stock_db
 #'
@@ -523,6 +555,47 @@ setGeneric(
   }
 )
 
+#' Get Path of Data Directory from stock_db
+#'
+#' Generic function to get path of data directory from stock_db.
+#'
+#'
+#' @param stock_db         A stock database object to operate.
+#' @param dir_id           A character id of directory.
+#' @param force            Whether return result if dir dosen't existed.
+#'  Default TRUE, return result if dir doesn't exist.
+#'
+#' @family stock_db generics
+#'
+#' @return a full path of dir if succeed, otherwise NULL.
+#'  If the path of dir dosen't exist and force = FALSE, it raised a error.
+#' @export
+#'
+#' @examples
+# S3 generic definition
+# dir_path_db <- function(stock_db,
+#                      dir_id = c("DIR_DB_DATA",
+#                                           "DIR_DB_DATA_SOURCE",
+#                                           "DIR_DB_DATA_ORIGIN",
+#                                           "DIR_DB_DATA_LOG",
+#                                           "DIR_DB_DATA_INDICATOR"),
+#                      force = TRUE,...)
+#   UseMethod("dir_path_db")
+# }
+# S4 generic definition
+setGeneric(
+  name = "dir_path_db",
+  signature = c("stock_db"),
+  def = dir_path_db <- function(stock_db,
+                             dir_id = c("DIR_DB_DATA",
+                                        "DIR_DB_DATA_SOURCE",
+                                        "DIR_DB_DATA_ORIGIN",
+                                        "DIR_DB_DATA_LOG",
+                                        "DIR_DB_DATA_INDICATOR"),
+                             force = TRUE, ...) {
+    standardGeneric("dir_path_db")
+  }
+)
 
 
 # Non-generic functions for stock db operation ---------------------------------

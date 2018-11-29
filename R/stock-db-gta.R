@@ -211,7 +211,7 @@ init_stock_db.gta_db <- function(stock_db) {
   success <- TRUE
 
   # set up table name mapping for referece
-  gta_profile_name <- get_profile.gta_db(stock_db)
+  gta_profile_name <- get_profile(stock_db)
 
   # set up table name list
   stock_db$table_list <- list()
@@ -269,6 +269,7 @@ setMethod(
     init_stock_db.gta_db(stock_db, ...)
   }
 )
+
 
 
 
@@ -910,9 +911,10 @@ get_indicators_from_source.gta_db <- function(stock_db,
 
   # get dataset according different type of data source
   # if source_name is not a filename, data source should be a table
-  is_table <- (tools::file_ext("source_name") == "")
+  is_table <- (tools::file_ext(indicator_source) == "")
   ds_indicators_raw <- NULL
   if (is_table) {
+    # get dataset from table
     ds_indicators_raw <- get_table_dataset(stock_db,
       table_name = indicator_source
     )
@@ -1161,6 +1163,78 @@ setMethod(
   }
 )
 
+# Save indicators to specified data source(table/file) in stock_db
+# Method definition for s3 generic
+#' @describeIn save_indicators_to_source   save indicator timeseries to
+#' specified source in a database of gta_db class
+#'
+#' @export
+save_indicators_to_source.gta_db <- function(stock_db,
+                                             indicator_source,
+                                             ts_indicators) {
+
+  # validate params
+  stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
+  if (is.null(stock_db$connection)) {
+    stop("Stock db isn't connected, try to connect db again")
+  }
+
+  if (missing(indicator_source) || !is.character(indicator_source)) {
+    stop("data source name must be character string")
+  }
+
+  assertive::assert_is_data.frame(ts_indicators)
+
+  success <- TRUE
+
+  # get dataset according different type of data source
+  # if source_name is not a filename, data source should be a table
+  is_table <- (tools::file_ext(indicator_source) == "")
+  if (is_table) {
+    # TODO: save dataset to table
+
+    success <- FALSE
+  } else {
+    # save dataset to file
+    path_dir_indicator <- dir_path_db.gta_db(stock_db,
+      dir_id = "DIR_DB_DATA_INDICATOR",
+      force = FALSE
+    )
+    path_indicator_source <- file.path(path_dir_indicator, indicator_source)
+
+    file_ext <- tolower(tools::file_ext(indicator_source))
+    if (file_ext == "rds") {
+      saveRDS(ts_indicators, file = path_indicator_source)
+    } else {
+      success <- FALSE
+    }
+  }
+
+  if (!success) {
+    msg <- sprintf(
+      "fail to save indicatros into %s",
+      indicator_source
+    )
+    warning(msg)
+  }
+
+  return(success)
+}
+# Method definition for s4 generic
+#' @describeIn save_indicators_to_source  save indicator timeseries to
+#'  specified source in a database of gta_db class
+#' @export
+setMethod(
+  "save_indicators_to_source",
+  signature(stock_db = "gta_db"),
+  function(stock_db, indicator_source, ts_indicators, ...) {
+    save_indicators_to_source.gta_db(
+      stock_db, indicator_source, ts_indicators
+    )
+  }
+)
+
+
 # Get indicators timeseries from stock_db
 # Method definition for s3 generic
 #' @describeIn get_indicators get indicator timeseries from
@@ -1180,17 +1254,18 @@ get_indicators.gta_db <- function(stock_db, indicator_codes) {
   success <- TRUE
 
   # get file table name mapping for referece
-  gta_profile_name <- get_profile.gta_db(stock_db)
+  gta_profile_name <- get_profile(stock_db)
 
   # get indcator info of matched factor
   matched_indicators <- profile_get_indicators(
     gta_profile_name,
     indicator_codes
   )
+
   if (!is.null(matched_indicators)) {
     # build table_list for fetching indicators
     indicator_sources <- matched_indicators %>%
-      dplyr::filter(ind_code %in% indicator_codes) %>%
+      dplyr::filter(ind_code %in% tolower(indicator_codes)) %>%
       dplyr::group_by(ind_source) %>%
       tidyr::nest()
   } else {
@@ -1208,7 +1283,7 @@ get_indicators.gta_db <- function(stock_db, indicator_codes) {
 
       # Get a indicator dataset from database
       if (success) {
-        ds_indicators <- get_indicators_from_source.gta_db(stock_db,
+        ds_indicators <- get_indicators_from_source(stock_db,
           indicator_source = indicator_source,
           indicator_codes = indicator_codes,
           ouput_format = "long"
@@ -1265,7 +1340,7 @@ get_factors.gta_db <- function(stock_db, factor_codes) {
   success <- TRUE
 
   # get file table name mapping for referece
-  gta_profile_name <- get_profile.gta_db(stock_db)
+  gta_profile_name <- get_profile(stock_db)
 
   # get indcator info of matched factor
   matched_factors_info <- profile_get_factors(gta_profile_name, factor_codes)
@@ -1277,7 +1352,7 @@ get_factors.gta_db <- function(stock_db, factor_codes) {
   ds_indicators <- NULL
   if (success) {
     indicator_codes <- matched_factors_info$indicator_code
-    ds_indicators <- get_indicators.gta_db(stock_db,
+    ds_indicators <- get_indicators(stock_db,
       indicator_codes = indicator_codes
     )
     if (is.null(ds_indicators)) {
@@ -1301,8 +1376,6 @@ get_factors.gta_db <- function(stock_db, factor_codes) {
         factor_name = ind_name,
         factor_value = ind_value
       )
-
-
   }
 
   return(ds_factors)
@@ -1334,7 +1407,7 @@ get_factors_info.gta_db <- function(stock_db,
   }
 
   # get file table name mapping for referece
-  gta_profile_name <- get_profile.gta_db(stock_db)
+  gta_profile_name <- get_profile(stock_db)
 
   # get factors info of matched by factor_codes/factor_group
   matched_factors_info <- profile_get_factors(gta_profile_name,
@@ -1356,7 +1429,8 @@ get_factors_info.gta_db <- function(stock_db,
 }
 
 # Method definition for s4 generic
-#' @describeIn get_factors_info get factors info from a database of gta_db class
+#' @describeIn get_factors_info  get factors info from a database of gta_db class
+#'  gta_db class
 #' @export
 setMethod(
   "get_factors_info",
@@ -1366,7 +1440,62 @@ setMethod(
   }
 )
 
+# Get Path of Data Directory from stock_db
+# Method definition for s3 generic
+#' @describeIn dir_path_db get path of data directory from a database of
+#'  gta_db class
+#' @export
+dir_path_db.gta_db <- function(stock_db,
+                               dir_id = c(
+                                 "DIR_DB_DATA",
+                                 "DIR_DB_DATA_SOURCE",
+                                 "DIR_DB_DATA_ORIGIN",
+                                 "DIR_DB_DATA_LOG",
+                                 "DIR_DB_DATA_INDICATOR"
+                               ),
+                               force = TRUE) {
 
+  # validate params
+  stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
+  if (is.null(stock_db$connection)) {
+    stop("Stock db isn't connected, try to connect db again")
+  }
+
+  # get dir variable from profile
+  gta_profile_name <- get_profile(stock_db)
+  dir_id <- match.arg(dir_id)
+  dir_path <- profile_get_varible_setting(gta_profile_name, dir_id)
+
+  # check whether the dir exists
+  if (!is.null(dir_path)) {
+    if (force) {
+      tryCatch({
+        dir_path <- normalizePath(dir_path, winslash = "/")
+      },
+      error = function(cnd) {
+        msg <- conditionMessage(cnd)
+        message(msg)
+      }
+      )
+    } else {
+      dir_path <- normalizePath(dir_path, winslash = "/")
+    }
+  }
+
+  return(dir_path)
+}
+
+# Method definition for s4 generic
+#' @describeIn dir_path_db get path of data directory from a database of
+#'  gta_db class
+#' @export
+setMethod(
+  "dir_path_db",
+  signature(stock_db = "gta_db"),
+  function(stock_db, dir_id, force, ...) {
+    dir_path_db.gta_db(stock_db, dir_id, force)
+  }
+)
 
 # Non-generic internal functions for gta_db operation ---------------------------------
 
@@ -1377,7 +1506,7 @@ stock_field_list.gta_db <- function(stock_db) {
   # build field_name list
   field_name_list <- NULL
   table_name <- stock_db$table_list[["gta_fieldname_list"]]
-  field_list.df <- get_table_dataset.gta_db(stock_db, table_name)
+  field_list.df <- get_table_dataset(stock_db, table_name)
   if (!is.null(field_list.df)) {
     codes <- field_list.df[, "field_code"]
     codes <- tolower(codes)
@@ -1399,7 +1528,7 @@ stock_name_list.gta_db <- function(stock_db) {
   # build stock_name_list
   stock_name_list <- NULL
   table_name <- stock_db$table_list[["TRD_Co"]]
-  ds_trd_company.df <- get_table_dataset.gta_db(stock_db, table_name)
+  ds_trd_company.df <- get_table_dataset(stock_db, table_name)
   if (!is.null(ds_trd_company.df)) {
     codes <- ds_trd_company.df[, "stkcd"]
     # Coerce stock code to 6 digit of characters of format of "xxxxxxx"
@@ -1427,7 +1556,7 @@ industry_name_list.gta_db <- function(stock_db) {
   # build stock_name_list
   stock_name_list <- NULL
   table_name <- stock_db$table_list[["TRD_Co"]]
-  ds_trd_company.df <- get_table_dataset.gta_db(stock_db, table_name)
+  ds_trd_company.df <- get_table_dataset(stock_db, table_name)
   if (!is.null(ds_trd_company.df)) {
     ds_indistry <- ds_trd_company.df %>%
       dplyr::select(nnindcd, nnindnme) %>%
