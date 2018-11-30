@@ -23,18 +23,20 @@ check_fields <- function(.data, .fields) {
 }
 
 # Identify fields with specified type
+# numeric means an object of typeof intger or double
 expect_type_fields <- function(.data, .expect_type = c(
-                          "numeric",
-                          "integer",
-                          "character",
-                          "date",
-                          "factor",
-                          "NA",
-                          "NULL"
-                        ),
-                        .negate = FALSE,
-                        .expect_true_fun = NULL,
-                        ...) {
+                                 "numeric",
+                                 "integer",
+                                 "double",
+                                 "character",
+                                 "date",
+                                 "factor",
+                                 "list",
+                                 "NA"
+                               ),
+                               .negate = FALSE,
+                               .predicate = NULL,
+                               ...) {
   # validate params
   assertive::assert_is_not_null(.data)
   assertive::assert_is_logical(.negate)
@@ -42,14 +44,19 @@ expect_type_fields <- function(.data, .expect_type = c(
   all_fields <- names(.data)
 
   # build fun of expecation
-  if (is.null(.expect_true_fun)) {
+  if (is.null(.predicate)) {
     .expect_type <- match.arg(.expect_type)
-    expect_fun <- switch(.expect_type,
+    predicate_fun <- switch(.expect_type,
       "numeric" = {
-        purrr::as_mapper(~(inherits(., what = "numeric")))
+        # numeric means an object of typeof intger or double
+        # purrr::as_mapper(~(inherits(., what = "numeric")))
+        purrr::as_mapper(~(is.numeric(.)))
       },
       "integer" = {
         purrr::as_mapper(~(typeof(.) == "integer"))
+      },
+      "double" = {
+        purrr::as_mapper(~(typeof(.) == "double"))
       },
       "character" = {
         purrr::as_mapper(~(typeof(.) == "character"))
@@ -60,25 +67,27 @@ expect_type_fields <- function(.data, .expect_type = c(
       "factor" = {
         purrr::as_mapper(~(is.factor(.)))
       },
-      "NA" = {
-        purrr::as_mapper(~(all(is.na(.))))
+      "list" = {
+        # list means to coloum-list
+        purrr::as_mapper(~(typeof(.) == "list"))
       },
-      "NULL" = {
-        purrr::as_mapper(~(all(is.null(.))))
+      "NA" = {
+        # NA means all data in a coloum are NA
+        purrr::as_mapper(~(all(is.na(.))))
       }
     )
   } else {
-    assertive::assert_is_function(.expect_true_fun)
-    expect_fun <- .expect_true_fun
+    assertive::assert_is_function(.predicate)
+    predicate_fun <- .predicate
   }
 
   # need to get negative expected fields
   if (.negate) {
-    expect_fun <- purrr::negate(expect_fun)
+    predicate_fun <- purrr::negate(predicate_fun)
   }
 
   # use fun of expection to get result
-  are_expect_fields <- purrr::map_lgl(.data, expect_fun, ...)
+  are_expect_fields <- purrr::map_lgl(.data, predicate_fun, ...)
   expect_fields <- all_fields[are_expect_fields]
 
   return(expect_fields)
