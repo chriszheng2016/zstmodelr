@@ -1,12 +1,13 @@
 #' @include indicator-define.R
 #' @include stock-db-gta.R
 
-# get list of indicator definition
-#
-# Get data source info for importing raw data
-# Method definition for s3 generic
-#' @describeIn get_indicator_defs get a list of indicator defs  from
-#'  database of gta_db class
+# Generic functions implemetation by gta_db class ------------------------
+
+
+# Get definitiona of customzied indicators from gta_db
+#  Method definition for s3 generic
+#' @describeIn get_indicator_defs get indicator defs from database
+#'  of gta_db class.
 #' @export
 get_indicator_defs.gta_db <- function(stock_db) {
 
@@ -25,9 +26,11 @@ get_indicator_defs.gta_db <- function(stock_db) {
   customized_indictors_info <- profile_get_customized_indicators(gta_profile_name)
   if (!is.null(customized_indictors_info)) {
     customized_indictors_info <- customized_indictors_info %>%
-      dplyr::mutate(ind_expr = list(NULL),
-                    ind_def_fun = list(NULL),
-                    ind_vars = list(NULL))
+      dplyr::mutate(
+        ind_expr = list(NULL),
+        ind_def_fun = list(NULL),
+        ind_vars = list(NULL)
+      )
   } else {
     success <- FALSE
   }
@@ -43,7 +46,7 @@ get_indicator_defs.gta_db <- function(stock_db) {
       if (!is.na(indicator_formula)) {
 
         # create ind_expr
-        indicator_expr <- create_expr(indicator_formula)
+        indicator_expr <- create_expr(!!indicator_formula)
         customized_indictors_info$ind_expr[i] <- list(indicator_expr)
 
         # create def_fun for indicator
@@ -56,11 +59,9 @@ get_indicator_defs.gta_db <- function(stock_db) {
         customized_indictors_info$ind_def_fun[i] <- list(indicator_def)
 
         # parse vars for computing indicator
-        indicaotr_vars <- parse_indicator_vars(indicator_expr)
+        indicaotr_vars <- parse_indicator_vars(stock_db, indicator_expr)
         customized_indictors_info$ind_vars[i] <- list(indicaotr_vars)
-
       }
-
     }
   }
 
@@ -68,8 +69,8 @@ get_indicator_defs.gta_db <- function(stock_db) {
 }
 
 # Method definition for s4 generic
-#' @describeIn get_indicator_defs get_indicator_defs get a list of indicator defs  from
-#'  database of gta_db class
+#' @describeIn get_indicator_defs get indicator defs from database
+#'  of gta_db class.
 #' @export
 setMethod(
   "get_indicator_defs",
@@ -79,12 +80,11 @@ setMethod(
   }
 )
 
-# get list of indicator definition
-#
-# Get data source info for importing raw data
+
+# Get input vars for computing customzied indicators from gta_db
 # Method definition for s3 generic
-#' @describeIn get_indicator_vars get a list of indicator defs  from
-#'  database of gta_db class
+#' @describeIn get_indicator_vars get input vars for computing customzied
+#'  indicators from database of gta_db class.
 #' @export
 get_indicator_vars.gta_db <- function(stock_db, indicator_defs) {
 
@@ -110,15 +110,16 @@ get_indicator_vars.gta_db <- function(stock_db, indicator_defs) {
 
     # get indicators for vars
     ds_vars <- get_indicators(stock_db,
-                                  indicator_codes = vars_ind_code)
+      indicator_codes = vars_ind_code
+    )
   }
 
   return(ds_vars)
 }
 
 # Method definition for s4 generic
-#' @describeIn get_indicator_vars  get a list of indicator defs  from
-#'  database of gta_db class
+#' @describeIn get_indicator_vars  get input vars for computing customzied
+#'  indicators from database of gta_db class.
 #' @export
 setMethod(
   "get_indicator_vars",
@@ -128,5 +129,48 @@ setMethod(
   }
 )
 
+# Parse vars in indicator expr from gta_db
+# Method definition for s3 generic
+#' @describeIn parse_indicator_vars parse vars in indicator expr from
+#'  database of gta_db class.
+#' @export
+parse_indicator_vars.gta_db <- function(stock_db, indicator_expr) {
 
+  # validate params
+  stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
+  if (is.null(stock_db$connection)) {
+    stop("Stock db isn't connected, try to connect db again")
+  }
+  assertive::assert_is_call(indicator_expr)
 
+  # get syms from expr
+  syms <- find_syms(!!indicator_expr,
+    pattern = "[^\\{\\+\\-\\*\\/\\(\\^\\<-]"
+  )
+
+  # get indicator_vars codes matched with symbols in expr
+  indicator_vars <- NULL
+  gta_profile_name <- get_profile(stock_db)
+  all_indictors_info <- profile_get_indicators(gta_profile_name)
+  if (!is.null(all_indictors_info)) {
+    all_indictors_codes <- all_indictors_info$ind_code
+
+    syms_in_indicators <- all_indictors_codes %in% tolower(syms)
+    indicator_vars <- all_indictors_codes[syms_in_indicators]
+  }
+
+  return(indicator_vars)
+}
+# Method definition for s4 generic
+#' @describeIn parse_indicator_vars parse vars in indicator expr from
+#'  database of gta_db class.
+#' @export
+setMethod(
+  "parse_indicator_vars",
+  signature(stock_db = "gta_db"),
+  function(stock_db, indicator_expr, ...) {
+    parse_indicator_vars.gta_db(stock_db, indicator_expr)
+  }
+)
+
+# Non-generic internal functions for gta_db operation ---------------------------------

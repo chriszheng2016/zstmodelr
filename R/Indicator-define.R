@@ -2,16 +2,16 @@
 # Generic functions for indicator defining  ------------------------------
 
 
-#' Get definition of customzied indicators from stock_db
+#' Get definitions of customzied indicators from stock_db
 #'
 #' Generic function to get definition of customized indicators from stock_db.
 #'
 #' @param stock_db         A stock database object to operate.
 #'
 #'
-#' @family indicator managment functions
+#' @family indicator build functions
 #'
-#' @return A dataframe of definition of customized indicators if succeed,
+#' @return A dataframe of definitions of customized indicators if succeed,
 #' otherwise NULL.
 #'
 #' @export
@@ -30,16 +30,16 @@ setGeneric(
   }
 )
 
-#' Get vars for computing customzied definition from stock_db
+#' Get input vars for computing customzied indicators from stock_db
 #'
 #' Generic function to get vars for computing customized indicators from stock_db.
 #'
 #' @param stock_db         A stock database object to operate.
-#' @param indicator_defs   A dataframe of indicator definitions
+#' @param indicator_defs   A dataframe of indicator definitions.
 #'
-#' @family indicator managment functions
+#' @family indicator build functions
 #'
-#' @return A dataframe of definition of customized indicators if succeed,
+#' @return A dataframe of input vars for computing customized indicators if succeed,
 #' otherwise NULL.
 #'
 #' @export
@@ -58,17 +58,62 @@ setGeneric(
   }
 )
 
+#' Parse vars in indicator expr from stock_db
+#'
+#' Generic function to parse vars in indicator expr from stock_db.
+#'
+#' @param stock_db         A stock database object to operate.
+#' @param indicator_expr   A expr of indicator to parase.
+#'
+#' @family indicator build functions
+#'
+#' @return A dataframe of input vars for computing customized indicators if succeed,
+#' otherwise NULL.
+#'
+#' @export
+#'
+#' @examples
+# S3 generic definition
+# get_indicator_vars <- function(stock_db, indicator_expr, ...){
+#   UseMethod("get_indicator_vars")
+# }
+# S4 generic definition
+setGeneric(
+  name = "parse_indicator_vars",
+  signature = c("stock_db"),
+  def = parse_indicator_vars <- function(stock_db, indicator_expr, ...) {
+    standardGeneric("parse_indicator_vars")
+  }
+)
 
 
 # Non-generic functions for indicator defining  ---------------------------------
 
-# translate indicator formula into function
+#' Translate indicator params into definiton function
+#'
+#' Combine indicator params into a definition function for computing indicators.
+#'
+#' @param indicator_expr   A expr as a formula to compute indicator.
+#' @param indicator_name   A character for indicator name.
+#' @param rolly_window   A integer as rolly computing window.
+#' @param period   A periodicity of indicator, i.e. "day", "month",
+#'    "quarter", "yearly".
+#'
+#'
+#' @family indicator build functions
+#'
+#' @return A function of indicator definition to compute indicator if succeed,
+#' otherwise NULL.
+#'
+#' @export
+#'
+#' @examples
 create_indicator_def <- function(indicator_expr,
                                  indicator_name,
                                  rolly_window = 0,
                                  period = c(
                                    "day", "month",
-                                   "quarter", "yearly"
+                                   "quarter", "year"
                                  )) {
 
   # validate params
@@ -81,6 +126,7 @@ create_indicator_def <- function(indicator_expr,
   indicator_name <- force(indicator_name)
   rolly_window <- force(rolly_window)
   period <- match.arg(period)
+  eval_env <- rlang::current_env()
 
   # define method of evaluting exprs
   .eval_expr <- function(ds_vars) {
@@ -88,17 +134,19 @@ create_indicator_def <- function(indicator_expr,
     # validate params
     assertive::assert_is_data.frame(ds_vars)
 
-    result <- NA
+    result <- NULL
 
     # redefine eval_tidy to return default value and disply error
     # if an error occured in evaluating expr
     eval_tidy_with_dfault <- purrr::possibly(rlang::eval_tidy,
-      otherwise = NA,
+      otherwise = NULL,
       quiet = FALSE
     )
 
     # evaluate expr to compute indicator
-    result <- eval_tidy_with_dfault(compute_expr, data = ds_vars)
+    result <- eval_tidy_with_dfault(compute_expr,
+                                    data = ds_vars,
+                                    env = eval_env)
 
     return(result)
   }
@@ -137,13 +185,15 @@ create_indicator_def <- function(indicator_expr,
   # define ds_var process
   .process_vars <- function(ds_vars,
                               date_index_field = c("date"),
-                              re_freq = c("month", "quarter", "year")) {
+                              re_freq = c("day", "month",
+                                          "quarter", "year")) {
 
     # validate params
     assertive::assert_is_data.frame(ds_vars)
 
     # ensure all import fields are existed
     check_fields(ds_vars, c("ind_name", "ind_value"))
+
 
     # re-group vars by period
     ds_vars_by_period <- ds_vars %>%
@@ -157,7 +207,7 @@ create_indicator_def <- function(indicator_expr,
       dplyr::mutate(
         refreq_data =
           purrr::map(data,
-            purrr::possibly(ts_resample, otherwise = NULL, quiet = TRUE),
+            ts_resample,
             freq_rule = re_freq,
             fillna_method = "ffill",
             agg_method = mean,
@@ -188,7 +238,7 @@ create_indicator_def <- function(indicator_expr,
 
   # define indicator definition function
   ind_def_fun <- function(ds_vars, date_index_field = c("date"),
-                        key_fields = NULL, ....) {
+                            key_fields = NULL, ....) {
 
     # validate params
     assertive::assert_is_data.frame(ds_vars)
@@ -218,93 +268,33 @@ create_indicator_def <- function(indicator_expr,
     # validate result
     if (NROW(ds_vars) != NROW(ds_indicator)) {
       msg <- sprintf(
-        "length of indicator result(%d) isn't equal to that of vars(%d)",
-        NROW(ds_indicator), NROW(ds_vars)
+        "error in computing indicator(%s):
+        length of indicator(%d) isn't equal to that of vars(%d)",
+        indicator_name,
+        NROW(ds_indicator),
+        NROW(ds_vars)
       )
-      rlang::warn(msg)
-      success <- FALSE
+      rlang::abort(msg)
     }
 
-    # build timeseries for indicators
-    ts_indicator <- NULL
-    if (success) {
+    # create timeseries for indicators
+    ts_indicator <- tibble::tibble(
+      date = ds_vars$date,
+      period = !!period,
+      !!indicator_name := ds_indicator
+    )
 
-      # create timeseries for indicators
-      ts_indicator <- tibble::tibble(
-        date = ds_vars$date,
-        period = !!period,
-        !!indicator_name := ds_indicator
-      )
-
-      # combine key fields and indicators
-      ts_indicator <- ds_vars %>%
-        dplyr::select(
-          !!date_index_field,
-          !!key_fields
-        ) %>%
-        dplyr::left_join(ts_indicator, by = date_index_field)
-    }
+    # combine key fields and indicators
+    ts_indicator <- ds_vars %>%
+      dplyr::select(
+        !!date_index_field,
+        !!key_fields
+      ) %>%
+      dplyr::left_join(ts_indicator, by = date_index_field)
 
     return(ts_indicator)
   }
 
   # return function of defining indicator
   return(ind_def_fun)
-}
-
-# parse vars from indicator exprs
-parse_indicator_vars <- function(indicator_expr) {
-
-  # validate params
-  assertive::assert_is_call(indicator_expr)
-
-  indicator_vars <- NULL
-
-  indicator_vars <- c("Mclsprc", "F090101C", "F091001A")
-
-  return(indicator_vars)
-}
-
-# create a expr for evaluation from expr, list of exprs, or strings
-create_expr <- function(expr) {
-  exprs_var <- rlang::enquo(expr)
-
-  # validate param
-  assertive::assert_is_not_null(expr)
-
-  # covert exprs to support mutli-types of exprs
-  if (is.call(expr)) {
-    # just expr
-    result_expr <- expr
-  } else if (is.list(expr)) {
-    # list of expr
-    result_expr <- rlang::expr({
-      !!!expr
-    })
-  } else if (is.character(expr)) {
-    # expr string
-    exprs_string <- expr
-    exprs_string <- stringr::str_remove(exprs_string, "\\r")
-    expr <- rlang::parse_exprs(exprs_string)
-    result_expr <- rlang::expr({
-      !!!expr
-    })
-  } else {
-    # invalid exprs
-    msg <- sprintf(
-      "exprs(%s) should be expr, list of expr, or charaters",
-      as.character(exprs_var)
-    )
-    rlang::abort(msg)
-  }
-
-  return(result_expr)
-}
-
-# get symbols from exprs
-syms_of_expr <- function(expr) {
-  exprs_var <- rlang::enquo(expr)
-  syms <- NULL
-
-  return(syms)
 }

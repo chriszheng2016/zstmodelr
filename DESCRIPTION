@@ -53,6 +53,7 @@ Collate:
     'stock-db-default.R'
     'testthat-extends.R'
     'utils-dates.R'
+    'utils-expr.R'
     'utils-fields.R'
     'utils-profile.R'
     'utils-report.R'

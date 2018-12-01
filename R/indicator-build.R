@@ -1,5 +1,24 @@
 
-# Compute Indicator by using definition and variables
+#' Compute Indicator by Using Definition and Variables
+#'
+#' Use definition function and variables timeseries to compute indicator.
+#'
+#' @param ts_vars   A dataframe of variable timeseries to compute indicator.
+#' @param ind_def_fun   A function of defining indicator.
+#' @param ...       Params to ind_def_fun.
+#' @param date_index_field  Name of date index field of ts_vars, default 'date'.
+#' @param key_fields    A character vector of key fields, which identify unique
+#'   observation in each date.
+#' @param parallel   A logic to deterimine whether to use parallel processing.
+#'
+#'
+#' @family indicator build functions
+#'
+#' @return A dataframe of indicators if succeed, otherwise NULL.
+#'
+#' @export
+#'
+#' @examples
 compute_indicator <- function(ts_vars,
                               ind_def_fun,
                               ...,
@@ -25,27 +44,29 @@ compute_indicator <- function(ts_vars,
       dplyr::arrange(!!date_index)
 
     # compute indicator
-    ts_indicator <- ind_def_fun(ts_vars,
-      date_index_field = date_index_field,
-      key_fields = key_fields,
-      ...
-    )
-
-    # warn user of failure
-    if (is.null(ts_indicator)) {
-      if (!is.null(key_fields)) {
-        key_id <- as.character(ts_vars[1, key_fields])
-        key_id <- paste(key_id, collapse = "-")
-      } else {
-        key_id <- "NULL"
-      }
-      msg <- sprintf(
-        "faild to compute indictors for %s",
-        key_id
+    ts_indicator <- NULL
+    tryCatch({
+      ts_indicator <- ind_def_fun(ts_vars,
+        date_index_field = date_index_field,
+        key_fields = key_fields,
+        ...
       )
-      rlang::warn(msg)
-    }
+    },
+      error = function(cnd) {
 
+        # inform user of failure and return NULL
+        key_id = ""
+        if (!is.null(key_fields) & NROW(ts_vars) > 0) {
+          key_id <- paste0(ts_vars[1, key_fields], collapse = "-")
+        }
+        msg <- sprintf("Fail to compute indictor for %s:\n  %s",
+                       key_id,
+                       cnd$message)
+        rlang::inform(msg)
+
+        ts_indicator <- NULL
+      }
+    )
     return(ts_indicator)
   }
 
