@@ -2,7 +2,7 @@
 
 #' Utility Frequency Conversion Method of Resamping Timeseries
 #'
-#' Convert TimeSeries to specified frequency by resamploing date index
+#' Convert timeseries to specified frequency by resamploing date index
 #'
 #' Convert timeseries to specified frequency by resampling date index.
 #' Optionally provide filling method to pad/backfill missing values.
@@ -135,7 +135,8 @@ ts_lag <- function(ts_dataset,
 
 # Generic function implemetaion by tibble class -------------------------------
 
-# Convert TimeSeries to specified frequency by resampling for tibble dataset
+# Convert timeseries to specified frequency by resampling for tibble dataset
+#' @param parallel   A logic to deterimine whether to use parallel processing.
 #' @describeIn ts_resample Resamping timeseries of tibble dataset
 #' @export
 # Method definition for s3 generic
@@ -145,7 +146,8 @@ ts_resample.tbl_df <- function(ts_dataset,
                                agg_fun = mean,
                                ...,
                                date_index_field = c("date"),
-                               key_fields = NULL) {
+                               key_fields = NULL,
+                               parallel = TRUE) {
 
   # define internal function to process single group dataset
   .ts_resample_single_df <- function(ts_dataset,
@@ -239,7 +241,7 @@ ts_resample.tbl_df <- function(ts_dataset,
       ...,
       date_index_field = date_index_field,
       key_fields = key_fields,
-      .parallel = TRUE,
+      .parallel = parallel,
       .progress = plyr::progress_win(title = "Resampling...")
     )
   }
@@ -256,14 +258,16 @@ ts_resample.tbl_df <- function(ts_dataset,
 #             ts_resample.tbl_df(ts_dataset, ...)
 #           })
 
-# Convert TimeSeries to specified frequency by refrequencying for tibble dataset
+# Convert timeseries to specified frequency by refrequencying for tibble dataset
+#' @param parallel   A logic to deterimine whether to use parallel processing.
 #' @describeIn ts_asfreq Set new frequency for timeseries of tibble dataset
 #' @export
 ts_asfreq.tbl_df <- function(ts_dataset,
                              freq_rule = c("day", "month", "quarter"),
                              fillna_method = c("nfill", "ffill", "bfill"),
                              date_index_field = c("date"),
-                             key_fields = NULL) {
+                             key_fields = NULL,
+                             parallel = TRUE) {
 
   # define internal function to process single group dataset
   .ts_asfreq_single_df <- function(ts_dataset,
@@ -337,7 +341,7 @@ ts_asfreq.tbl_df <- function(ts_dataset,
       fillna_method = fillna_method,
       date_index_field = date_index_field,
       key_fields = key_fields,
-      .parallel = TRUE,
+      .parallel = parallel,
       .progress = plyr::progress_win(title = "Refreqencing...")
     )
   }
@@ -348,6 +352,9 @@ ts_asfreq.tbl_df <- function(ts_dataset,
 }
 
 # Compute a lagged version of timeseries for tibble
+#' @param parallel   A logic to deterimine whether to use parallel processing.
+#'   default TRUE means to use parallel processing.
+#'
 #' @describeIn ts_lag  Compute a lagged version of timeseries for tibble dataset
 #' @export
 ts_lag.tbl_df <- function(ts_dataset,
@@ -355,7 +362,8 @@ ts_lag.tbl_df <- function(ts_dataset,
                           trim = TRUE,
                           ...,
                           date_index_field = c("date"),
-                          key_fields = NULL) {
+                          key_fields = NULL,
+                          parallel = TRUE) {
 
   # compute lag timeseries for single group dataset
   .ts_lag_single_df <- function(ts_dataset,
@@ -363,7 +371,8 @@ ts_lag.tbl_df <- function(ts_dataset,
                                   trim = TRUE,
                                   ...,
                                   date_index_field = c("date"),
-                                  key_fields = NULL) {
+                                  key_fields = NULL
+                                  ) {
 
     # validate params
     stopifnot(!is.null(ts_dataset), inherits(ts_dataset, "data.frame"))
@@ -372,7 +381,8 @@ ts_lag.tbl_df <- function(ts_dataset,
     # Shift data at current timeline
     origin_group_vars <- dplyr::group_vars(ts_df)
 
-    date_index_field <- rlang::parse_quo(date_index_field, env = caller_env())
+    date_index_field <- rlang::parse_quo(date_index_field,
+                                         env = rlang::caller_env())
 
     if (k > 0) {
       # shift backward
@@ -451,7 +461,7 @@ ts_lag.tbl_df <- function(ts_dataset,
       trim = trim,
       date_index_field = date_index_field,
       key_fields = key_fields,
-      .parallel = TRUE,
+      .parallel = parallel,
       .progress = plyr::progress_win(title = "Lagging...")
     )
   }
@@ -547,7 +557,7 @@ reindex_by_regroup.tbl_df <- function(ts_df,
 # Generic function implemetaion by timeSeries class -------------------------
 
 
-# Convert TimeSeries to specified frequency by resampling for timeSeries dataset
+# Convert timeseries to specified frequency by resampling for timeSeries dataset
 #' @describeIn ts_resample Resamping timeseries of timeSeries dataset
 #' @export
 ts_resample.timeSeries <- function(ts_dataset,
@@ -601,7 +611,7 @@ ts_resample.timeSeries <- function(ts_dataset,
   return(new_timeseries)
 }
 
-# Convert TimeSeries to specified frequency by refrequencying for timeSeries dataset
+# Convert timeseries to specified frequency by refrequencying for timeSeries dataset
 #' @describeIn ts_asfreq Set new frequency for timeseries of timeSeries dataset
 #' @export
 ts_asfreq.timeSeries <- function(ts_dataset,

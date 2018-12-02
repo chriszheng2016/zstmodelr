@@ -11,7 +11,7 @@ ts_asfreq(ts_dataset, freq_rule = c("day", "month", "quarter"),
 
 \method{ts_asfreq}{tbl_df}(ts_dataset, freq_rule = c("day", "month",
   "quarter"), fillna_method = c("nfill", "ffill", "bfill"),
-  date_index_field = c("date"), key_fields = NULL)
+  date_index_field = c("date"), key_fields = NULL, parallel = TRUE)
 
 \method{ts_asfreq}{timeSeries}(ts_dataset, freq_rule = c("day", "month",
   "quarter"), fillna_method = c("nfill", "ffill", "bfill"), ...)
@@ -30,6 +30,8 @@ default 'date', Column must be date-like. Only be used for tibble dataset.}
 
 \item{key_fields}{A character vector of key fields, which identify unique
 observation in each date. Only be used for tibble dataset.}
+
+\item{parallel}{A logic to deterimine whether to use parallel processing.}
 }
 \value{
 A converted timeseres
