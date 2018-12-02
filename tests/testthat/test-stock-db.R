@@ -241,62 +241,176 @@ test_that("get_market_return, with various arguments", {
   expect_equivalent(expect, actual)
 })
 
+test_that("save_indicators_to_source, with various arguments", {
+
+  # test dataset for save
+  ts_dates <- seq(as.Date("2018/1/1"), as.Date("2018/12/31"), by = "month")
+  ts_dates <- lubridate::ceiling_date(ts_dates, unit = "month") - 1
+  ts_indicators <- tibble::tibble(date = ts_dates,
+                                  ind01 = 1:12)
+
+  # save_indicators_to_source into a rds file ====
+  indicator_source <- "test-ind01.rds"
+  save_indicators_to_source(stock_db, indicator_source = indicator_source,
+                            ts_indicators = ts_indicators)
+
+  path_indicators <- dir_path_db(stock_db,
+                                 dir_id = "DIR_DB_DATA_INDICATOR")
+  path_indicator_source <- file.path(path_indicators, indicator_source)
+  expect_true(file.exists(path_indicator_source))
+
+  # save_indicators_to_source into a csv file ====
+  indicator_source <- "test-ind01.csv"
+  save_indicators_to_source(stock_db,
+                            indicator_source = indicator_source,
+                            ts_indicators = ts_indicators)
+  path_indicators <- dir_path_db(stock_db,
+                                 dir_id = "DIR_DB_DATA_INDICATOR")
+  path_indicator_source <- file.path(path_indicators, indicator_source)
+  expect_true(file.exists(path_indicator_source))
+
+  # save_indicators_to_source into unsupported format file ====
+  indicator_source <- "test-ind01.xlsx"
+  expect_error(save_indicators_to_source(stock_db,
+                                         indicator_source = indicator_source,
+                                         ts_indicators = ts_indicators),
+               "unsupport format file")
+
+
+  # save_indicators_to_source into a table ====
+  indicator_source <- "test-ind01"
+  expect_error(save_indicators_to_source(stock_db,
+                                         indicator_source = indicator_source,
+                                         ts_indicators = ts_indicators))
+
+})
+
+
 test_that("get_indicators_from_source, with various arguments", {
 
   # get_indicators_from_source with default arguments ====
   ds_indicators <- get_indicators_from_source(stock_db,
                                               indicator_source = "TRD_Year")
 
-  expect_fields <- c("date", "period", "stkcd", "ind_name", "ind_value")
-  expect_true(all(expect_fields %in% names(ds_indicators)))
-  expect_true(inherits(ds_indicators$date, "Date"))
-  expect_true(unique(ds_indicators$period) == "year")
-  expect_true(is.character(ds_indicators$stkcd))
+  if (!is.null(ds_indicators)) {
+    expect_fields <- c("date", "period", "stkcd", "ind_name", "ind_value")
+    expect_true(all(expect_fields %in% names(ds_indicators)))
+    expect_true(inherits(ds_indicators$date, "Date"))
+    expect_true(unique(ds_indicators$period) == "year")
+    expect_true(is.character(ds_indicators$stkcd))
+  }
 
-  # get_indicators_from_source with various arguments: table of predfined indicator ====
+  # get_indicators_from_source from table of predfined indicator ====
+
+  # output in "long" format
   indicator_source <- "FR_T1"
-  indicator_codes <- c("F010101A", "F010201A")
+  indicator_codes <- c("f010101a", "f010201a")
+
+  ds_indicators <- get_indicators_from_source(stock_db,
+                                              indicator_source = indicator_source,
+                                              indicator_codes = indicator_codes,
+                                              ouput_format = "long"
+  )
+  if (!is.null(ds_indicators)) {
+    expect_fields <- c("date", "period", "stkcd", "ind_name", "ind_value")
+    expect_true(all(expect_fields %in% names(ds_indicators)))
+    expect_true(inherits(ds_indicators$date, "Date"))
+    expect_true(unique(ds_indicators$period) == "quarter")
+    expect_true(is.character(ds_indicators$stkcd))
+  }
+
+  # output in "wide" format
+  indicator_source <- "FR_T1"
+  indicator_codes <- c("f010101a", "f010201a")
 
   ds_indicators <- get_indicators_from_source(stock_db,
     indicator_source = indicator_source,
-    indicator_list = indicator_codes,
+    indicator_codes = indicator_codes,
     ouput_format = "wide"
   )
-  expect_fields <- c(
-    "date", "period", "stkcd", "indcd",
-    tolower(indicator_codes)
-  )
-  expect_true(all(expect_fields %in% names(ds_indicators)))
-  expect_true(inherits(ds_indicators$date, "Date"))
-  expect_true(unique(ds_indicators$period) == "quarter")
-  expect_true(is.character(ds_indicators$stkcd))
-
-  # get_indicators_from_source with various arguments: file of customized indicator ====
-
-
-})
-
-test_that("save_indicators_to_source, with various arguments", {
-
-  # save_indicators_to_source with default arguments ====
-
-  ts_dates <- seq(as.Date("2018/1/1"), as.Date("2018/12/31"), by = "month")
-  ts_indicators <- tibble::tibble(date = ts_dates,
-                                  ind1 = 1:12)
-  indicator_source <- "test-ind01.rds"
-
-  result <- save_indicators_to_source(stock_db,
-                                      indicator_source = indicator_source,
-                                      ts_indicators = ts_indicators)
-
-  if ( result == TRUE) {
-    path_indicators <- dir_path_db(stock_db,
-                                dir_id = "DIR_DB_DATA_INDICATOR")
-    path_indicator_source <- file.path(path_indicators, indicator_source)
-    expect_true(file.exists(path_indicator_source))
+  if (!is.null(ds_indicators)) {
+    expect_fields <- c(
+      "date", "period", "stkcd", "indcd", indicator_codes)
+    expect_true(all(expect_fields %in% names(ds_indicators)))
+    expect_true(inherits(ds_indicators$date, "Date"))
+    expect_true(unique(ds_indicators$period) == "quarter")
+    expect_true(is.character(ds_indicators$stkcd))
   }
 
+  # get_indicators_from_source from file of customized indicator ====
+
+  # rds format of inidcator file
+
+  # output in "long" format
+  indicator_source <- "test-ind01.rds"
+  indicator_codes <- c("ind01")
+  ds_indicators <- get_indicators_from_source(stock_db,
+                                              indicator_source = indicator_source,
+                                              indicator_codes = indicator_codes,
+                                              ouput_format = "long")
+  if (!is.null(ds_indicators)) {
+    expect_fields <- c("date", "period", "ind_name", "ind_value")
+    expect_true(all(expect_fields %in% names(ds_indicators)))
+    expect_true(inherits(ds_indicators$date, "Date"))
+    expect_true(unique(ds_indicators$period) == "month")
+  }
+
+  # output in "wide" format
+  indicator_source <- "test-ind01.rds"
+  indicator_codes <- c("ind01")
+  ds_indicators <- get_indicators_from_source(stock_db,
+                                              indicator_source = indicator_source,
+                                              indicator_codes = indicator_codes,
+                                              ouput_format = "wide")
+  if (!is.null(ds_indicators)) {
+    expect_fields <- c("date", "period", indicator_codes)
+    expect_true(all(expect_fields %in% names(ds_indicators)))
+    expect_true(inherits(ds_indicators$date, "Date"))
+    expect_true(unique(ds_indicators$period) == "month")
+  }
+
+  # csv format of inidcator file
+
+  # output in "long" format
+  indicator_source <- "test-ind01.csv"
+  indicator_codes <- c("ind01")
+  ds_indicators <- get_indicators_from_source(stock_db,
+                                              indicator_source = indicator_source,
+                                              indicator_codes = indicator_codes,
+                                              ouput_format = "long")
+  if (!is.null(ds_indicators)) {
+    expect_fields <- c("date", "period", "ind_name", "ind_value")
+    expect_true(all(expect_fields %in% names(ds_indicators)))
+    expect_true(inherits(ds_indicators$date, "Date"))
+    expect_true(unique(ds_indicators$period) == "month")
+  }
+
+  # output in "wide" format
+  indicator_source <- "test-ind01.csv"
+  indicator_codes <- c("ind01")
+  ds_indicators <- get_indicators_from_source(stock_db,
+                                              indicator_source = indicator_source,
+                                              indicator_codes = indicator_codes,
+                                              ouput_format = "wide")
+  if (!is.null(ds_indicators)) {
+    expect_fields <- c("date", "period", indicator_codes)
+    expect_true(all(expect_fields %in% names(ds_indicators)))
+    expect_true(inherits(ds_indicators$date, "Date"))
+    expect_true(unique(ds_indicators$period) == "month")
+  }
+
+  # unsuport format of inidcator file
+  indicator_source <- "test-ind01.xlsx"
+  indicator_codes <- c("ind01")
+  expect_warning(ds_indicators <- get_indicators_from_source(stock_db,
+                                              indicator_source = indicator_source,
+                                              indicator_codes = indicator_codes,
+                                              ouput_format = "wide"),
+                 "unsupport format file")
+
+
 })
+
 
 test_that("get_indicators, with various arguments", {
 

@@ -393,7 +393,7 @@ setGeneric(
 #'
 #' @param stock_db            A stock database object to operate.
 #' @param indicator_source    A name of table or file(with extension)
-#'  in which indicators are stored.
+#'  in which indicators are stored. For file, formats of rds,csv are supported.
 #'
 #' @param indicator_codes      A vector of inicator code. Default NULL return
 #'  all indicators in the source.
@@ -437,12 +437,12 @@ setGeneric(
 #'
 #' @param stock_db            A stock database object to operate.
 #' @param indicator_source    A name of table or file(with extension)
-#'  in which indicators are stored.
+#'  in which indicators are stored. For file, formats of rds,csv are supported.
 #' @param ts_indicators       A dataframe of indicator timeseries
 #'
 #' @family stock_db generics
 #'
-#' @return A data frame of indicator timeseries if succeed, otherwise NULL.
+#' @return NULL invisibly. Raise error if anything goes wrong.
 #' @export
 #'
 #' @examples
@@ -474,7 +474,7 @@ setGeneric(
 #'
 #' @return A dataframe of indicator timeseries if succeed, otherwise NULL.
 #'   In order to store multi-indicators with different periods(day,
-#'   month, quarter, year), returned data frame adapt longer format,
+#'   month, quarter, year), returned data frame adapts longer format,
 #'   which means name of indicator is stored in "ind_name", value of factor
 #'   is stored in "ind_value".
 #' @export
@@ -504,7 +504,7 @@ setGeneric(
 #'
 #' @return A dataframe of factor timeseries if succeed, otherwise NULL.
 #'   In order to store multi-factors with different periods(day,
-#'   month, quarter, year), returned data frame adapt longer format,
+#'   month, quarter, year), returned data frame adapts longer format,
 #'   which means name of factor is stored in "factor_name", value of factor
 #'   is stored in "factor_value".
 #' @export
@@ -562,23 +562,31 @@ setGeneric(
 #'
 #' @param stock_db         A stock database object to operate.
 #' @param dir_id           A character id of directory.
+#' \itemize{
+#'       \item "DIR_DB_DATA": dir of database of stock_db
+#'       \item "DIR_DB_DATA_SOURCE" : dir of source data to process into database;
+#'       \item "DIR_DB_DATA_ORIGIN":  dir of origin data to import into database;
+#'       \item "DIR_DB_DATA_LOG": dir of log of database operation;
+#'       \item "DIR_DB_DATA_INDICATOR": dir of customized indicators;
+#'       }
+#'
 #' @param force            Whether return result if dir dosen't existed.
 #'  Default TRUE, return result if dir doesn't exist.
 #'
 #' @family stock_db generics
 #'
 #' @return a full path of dir if succeed, otherwise NULL.
-#'  If the path of dir dosen't exist and force = FALSE, it raised a error.
+#'  If the path of dir dosen't exist and force = FALSE, it will raise a error.
 #' @export
 #'
 #' @examples
 # S3 generic definition
 # dir_path_db <- function(stock_db,
 #                      dir_id = c("DIR_DB_DATA",
-#                                           "DIR_DB_DATA_SOURCE",
-#                                           "DIR_DB_DATA_ORIGIN",
-#                                           "DIR_DB_DATA_LOG",
-#                                           "DIR_DB_DATA_INDICATOR"),
+#                                 "DIR_DB_DATA_SOURCE",
+#                                 "DIR_DB_DATA_ORIGIN",
+#                                 "DIR_DB_DATA_LOG",
+#                                 "DIR_DB_DATA_INDICATOR"),
 #                      force = TRUE,...)
 #   UseMethod("dir_path_db")
 # }

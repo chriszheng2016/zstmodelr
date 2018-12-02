@@ -911,18 +911,59 @@ get_indicators_from_source.gta_db <- function(stock_db,
 
   # get dataset according different type of data source
   # if source_name is not a filename, data source should be a table
-  is_table <- (tools::file_ext(indicator_source) == "")
+  file_ext <- tolower(tools::file_ext(indicator_source))
   ds_indicators_raw <- NULL
-  if (is_table) {
+  if (file_ext == "") {
     # get dataset from table
+
     ds_indicators_raw <- get_table_dataset(stock_db,
       table_name = indicator_source
     )
     if (is.null(ds_indicators_raw)) success <- FALSE
   } else {
-    # TODO: get dataset from file
-  }
 
+    # get dataset from file
+
+    # get vaild file path of indicator
+    path_dir_indicator <- dir_path_db.gta_db(stock_db,
+      dir_id = "DIR_DB_DATA_INDICATOR",
+      force = FALSE
+    )
+    path_indicator_source <- file.path(path_dir_indicator, indicator_source)
+
+    # get indicators from different format of file
+    ds_indicators_raw <- tryCatch({
+      switch(file_ext,
+        "rds" = {
+          readRDS(path_indicator_source)
+        },
+        "csv" = {
+          readr::read_csv(path_indicator_source,
+            locale = readr::locale(encoding = "CP936")
+          )
+        }, {
+          msg <- sprintf(
+            "Can't read indicator from unsupport format file(*.%s).",
+            file_ext
+          )
+          rlang::warn(msg)
+          return(NULL)
+        }
+      )
+    },
+    error = function(cnd) {
+      msg <- sprintf(
+        "Faild to read indicator from %s:\n%s",
+        path_indicator_source,
+        conditionMessage(cnd)
+      )
+      rlang::warn(msg)
+      return(NULL)
+    }
+    )
+    if (is.null(ds_indicators_raw)) success <- FALSE
+
+  }
 
   # transform indicators data
   ds_indicators <- NULL
@@ -1123,11 +1164,8 @@ get_indicators_from_source.gta_db <- function(stock_db,
     # by default, ds_indicatgor is shortrer and wider format
     # transform it into longer and narrower format if specified
     if (ouput_format == "long") {
-      is_numeric_field <- purrr::map_lgl(
-        ds_indicators,
-        ~inherits(., "numeric")
-      )
-      value_fields <- names(ds_indicators)[is_numeric_field]
+      # use numeric fields as value fields for tansform
+      value_fields <- expect_type_fields(ds_indicators, .expect_type = "numeric")
       if (length(value_fields) > 0) {
         ds_indicators <- ds_indicators %>%
           tidyr::gather(
@@ -1185,40 +1223,38 @@ save_indicators_to_source.gta_db <- function(stock_db,
 
   assertive::assert_is_data.frame(ts_indicators)
 
-  success <- TRUE
-
   # get dataset according different type of data source
   # if source_name is not a filename, data source should be a table
-  is_table <- (tools::file_ext(indicator_source) == "")
-  if (is_table) {
-    # TODO: save dataset to table
+  file_ext <- tolower(tools::file_ext(indicator_source))
+  if (file_ext == "") {
 
-    success <- FALSE
+    # TODO: save dataset to table
+    rlang::abort("Can't save indicator into a table in databse.")
   } else {
     # save dataset to file
+    # get vaild file path of indicator
     path_dir_indicator <- dir_path_db.gta_db(stock_db,
       dir_id = "DIR_DB_DATA_INDICATOR",
       force = FALSE
     )
     path_indicator_source <- file.path(path_dir_indicator, indicator_source)
 
-    file_ext <- tolower(tools::file_ext(indicator_source))
-    if (file_ext == "rds") {
-      saveRDS(ts_indicators, file = path_indicator_source)
-    } else {
-      success <- FALSE
-    }
-  }
-
-  if (!success) {
-    msg <- sprintf(
-      "fail to save indicatros into %s",
-      indicator_source
+    # save indicator into specified format file
+    switch(file_ext,
+      "rds" = {
+        saveRDS(ts_indicators, file = path_indicator_source)
+      },
+      "csv" = {
+        readr::write_csv(ts_indicators, path = path_indicator_source)
+      }, {
+        msg <- sprintf(
+          "Can't save indicator into unsupport format file(*.%s).",
+          file_ext
+        )
+        rlang::abort(msg)
+      }
     )
-    warning(msg)
   }
-
-  return(success)
 }
 # Method definition for s4 generic
 #' @describeIn save_indicators_to_source  save indicator timeseries to
