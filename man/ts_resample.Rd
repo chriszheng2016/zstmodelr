@@ -10,11 +10,12 @@ ts_resample(ts_dataset, freq_rule = c("day", "month", "quarter"),
   fillna_method = c("nfill", "ffill", "bfill"), agg_fun = mean, ...)
 
 \method{ts_resample}{tbl_df}(ts_dataset, freq_rule = c("day", "month",
-  "quarter"), fillna_method = c("nfill", "ffill", "bfill"), agg_fun = mean,
-  ..., date_index_field = c("date"), key_fields = NULL)
-
-\method{ts_resample}{timeSeries}(ts_dataset, freq_rule = c("day", "month",
   "quarter"), fillna_method = c("nfill", "ffill", "bfill"),
+  agg_fun = mean, ..., date_index_field = c("date"),
+  key_fields = NULL)
+
+\method{ts_resample}{timeSeries}(ts_dataset, freq_rule = c("day",
+  "month", "quarter"), fillna_method = c("nfill", "ffill", "bfill"),
   agg_fun = c("mean", "sum"), ...)
 }
 \arguments{

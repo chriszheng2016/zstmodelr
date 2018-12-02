@@ -10,11 +10,12 @@
 #' @param key_fields    A character vector of key fields, which identify unique
 #'   observation in each date.
 #' @param parallel   A logic to deterimine whether to use parallel processing.
+#'   default TRUE means to use parallel processing.
 #'
 #'
 #' @family indicator build functions
 #'
-#' @return A dataframe of indicators if succeed, otherwise NULL.
+#' @return A dataframe of indicator timeseries if succeed, otherwise NULL.
 #'
 #' @export
 #'

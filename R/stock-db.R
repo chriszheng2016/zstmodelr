@@ -563,11 +563,11 @@ setGeneric(
 #' @param stock_db         A stock database object to operate.
 #' @param dir_id           A character id of directory.
 #' \itemize{
-#'       \item "DIR_DB_DATA": dir of database of stock_db
-#'       \item "DIR_DB_DATA_SOURCE" : dir of source data to process into database;
-#'       \item "DIR_DB_DATA_ORIGIN":  dir of origin data to import into database;
-#'       \item "DIR_DB_DATA_LOG": dir of log of database operation;
-#'       \item "DIR_DB_DATA_INDICATOR": dir of customized indicators;
+#'       \item DIR_DB_DATA: dir of database of stock_db;
+#'       \item DIR_DB_DATA_SOURCE : dir of source data to process into database;
+#'       \item DIR_DB_DATA_ORIGIN:  dir of origin data to import into database;
+#'       \item DIR_DB_DATA_LOG: dir of log of database operation;
+#'       \item DIR_DB_DATA_INDICATOR: dir of customized indicators.
 #'       }
 #'
 #' @param force            Whether return result if dir dosen't existed.

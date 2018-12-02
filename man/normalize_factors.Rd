@@ -5,8 +5,8 @@
 \title{Normalize the factors dataset}
 \usage{
 normalize_factors(ds_factors, factors_list = NULL, group_by = NULL,
-  clean_extremes_method = c("sigma", "mad"), standard_method = c("normal",
-  "rank"), ...)
+  clean_extremes_method = c("sigma", "mad"),
+  standard_method = c("normal", "rank"), ...)
 }
 \arguments{
 \item{ds_factors}{a factors dataset.}

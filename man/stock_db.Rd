@@ -10,11 +10,11 @@ stock_db(stock_db_class, ...)
 \item{stock_db_class}{Specific creator of stock database class,
 e.g. gta_db}
 
-\item{...}{Addition params used by specific class of stock database(e.g. a dsn string
-"GTA_SQLData")}
+\item{...}{Addition params used by specific class of stock database
+(e.g. a dsn string "GTA_SQLData").}
 }
 \value{
-A object of stock db
+A object of stock db.
 }
 \description{
 factory for creating for subclass object of stock_db class

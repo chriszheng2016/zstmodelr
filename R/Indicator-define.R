@@ -67,8 +67,7 @@ setGeneric(
 #'
 #' @family indicator build functions
 #'
-#' @return A dataframe of input vars for computing customized indicators if succeed,
-#' otherwise NULL.
+#' @return A character vector of name of vars if succeed, otherwise NULL.
 #'
 #' @export
 #'
