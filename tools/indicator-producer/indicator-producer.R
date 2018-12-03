@@ -2,7 +2,7 @@
 library(zstmodelr)
 
 # Main function to procduce indicators
-produce_indictors <- function() {
+produce_indictors <- function(parallel = TRUE) {
 
   # conect to target stock db
   stock_db <- stock_db(gta_db, "GTA_SQLData")
@@ -27,11 +27,12 @@ produce_indictors <- function() {
         indicator_def$ind_name
       )
       message(msg)
+
       ds_indicator <- compute_indicator(ds_vars,
         ind_def_fun = ind_def_fun,
         date_index_field = "date",
         key_fields = "stkcd",
-        parallel = FALSE
+        parallel = parallel
       )
 
       # save indicators into source
