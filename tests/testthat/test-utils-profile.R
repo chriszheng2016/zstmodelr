@@ -88,7 +88,7 @@ test_that("profile_get_datasource_files, with various arguments", {
   result_value <- profile_get_datasource_files(profile)
   if (!is.null(result_value)) {
     expect_fields <- c("target_table", "input_file", "input_type",
-                       "input_dir", "start_index", "description",
+                       "start_index", "description",
                        "is_valid")
 
     expect_true(all(expect_fields %in% names(result_value)))
@@ -112,9 +112,9 @@ test_that("profile_get_indicators, with various arguments", {
   }
 
   # profile_get_indicators with various argurments ====
-  indicator_codes = c("B001100000", "B001101000")
+  indicator_codes = c("b001100000", "b001101000")
   result_value <- profile_get_indicators(profile,
-                            indicator_codes = c("B001100000", "B001101000"))
+                            indicator_codes = indicator_codes)
   if (!is.null(result_value)) {
     expect_fields <- c("ind_code", "ind_type", "ind_name",
                        "ind_category", "ind_source",

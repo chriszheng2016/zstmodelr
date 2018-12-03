@@ -818,7 +818,11 @@ refreq_dateindex <- function(date_index,
       new_date_index <- origin_date_index %>%
         timeDate::alignDaily(include.weekends = TRUE) %>%
         timeDate::alignQuarterly(include.weekends = TRUE)
-    }
+    },
+    "year" = {
+      new_date_index <- origin_date_index %>%
+        timeDate::alignDaily(include.weekends = TRUE)
+      }
   )
 
   # build new date index
