@@ -4,13 +4,13 @@
 \alias{ts_asfreq}
 \alias{ts_asfreq.tbl_df}
 \alias{ts_asfreq.timeSeries}
-\title{Utility Frequency Conversion Method of Setting Frequncey of Timeseries}
+\title{Frequency Conversion Function of Setting Frequncey of Timeseries}
 \usage{
-ts_asfreq(ts_dataset, freq_rule = c("day", "month", "quarter"),
+ts_asfreq(ts_dataset, freq_rule = c("day", "month", "quarter", "year"),
   fillna_method = c("nfill", "ffill", "bfill"), ...)
 
 \method{ts_asfreq}{tbl_df}(ts_dataset, freq_rule = c("day", "month",
-  "quarter"), fillna_method = c("nfill", "ffill", "bfill"),
+  "quarter", "year"), fillna_method = c("nfill", "ffill", "bfill"),
   date_index_field = c("date"), key_fields = NULL, parallel = TRUE)
 
 \method{ts_asfreq}{timeSeries}(ts_dataset, freq_rule = c("day", "month",
@@ -20,10 +20,10 @@ ts_asfreq(ts_dataset, freq_rule = c("day", "month", "quarter"),
 \item{ts_dataset}{A timeseries of tibble/timeSeries.#}
 
 \item{freq_rule}{The offset string or object representing target conversion,
-e.g. "Day", "Month", "Quarter", default "Day".}
+e.g. "day", "month", "quarter", "year", default "day".}
 
 \item{fillna_method}{Method to fill holes in reindexed Series, e.g.
-"nfill", "bfill","ffill", default nfill(fiil with NA).}
+"nfill", "bfill","ffill", default nfill(fill with NA).}
 
 \item{date_index_field}{Name of date index field of ts_df for refrequecy,
 default 'date', Column must be date-like. Only be used for tibble dataset.}
@@ -31,13 +31,14 @@ default 'date', Column must be date-like. Only be used for tibble dataset.}
 \item{key_fields}{A character vector of key fields, which identify unique
 observation in each date. Only be used for tibble dataset.}
 
-\item{parallel}{A logic to deterimine whether to use parallel processing.}
+\item{parallel}{A logic to deterimine whether to use parallel processing.
+Only be used for tibble dataset.}
 }
 \value{
 A converted timeseres
 }
 \description{
-Convert timeseries at specified frequency by setting new frequency of data index
+Generic function tp convert timeseries at specified frequency by setting new frequency of data index
 }
 \details{
 Convert timeseries to specified frequency by refrequencing date index.

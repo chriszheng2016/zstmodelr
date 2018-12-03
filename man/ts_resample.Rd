@@ -4,13 +4,13 @@
 \alias{ts_resample}
 \alias{ts_resample.tbl_df}
 \alias{ts_resample.timeSeries}
-\title{Utility Frequency Conversion Method of Resamping Timeseries}
+\title{Frequency Conversion Function of Resamping Timeseries}
 \usage{
-ts_resample(ts_dataset, freq_rule = c("day", "month", "quarter"),
+ts_resample(ts_dataset, freq_rule = c("day", "month", "quarter", "year"),
   fillna_method = c("nfill", "ffill", "bfill"), agg_fun = mean, ...)
 
 \method{ts_resample}{tbl_df}(ts_dataset, freq_rule = c("day", "month",
-  "quarter"), fillna_method = c("nfill", "ffill", "bfill"),
+  "quarter", "year"), fillna_method = c("nfill", "ffill", "bfill"),
   agg_fun = mean, ..., date_index_field = c("date"),
   key_fields = NULL, parallel = TRUE)
 
@@ -22,7 +22,7 @@ ts_resample(ts_dataset, freq_rule = c("day", "month", "quarter"),
 \item{ts_dataset}{A timeseries of tibble or timeSeries.}
 
 \item{freq_rule}{The offset string or object representing target conversion,
-e.g. "day", "month", "quarter", default "Day".}
+e.g. "day", "month", "quarter", "year", default "Day".}
 
 \item{fillna_method}{method to fill holes in reindexed Series, e.g.
 "nfill", "bfill","ffill", default nafill(fill NA)}
@@ -39,13 +39,14 @@ Only be used for tibble dataset.}
 \item{key_fields}{A character vector of key fields, which identify unique
 observation in each date. Only be used for tibble dataset.}
 
-\item{parallel}{A logic to deterimine whether to use parallel processing.}
+\item{parallel}{A logic to deterimine whether to use parallel processing.
+Only be used for tibble dataset.}
 }
 \value{
 A converted timeseres.
 }
 \description{
-Convert timeseries to specified frequency by resamploing date index
+Generic function to convert timeseries to specified frequency by resamploing date index
 }
 \details{
 Convert timeseries to specified frequency by resampling date index.

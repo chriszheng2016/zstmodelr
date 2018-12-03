@@ -44,10 +44,8 @@ year_dates <- lubridate::ceiling_date(year_dates, unit = "years") - 1
 # date list for building test ds_vars
 list_dates <- list(day = day_dates,
                    month = month_dates,
-                   quarter = quarter_dates)
-# TODO: Since year re-freq hasn't implmented in utls-timseries till now,
-# year data can't test now.
-                   #year = year_dates)
+                   quarter = quarter_dates,
+                   year = year_dates)
 
 
 # function to build ds_vars for test

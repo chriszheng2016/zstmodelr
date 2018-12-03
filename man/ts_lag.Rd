@@ -44,7 +44,7 @@ default TRUE means to use parallel processing.}
 A lagged timeseres
 }
 \description{
-Shift data of timeseries(except date) forward and backward according current
+Generic function to shift data of timeseries(except date) forward and backward according current
 timeline
 }
 \details{
