@@ -119,7 +119,7 @@ test_that("import_table, with various arguments", {
 
 test_that("update_db, with various arguments", {
 
-  # update_db with various arguments ====
+  # test data
   data_source <- get_datasource(stock_db)
   data_source <- data_source[FALSE, ]
   log_dir <- "./log"
@@ -140,10 +140,12 @@ test_that("update_db, with various arguments", {
       start_index = 4
     )
 
-  update_db(stock_db,
-    data_source = data_source,
-    retry_log = NULL,
-    log_dir = log_dir
+  # update_db with default arguments ====
+  expect_message(
+    update_db(stock_db,
+      data_source = data_source
+    ),
+    regexp = "Import data into test_table01|test_table02 ..."
   )
 
   # Check log file
@@ -152,8 +154,69 @@ test_that("update_db, with various arguments", {
     log_dir,
     target_database
   )
+  expect_true(file.exists(log_file))
+
+  # update_db with retry arguments: one failure ====
+
+  # build log file with error for retry dynamically
+  ds_log_error <- tibble::tibble(
+    target_table = c("test_table01", "test_table02"),
+    input_file = c("test_table01.csv", "test_table02.txt"),
+    success = c(TRUE, FALSE)
+  )
+
+  log_file_error <- sprintf(
+    "%s/update_log_error_%s(current).csv",
+    log_dir,
+    target_database
+  )
+
+  readr::write_excel_csv(ds_log_error, path = log_file_error)
+
+  # use log file with errrs to update db
+  # when some table log with error in log file, we should update them again.
+  expect_message(
+    update_db(stock_db,
+      data_source = data_source,
+      retry_log = log_file_error,
+      log_dir = log_dir
+    ),
+    regexp = "Import data into test_table02 ..."
+  )
 
   expect_true(file.exists(log_file))
+
+  # update_db with retry arguments: only one success  ====
+
+  # build log file with error for retry dynamically
+  ds_log_error <- tibble::tibble(
+    target_table = c("test_table01"),
+    input_file = c("test_table01.csv"),
+    success = c(TRUE)
+  )
+
+  log_file_error <- sprintf(
+    "%s/update_log_error_%s(current).csv",
+    log_dir,
+    target_database
+  )
+
+  readr::write_excel_csv(ds_log_error, path = log_file_error)
+
+  # use log file with errrs to update db
+  # when some tables of data_source haven't any log info in log file,
+  # we should update these file in data_source
+  expect_message(
+    update_db(stock_db,
+              data_source = data_source,
+              retry_log = log_file_error,
+              log_dir = log_dir
+    ),
+    regexp = "Import data into test_table02 ..."
+  )
+
+  expect_true(file.exists(log_file))
+
 })
 
 test_that("clear_tables, with various arguments", {

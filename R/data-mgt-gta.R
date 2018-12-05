@@ -129,6 +129,7 @@ update_db.gta_db <- function(stock_db,
 
   # collect failed tables from log file
   faild_tables <- NULL
+  finished_tables <- NULL
   retry_log_path <- NULL
   if (!is.null(retry_log)) {
     if ((basename(retry_log) == retry_log)) {
@@ -142,11 +143,23 @@ update_db.gta_db <- function(stock_db,
     }
 
     if (file.exists(retry_log_path)) {
-      ds_retry_log <- readr::read_csv(retry_log_path)
+
+      suppressMessages(
+        ds_retry_log <- readr::read_csv(retry_log_path)
+      )
+
+      # find out failed tables
       ds_faild_tables <- ds_retry_log %>%
         dplyr::filter(success == FALSE)
       if (nrow(ds_faild_tables) > 0) {
         faild_tables <- ds_faild_tables$target_table
+      }
+
+      # find out finished tables
+      ds_finished_tables <- ds_retry_log %>%
+          dplyr::filter(success == TRUE)
+        if (nrow(ds_finished_tables) > 0) {
+          finished_tables <- ds_finished_tables$target_table
       }
     } else {
       msg <- sprintf("there isn't retry log file:%s", retry_log)
@@ -159,27 +172,33 @@ update_db.gta_db <- function(stock_db,
   for (i in seq_len(nrow(ds_data_source))) {
     data_source <- ds_data_source[i, ]
 
-    # conduct update for all tables or faied tables recording in retry log
+    # conduct update for all tables or tables recording failed in retry log
     if (is.null(faild_tables) || data_source$target_table %in% faild_tables) {
-      msg <- sprintf("Import data into %s ...\n", data_source$target_table)
-      message(msg)
+      # conduct update for all tables or tables not recording successful in retry log
+      if (is.null(finished_tables) || !(data_source$target_table %in% finished_tables)) {
 
-      success <- import_table(stock_db,
-        input_file = data_source$input_file,
-        input_type = data_source$input_type,
-        input_dir = data_source$input_dir,
-        start_index = data_source$start_index,
-        target_table = data_source$target_table,
-        ignore_problems = TRUE,
-        log_dir = log_dir
-      )
-
-      need_clear_dblog <- TRUE
-      ds_log$success[i] <- success
-
-      if (!success) {
-        msg <- sprintf("fail to update %s !!\n", data_source$target_table)
+        msg <- sprintf("Import data into %s ...\n", data_source$target_table)
         message(msg)
+
+        success <- import_table(stock_db,
+                                input_file = data_source$input_file,
+                                input_type = data_source$input_type,
+                                input_dir = data_source$input_dir,
+                                start_index = data_source$start_index,
+                                target_table = data_source$target_table,
+                                ignore_problems = TRUE,
+                                log_dir = log_dir
+        )
+
+        need_clear_dblog <- TRUE
+        ds_log$success[i] <- success
+
+        if (!success) {
+          msg <- sprintf("fail to update %s !!\n", data_source$target_table)
+          message(msg)
+        }
+      } else {
+        ds_log$success[i] <- TRUE
       }
     } else {
       ds_log$success[i] <- TRUE
@@ -228,7 +247,7 @@ update_db.gta_db <- function(stock_db,
     }
 
     # write a new log file
-    readr::write_excel_csv(ds_log, log_file)
+    readr::write_excel_csv(ds_log, path = log_file)
 
     msg <- sprintf(
       "For more info about update db, plese check %s for detail.",
