@@ -20,14 +20,16 @@ produce_indictors <- function(parallel = TRUE) {
     indicator_def <- ds_indicator_defs[i, ]
     ind_def_fun <- indicator_def$ind_def_fun[[1]]
 
+    success <- TRUE
     if (!is.null(ind_def_fun)) {
-      # compute a indicator from vars dataset.
+
       msg <- sprintf(
-        "Compute indicator: %s(%s) ...\n", indicator_def$ind_code,
+        "\nCompute indicator: %s(%s) ...\n", indicator_def$ind_code,
         indicator_def$ind_name
       )
       message(msg)
 
+      # compute a indicator from vars dataset.
       ds_indicator <- compute_indicator(ds_vars,
         ind_def_fun = ind_def_fun,
         date_index_field = "date",
@@ -35,14 +37,18 @@ produce_indictors <- function(parallel = TRUE) {
         parallel = parallel
       )
 
-      # save indicators into source
-      success <- save_indicators_to_source(stock_db,
+      #save indicators into source
+      if (!is.null(ds_indicator)) {
+        save_indicators_to_source(stock_db,
         indicator_source = indicator_def$ind_source,
-        ts_indicators = ds_indicator
-      )
+        ts_indicators = ds_indicator)
+      } else {
+        success <- FALSE
+      }
+
       if (success) {
         msg <- sprintf(
-          "Save indicator: %s(%s) in %s successfully.\n",
+          "Compute indicator successfully, save in: %s(%s) in %s.\n",
           indicator_def$ind_code,
           indicator_def$ind_name,
           indicator_def$ind_source
@@ -59,8 +65,14 @@ produce_indictors <- function(parallel = TRUE) {
     }
   }
 
-  open_stock_db(stock_db)
+  close_stock_db(stock_db)
 }
 
+
 # Run indicators producer
-# produce_indictors()
+#
+# Producer indicator in parallel process(Production)
+# produce_indictors(parallel = TRUE)
+#
+# Producer indicator in non-parallel process(Debug)
+# produce_indictors(parallel = FALSE)
