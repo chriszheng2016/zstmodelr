@@ -331,7 +331,7 @@ ts_asfreq.tbl_df <- function(ts_dataset,
       freq_rule = freq_rule,
       fillna_method = fillna_method,
       date_index_field = date_index_field,
-      key_fields = key_fields,
+      key_fields = key_fields
     )
   } else {
 
@@ -758,28 +758,28 @@ need_refreq_dateindex <- function(date_index,
   freq_rule <- match.arg(freq_rule)
   switch(freq_rule,
     "day" = {
-      if (is_dates_periodic(date_index, freq_rule = "day")) {
+      if (is_periodic_dates(date_index, freq_rule = "day", regular = TRUE)) {
         need_refreq <- FALSE
       } else {
         need_refreq <- TRUE
       }
     },
     "month" = {
-      if (is_dates_periodic(date_index, freq_rule = "month")) {
+      if (is_periodic_dates(date_index, freq_rule = "month", regular = TRUE)) {
         need_refreq <- FALSE
       } else {
         need_refreq <- TRUE
       }
     },
     "quarter" = {
-      if (is_dates_periodic(date_index, freq_rule = "quarter")) {
+      if (is_periodic_dates(date_index, freq_rule = "quarter", regular = TRUE)) {
         need_refreq <- FALSE
       } else {
         need_refreq <- TRUE
       }
     },
     "year" = {
-      if (is_dates_periodic(date_index, freq_rule = "year")) {
+      if (is_periodic_dates(date_index, freq_rule = "year", regular = TRUE)) {
         need_refreq <- FALSE
       } else {
         need_refreq <- TRUE

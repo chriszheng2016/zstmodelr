@@ -167,16 +167,28 @@ validate_engine_resample_refreq <- function(ds_test_origin,
   freq_rule <- match.arg(freq_rule)
   switch(freq_rule,
     "day" = {
-      expect_true(is_dates_periodic(result_date, freq_rule = "day"))
+      expect_true(is_periodic_dates(result_date,
+        freq_rule = "day",
+        regular = TRUE
+      ))
     },
     "month" = {
-      expect_true(is_dates_periodic(result_date, freq_rule = "month"))
+      expect_true(is_periodic_dates(result_date,
+        freq_rule = "month",
+        regular = TRUE
+      ))
     },
     "quarter" = {
-      expect_true(is_dates_periodic(result_date, freq_rule = "quarter"))
+      expect_true(is_periodic_dates(result_date,
+        freq_rule = "quarter",
+        regular = TRUE
+      ))
     },
     "year" = {
-      expect_true(is_dates_periodic(result_date, freq_rule = "year"))
+      expect_true(is_periodic_dates(result_date,
+        freq_rule = "year",
+        regular = TRUE
+      ))
     }
   )
 
@@ -337,17 +349,18 @@ test_that("ts_resample, with various arguments", {
   ds_test_origin <- ds_test_monthly_df
   # compute the result
   ds_test_resample <- ts_resample(ds_test_origin,
-                                  date_index_field = "date",
-                                  key_fields = "key")
+    date_index_field = "date",
+    key_fields = "key"
+  )
   # validate the result
   .validate_resample_result(
-      ds_test_origin,
-      ds_test_resample,
-      freq_rule = "day",
-      fillna_method = "nfill",
-      agg_fun = mean,
-      ds_type = "tibble"
-    )
+    ds_test_origin,
+    ds_test_resample,
+    freq_rule = "day",
+    fillna_method = "nfill",
+    agg_fun = mean,
+    ds_type = "tibble"
+  )
 
   # ts_resample on tibble dataset ====
 
@@ -507,7 +520,6 @@ test_that("ts_resample, with various arguments", {
 
   # test on parallel process
   .batch_valiate_resample_result(params_tbl)
-
 })
 
 
@@ -570,8 +582,9 @@ test_that("ts_asfreq, with various arguments", {
   ds_test_origin <- ds_test_monthly_df
   # compute the result
   ds_test_asfreq <- ts_asfreq(ds_test_origin,
-                                date_index_field = "date",
-                                key_fields = "key")
+    date_index_field = "date",
+    key_fields = "key"
+  )
   # validate the result
   .validate_asfreq_result(
     ds_test_origin,
@@ -855,22 +868,26 @@ test_that("ts_lag, with various normal arguments", {
     # When trim is FALSE
     trim <- FALSE
     for (parallel in c(TRUE, FALSE)) {
-      ds_test_lag <- ts_lag(ds_test_origin, k = i, trim = trim,
-                            parallel = parallel)
+      ds_test_lag <- ts_lag(ds_test_origin,
+        k = i, trim = trim,
+        parallel = parallel
+      )
       .validate_lag_result(ds_test_origin, ds_test_lag,
-                           ds_type = ds_type,
-                           k = i, trim = trim
+        ds_type = ds_type,
+        k = i, trim = trim
       )
     }
 
     # When trim is TRUE
     trim <- TRUE
     for (parallel in c(TRUE, FALSE)) {
-      ds_test_lag <- ts_lag(ds_test_origin, k = i, trim = trim,
-                            parallel = parallel)
+      ds_test_lag <- ts_lag(ds_test_origin,
+        k = i, trim = trim,
+        parallel = parallel
+      )
       .validate_lag_result(ds_test_origin, ds_test_lag,
-                           ds_type = ds_type,
-                           k = i, trim = trim
+        ds_type = ds_type,
+        k = i, trim = trim
       )
     }
   }
@@ -885,18 +902,24 @@ test_that("refreq_dateindex, with various normal arguments", {
   quarterly_dates <- ds_test_quarterly_df$date
   yearly_dates <- ds_test_yearly_df$date
 
-  test_dates_list <- list(daily_dates = daily_dates,
-               monthly_dates = monthly_dates,
-               quarterly_dates = quarterly_dates,
-               yearly_dates = quarterly_dates)
+  test_dates_list <- list(
+    daily_dates = daily_dates,
+    monthly_dates = monthly_dates,
+    quarterly_dates = quarterly_dates,
+    yearly_dates = quarterly_dates
+  )
 
-  freq_rule_list = c("day", "month", "quarter", "year")
+  freq_rule_list <- c("day", "month", "quarter", "year")
 
   for (freq_rule in freq_rule_list) {
     for (test_dates in test_dates_list) {
       new_dates <- refreq_dateindex(test_dates,
-                                    freq_rule = freq_rule)
-      expect_true(is_dates_periodic(new_dates, freq_rule = freq_rule))
+        freq_rule = freq_rule
+      )
+      expect_true(is_periodic_dates(new_dates,
+        freq_rule = freq_rule,
+        regular = TRUE
+      ))
     }
   }
 })
