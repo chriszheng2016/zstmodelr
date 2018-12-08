@@ -21,7 +21,12 @@
   "TRD_CNDALYM", # name for TRD_Cndalym_综合市场日度回报
   "TRD_WEEKCM", # name for TRD_Weekcm_综合市场周度回报
   "TRD_CNMONT", # name for TRD_Cnmont_综合市场月度回报
-  "TRD_YEARCM" # name for TRD_Yearcm_综合市场年度回报
+  "TRD_YEARCM", # name for TRD_Yearcm_综合市场年度回报
+
+  "TRD_NRRATE", # name for TRD_Nrrate_利率
+
+  "TRD_STOCK_INDUSTRY", # name for table with stock dustry info
+  "SPT_TRDCHG" # name for SPT_Trdchg_特殊处理
 )
 
 .GTA_XXXX <- "中文字符" # not supported
@@ -877,21 +882,31 @@ setMethod(
 
 # Get indicators from specified data source(table/file) in stock_db
 # Method definition for s3 generic
-#' @describeIn get_indicators_from_source   get indicator timeseries from
-#' specified source in a database of gta_db class
-#'
+#'  @param data_filters   A list of filter to apply on result data. The list
+#'  consists of items which has field as its name and filter expr string as
+#'  its content, defualt is list( typrep = "typrep == 'A'",
+#'   markettype = "markettype == 21"). Only valid for gta_db.
+#' @param date_fields    A character vector of possible date field in original
+#'  data, which will be renamed as "date". default is c("date", "accper",
+#'  "trddt", "trdmnt", "trdynt","clsdt", "shrchdgt"). Only valid for gta_db.
+#' @param retain_fields  A character vector of possible fields to retain in
+#'  final dataset, default is c("stkcd", "indcd"). Only valid for gta_db.
 #' @export
 get_indicators_from_source.gta_db <- function(stock_db,
                                               indicator_source,
                                               indicator_codes = NULL,
                                               ouput_format = c("long", "wide"),
-                                              report_type_field = c("Typrep"),
-                                              date_fields = c(
-                                                "date", "Accper",
-                                                "Trddt", "Trdmnt", "Trdynt",
-                                                "Clsdt", "Shrchdgt"
+                                              data_filters = list(
+                                                typrep = "typrep == 'A'",
+                                                markettype = "markettype == 21"
                                               ),
-                                              retain_fields = c("Stkcd", "Indcd")) {
+                                              date_fields = c(
+                                                "date", "accper",
+                                                "trddt", "trdmnt", "trdynt",
+                                                "clsdt", "shrchdgt"
+                                              ),
+                                              retain_fields = c("stkcd",
+                                                                "indcd")) {
 
   # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
@@ -962,7 +977,6 @@ get_indicators_from_source.gta_db <- function(stock_db,
     }
     )
     if (is.null(ds_indicators_raw)) success <- FALSE
-
   }
 
   # transform indicators data
@@ -989,23 +1003,29 @@ get_indicators_from_source.gta_db <- function(stock_db,
     # tranfrom fields for output
     if (all(indicators_is_existed)) {
 
-      # filter consolidated report data
-      if (!is.null(report_type_field) & is.character(report_type_field)) {
-        typrep <- tolower(report_type_field)[[1]]
-        if (typrep %in% ds_field_names) {
-          # typrep == "A" means consolidated report
-          ds_indicators <- dplyr::filter(
+      # apply data filters
+      for (i in seq_along(data_filters)) {
+        filter_field <- names(data_filters)[[i]]
+        filter_string <- data_filters[[i]]
+        filter_expr  <- create_expr(!!filter_string)
+        if (filter_field %in% ds_field_names) {
+          # filter dataset
+          ds_filter_indicators <- dplyr::filter(
             ds_indicators,
-            !!rlang::sym(typrep) == "A"
+            !! filter_expr
           )
-          if (NROW(ds_indicators) == 0) {
-            success <- FALSE
-            # invalid typrep field
+
+          # check filtered result
+          if (NROW(ds_filter_indicators) > 0) {
+            # return filtered data
+            ds_indicators <- ds_filter_indicators
+          } else {
+            # return all data
             msg <- sprintf(
-              "there isn't data of consolidated report, since %s field doesn't contain 'A'",
-              typrep
+              "No effect of applying filter(%s), all data will return.",
+              filter_string
             )
-            stop(msg)
+            rlang::inform(msg)
           }
         }
       }
@@ -1033,7 +1053,7 @@ get_indicators_from_source.gta_db <- function(stock_db,
             msg <- sprintf("date field(%s) is renamed to 'date'", date_field)
           }
 
-          message(msg)
+          rlang::inform(msg)
         }
       }
 
@@ -1058,7 +1078,7 @@ get_indicators_from_source.gta_db <- function(stock_db,
             "fail to translate date field of type of %s",
             typeof(ds_indicators$date)
           )
-          stop(msg)
+          rlang::abort(msg)
         }
 
         # translate date into last day of period, add period field
@@ -1140,7 +1160,7 @@ get_indicators_from_source.gta_db <- function(stock_db,
         )
       }
 
-      message(msg)
+      rlang::inform(msg)
     } else {
 
       # some indicators miss from result dataset
@@ -1149,7 +1169,7 @@ get_indicators_from_source.gta_db <- function(stock_db,
         stringr::str_c(indicator_codes[!indicators_is_existed], collapse = ","),
         indicator_source
       )
-      warning(msg)
+      rlang::warn(msg)
 
       success <- FALSE
     }
@@ -1179,7 +1199,7 @@ get_indicators_from_source.gta_db <- function(stock_db,
           "can't tranfrom into long-formt dataset, since no numeric field in the table of %s",
           indicator_source
         )
-        stop(msg)
+        rlang::abort(msg)
       }
     }
   }
@@ -1187,6 +1207,16 @@ get_indicators_from_source.gta_db <- function(stock_db,
   return(ds_indicators)
 }
 # Method definition for s4 generic
+#' @param data_filters   A list of filter to apply on result data. The list
+#'  consists of items which has field as its name and filter expr string as
+#'  its content, defualt is list( typrep = "typrep == 'A'",
+#'  markettype = "markettype == 21"). Only valid for gta_db.
+#' @param date_fields    A character vector of possible date field in original
+#'  data, which will be renamed as "date". default is c("date", "accper",
+#'  "trddt", "trdmnt", "trdynt","clsdt", "shrchdgt"). Only valid for gta_db.
+#' @param retain_fields  A character vector of possible fields to retain in
+#'  final dataset, default is c("stkcd", "indcd"). Only valid for gta_db.
+#'
 #' @describeIn get_indicators_from_source  get indicator timeseries from
 #'  specified source in a database of gta_db class
 #' @export
@@ -1196,8 +1226,7 @@ setMethod(
   function(stock_db, indicator_source, indicator_codes, ouput_format, ...) {
     get_indicators_from_source.gta_db(
       stock_db, indicator_source,
-      indicator_codes, ouput_format
-    )
+      indicator_codes, ouput_format, ...)
   }
 )
 
@@ -1473,6 +1502,195 @@ setMethod(
   signature(stock_db = "gta_db"),
   function(stock_db, factor_codes, factor_groups, ...) {
     get_factors_info.gta_db(stock_db, factor_codes, factor_groups)
+  }
+)
+
+# Get industry info of stocks from stock_db
+# # Method definition for s3 generic
+#' @describeIn get_stock_industry  get industry info timeseries of stocks from
+#' a database of gta_db class
+#' @export
+get_stock_industry.gta_db <- function(stock_db) {
+
+  # validate params
+  stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
+  if (is.null(stock_db$connection)) {
+    stop("Stock db isn't connected, try to connect db again")
+  }
+
+  # get industry info about stocks from database
+  table_name <- stock_db$table_list[["TRD_STOCK_INDUSTRY"]]
+  ds_stock_industry_raw <- get_table_dataset(stock_db,
+    table_name = table_name
+  )
+
+  # build result dataset
+  ds_stock_industry <- NULL
+  if (!is.null(ds_stock_industry_raw)) {
+    ds_stock_industry <- ds_stock_industry_raw %>%
+      tibble::as_tibble() %>%
+      dplyr::filter(typrep == "A") %>%
+      dplyr::mutate(date = as.Date(accper)) %>%
+      dplyr::select(date, stkcd, indcd) %>%
+      dplyr::arrange(stkcd, date)
+  }
+
+  return(ds_stock_industry)
+}
+# Method definition for s4 generic
+#' @describeIn get_stock_industry  get industry info timeseries of stocks from
+#' a database of gta_db class
+#' @export
+setMethod(
+  "get_stock_industry",
+  signature(stock_db = "gta_db"),
+  function(stock_db, ...) {
+    get_stock_industry.gta_db(stock_db)
+  }
+)
+
+
+# Get stock info of special treatment from stock_db
+# Method definition for s3 generic
+#' @describeIn get_spt_stocks  get stock info of special treatment from
+#' a database of gta_db class
+#' @export
+get_spt_stocks.gta_db <- function(stock_db) {
+
+  # validate params
+  stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
+  if (is.null(stock_db$connection)) {
+    stop("Stock db isn't connected, try to connect db again")
+  }
+
+  # get spt info about stocks from database
+  table_name <- stock_db$table_list[["SPT_TRDCHG"]]
+  ds_spt_stocks_raw <- get_table_dataset(stock_db,
+    table_name = table_name
+  )
+
+  # build result
+  ds_spt_stocks <- ds_spt_stocks_raw %>%
+    tibble::as_tibble() %>%
+    dplyr::mutate(
+      annoudt = lubridate::as_date(annoudt),
+      execudt = lubridate::as_date(execudt)
+    )
+
+  return(ds_spt_stocks)
+}
+# Method definition for s4 generic
+#' @describeIn get_spt_stocks  get stock info of special treatment from
+#' a database of gta_db class
+#' @export
+setMethod(
+  "get_spt_stocks",
+  signature(stock_db = "gta_db"),
+  function(stock_db, ...) {
+    get_spt_stocks.gta_db(stock_db)
+  }
+)
+
+
+
+# Get riskfree rate from stock_db
+# Method definition for s3 generic
+#' @describeIn get_riskfree_rate  get riskfree rate timeseries from a database of
+#'  gta_db class
+#' @export
+get_riskfree_rate.gta_db <- function(stock_db, period = c(
+                                       "day", "month",
+                                       "quarter", "year"
+                                     )) {
+
+  # validate params
+  stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
+  if (is.null(stock_db$connection)) {
+    stop("Stock db isn't connected, try to connect db again")
+  }
+
+  # get riskfree rate from database
+  table_name <- stock_db$table_list[["TRD_NRRATE"]]
+  ds_riskfree_rate_raw <- get_table_dataset(stock_db,
+    table_name = table_name
+  )
+
+  # Notice: all rates in raw data are pecentage
+  ds_riskfree_rate <- ds_riskfree_rate_raw %>%
+    tibble::as_tibble() %>%
+    dplyr::filter(nrr1 == "NRI01") %>%
+    dplyr::mutate(date = as.Date(clsdt), daily_return = nrrdaydt / 100) %>%
+    dplyr::select(date, daily_return) %>%
+    dplyr::arrange(date)
+
+  # refreq riskfree rate into regular daily series
+  ds_riskfree_rate <- ds_riskfree_rate %>%
+    ts_asfreq(
+      freq_rule = "day",
+      fillna_method = "ffill"
+    )
+
+  # build dataset of riskfree rate of period
+  period <- match.arg(period)
+  ds_riskfree_rate_period <- NULL
+  .compoud_return <- function(x, ...) {
+    prod(1 + x, ...) - 1
+  }
+  ds_riskfree_rate_period <- switch(period,
+    "day" = {
+      ds_riskfree_rate %>%
+        ts_resample(
+          freq_rule = "day",
+          fillna_method = "ffill",
+          agg_fun = .compoud_return,
+          na.rm = TRUE
+        )
+    },
+    "month" = {
+      ds_riskfree_rate %>%
+        ts_resample(
+          freq_rule = "month",
+          fillna_method = "ffill",
+          agg_fun = .compoud_return,
+          na.rm = TRUE
+        )
+    },
+    "quarter" = {
+      ds_riskfree_rate %>%
+        ts_resample(
+          freq_rule = "quarter",
+          fillna_method = "ffill",
+          agg_fun = .compoud_return,
+          na.rm = TRUE
+        )
+    },
+    "year" = {
+      ds_riskfree_rate %>%
+        ts_resample(
+          freq_rule = "year",
+          fillna_method = "ffill",
+          agg_fun = .compoud_return,
+          na.rm = TRUE
+        )
+    }
+  )
+
+  ds_riskfree_rate_period <- ds_riskfree_rate_period %>%
+    dplyr::select(date, riskfree_return = daily_return) %>%
+    dplyr::mutate(period = !!period) %>%
+    dplyr::select(date, period, dplyr::everything())
+
+  return(ds_riskfree_rate_period)
+}
+# Method definition for s4 generic
+#' @describeIn get_riskfree_rate get riskfree rate timeseries from a database of
+#'  gta_db class
+#' @export
+setMethod(
+  "get_riskfree_rate",
+  signature(stock_db = "gta_db"),
+  function(stock_db, period, ...) {
+    get_riskfree_rate.gta_db(stock_db, period)
   }
 )
 

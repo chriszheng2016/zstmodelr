@@ -310,7 +310,7 @@ setGeneric(
 #' @param stock_db    A stock database object to operate.
 #' @param stock_cd_list A list of stock cd, default value of NULL means
 #' all stock data will return.
-#' @param period_type Date peroid for time series, e.g. "day", "month",
+#' @param period_type Date period for time series, e.g. "day", "month",
 #' "year", by default "day".
 #' @param period_date Choose start/end date of period as the date for
 #' observation
@@ -352,7 +352,7 @@ setGeneric(
 #' Generic function to get stock return timeseries from stock_db.
 #'
 #' @param stock_db    A stock database object to operate.
-#' @param period_type Date peroid for time series, e.g. "day", "month",
+#' @param period_type Date period for time series, e.g. "day", "month",
 #' "year", by default value is  "day".
 #' @param period_date Choose start/end date of period as the date for
 #' observation
@@ -555,6 +555,89 @@ setGeneric(
   }
 )
 
+#' Get industry info of stocks from stock_db
+#'
+#' Generic function to get industry info timeseries from stock_db.
+#'
+#' @param stock_db     A stock database object to operate.
+#'
+#' @family stock_db generics
+#'
+#' @return A dataframe of industry timeseries of stocks if succeed,
+#'  otherwise NULL.
+#' @export
+#'
+#' @examples
+# S3 generic definition
+# get_stock_industry <- function(stock_db, ...){
+#   UseMethod("get_stock_industry")
+# }
+# S4 generic definition
+setGeneric(
+  name = "get_stock_industry",
+  signature = c("stock_db"),
+  def = get_stock_industry <- function(stock_db, ...) {
+    standardGeneric("get_stock_industry")
+  }
+)
+
+#' Get stock info of special treatment from stock_db
+#'
+#' Generic function to stock info of special treatment from stock_db.
+#'
+#' @param stock_db     A stock database object to operate.
+#'
+#' @family stock_db generics
+#'
+#' @return A dataframe stock info of special treatment if succeed, otherwise NULL.
+#' @export
+#'
+#' @examples
+# S3 generic definition
+# get_spt_stocks <- function(stock_db, ...){
+#   UseMethod("get_spt_stocks")
+# }
+# S4 generic definition
+setGeneric(
+  name = "get_spt_stocks",
+  signature = c("stock_db"),
+  def = get_spt_stocks <- function(stock_db, ...) {
+    standardGeneric("get_spt_stocks")
+  }
+)
+
+
+#' Get riskfree rate from stock_db
+#'
+#' Generic function to get riskfree rate timeseries from stock_db.
+#'
+#' @param stock_db     A stock database object to operate.
+#' @param period       Date period of time series, e.g. "day", "month",
+#'  "quarter", "year", default is "day".
+#'
+#' @family stock_db generics
+#'
+#' @return A dataframe of riskfree rate timeseries if succeed, otherwise NULL.
+#' @export
+#'
+#' @examples
+# S3 generic definition
+# get_riskfree_rate <- function(stock_db, period = c("day", "month",
+#                                                 "quarter", "year"), ...){
+#   UseMethod("get_riskfree_rate")
+# }
+# S4 generic definition
+setGeneric(
+  name = "get_riskfree_rate",
+  signature = c("stock_db"),
+  def = get_riskfree_rate <- function(stock_db,
+                                      period = c("day", "month",
+                                                 "quarter", "year"), ...) {
+    standardGeneric("get_riskfree_rate")
+  }
+)
+
+
 #' Get Path of Data Directory from stock_db
 #'
 #' Generic function to get path of data directory from stock_db.
@@ -748,7 +831,7 @@ get_stock_field_dataset <- function(ds_source.df,
   }
 }
 
-# Get several timeseries of stocks data for multiple stocks from peroidic dataset
+# Get several timeseries of stocks data for multiple stocks from periodic dataset
 fetch_stock_field_dataset <- function(ds_source.df,
                                       stock_cd_list,
                                       replaceNA = c("keep", "zeros", "mean", "median"),
