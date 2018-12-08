@@ -86,14 +86,43 @@ setGeneric(
 )
 
 
+#' Get attribute definition function of industry code from stock_db
+#'
+#' Generic function to get attribute definition function of industry code
+#'  from stock_db.
+#'
+#' @param stock_db         A stock database object to operate.
+#'
+#' @family indicator build functions
+#'
+#' @return A function of attribute definition of industry code if succeed,
+#'  otherwise NULL.
+#'
+#' @export
+#'
+#' @examples
+# S3 generic definition
+# ind_attr_def_indcd <- function(stock_db, ...){
+#   UseMethod("ind_attr_def_indcd")
+# }
+# S4 generic definition
+setGeneric(
+  name = "ind_attr_def_indcd",
+  signature = c("stock_db"),
+  def = ind_attr_def_indcd <- function(stock_db, ...) {
+    standardGeneric("ind_attr_def_indcd")
+  }
+)
+
+
 # Non-generic functions for indicator defining  ---------------------------------
 
-#' Translate indicator params into definiton function
+#' Create definition function of indicator for computing indicator
 #'
-#' Combine indicator params into a definition function for computing indicators.
+#' Combine indicator params to crate a definition function for computing indicator.
 #'
-#' @param indicator_expr   A expr as a formula to compute indicator.
 #' @param indicator_name   A character for indicator name.
+#' @param indicator_expr   A expr as a formula to compute indicator.
 #' @param rolly_window   A integer as rolly computing window.
 #' @param period   A periodicity of indicator, i.e. "day", "month",
 #'    "quarter", "yearly".
@@ -105,10 +134,8 @@ setGeneric(
 #' otherwise NULL.
 #'
 #' @export
-#'
-#' @examples
-create_indicator_def <- function(indicator_expr,
-                                 indicator_name,
+create_indicator_def <- function(indicator_name,
+                                 indicator_expr,
                                  rolly_window = 0,
                                  period = c(
                                    "day", "month",
@@ -116,8 +143,8 @@ create_indicator_def <- function(indicator_expr,
                                  )) {
 
   # validate params
-  assertive::assert_is_call(indicator_expr)
   assertive::assert_is_character(indicator_name)
+  assertive::assert_is_call(indicator_expr)
   assertive::assert_all_are_greater_than_or_equal_to(rolly_window, 0)
 
   # avoid side-effect of lazy-eval
@@ -144,8 +171,9 @@ create_indicator_def <- function(indicator_expr,
 
     # evaluate expr to compute indicator
     result <- eval_tidy_with_dfault(compute_expr,
-                                    data = ds_vars,
-                                    env = eval_env)
+      data = ds_vars,
+      env = eval_env
+    )
 
     return(result)
   }
@@ -184,8 +212,10 @@ create_indicator_def <- function(indicator_expr,
   # define ds_var process
   .process_vars <- function(ds_vars,
                               date_index_field = c("date"),
-                              re_freq = c("day", "month",
-                                          "quarter", "year")) {
+                              re_freq = c(
+                                "day", "month",
+                                "quarter", "year"
+                              )) {
 
     # validate params
     assertive::assert_is_data.frame(ds_vars)
@@ -291,9 +321,65 @@ create_indicator_def <- function(indicator_expr,
       ) %>%
       dplyr::left_join(ts_indicator, by = date_index_field)
 
+    # filter non-na result
+    ts_indicator <- ts_indicator %>%
+      dplyr::filter(!is.na(!!rlang::parse_expr(indicator_name)))
+
     return(ts_indicator)
   }
 
   # return function of defining indicator
   return(ind_def_fun)
+}
+
+#' Create definition function of new attribute for modifying indicator
+#'
+#' Create a definition function of new attribute for modifying indicator.
+#'
+#' @param attr_name   A character for attribute name.
+#' @param attr_fun   A function to generate attribute.
+#' @param ...   Other arguments to attr_fun.
+#'
+#'
+#' @family indicator build functions
+#'
+#' @return A function of attribute definition to modify indicator if succeed,
+#' otherwise NULL.
+#'
+#' @export
+create_attribute_def <- function(attr_name,
+                                 attr_fun,
+                                 ...) {
+
+  # validate params
+  assertive::assert_is_function(attr_fun)
+  assertive::assert_is_character(attr_name)
+
+  # define new attributes definition functiion
+  ind_attr_def <- function(ts_indicator, date_index_field = c("date"),
+                             key_fields = NULL, ....) {
+
+    # validate params
+    assertive::assert_is_data.frame(ts_indicator)
+
+    # generate attribute
+    date_index_expr <- rlang::parse_expr(date_index_field)
+    key_fields_exprs <- rlang::parse_exprs(key_fields)
+    names(key_fields_exprs) <- key_fields
+
+    ts_attribute <- ts_indicator %>%
+      dplyr::mutate(!!attr_name := attr_fun(
+        date = !!date_index_expr, !!!key_fields_exprs, ...
+      ))
+
+    # create timeseries for attribute:
+    # date_index, key fields and attribute
+    ts_ind_attribute <- ts_attribute %>%
+      dplyr::select(!!date_index_field, !!key_fields, !!attr_name)
+
+    return(ts_ind_attribute)
+  }
+
+  # return indicator attr_def function
+  return(ind_attr_def)
 }

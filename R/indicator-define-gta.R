@@ -51,8 +51,8 @@ get_indicator_defs.gta_db <- function(stock_db) {
 
         # create def_fun for indicator
         indicator_def <- create_indicator_def(
-          indicator_expr = indicator_expr,
           indicator_name = customized_indicator$ind_code,
+          indicator_expr = indicator_expr,
           rolly_window = customized_indicator$rolling_window,
           period = customized_indicator$period
         )
@@ -173,4 +173,83 @@ setMethod(
   }
 )
 
-# Non-generic internal functions for gta_db operation ---------------------------------
+# Get attribute definition function of industry code from gta_db
+# Method definition for s3 generic
+#' @describeIn ind_attr_def_indcd  get attribute definition function of
+#' industry code from databaseof gta_db class.
+#' @export
+ind_attr_def_indcd.gta_db <- function(stock_db) {
+
+  # validate params
+  stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
+  if (is.null(stock_db$connection)) {
+    stop("Stock db isn't connected, try to connect db again")
+  }
+
+  # get stock industry info from stock_db
+  ds_stock_industry <- get_stock_industry(stock_db)
+
+  # create attrubtue def
+  ind_attr_indcd <- NULL
+  if (!is.null(ds_stock_industry)) {
+    ind_attr_indcd <- create_attribute_def("indcd",
+      attr_fun = match_indcds.gta_db,
+      ds_stock_industry = ds_stock_industry
+    )
+  }
+
+  return(ind_attr_indcd)
+}
+# Method definition for s4 generic
+#' @describeIn ind_attr_def_indcd  get attribute definition function of
+#' industry code from databaseof gta_db class.
+##' @export
+setMethod(
+  "ind_attr_def_indcd",
+  signature(stock_db = "gta_db"),
+  function(stock_db, ...) {
+    ind_attr_def_indcd.gta_db(stock_db)
+  }
+)
+
+
+# Non-generic internal functions for gta_db operation -----------------------
+
+# Get indcd for a stock at specified date
+find_indcd.gta_db <- function(date, stkcd, ds_stock_industry) {
+
+  # validate params
+  assertive::assert_is_character(stkcd)
+  assertive::assert_is_date(date)
+  assertive::assert_is_data.frame(ds_stock_industry)
+
+  # find indcd by date and stkcd
+  indcd <- NA
+  ds_match_indcd <- ds_stock_industry %>%
+    dplyr::arrange(stkcd, date) %>%
+    dplyr::filter(stkcd == !!stkcd, date <= !!date)
+  result_rows <- NROW(ds_match_indcd)
+  if (result_rows > 0) {
+    indcd <- ds_match_indcd$indcd[[result_rows]]
+  }
+
+  return(indcd)
+}
+
+# Get indcds by matching dates and stkcds
+match_indcds.gta_db <- function(dates, stkcds, ds_stock_industry) {
+
+  # validate params
+  assertive::assert_is_date(dates)
+  assertive::assert_is_character(stkcds)
+  assertive::assert_is_data.frame(ds_stock_industry)
+
+  ds_stock_industry <- ds_stock_industry %>%
+    dplyr::filter(stkcd %in% unique(stkcds))
+
+  matched_indcds <- purrr::map2_chr(
+    .x = dates, .y = stkcds,
+    .f = find_indcd.gta_db,
+    ds_stock_industry = ds_stock_industry
+  )
+}

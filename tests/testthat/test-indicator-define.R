@@ -111,6 +111,13 @@ test_that("get_indicator_vars", {
 
 })
 
+test_that("ind_attr_def_indcd", {
+
+  # ind_attr_def_indcd with default arguments ====
+  new_attr_indcd <- ind_attr_def_indcd(stock_db)
+  expect_true(is.function(new_attr_indcd))
+
+})
 
 
 # Tests for function of indicator define - non-generic functions ----
@@ -123,8 +130,8 @@ test_that("create_indicator_def", {
   indicator_expr <- create_expr(!!test_indicator_defs$ind_formula)
 
   indicator_name <- test_indicator_defs$ind_name
-  ind_def <- create_indicator_def(indicator_expr,
-                      indicator_name,
+  ind_def <- create_indicator_def(indicator_name,
+                      indicator_expr = indicator_expr,
                       rolly_window = 0,
                       period = "month")
   expect_true(is.function(ind_def))
@@ -135,8 +142,8 @@ test_that("create_indicator_def", {
     ds_vars <- list_ds_vars[[i]]
 
     # create indicator definition function
-    ind_def <- create_indicator_def(indicator_expr,
-                                    indicator_name,
+    ind_def <- create_indicator_def(indicator_name,
+                                    indicator_expr = indicator_expr,
                                     rolly_window = 0,
                                     period = period)
 
@@ -150,6 +157,26 @@ test_that("create_indicator_def", {
     expect_true(all(actual_fields %in% expect_fields))
     expect_equal(unique(ds_indicator$period), period)
   }
+
+})
+
+test_that("create_attribute_def",{
+
+  # create_attribute_def with default arguments ====
+  indicator_expr <- create_expr(!!test_indicator_defs$ind_formula)
+
+  indicator_name <- test_indicator_defs$ind_name
+  ind_def <- create_indicator_def(indicator_name,
+                                  indicator_expr = indicator_expr,
+                                  rolly_window = 0,
+                                  period = "month")
+
+  attr_name <- "indcd"
+  attr_fun <- function(x, ...) {"indcd_value"}
+  ind_attr_df <- create_attribute_def(attr_name,
+                                         attr_fun = attr_fun)
+
+  expect_true(is.function(ind_attr_df))
 
 })
 
