@@ -17,55 +17,19 @@ get_indicator_defs.gta_db <- function(stock_db) {
     stop("Stock db isn't connected, try to connect db again")
   }
 
-  success <- TRUE
-
   # get profile of stock_db
   gta_profile_name <- get_profile(stock_db)
 
   # get info of customized indicators from profile
   customized_indictors_info <- profile_get_customized_indicators(gta_profile_name)
-  if (!is.null(customized_indictors_info)) {
-    customized_indictors_info <- customized_indictors_info %>%
-      dplyr::mutate(
-        ind_expr = list(NULL),
-        ind_def_fun = list(NULL),
-        ind_vars = list(NULL)
-      )
-  } else {
-    success <- FALSE
+
+  # create indicator_defs
+  indicator_defs <- NULL
+  if (!is.null(customized_indictors_info))  {
+    indicator_defs <- build_indicator_defs.gta_db(stock_db, customized_indictors_info)
   }
 
-  # create indicator_def
-  if (success) {
-    for (i in seq_len(NROW(customized_indictors_info))) {
-
-      # create indicator_def for each cutomized indicator
-      customized_indicator <- customized_indictors_info[i, ]
-      indicator_formula <- customized_indicator$ind_formula
-
-      if (!is.na(indicator_formula)) {
-
-        # create ind_expr
-        indicator_expr <- create_expr(!!indicator_formula)
-        customized_indictors_info$ind_expr[i] <- list(indicator_expr)
-
-        # create def_fun for indicator
-        indicator_def <- create_indicator_def(
-          indicator_name = customized_indicator$ind_code,
-          indicator_expr = indicator_expr,
-          rolly_window = customized_indicator$rolling_window,
-          period = customized_indicator$period
-        )
-        customized_indictors_info$ind_def_fun[i] <- list(indicator_def)
-
-        # parse vars for computing indicator
-        indicaotr_vars <- parse_indicator_vars(stock_db, indicator_expr)
-        customized_indictors_info$ind_vars[i] <- list(indicaotr_vars)
-      }
-    }
-  }
-
-  return(customized_indictors_info)
+  return(indicator_defs)
 }
 
 # Method definition for s4 generic
@@ -192,7 +156,7 @@ ind_attr_def_indcd.gta_db <- function(stock_db) {
   # create attrubtue def
   ind_attr_indcd <- NULL
   if (!is.null(ds_stock_industry)) {
-    ind_attr_indcd <- create_attribute_def("indcd",
+    ind_attr_indcd <- create_attribute_def_fun("indcd",
       attr_fun = match_indcds.gta_db,
       ds_stock_industry = ds_stock_industry
     )
@@ -214,6 +178,60 @@ setMethod(
 
 
 # Non-generic internal functions for gta_db operation -----------------------
+# build indicator defs from customeized indicator info
+build_indicator_defs.gta_db <- function(stock_db, customized_indictors_info) {
+
+  # validate params
+  stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
+  if (is.null(stock_db$connection)) {
+    stop("Stock db isn't connected, try to connect db again")
+  }
+  assertive::assert_is_data.frame(customized_indictors_info)
+
+  indicator_defs <- customized_indictors_info %>%
+    dplyr::mutate(
+      ind_expr = list(NULL),
+      ind_def_fun = list(NULL),
+      ind_vars = list(NULL)
+    )
+
+  # create indicator_def
+  for (i in seq_len(NROW(indicator_defs))) {
+
+    # convert ind_keys
+    ind_keys <- stringr::str_split(indicator_defs$ind_keys,
+                                   pattern = ","
+    )
+    ind_keys <- purrr::map(ind_keys, stringr::str_trim)
+    indicator_defs$ind_keys <- ind_keys
+
+    # create indicator_def for each cutomized indicator
+    indicator_def <- indicator_defs[i, ]
+    indicator_formula <- indicator_def$ind_formula
+
+    if (!is.na(indicator_formula)) {
+
+      # create ind_expr
+      indicator_expr <- create_expr(!!indicator_formula)
+      indicator_defs$ind_expr[i] <- list(indicator_expr)
+
+      # create def_fun for indicator
+      indicator_def_fun <- create_indicator_def_fun(
+        indicator_code = indicator_def$ind_code,
+        indicator_expr = indicator_expr,
+        rolly_window = indicator_def$rolling_window,
+        period = indicator_def$period
+      )
+      indicator_defs$ind_def_fun[i] <- list(indicator_def_fun)
+
+      # parse vars for computing indicator
+      indicaotr_vars <- parse_indicator_vars(stock_db, indicator_expr)
+      indicator_defs$ind_vars[i] <- list(indicaotr_vars)
+    }
+  }
+
+  return(indicator_defs)
+}
 
 # Get indcd for a stock at specified date
 find_indcd.gta_db <- function(date, stkcd, ds_stock_industry) {
@@ -237,7 +255,7 @@ find_indcd.gta_db <- function(date, stkcd, ds_stock_industry) {
 }
 
 # Get indcds by matching dates and stkcds
-match_indcds.gta_db <- function(dates, stkcds, ds_stock_industry) {
+match_indcds.gta_db <- function(dates, stkcds, ds_stock_industry, ...) {
 
   # validate params
   assertive::assert_is_date(dates)

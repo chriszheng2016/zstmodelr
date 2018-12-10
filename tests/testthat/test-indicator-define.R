@@ -20,19 +20,22 @@ test_indicator_defs <- tibble::tibble(
   ind_type = "decimal",
   ind_name = "Month_EP_TTM",
   ind_category = "customized",
-  ind_source = "m_ep_ttm.rds",
+  ind_source = "m_ep_ttm.csv",
   ind_description = "Monthly TTM EP ratio ",
   ind_formula = "price <- dplyr::lag(mclsprc, n=2)
                  earning <- f090101c
                  ep <- earning/price",
+  ind_keys = list(c("stkcd")),
   rolling_window = 0,
   period = "month",
+  output_format = "csv",
   is_active = TRUE,
   ind_expr = list(NA),
   ind_def_fun = list(NA),
   ind_vars = list(NA)
 )
 
+# dates series
 day_dates <- seq(as.Date("2018/1/1"), as.Date("2018/12/31"), by = "day")
 month_dates <- seq(as.Date("2018/1/1"), as.Date("2018/12/31"), by = "month")
 month_dates <- lubridate::ceiling_date(month_dates, unit = "month") - 1
@@ -78,9 +81,9 @@ test_that("get_indicator_defs", {
   ind_defs <- get_indicator_defs(stock_db)
   if (!is.null(ind_defs)) {
     expect_is(ind_defs, "data.frame")
-    expected_fields <- names(test_indicator_defs)
+    expect_fields <- names(test_indicator_defs)
     actual_fields <- names(ind_defs)
-    expect_true(all(actual_fields %in% expected_fields))
+    expect_true(all(actual_fields %in% expect_fields))
   }
 
 })
@@ -124,59 +127,65 @@ test_that("ind_attr_def_indcd", {
 #
 context("Tests for function of indicator definie - non-generic functions")
 
-test_that("create_indicator_def", {
+test_that("create_indicator_def_fun", {
 
-  # create_indicator_def with default arguments ====
+  # create_indicator_def_fun with default arguments ====
   indicator_expr <- create_expr(!!test_indicator_defs$ind_formula)
+  indicator_code <- test_indicator_defs$ind_code
 
-  indicator_name <- test_indicator_defs$ind_name
-  ind_def <- create_indicator_def(indicator_name,
+  ind_def_fun <- create_indicator_def_fun(indicator_code,
                       indicator_expr = indicator_expr,
                       rolly_window = 0,
                       period = "month")
-  expect_true(is.function(ind_def))
+  expect_true(is.function(ind_def_fun))
 
   for (i in seq_along(list_ds_vars)) {
 
     period <- test_indicator_defs$period
     ds_vars <- list_ds_vars[[i]]
+    key_fields <- test_indicator_defs$ind_keys[[1]]
 
     # create indicator definition function
-    ind_def <- create_indicator_def(indicator_name,
+    ind_def_fun <- create_indicator_def_fun(indicator_code,
                                     indicator_expr = indicator_expr,
                                     rolly_window = 0,
                                     period = period)
 
-    # use definition function to compute indicator
-    ds_indicator <- ind_def(ds_vars, date_index_field = c("date"),
-                      key_fields = "stkcd")
+    # use definition function to compute indicator -- No debug
+    ds_indicator <- ind_def_fun(ds_vars, date_index_field = c("date"),
+                      key_fields = key_fields)
 
     expect_is(ds_indicator, "data.frame")
-    expect_fields <- c("date", "stkcd", "period", test_indicator_defs$ind_name)
+    expect_fields <- c("date", "stkcd", "indcd", "period", test_indicator_defs$ind_code)
     actual_fields <- names(ds_indicator)
     expect_true(all(actual_fields %in% expect_fields))
     expect_equal(unique(ds_indicator$period), period)
+
+    # use definition function to compute indicator  -- Debug
+    ds_indicator <- ind_def_fun(ds_vars, date_index_field = c("date"),
+                            key_fields = key_fields, debug = TRUE)
+
+    expect_is(ds_indicator, "data.frame")
+    expect_fields <- c("date", "stkcd", "indcd", "period",
+                       unique(ds_vars$ind_name),
+                       test_indicator_defs$ind_code)
+    actual_fields <- names(ds_indicator)
+    expect_true(all(actual_fields %in% expect_fields))
+    expect_equal(unique(ds_indicator$period), period)
+
   }
 
 })
 
-test_that("create_attribute_def",{
+test_that("create_attribute_def_fun",{
 
-  # create_attribute_def with default arguments ====
-  indicator_expr <- create_expr(!!test_indicator_defs$ind_formula)
-
-  indicator_name <- test_indicator_defs$ind_name
-  ind_def <- create_indicator_def(indicator_name,
-                                  indicator_expr = indicator_expr,
-                                  rolly_window = 0,
-                                  period = "month")
-
+  # create_attribute_def_fun with default arguments ====
   attr_name <- "indcd"
   attr_fun <- function(x, ...) {"indcd_value"}
-  ind_attr_df <- create_attribute_def(attr_name,
+  ind_attr_df_fun <- create_attribute_def_fun(attr_name,
                                          attr_fun = attr_fun)
 
-  expect_true(is.function(ind_attr_df))
+  expect_true(is.function(ind_attr_df_fun))
 
 })
 

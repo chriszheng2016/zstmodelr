@@ -101,5 +101,5 @@ data_manager <- function(dsn = c("GTA_SQLData", "GTA_SQLData_TEST"),
 # Clear all tables by default
 # data_manager(dsn = "GTA_SQLData", fun = "clear")
 #
-# # Clear all tables by default
+# # Clear all tables forcefully
 # data_manager(dsn = "GTA_SQLData", fun = "clear", force = TRUE)

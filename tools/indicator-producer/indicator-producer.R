@@ -1,78 +1,100 @@
 # Tools for producing customized indicators periodically
 library(zstmodelr)
 
-# Main function to procduce indicators
-produce_indictors <- function(parallel = TRUE) {
+# Procduce indicators
+produce_indictors <- function(dsn = c("GTA_SQLData"),
+                              validate_def = FALSE,
+                              parallel = TRUE) {
 
   # conect to target stock db
-  stock_db <- stock_db(gta_db, "GTA_SQLData")
+  dsn <- match.arg(dsn)
+  stock_db <- stock_db(gta_db, dsn)
   open_stock_db(stock_db)
   init_stock_db(stock_db)
 
   # build indicator definition list
   ds_indicator_defs <- get_indicator_defs(stock_db)
 
-  # load vars dataset for generating indicators
-  ds_vars <- get_indicator_vars(stock_db, ds_indicator_defs)
+  # produce indicators in batch mode
+  generate_indictors(stock_db,
+                     ds_indicator_defs = ds_indicator_defs,
+                     validate_def = validate_def,
+                     parallel = parallel)
 
-  # produce indicators batchly
-  for (i in seq_len(NROW(ds_indicator_defs))) {
-    indicator_def <- ds_indicator_defs[i, ]
-    ind_def_fun <- indicator_def$ind_def_fun[[1]]
+  close_stock_db(stock_db)
 
-    success <- TRUE
-    if (!is.null(ind_def_fun)) {
+}
 
-      msg <- sprintf(
-        "\nCompute indicator: %s(%s) ...\n", indicator_def$ind_code,
-        indicator_def$ind_name
-      )
-      message(msg)
+# Clear indicators
+clear_indicators <- function(dsn = c("GTA_SQLData"),
+                           force = FALSE, ...) {
+  continue <- FALSE
 
-      # compute a indicator from vars dataset.
-      ds_indicator <- compute_indicator(ds_vars,
-        ind_def_fun = ind_def_fun,
-        date_index_field = "date",
-        key_fields = "stkcd",
-        parallel = parallel
-      )
+  # force to excute without comfirmation
+  if (force) continue <- TRUE
 
-      #save indicators into source
-      if (!is.null(ds_indicator)) {
-        save_indicators_to_source(stock_db,
-        indicator_source = indicator_def$ind_source,
-        ts_indicators = ds_indicator)
-      } else {
-        success <- FALSE
-      }
-
-      if (success) {
-        msg <- sprintf(
-          "Compute indicator successfully, save in: %s(%s) in %s.\n",
-          indicator_def$ind_code,
-          indicator_def$ind_name,
-          indicator_def$ind_source
-        )
-        message(msg)
-      } else {
-        msg <- sprintf(
-          "Fail to compute indicator: %s(%s), because ind_def_fun is NULL.\n",
-          indicator_def$ind_code,
-          indicator_def$ind_name
-        )
-        warning(msg)
-      }
+  # ask user's comfirmation to excute
+  if (!continue) {
+    answer <- readline("Do you want to clear all indicators files(yes or no)!!? ")
+    if (substr(answer, 1, 1) == "y") {
+      continue <- TRUE
     }
   }
 
-  close_stock_db(stock_db)
+  # carry out excution
+  if (continue) {
+
+    # conect to target stock db
+    dsn <- match.arg(dsn)
+    stock_db <- stock_db(gta_db, dsn)
+    open_stock_db(stock_db)
+    init_stock_db(stock_db)
+
+    msg <- sprintf("\nAll indicators files will be cleared...\n")
+    message(msg)
+
+    # build indicator definition list
+    ds_indicator_defs <- get_indicator_defs(stock_db)
+
+    # clears all indicators files
+    delete_indicators(stock_db, ds_indicator_defs)
+
+    # close stock db
+    close_stock_db(stock_db)
+  }
 }
 
+# Main function to indicator producers
+indictor_producer <- function(dsn = c("GTA_SQLData"),
+                              fun = c("produce", "clear"),
+                               ...){
+
+  dsn <- match.arg(dsn)
+  fun <- match.arg(fun)
+  switch(fun,
+         "produce" = {
+           produce_indictors(dsn, ...)
+         },
+         "clear" = {
+           clear_indicators(dsn, ...)
+         }
+  )
+
+}
 
 # Run indicators producer
 #
-# Producer indicator in parallel process(Production)
-# produce_indictors(parallel = TRUE)
+# Produce indicator in parallel process(Production)
+# indictor_producer(fun = "produce", parallel = TRUE)
 #
-# Producer indicator in non-parallel process(Debug)
-# produce_indictors(parallel = FALSE)
+# Produce indicator in non-parallel process(Debug)
+# indictor_producer(fun = "produce", parallel = FALSE)
+#
+# Validate indicator definition
+# indictor_producer(fun = "produce", validate_def = TRUE, parallel = FALSE)
+#
+## Clear all indicators files by default
+# indictor_producer(fun = "clear")
+#
+# Clear all indicators files forcefully
+# indictor_producer(fun = "clear", force = TRUE)

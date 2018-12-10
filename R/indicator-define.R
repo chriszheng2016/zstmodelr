@@ -121,7 +121,7 @@ setGeneric(
 #'
 #' Combine indicator params to crate a definition function for computing indicator.
 #'
-#' @param indicator_name   A character for indicator name.
+#' @param indicator_code   A character for indicator code.
 #' @param indicator_expr   A expr as a formula to compute indicator.
 #' @param rolly_window   A integer as rolly computing window.
 #' @param period   A periodicity of indicator, i.e. "day", "month",
@@ -134,7 +134,7 @@ setGeneric(
 #' otherwise NULL.
 #'
 #' @export
-create_indicator_def <- function(indicator_name,
+create_indicator_def_fun <- function(indicator_code,
                                  indicator_expr,
                                  rolly_window = 0,
                                  period = c(
@@ -143,13 +143,13 @@ create_indicator_def <- function(indicator_name,
                                  )) {
 
   # validate params
-  assertive::assert_is_character(indicator_name)
+  assertive::assert_is_character(indicator_code)
   assertive::assert_is_call(indicator_expr)
   assertive::assert_all_are_greater_than_or_equal_to(rolly_window, 0)
 
   # avoid side-effect of lazy-eval
   compute_expr <- indicator_expr
-  indicator_name <- force(indicator_name)
+  indicator_code <- force(indicator_code)
   rolly_window <- force(rolly_window)
   period <- match.arg(period)
   eval_env <- rlang::current_env()
@@ -267,7 +267,9 @@ create_indicator_def <- function(indicator_name,
 
   # define indicator definition function
   ind_def_fun <- function(ds_vars, date_index_field = c("date"),
-                            key_fields = NULL, ....) {
+                          key_fields = NULL,
+                          debug = FALSE,
+                          ....) {
 
     # validate params
     assertive::assert_is_data.frame(ds_vars)
@@ -299,7 +301,7 @@ create_indicator_def <- function(indicator_name,
       msg <- sprintf(
         "error in computing indicator(%s):
         length of indicator(%d) isn't equal to that of vars(%d)",
-        indicator_name,
+        indicator_code,
         NROW(ds_indicator),
         NROW(ds_vars)
       )
@@ -310,20 +312,38 @@ create_indicator_def <- function(indicator_name,
     ts_indicator <- tibble::tibble(
       date = ds_vars$date,
       period = !!period,
-      !!indicator_name := ds_indicator
+      !!indicator_code := ds_indicator
     )
 
+    #value fields of ds_vars need to be removed
+    value_fields_vars <- expect_type_fields(ds_vars,
+                                            .expect_type = "numeric")
+
     # combine key fields and indicators
-    ts_indicator <- ds_vars %>%
-      dplyr::select(
-        !!date_index_field,
-        !!key_fields
-      ) %>%
-      dplyr::left_join(ts_indicator, by = date_index_field)
+    if (debug) {
+      # keep all fields of ds_vars in final result
+      ts_indicator <- ds_vars %>%
+        dplyr::left_join(ts_indicator, by = date_index_field)
+    } else {
+      # remove numeric indicators of ds_vars in final result
+      ts_indicator <- ds_vars %>%
+        dplyr::select(-!!value_fields_vars) %>%
+        dplyr::left_join(ts_indicator, by = date_index_field)
+    }
 
     # filter non-na result
+    # ts_indicator <- ts_indicator %>%
+    #   dplyr::filter(!is.na(!!rlang::parse_expr(indicator_code)))
+
+
+    # arrange result fields : non-numeric fields, numieric fields
+    numeric_fields <- expect_type_fields(ts_indicator,
+                                         .expect_type = "numeric")
+    non_numeric_fields <- expect_type_fields(ts_indicator,
+                                         .expect_type = "numeric",
+                                         .negate = TRUE)
     ts_indicator <- ts_indicator %>%
-      dplyr::filter(!is.na(!!rlang::parse_expr(indicator_name)))
+      dplyr::select(!!non_numeric_fields, !!numeric_fields)
 
     return(ts_indicator)
   }
@@ -347,7 +367,7 @@ create_indicator_def <- function(indicator_name,
 #' otherwise NULL.
 #'
 #' @export
-create_attribute_def <- function(attr_name,
+create_attribute_def_fun <- function(attr_name,
                                  attr_fun,
                                  ...) {
 
@@ -383,3 +403,6 @@ create_attribute_def <- function(attr_name,
   # return indicator attr_def function
   return(ind_attr_def)
 }
+
+
+
