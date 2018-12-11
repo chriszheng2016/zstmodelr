@@ -103,6 +103,7 @@ setMethod(
 update_db.gta_db <- function(stock_db,
                              data_source = get_datasource(stock_db),
                              retry_log = NULL,
+                             log_file_prefix = "update_db_log",
                              log_dir = "./log") {
 
   # validate params
@@ -112,6 +113,8 @@ update_db.gta_db <- function(stock_db,
   }
   assertive::assert_is_not_null(data_source)
   assertive::assert_is_data.frame(data_source)
+  assertive::assert_is_character(log_file_prefix)
+  assertive::assert_is_character(log_dir)
 
   success <- TRUE
 
@@ -120,9 +123,11 @@ update_db.gta_db <- function(stock_db,
   target_database <- db_info$dbname
   assertive::assert_is_not_null(target_database)
 
-
-  # build target tables info
-  ds_data_source <- data_source
+  # setup log info params
+  log_file_prefix <- sprintf("%s_%s",
+                             log_file_prefix,
+                             target_database)
+  log_file_path <- NULL
   ds_log <- data_source %>%
     dplyr::select(target_table, input_file) %>%
     dplyr::mutate(success = FALSE)
@@ -130,23 +135,11 @@ update_db.gta_db <- function(stock_db,
   # collect failed tables from log file
   faild_tables <- NULL
   finished_tables <- NULL
-  retry_log_path <- NULL
   if (!is.null(retry_log)) {
-    if ((basename(retry_log) == retry_log)) {
-      if (!is.null(log_dir)) {
-        retry_log_path <- sprintf("%s/%s", log_dir, basename(retry_log))
-      } else {
-        retry_log_path <- sprintf("%s/%s", ".", basename(retry_log))
-      }
-    } else {
-      retry_log_path <- retry_log
-    }
 
-    if (file.exists(retry_log_path)) {
+    ds_retry_log <- read_log(retry_log, log_dir = log_dir)
 
-      suppressMessages(
-        ds_retry_log <- readr::read_csv(retry_log_path)
-      )
+    if (!is.null(ds_retry_log)) {
 
       # find out failed tables
       ds_faild_tables <- ds_retry_log %>%
@@ -162,30 +155,32 @@ update_db.gta_db <- function(stock_db,
           finished_tables <- ds_finished_tables$target_table
       }
     } else {
-      msg <- sprintf("there isn't retry log file:%s", retry_log)
-      warning(msg)
+      msg <- sprintf("Since there is no a retry log(%s), \n all tables will be updated.",
+                     retry_log)
+      rlang::warn(msg)
     }
   }
 
   # import data from data source
+  ds_data_source <- data_source
   need_clear_dblog <- FALSE
   for (i in seq_len(nrow(ds_data_source))) {
-    data_source <- ds_data_source[i, ]
+    data_source_info <- ds_data_source[i, ]
 
     # conduct update for all tables or tables recording failed in retry log
-    if (is.null(faild_tables) || data_source$target_table %in% faild_tables) {
+    if (is.null(faild_tables) || data_source_info$target_table %in% faild_tables) {
       # conduct update for all tables or tables not recording successful in retry log
-      if (is.null(finished_tables) || !(data_source$target_table %in% finished_tables)) {
+      if (is.null(finished_tables) || !(data_source_info$target_table %in% finished_tables)) {
 
-        msg <- sprintf("Import data into %s ...\n", data_source$target_table)
-        message(msg)
+        msg <- sprintf("Import data into %s ...\n", data_source_info$target_table)
+        rlang:::inform(msg)
 
         success <- import_table(stock_db,
-                                input_file = data_source$input_file,
-                                input_type = data_source$input_type,
-                                input_dir = data_source$input_dir,
-                                start_index = data_source$start_index,
-                                target_table = data_source$target_table,
+                                input_file = data_source_info$input_file,
+                                input_type = data_source_info$input_type,
+                                input_dir = data_source_info$input_dir,
+                                start_index = data_source_info$start_index,
+                                target_table = data_source_info$target_table,
                                 ignore_problems = TRUE,
                                 log_dir = log_dir
         )
@@ -194,8 +189,8 @@ update_db.gta_db <- function(stock_db,
         ds_log$success[i] <- success
 
         if (!success) {
-          msg <- sprintf("fail to update %s !!\n", data_source$target_table)
-          message(msg)
+          msg <- sprintf("fail to update %s !!\n", data_source_info$target_table)
+          rlang:::inform(msg)
         }
       } else {
         ds_log$success[i] <- TRUE
@@ -203,6 +198,12 @@ update_db.gta_db <- function(stock_db,
     } else {
       ds_log$success[i] <- TRUE
     }
+
+    # write log for update operation
+    log_file_path <- save_log(ds_log, log_file_prefix = log_file_prefix,
+                              log_dir = log_dir)
+
+
   }
 
   # shrink database log if needed
@@ -215,46 +216,15 @@ update_db.gta_db <- function(stock_db,
     DBI::dbExecute(stock_db$connection, sql_cmd)
   }
 
-
-  # write log for update operation
-  if (!is.null(log_dir)) {
-    if (!file.exists(log_dir)) {
-      dir.create(log_dir)
-    }
-
-    log_file <- sprintf(
-      "%s/update_log_%s(current).csv",
-      log_dir,
-      target_database
-    )
-
-    # Back up old log file by change its names
-    # as "update_db_log(YYYY-MM-DD).csv"
-    if (file.exists(log_file)) {
-      file_info <- file.info(log_file)
-      last_modified_time <- file_info$mtime
-      backup_file <- sprintf(
-        "%s/update_log_%s(%s).csv",
-        log_dir,
-        target_database,
-        format(last_modified_time, "%Y-%m-%d")
-      )
-      file.copy(log_file,
-        to = backup_file,
-        copy.date = TRUE,
-        overwrite = TRUE
-      )
-    }
-
-    # write a new log file
-    readr::write_excel_csv(ds_log, path = log_file)
-
+  # Notify user log file info
+  if (!is.null(log_file_path)) {
     msg <- sprintf(
-      "For more info about update db, plese check %s for detail.",
-      log_file
+      "\nFor more info about update db, plese check %s for detail.\n",
+      log_file_path
     )
-    message(msg)
+    rlang::inform(msg)
   }
+
 }
 # Method definition for s4 generic
 #' @describeIn update_db update tables in a database of gta_db class
@@ -262,8 +232,10 @@ update_db.gta_db <- function(stock_db,
 setMethod(
   "update_db",
   signature(stock_db = "gta_db"),
-  function(stock_db, data_source, retry_log, log_dir, ...) {
-    update_db.gta_db(stock_db, data_source, retry_log, log_dir)
+  function(stock_db, data_source, retry_log,
+           log_file_prefix, log_dir, ...) {
+    update_db.gta_db(stock_db, data_source, retry_log,
+                     log_file_prefix, log_dir)
   }
 )
 

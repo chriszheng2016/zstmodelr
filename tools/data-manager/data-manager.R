@@ -12,18 +12,25 @@ update_stock_db <- function(dsn = c("GTA_SQLData", "GTA_SQLData_TEST"),
   stock_db <- stock_db(gta_db, dsn)
   open_stock_db(stock_db)
 
+  db_info <- DBI::dbGetInfo(stock_db$connection)
+  target_database <- db_info$dbname
+
   # whether to retry tables with errors
-  log_file <- NULL
+  retry_log_file <- NULL
+  log_file_prefix = "update_db_log"
   if (!retry_error) {
     # update all tables
     msg <- sprintf("\nUpdate all tables in stock db...\n")
     message(msg)
   } else {
-    # update only faild tables recored in the log file
-    log_file <- "update_log_GTA_SQLDATA(current).csv"
+    # update only fail tables recored in the log file
+    retry_log_file <- sprintf("%s_%s(current).csv",
+                              log_file_prefix,
+                              target_database
+                              )
     msg <- sprintf(
       "\nRetry to update tables with errors logged in %s...\n",
-      log_file
+      retry_log_file
     )
     message(msg)
   }
@@ -31,7 +38,7 @@ update_stock_db <- function(dsn = c("GTA_SQLData", "GTA_SQLData_TEST"),
   # update tables
   log_dir <- dir_path_db(stock_db, dir_id = "DIR_DB_DATA_LOG")
   update_db(stock_db,
-    retry_log = log_file,
+    retry_log = retry_log_file,
     log_dir = log_dir
   )
 

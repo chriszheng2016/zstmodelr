@@ -230,6 +230,15 @@ build_indicator_defs.gta_db <- function(stock_db, customized_indictors_info) {
     }
   }
 
+  # select output fields
+  output_fields <- c("ind_code", "ind_type", "ind_name", "ind_category",
+                     "ind_source", "ind_description", "ind_formula",
+                     "ind_keys", "rolling_window", "period", "output_format",
+                     "is_active", "ind_expr", "ind_def_fun", "ind_vars")
+  indicator_defs <- indicator_defs %>%
+    dplyr::select(output_fields)
+
+
   return(indicator_defs)
 }
 

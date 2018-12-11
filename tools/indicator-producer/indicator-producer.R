@@ -16,10 +16,12 @@ produce_indictors <- function(dsn = c("GTA_SQLData"),
   ds_indicator_defs <- get_indicator_defs(stock_db)
 
   # produce indicators in batch mode
+  log_dir <- dir_path_db(stock_db, dir_id = "DIR_DB_DATA_LOG")
   generate_indictors(stock_db,
                      ds_indicator_defs = ds_indicator_defs,
                      validate_def = validate_def,
-                     parallel = parallel)
+                     parallel = parallel,
+                     log_dir = log_dir)
 
   close_stock_db(stock_db)
 

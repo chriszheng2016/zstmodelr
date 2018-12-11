@@ -18,11 +18,10 @@
 #'  definintion on small datasets.
 #' @param parallel   A logic to deterimine whether to use parallel processing.
 #'   Default TRUE means to use parallel processing.
-#' @param retry_log Log file for re-generating indicators with recording failure
-#'   in log file. If NULL, it will generate indicators specifeid by indicator_codes,
-#'   otherse only generate indicators with recording failure in log file.
-#'   By default NULL.
-#' @param log_dir Path to save updating log file. If NULL, don't save log file
+#' @param log_file_prefix  A character of log file prefix to name log file.
+#'    Log file is named as format of "log_file_prefix(current).csv"
+#'  Default is "generate_indicator_log".
+#' @param log_dir Path to save log file. If NULL, don't save log file
 #'   by default "./log".
 #'
 #'
@@ -35,7 +34,7 @@ generate_indictors <- function(stock_db,
                                ds_indicator_defs,
                                validate_def = FALSE,
                                parallel = TRUE,
-                               retry_log = NULL,
+                               log_file_prefix = "generate_indicator_log",
                                log_dir = "./log") {
 
   # validate params
@@ -44,6 +43,8 @@ generate_indictors <- function(stock_db,
     stop("Stock db isn't connected, try to connect db again")
   }
   assertive::assert_is_data.frame(ds_indicator_defs)
+  assertive::assert_is_character(log_file_prefix)
+  assertive::assert_is_character(log_dir)
 
   success <- TRUE
 
@@ -84,6 +85,12 @@ generate_indictors <- function(stock_db,
   if (success) {
     new_attr_indcd <- ind_attr_def_indcd(stock_db)
   }
+
+  # setup log info params
+  log_file_path <- NULL
+  ds_log <- ds_indicator_defs %>%
+    dplyr::select(ind_code, ind_category, ind_source) %>%
+    dplyr::mutate(success = FALSE)
 
   # generate indicators in batch
   if (success) {
@@ -157,8 +164,26 @@ generate_indictors <- function(stock_db,
           rlang::warn(msg)
         }
       }
+
+      # record results
+      ds_log$success[i] <- success
+      # write log for generating operation
+      log_file_path <- save_log(ds_log, log_file_prefix = log_file_prefix,
+                                log_dir = log_dir)
     }
   }
+
+  # Notify user log fileinfo
+  if (!is.null(log_file_path)) {
+    msg <- sprintf(
+      "\nFor more info about generated indicators, plese check %s for detail.\n",
+      log_file_path
+    )
+
+    rlang::inform(msg)
+  }
+
+
 }
 
 

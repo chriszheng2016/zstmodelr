@@ -81,6 +81,9 @@ setGeneric(
 #'   in log file. If NULL, it will upate all talbles in data_source, otherse
 #'   only update on these tables with recording failure in log file.
 #'   By default NULL.
+#' @param log_file_prefix  A character of log file prefix to name log file.
+#'    Log file is named as format of "log_file_prefix_XXXX_(current).csv"
+#'  Default is "update_db_log".
 #' @param log_dir Path to save updating log file. If NULL, don't save log file
 #'   by default "./log".
 #'
@@ -106,6 +109,7 @@ setGeneric(
   def = update_db <- function(stock_db,
                               data_source = get_datasource(stock_db),
                               retry_log = NULL,
+                              log_file_prefix = "update_db_log",
                               log_dir = "./log",
                               ...) {
     standardGeneric("update_db")
