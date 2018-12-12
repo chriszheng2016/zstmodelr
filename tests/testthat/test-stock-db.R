@@ -292,6 +292,14 @@ test_that("save_indicators_to_source, with various arguments", {
     indicator_source = indicator_source,
     ts_indicators = ts_indicators
   ))
+
+  # save_indicators_to_source into a dynamic source ====
+  indicator_source <- "{get_riskfree_rate(stock_db, period = 'month')}"
+  expect_error(save_indicators_to_source(stock_db,
+                                         indicator_source = indicator_source,
+                                         ts_indicators = ts_indicators
+  ))
+
 })
 
 
@@ -330,9 +338,6 @@ test_that("get_indicators_from_source, with various arguments", {
   }
 
   # output in "wide" format
-  indicator_source <- "FR_T1"
-  indicator_codes <- c("f010101a", "f010201a")
-
   ds_indicators <- get_indicators_from_source(stock_db,
     indicator_source = indicator_source,
     indicator_codes = indicator_codes,
@@ -368,8 +373,6 @@ test_that("get_indicators_from_source, with various arguments", {
   }
 
   # output in "wide" format
-  indicator_source <- "test-ind01.rds"
-  indicator_codes <- c("ind01")
   ds_indicators <- get_indicators_from_source(stock_db,
     indicator_source = indicator_source,
     indicator_codes = indicator_codes,
@@ -400,8 +403,6 @@ test_that("get_indicators_from_source, with various arguments", {
   }
 
   # output in "wide" format
-  indicator_source <- "test-ind01.csv"
-  indicator_codes <- c("ind01")
   ds_indicators <- get_indicators_from_source(stock_db,
     indicator_source = indicator_source,
     indicator_codes = indicator_codes,
@@ -425,6 +426,38 @@ test_that("get_indicators_from_source, with various arguments", {
     ),
     "unsupport format file"
   )
+
+  # get_indicators_from_source from dynamic source of indicator ====
+  # output in "long" format
+  indicator_source <- "{get_riskfree_rate(stock_db, period = 'month')}"
+  indicator_codes <- c("riskfree_return")
+
+  ds_indicators <- get_indicators_from_source(stock_db,
+                                              indicator_source = indicator_source,
+                                              indicator_codes = indicator_codes,
+                                              ouput_format = "long"
+  )
+  if (!is.null(ds_indicators)) {
+    expect_fields <- c("date", "period", "ind_name", "ind_value")
+    expect_true(all(expect_fields %in% names(ds_indicators)))
+    expect_true(inherits(ds_indicators$date, "Date"))
+    expect_true(unique(ds_indicators$period) == "month")
+  }
+
+  # output in "wide" format
+  ds_indicators <- get_indicators_from_source(stock_db,
+                                              indicator_source = indicator_source,
+                                              indicator_codes = indicator_codes,
+                                              ouput_format = "wide"
+  )
+  if (!is.null(ds_indicators)) {
+    expect_fields <- c("date", "period", indicator_codes)
+    expect_true(all(expect_fields %in% names(ds_indicators)))
+    expect_true(inherits(ds_indicators$date, "Date"))
+    expect_true(unique(ds_indicators$period) == "month")
+  }
+
+
 })
 
 

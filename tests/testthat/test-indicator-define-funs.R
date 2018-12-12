@@ -2,6 +2,20 @@
 context("Tests for function of f indicator define funs")
 
 # prepare test datasets
+# set up testing context
+dsn <- "GTA_SQLData"
+DB_PROFILE_FILE <- "gta_profile.xlsx"
+
+stock_db <- stock_db(gta_db, dsn)
+suppressMessages(db_ready <- open_stock_db(stock_db))
+# skip tests if test dsn is not ready
+skip_if_not(db_ready,
+            message = sprintf("DSN(%s) is not ready, skip all tests for stock_db", dsn)
+)
+suppressMessages(init_stock_db(stock_db))
+
+
+# Functions for defining indicator expr ----
 
 series_length <- 10
 
@@ -85,4 +99,46 @@ test_that("Beta", {
 
 })
 
+# Functions for defining dynamic indicator expr ----
 
+test_that("RiskFreeRate", {
+
+  # RiskFreeRate with default arguments ====
+  rf_return <- RiskFreeRate(stock_db, "d_risk_rate")
+
+  expect_is(rf_return, "data.frame")
+  expect_fields <- c("date", "period", "d_risk_rate")
+  actual_fields <- names(rf_return)
+  expect_true(all(actual_fields %in% expect_fields))
+  expect_true(is_periodic_dates(rf_return$date, freq_rule = "day"))
+  expect_true(all(rf_return$period %in% "day"))
+
+  # RiskFreeRate with various arguments ====
+  ds_indicators_info <- tibble::tibble(
+    indicator_code = c("d_riskfree_rate",
+                 "m_riskfree_rate",
+                 "q_riskfree_rate",
+                 "y_riskfree_rate"),
+    period = c("day", "month", "quarter", "year")
+  )
+
+  for (i in seq_len(NROW(ds_indicators_info))) {
+    indicator_code <- ds_indicators_info$indicator_code[[i]]
+    period <- ds_indicators_info$period[[i]]
+
+    rf_return <- RiskFreeRate(stock_db,
+                              indicator_code = indicator_code,
+                              period = period)
+
+    expect_is(rf_return, "data.frame")
+    expect_fields <- c("date", "period", indicator_code)
+    actual_fields <- names(rf_return)
+    expect_true(all(actual_fields %in% expect_fields))
+    expect_true(is_periodic_dates(rf_return$date, freq_rule = period))
+    expect_true(all(rf_return$period %in% period))
+  }
+
+})
+
+# clear up testing conext
+suppressMessages(close_stock_db(stock_db))

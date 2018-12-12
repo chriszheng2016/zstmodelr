@@ -905,8 +905,10 @@ get_indicators_from_source.gta_db <- function(stock_db,
                                                 "trddt", "trdmnt", "trdynt",
                                                 "clsdt", "shrchdgt"
                                               ),
-                                              retain_fields = c("stkcd",
-                                                                "indcd")) {
+                                              retain_fields = c(
+                                                "stkcd",
+                                                "indcd"
+                                              )) {
 
   # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
@@ -914,74 +916,97 @@ get_indicators_from_source.gta_db <- function(stock_db,
     stop("Stock db isn't connected, try to connect db again")
   }
 
-  if (missing(indicator_source) || !is.character(indicator_source)) {
-    stop("data source name must be character string")
-  }
+  assertive::assert_is_character(indicator_source)
 
-  if (!is.null(indicator_codes) & !is.character(indicator_codes)) {
-    stop("indicator_list name must be character vector")
+  # get dataset from data source of different types
+  # guess type of data source
+  source_type <- ""
+  file_ext <- tolower(tools::file_ext(indicator_source))
+  if (file_ext != "") {
+    # "*.ext": file
+    source_type <- "file"
+  } else {
+    # "{xxx}": R code to run
+    if (stringr::str_detect(indicator_source, "^\\{|\\}$")) {
+      source_type <- "code"
+    } else {
+      # "xxx": table of database
+      source_type <- "table"
+    }
   }
-
-  success <- TRUE
 
   # get dataset according different type of data source
-  # if source_name is not a filename, data source should be a table
-  file_ext <- tolower(tools::file_ext(indicator_source))
   ds_indicators_raw <- NULL
-  if (file_ext == "") {
-    # get dataset from table
-
-    ds_indicators_raw <- get_table_dataset(stock_db,
-      table_name = indicator_source
-    )
-    if (is.null(ds_indicators_raw)) success <- FALSE
-  } else {
-
-    # get dataset from file
-
-    # get vaild file path of indicator
-    path_dir_indicator <- dir_path_db.gta_db(stock_db,
-      dir_id = "DIR_DB_DATA_INDICATOR",
-      force = FALSE
-    )
-    path_indicator_source <- file.path(path_dir_indicator, indicator_source)
-
-    # get indicators from different format of file
-    ds_indicators_raw <- tryCatch({
-      switch(file_ext,
-        "rds" = {
-          readRDS(path_indicator_source)
-        },
-        "csv" = {
-          readr::read_csv(path_indicator_source,
-            locale = readr::locale(encoding = "CP936")
-          )
-        }, {
-          msg <- sprintf(
-            "Can't read indicator from unsupport format file(*.%s).",
-            file_ext
-          )
-          rlang::warn(msg)
-          return(NULL)
-        }
+  switch(source_type,
+    "table" = {
+      # get dataset from table
+      ds_indicators_raw <- get_table_dataset(stock_db,
+        table_name = indicator_source
       )
     },
-    error = function(cnd) {
-      msg <- sprintf(
-        "Faild to read indicator from %s:\n%s",
-        path_indicator_source,
-        conditionMessage(cnd)
+    "code" = {
+      # get dataset from dynamic source by running code
+
+      code_expr <- create_expr(!!indicator_source)
+
+      # redefine eval_tidy to return default value and display error,
+      # if an error occured in evaluating expr
+      eval_tidy_with_dfault <- purrr::possibly(rlang::eval_tidy,
+        otherwise = NULL,
+        quiet = FALSE
       )
-      rlang::warn(msg)
-      return(NULL)
+
+      # evaluate code expr
+      ds_indicators_raw <- eval_tidy_with_dfault(code_expr,
+        env = rlang::caller_env()
+      )
+    },
+    "file" = {
+      # get dataset from file
+
+      # get vaild file path of indicator
+      path_dir_indicator <- dir_path_db.gta_db(stock_db,
+        dir_id = "DIR_DB_DATA_INDICATOR",
+        force = FALSE
+      )
+      path_indicator_source <- file.path(path_dir_indicator, indicator_source)
+
+      # get indicators from different format of file
+      ds_indicators_raw <- tryCatch({
+        switch(file_ext,
+          "rds" = {
+            readRDS(path_indicator_source)
+          },
+          "csv" = {
+            readr::read_csv(path_indicator_source,
+              locale = readr::locale(encoding = "CP936")
+            )
+          }, {
+            msg <- sprintf(
+              "Can't read indicator from unsupport format file(*.%s).",
+              file_ext
+            )
+            rlang::warn(msg)
+            return(NULL)
+          }
+        )
+      },
+      error = function(cnd) {
+        msg <- sprintf(
+          "Faild to read indicator from %s:\n%s",
+          path_indicator_source,
+          conditionMessage(cnd)
+        )
+        rlang::warn(msg)
+        return(NULL)
+      }
+      )
     }
-    )
-    if (is.null(ds_indicators_raw)) success <- FALSE
-  }
+  )
 
   # transform indicators data
   ds_indicators <- NULL
-  if (success) {
+  if (!is.null(ds_indicators_raw)) {
     ds_indicators <- tibble::as.tibble(ds_indicators_raw)
     ds_field_names <- names(ds_indicators)
     output_fields <- NULL
@@ -1007,12 +1032,12 @@ get_indicators_from_source.gta_db <- function(stock_db,
       for (i in seq_along(data_filters)) {
         filter_field <- names(data_filters)[[i]]
         filter_string <- data_filters[[i]]
-        filter_expr  <- create_expr(!!filter_string)
+        filter_expr <- create_expr(!!filter_string)
         if (filter_field %in% ds_field_names) {
           # filter dataset
           ds_filter_indicators <- dplyr::filter(
             ds_indicators,
-            !! filter_expr
+            !!filter_expr
           )
 
           # check filtered result
@@ -1169,16 +1194,13 @@ get_indicators_from_source.gta_db <- function(stock_db,
         stringr::str_c(indicator_codes[!indicators_is_existed], collapse = ","),
         indicator_source
       )
-      rlang::warn(msg)
+      rlang::abort(msg)
 
-      success <- FALSE
     }
-  } else {
-    success <- FALSE
   }
 
   # trasnform by ouptput format
-  if (success) {
+  if (!is.null(ds_indicators)) {
     ouput_format <- match.arg(ouput_format)
 
     # by default, ds_indicatgor is shortrer and wider format
@@ -1226,7 +1248,8 @@ setMethod(
   function(stock_db, indicator_source, indicator_codes, ouput_format, ...) {
     get_indicators_from_source.gta_db(
       stock_db, indicator_source,
-      indicator_codes, ouput_format, ...)
+      indicator_codes, ouput_format, ...
+    )
   }
 )
 
@@ -1251,39 +1274,61 @@ save_indicators_to_source.gta_db <- function(stock_db,
   }
 
   assertive::assert_is_data.frame(ts_indicators)
+  assertive::assert_is_character(indicator_source)
 
-  # get dataset according different type of data source
-  # if source_name is not a filename, data source should be a table
+  # save dataset from data source of different types
+  # guess type of data source
+  source_type <- ""
   file_ext <- tolower(tools::file_ext(indicator_source))
-  if (file_ext == "") {
-
-    # TODO: save dataset to table
-    rlang::abort("Can't save indicator into a table in databse.")
+  if (file_ext != "") {
+    # "*.ext": file
+    source_type <- "file"
   } else {
-    # save dataset to file
-    # get vaild file path of indicator
-    path_dir_indicator <- dir_path_db.gta_db(stock_db,
-      dir_id = "DIR_DB_DATA_INDICATOR",
-      force = FALSE
-    )
-    path_indicator_source <- file.path(path_dir_indicator, indicator_source)
-
-    # save indicator into specified format file
-    switch(file_ext,
-      "rds" = {
-        saveRDS(ts_indicators, file = path_indicator_source)
-      },
-      "csv" = {
-        readr::write_csv(ts_indicators, path = path_indicator_source)
-      }, {
-        msg <- sprintf(
-          "Can't save indicator into unsupport format file(*.%s).",
-          file_ext
-        )
-        rlang::abort(msg)
-      }
-    )
+    # "{xxx}": R code to run
+    if (stringr::str_detect(indicator_source, "^\\{|\\}$")) {
+      source_type <- "code"
+    } else {
+      # "xxx": table of database
+      source_type <- "table"
+    }
   }
+
+  # save dataset according different type of data source
+  switch(source_type,
+    "table" = {
+      # don't save dataset to table
+      rlang::abort("Can't save indicator into a table in databse.")
+    },
+    "code" = {
+      # dont't save data to read-only dynamic source
+      rlang::abort("Can't save indicator into read-only dynamic source.")
+    },
+    "file" = {
+      # save dataset to file
+      # get vaild file path of indicator
+      path_dir_indicator <- dir_path_db.gta_db(stock_db,
+        dir_id = "DIR_DB_DATA_INDICATOR",
+        force = FALSE
+      )
+      path_indicator_source <- file.path(path_dir_indicator, indicator_source)
+
+      # save indicator into specified format file
+      switch(file_ext,
+        "rds" = {
+          saveRDS(ts_indicators, file = path_indicator_source)
+        },
+        "csv" = {
+          readr::write_csv(ts_indicators, path = path_indicator_source)
+        }, {
+          msg <- sprintf(
+            "Can't save indicator into unsupport format file(*.%s).",
+            file_ext
+          )
+          rlang::abort(msg)
+        }
+      )
+    }
+  )
 }
 # Method definition for s4 generic
 #' @describeIn save_indicators_to_source  save indicator timeseries to
@@ -1636,44 +1681,14 @@ get_riskfree_rate.gta_db <- function(stock_db, period = c(
   .compoud_return <- function(x, ...) {
     prod(1 + x, ...) - 1
   }
-  ds_riskfree_rate_period <- switch(period,
-    "day" = {
-      ds_riskfree_rate %>%
-        ts_resample(
-          freq_rule = "day",
-          fillna_method = "ffill",
-          agg_fun = .compoud_return,
-          na.rm = TRUE
-        )
-    },
-    "month" = {
-      ds_riskfree_rate %>%
-        ts_resample(
-          freq_rule = "month",
-          fillna_method = "ffill",
-          agg_fun = .compoud_return,
-          na.rm = TRUE
-        )
-    },
-    "quarter" = {
-      ds_riskfree_rate %>%
-        ts_resample(
-          freq_rule = "quarter",
-          fillna_method = "ffill",
-          agg_fun = .compoud_return,
-          na.rm = TRUE
-        )
-    },
-    "year" = {
-      ds_riskfree_rate %>%
-        ts_resample(
-          freq_rule = "year",
-          fillna_method = "ffill",
-          agg_fun = .compoud_return,
-          na.rm = TRUE
-        )
-    }
-  )
+  freq_rule <- period
+  ds_riskfree_rate_period <- ds_riskfree_rate %>%
+    ts_resample(
+      freq_rule = freq_rule,
+      fillna_method = "ffill",
+      agg_fun = .compoud_return,
+      na.rm = TRUE
+    )
 
   ds_riskfree_rate_period <- ds_riskfree_rate_period %>%
     dplyr::select(date, riskfree_return = daily_return) %>%

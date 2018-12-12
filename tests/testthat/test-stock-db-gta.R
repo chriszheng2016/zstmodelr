@@ -46,3 +46,6 @@ test_that("industry_name_list.gta_db", {
   expect_true(is.character(industry_name_list$name))
 
 })
+
+# clear up testing conext
+suppressMessages(close_stock_db(stock_db))

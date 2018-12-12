@@ -2,6 +2,8 @@
 # Notice: in order to be different form normal R function, we use CamelCase
 # stlye for functions name
 
+# Functions for defining indicator expr ----
+
 # Lag a series by k periods
 Lag <- function(x, k = 1) {
 
@@ -74,6 +76,26 @@ Beta <- function(y, x) {
   beta <- coef(model)['x']
 
   return(beta)
+
+}
+
+# Functions for defining dynamic indicator expr ----
+
+# provide dyamic indicator of risfree rate
+RiskFreeRate <- function(stock_db, indicator_code,
+                            period = c("day", "month", "quarter", "year")) {
+
+  # validate params
+  stopifnot(!is.null(stock_db), inherits(stock_db, "stock_db"))
+  if (is.null(stock_db$connection)) {
+    stop("Stock db isn't connected, try to connect db again")
+  }
+  assertive::assert_is_character(indicator_code)
+
+  rf_return <- get_riskfree_rate(stock_db, period = period)
+  rf_return <- dplyr::rename(rf_return, !!indicator_code := riskfree_return )
+
+  return(rf_return)
 
 }
 
