@@ -399,8 +399,8 @@ setGeneric(
 #'  all indicators in the source.
 #' @param ouput_format        Output format for data frame, i.e "long" and "wide":
 #'   \itemize{
-#'       \item in long format: name of indicator is stored in "ind_name", value of indicator
-#'  is stored in "ind_value";
+#'       \item in long format: code of indicator is stored in "ind_code",
+#'       value of indicator is stored in "ind_value";
 #'       \item in wide format: value of indicator is stored in
 #'  field named with the name of indicator.
 #'   }
@@ -475,7 +475,7 @@ setGeneric(
 #' @return A dataframe of indicator timeseries if succeed, otherwise NULL.
 #'   In order to store multi-indicators with different periods(day,
 #'   month, quarter, year), returned data frame adapts longer format,
-#'   which means name of indicator is stored in "ind_name", value of factor
+#'   which means code of indicator is stored in "ind_code", value of factor
 #'   is stored in "ind_value".
 #' @export
 #'

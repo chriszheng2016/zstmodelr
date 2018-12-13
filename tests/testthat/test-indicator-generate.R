@@ -41,11 +41,13 @@ test_indicator_defs <- build_indicator_defs.gta_db(stock_db, customized_indictor
 
 test_that("generate_indictors", {
 
-  ## generate_indictors with various arguments ====
+  log_file_prefix <- "generate_indicator_log"
+  log_dir <- "./log"
+
+  # generate_indictors with various arguments ====
   ds_indicators <- generate_indictors(stock_db,
                                       ds_indicator_defs = test_indicator_defs,
-                                      validate_def = TRUE,
-                                      parallel = FALSE
+                                      validate_def = TRUE
   )
 
   #check output file
@@ -53,8 +55,44 @@ test_that("generate_indictors", {
   path_ouput_files <- paste0(dir_indicators,"/",test_indicator_defs$ind_source)
   purrr::map(path_ouput_files, ~expect_true(file.exists(.x)))
 
-  #check log file
 
+  # check log file
+  log_file_path <- sprintf(
+    "%s/%s(current).csv",
+    log_dir,
+    log_file_prefix
+  )
+  expect_true(file.exists(log_file_path))
+  log_info <- read_log(basename(log_file_path), log_dir = log_dir)
+  expect_true(all(test_indicator_defs$ind_code %in% log_info$ind_code))
+
+  # generate_indictors with various arguments ====
+  log_file_prefix <- "generate_indicator_log1"
+  log_dir <- "./log"
+
+  ds_indicators <- generate_indictors(stock_db,
+                                      ds_indicator_defs = test_indicator_defs,
+                                      validate_def = TRUE,
+                                      parallel = FALSE,
+                                      log_file_prefix = log_file_prefix,
+                                      log_dir = log_dir
+  )
+
+  #check output file
+  dir_indicators <- dir_path_db(stock_db,"DIR_DB_DATA_INDICATOR")
+  path_ouput_files <- paste0(dir_indicators,"/",test_indicator_defs$ind_source)
+  purrr::map(path_ouput_files, ~expect_true(file.exists(.x)))
+
+
+  # check log file
+  log_file_path <- sprintf(
+    "%s/%s(current).csv",
+    log_dir,
+    log_file_prefix
+  )
+  expect_true(file.exists(log_file_path))
+  log_info <- read_log(basename(log_file_path), log_dir = log_dir)
+  expect_true(all(test_indicator_defs$ind_code %in% log_info$ind_code))
 
 })
 
@@ -70,3 +108,6 @@ test_that("delete_indicators", {
   purrr::map(path_ouput_files, ~expect_false(file.exists(.x)))
 
 })
+
+# clear up testing conext
+suppressMessages(close_stock_db(stock_db))

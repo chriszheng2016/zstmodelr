@@ -247,7 +247,7 @@ test_that("save_indicators_to_source, with various arguments", {
   ts_dates <- lubridate::ceiling_date(ts_dates, unit = "month") - 1
   ts_indicators <- tibble::tibble(
     date = ts_dates,
-    ind01 = 1:12
+    ind01 = 1.1:12.1
   )
 
   # save_indicators_to_source into a rds file ====
@@ -311,7 +311,7 @@ test_that("get_indicators_from_source, with various arguments", {
   )
 
   if (!is.null(ds_indicators)) {
-    expect_fields <- c("date", "period", "stkcd", "ind_name", "ind_value")
+    expect_fields <- c("date", "period", "stkcd", "ind_code", "ind_value")
     expect_true(all(expect_fields %in% names(ds_indicators)))
     expect_true(inherits(ds_indicators$date, "Date"))
     expect_true(unique(ds_indicators$period) == "year")
@@ -330,7 +330,7 @@ test_that("get_indicators_from_source, with various arguments", {
     ouput_format = "long"
   )
   if (!is.null(ds_indicators)) {
-    expect_fields <- c("date", "period", "stkcd", "ind_name", "ind_value")
+    expect_fields <- c("date", "period", "stkcd", "ind_code", "ind_value")
     expect_true(all(expect_fields %in% names(ds_indicators)))
     expect_true(inherits(ds_indicators$date, "Date"))
     expect_true(unique(ds_indicators$period) == "quarter")
@@ -366,7 +366,7 @@ test_that("get_indicators_from_source, with various arguments", {
     ouput_format = "long"
   )
   if (!is.null(ds_indicators)) {
-    expect_fields <- c("date", "period", "ind_name", "ind_value")
+    expect_fields <- c("date", "period", "ind_code", "ind_value")
     expect_true(all(expect_fields %in% names(ds_indicators)))
     expect_true(inherits(ds_indicators$date, "Date"))
     expect_true(unique(ds_indicators$period) == "month")
@@ -396,7 +396,7 @@ test_that("get_indicators_from_source, with various arguments", {
     ouput_format = "long"
   )
   if (!is.null(ds_indicators)) {
-    expect_fields <- c("date", "period", "ind_name", "ind_value")
+    expect_fields <- c("date", "period", "ind_code", "ind_value")
     expect_true(all(expect_fields %in% names(ds_indicators)))
     expect_true(inherits(ds_indicators$date, "Date"))
     expect_true(unique(ds_indicators$period) == "month")
@@ -438,7 +438,7 @@ test_that("get_indicators_from_source, with various arguments", {
                                               ouput_format = "long"
   )
   if (!is.null(ds_indicators)) {
-    expect_fields <- c("date", "period", "ind_name", "ind_value")
+    expect_fields <- c("date", "period", "ind_code", "ind_value")
     expect_true(all(expect_fields %in% names(ds_indicators)))
     expect_true(inherits(ds_indicators$date, "Date"))
     expect_true(unique(ds_indicators$period) == "month")
@@ -466,9 +466,9 @@ test_that("get_indicators, with various arguments", {
   # get_indicators with default arguments ====
   indicator_codes <- c("f010101a", "f010201a")
   ds_indicators <- get_indicators(stock_db, indicator_codes)
-  expect_fields <- c("date", "period", "stkcd", "ind_name", "ind_value")
+  expect_fields <- c("date", "period", "stkcd", "ind_code", "ind_value")
   expect_true(all(expect_fields %in% names(ds_indicators)))
-  expect_true(all(ds_indicators$ind_name %in% tolower(indicator_codes)))
+  expect_true(all(ds_indicators$ind_code %in% tolower(indicator_codes)))
 })
 
 test_that("get_factors, with various arguments", {

@@ -13,23 +13,33 @@ produce_indictors <- function(dsn = c("GTA_SQLData"),
   init_stock_db(stock_db)
 
   # build indicator definition list
-  ds_indicator_defs <- get_indicator_defs(stock_db)
+  ds_indicator_defs_origin <- get_indicator_defs(stock_db)
 
-  # produce indicators in batch mode
+  # prioritize indicator_defs by dependency among indicators
+  ds_indicator_defs_priority <- prioritize_indicator_defs(ds_indicator_defs_origin)
+
+  # produce indicators by order of priority
   log_dir <- dir_path_db(stock_db, dir_id = "DIR_DB_DATA_LOG")
-  generate_indictors(stock_db,
-                     ds_indicator_defs = ds_indicator_defs,
-                     validate_def = validate_def,
-                     parallel = parallel,
-                     log_dir = log_dir)
+  for (i in seq_len(NROW(ds_indicator_defs_priority))) {
+    ds_indicator_defs <- ds_indicator_defs_priority$ds_indicator_defs[[i]]
+
+    # produce indicators in batch mode
+    log_file_prefix <- sprintf("generate_indicator_log(batch#%d)", i)
+    generate_indictors(stock_db,
+      ds_indicator_defs = ds_indicator_defs,
+      validate_def = validate_def,
+      parallel = parallel,
+      log_file_prefix = log_file_prefix,
+      log_dir = log_dir
+    )
+  }
 
   close_stock_db(stock_db)
-
 }
 
 # Clear indicators
 clear_indicators <- function(dsn = c("GTA_SQLData"),
-                           force = FALSE, ...) {
+                             force = FALSE, ...) {
   continue <- FALSE
 
   # force to excute without comfirmation
@@ -69,19 +79,17 @@ clear_indicators <- function(dsn = c("GTA_SQLData"),
 # Main function to indicator producers
 indictor_producer <- function(dsn = c("GTA_SQLData"),
                               fun = c("produce", "clear"),
-                               ...){
-
+                              ...) {
   dsn <- match.arg(dsn)
   fun <- match.arg(fun)
   switch(fun,
-         "produce" = {
-           produce_indictors(dsn, ...)
-         },
-         "clear" = {
-           clear_indicators(dsn, ...)
-         }
+    "produce" = {
+      produce_indictors(dsn, ...)
+    },
+    "clear" = {
+      clear_indicators(dsn, ...)
+    }
   )
-
 }
 
 # Run indicators producer

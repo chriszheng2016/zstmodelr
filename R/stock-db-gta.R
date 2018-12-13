@@ -978,8 +978,10 @@ get_indicators_from_source.gta_db <- function(stock_db,
             readRDS(path_indicator_source)
           },
           "csv" = {
-            readr::read_csv(path_indicator_source,
-              locale = readr::locale(encoding = "CP936")
+            suppressMessages(
+              readr::read_csv(path_indicator_source,
+                              locale = readr::locale(encoding = "CP936")
+              )
             )
           }, {
             msg <- sprintf(
@@ -1207,11 +1209,11 @@ get_indicators_from_source.gta_db <- function(stock_db,
     # transform it into longer and narrower format if specified
     if (ouput_format == "long") {
       # use numeric fields as value fields for tansform
-      value_fields <- expect_type_fields(ds_indicators, .expect_type = "numeric")
+      value_fields <- expect_type_fields(ds_indicators, .expect_type = "double")
       if (length(value_fields) > 0) {
         ds_indicators <- ds_indicators %>%
           tidyr::gather(
-            key = "ind_name",
+            key = "ind_code",
             value = "ind_value",
             !!value_fields
           )
@@ -1478,12 +1480,12 @@ get_factors.gta_db <- function(stock_db, factor_codes) {
     lookup <- factor_codes
     names(lookup) <- tolower(indicator_codes)
     ds_factors <- ds_indicators %>%
-      dplyr::mutate(ind_name = unname(lookup[ind_name]))
+      dplyr::mutate(ind_code = unname(lookup[ind_code]))
 
     # change colname: ind_name/value into factor_name/value
     ds_factors <- ds_factors %>%
       dplyr::rename(
-        factor_name = ind_name,
+        factor_name = ind_code,
         factor_value = ind_value
       )
   }

@@ -49,7 +49,8 @@ generate_indictors <- function(stock_db,
   success <- TRUE
 
   # load vars dataset for generating indicators
-  ds_all_vars <- get_indicator_vars(stock_db, ds_indicator_defs)
+  ds_all_vars <- get_indicator_vars(stock_db,
+                                    indicator_defs = ds_indicator_defs)
   if (is.null(ds_all_vars)) success <- FALSE
 
 
@@ -67,11 +68,11 @@ generate_indictors <- function(stock_db,
       debug <- TRUE
 
       # change output filet as *.csv
-      ds_indicator_defs <- ds_indicator_defs %>%
-        dplyr::mutate(ind_source = purrr::map_chr(
-          ds_indicator_defs$ind_source,
-          ~stringr::str_replace(.x, pattern = "\\.\\w*", replacement = ".csv")
-        ))
+      # ds_indicator_defs <- ds_indicator_defs %>%
+      #   dplyr::mutate(ind_source = purrr::map_chr(
+      #     ds_indicator_defs$ind_source,
+      #     ~stringr::str_replace(.x, pattern = "\\.\\w*", replacement = ".csv")
+      #   ))
 
       msg <- sprintf(
         "\nOnly validate definition of indicators on %s, not a real production!\n",
@@ -110,24 +111,24 @@ generate_indictors <- function(stock_db,
 
         # filter vars of the indicator
         ds_def_vars <- ds_all_vars %>%
-          dplyr::filter(ind_name %in% ind_vars)
+          dplyr::filter(ind_code %in% ind_vars)
 
         # create a indicator from vars dataset.
-        ds_indicator <- create_indicator(ds_def_vars,
+        ts_indicator <- create_indicator(ds_def_vars,
           ind_def_fun = ind_def_fun,
           debug = debug,
           date_index_field = "date",
           key_fields = key_fields,
           parallel = parallel
         )
-        if (is.null(ds_indicator)) success <- FALSE
+        if (is.null(ts_indicator)) success <- FALSE
 
         # add attribute of industry code(indcd)
         # Notice: indcd must use stkcd as key_fields
         if (success) {
-          if (!("indcd" %in% names(ds_indicator))) {
-            ds_indicator <- modify_indicator(
-              ts_indicator = ds_indicator,
+          if (!("indcd" %in% names(ts_indicator))) {
+            ts_indicator <- modify_indicator(
+              ts_indicator = ts_indicator,
               modify_fun = new_attr_indcd,
               replace_exist = FALSE,
               date_index_field = "date",
@@ -135,7 +136,7 @@ generate_indictors <- function(stock_db,
               parallel = parallel
             )
           }
-          if (is.null(ds_indicator)) success <- FALSE
+          if (is.null(ts_indicator)) success <- FALSE
         }
 
 
@@ -143,7 +144,7 @@ generate_indictors <- function(stock_db,
         if (success) {
           save_indicators_to_source(stock_db,
             indicator_source = indicator_def$ind_source,
-            ts_indicators = ds_indicator
+            ts_indicators = ts_indicator
           )
         }
 
@@ -218,3 +219,7 @@ delete_indicators <- function(stock_db,
   return(invisible(NULL))
 
 }
+
+
+
+

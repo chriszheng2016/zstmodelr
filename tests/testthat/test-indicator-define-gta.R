@@ -80,3 +80,6 @@ test_that("match_indcds.gta_db", {
 
   expect_equal(actual_indcds, expect_indcds)
 })
+
+# clear up testing conext
+suppressMessages(close_stock_db(stock_db))

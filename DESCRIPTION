@@ -41,6 +41,7 @@ Collate:
     'factor-normalize.R'
     'factor-test.R'
     'factor-tools.R'
+    'indicator-attribute.R'
     'indicator-build.R'
     'indicator-define-funs.R'
     'indicator-define.R'

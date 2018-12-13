@@ -122,6 +122,7 @@ test_that("update_db, with various arguments", {
   # test data
   data_source <- get_datasource(stock_db)
   data_source <- data_source[FALSE, ]
+  log_file_prefix <- "update_db_log"
   log_dir <- "./log"
 
   data_source <- data_source %>%
@@ -148,13 +149,16 @@ test_that("update_db, with various arguments", {
     regexp = "Import data into test_table01|test_table02 ..."
   )
 
-  # Check log file
-  log_file <- sprintf(
-    "%s/update_log_%s(current).csv",
+  # check log file
+  log_file_path <- sprintf(
+    "%s/%s_%s(current).csv",
     log_dir,
+    log_file_prefix,
     target_database
   )
-  expect_true(file.exists(log_file))
+  expect_true(file.exists(log_file_path))
+  log_info <- read_log(basename(log_file_path), log_dir = log_dir)
+  expect_true(all(data_source$target_table %in% log_info$target_table))
 
   # update_db with retry arguments: one failure ====
 
@@ -165,26 +169,41 @@ test_that("update_db, with various arguments", {
     success = c(TRUE, FALSE)
   )
 
-  log_file_error <- sprintf(
-    "%s/update_log_error_%s(current).csv",
-    log_dir,
+  log_file_error_prefix <- sprintf(
+    "update_db_log_error_%s",
     target_database
   )
 
-  readr::write_excel_csv(ds_log_error, path = log_file_error)
+  log_file_error_path <- save_log(ds_log_error,
+                            log_file_prefix = log_file_error_prefix,
+                            log_dir = log_dir)
 
-  # use log file with errrs to update db
+  # use log file with errors to update db
   # when some table log with error in log file, we should update them again.
   expect_message(
     update_db(stock_db,
       data_source = data_source,
-      retry_log = log_file_error,
+      retry_log = basename(log_file_error_path),
+      log_file_prefix = log_file_prefix,
       log_dir = log_dir
     ),
     regexp = "Import data into test_table02 ..."
   )
 
-  expect_true(file.exists(log_file))
+  # check log file
+  log_file_path <- sprintf(
+    "%s/%s_%s(current).csv",
+    log_dir,
+    log_file_prefix,
+    target_database
+  )
+  expect_true(file.exists(log_file_path))
+
+  log_info <- read_log(basename(log_file_path), log_dir = log_dir)
+  log_info <- log_info %>%
+    dplyr::filter(target_table == "test_table02")
+  expect_true(log_info$success == TRUE)
+
 
   # update_db with retry arguments: only one success  ====
 
@@ -195,13 +214,14 @@ test_that("update_db, with various arguments", {
     success = c(TRUE)
   )
 
-  log_file_error <- sprintf(
-    "%s/update_log_error_%s(current).csv",
-    log_dir,
+  log_file_error_prefix <- sprintf(
+    "update_db_log_error_%s",
     target_database
   )
 
-  readr::write_excel_csv(ds_log_error, path = log_file_error)
+  log_file_error_path <- save_log(ds_log_error,
+                            log_file_prefix = log_file_error_prefix,
+                            log_dir = log_dir)
 
   # use log file with errrs to update db
   # when some tables of data_source haven't any log info in log file,
@@ -209,13 +229,54 @@ test_that("update_db, with various arguments", {
   expect_message(
     update_db(stock_db,
               data_source = data_source,
-              retry_log = log_file_error,
+              retry_log = basename(log_file_error_path),
+              log_file_prefix = log_file_prefix,
               log_dir = log_dir
     ),
     regexp = "Import data into test_table02 ..."
   )
 
-  expect_true(file.exists(log_file))
+  # check log file
+  log_file_path <- sprintf(
+    "%s/%s_%s(current).csv",
+    log_dir,
+    log_file_prefix,
+    target_database
+  )
+  expect_true(file.exists(log_file_path))
+
+  log_info <- read_log(basename(log_file_path), log_dir = log_dir)
+  log_info <- log_info %>%
+    dplyr::filter(target_table == "test_table02")
+  expect_true(log_info$success == TRUE)
+
+  # update_db with retry arguments: wrong log error file ====
+  # When there is retry log file, all tables will be updated.
+  log_file_error_path <- sprintf(
+    "update_db_log_error_bad_%s.csv",
+    target_database
+  )
+
+  expect_warning(
+    update_db(stock_db,
+              data_source = data_source,
+              retry_log = basename(log_file_error_path),
+              log_file_prefix = log_file_prefix,
+              log_dir = log_dir
+    ),
+    regexp = "Since there is no a retry log|all tables will be updated"
+  )
+
+  # check log file
+  log_file_path <- sprintf(
+    "%s/%s_%s(current).csv",
+    log_dir,
+    log_file_prefix,
+    target_database
+  )
+  expect_true(file.exists(log_file_path))
+  log_info <- read_log(basename(log_file_path), log_dir = log_dir)
+  expect_true(all(data_source$target_table %in% log_info$target_table))
 
 })
 

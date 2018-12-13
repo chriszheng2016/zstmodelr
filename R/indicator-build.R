@@ -1,4 +1,119 @@
 
+#' Compute indicator by function and variables timeseries
+#'
+#' Use Computing function and variable timeseries to compute indicator.
+#' Its is an working horse behind create_indicator, modify_indicator.
+#'
+#' @param ts_compute_vars   A dataframe of variables timeseries to compute.
+#' @param compute_fun   A function of computing indicator.
+#' @param ...       Params to compute_fun.
+#' @param date_index_field  Name of date index field of ts_vars, default 'date'.
+#' @param key_fields    A character vector of key fields, which identify unique
+#'   observation in each date.
+#' @param parallel   A logic to deterimine whether to use parallel processing.
+#'   Default TRUE means to use parallel processing.
+#'
+#'
+#' @family indicator build functions
+#'
+#' @return A dataframe of result timeseries if succeed, otherwise NULL.
+#'
+#' @export
+#'
+#' @examples
+compute_indicator <- function(ts_compute_vars,
+                              compute_fun,
+                              ...,
+                              date_index_field = c("date"),
+                              key_fields = NULL,
+                              parallel = TRUE) {
+
+  # Define method to compute single group
+  .compute_indicator_single_group <- function(ts_compute_vars,
+                                              compute_fun,
+                                              ...,
+                                              date_index_field = c("date"),
+                                              key_fields = NULL) {
+
+    # validate params
+    assertive::assert_is_data.frame(ts_compute_vars)
+    assertive::assert_is_function(compute_fun)
+
+    # compute indicator
+    ts_indicator <- NULL
+    tryCatch({
+      ts_indicator <- compute_fun(ts_compute_vars,
+                                  date_index_field = date_index_field,
+                                  key_fields = key_fields,
+
+                                  ...
+      )
+    },
+    error = function(cnd) {
+
+      # inform user of failure and return NULL
+      key_id <- ""
+      if (!is.null(key_fields) & NROW(ts_compute_vars) > 0) {
+        key_id <- paste0(ts_compute_vars[1, key_fields], collapse = "-")
+      }
+      msg <- sprintf(
+        "Fail to compute indictor for %s:\n  %s",
+        key_id,
+        cnd$message
+      )
+      rlang::inform(msg)
+
+      ts_indicator <- NULL
+    }
+    )
+    return(ts_indicator)
+  }
+
+
+  # -- Main Function --
+
+  # validate params
+  assertive::assert_is_data.frame(ts_compute_vars)
+  assertive::assert_is_function(compute_fun)
+
+  # pre-process ts_input_vars
+  ts_compute_vars <- tibble::as.tibble(ts_compute_vars)
+  arrange_expr <- rlang::parse_exprs(c(key_fields, date_index_field))
+  ts_compute_vars <- ts_compute_vars %>%
+    dplyr::arrange(!!!arrange_expr)
+
+  # Work for single/multi group dataset
+  if (is.null(key_fields)) {
+
+    # For single group
+    ds_indicator <- .compute_indicator_single_group(ts_compute_vars,
+                                                    compute_fun = compute_fun,
+                                                    ...,
+                                                    date_index_field = date_index_field,
+                                                    key_fields = key_fields
+    )
+  } else {
+
+    # For mutlti groups by key_fieilds
+    ds_indicator <- plyr::ddply(ts_compute_vars,
+                                .variables = key_fields,
+                                .fun = .compute_indicator_single_group,
+                                compute_fun = compute_fun,
+                                ...,
+                                date_index_field = date_index_field,
+                                key_fields = key_fields,
+                                .parallel = parallel,
+                                .progress = plyr::progress_win(title = "Computing...")
+    )
+  }
+
+  if (!is.null(ds_indicator)) {
+    ds_indicator <- tibble::as.tibble(ds_indicator)
+  }
+
+  return(ds_indicator)
+}
+
 
 #' Create indicator by definiton function and variables timeseries
 #'
@@ -191,121 +306,5 @@ modify_indicator <- function(ts_indicator,
   return(ds_modify_indicator)
 }
 
-
-
-#' Compute indicator by function and variables timeseries
-#'
-#' Use Computing function and variable timeseries to compute indicator.
-#' Its is an working horse behind create_indicator, modify_indicator.
-#'
-#' @param ts_compute_vars   A dataframe of variables timeseries to compute.
-#' @param compute_fun   A function of computing indicator.
-#' @param ...       Params to compute_fun.
-#' @param date_index_field  Name of date index field of ts_vars, default 'date'.
-#' @param key_fields    A character vector of key fields, which identify unique
-#'   observation in each date.
-#' @param parallel   A logic to deterimine whether to use parallel processing.
-#'   Default TRUE means to use parallel processing.
-#'
-#'
-#' @family indicator build functions
-#'
-#' @return A dataframe of result timeseries if succeed, otherwise NULL.
-#'
-#' @export
-#'
-#' @examples
-compute_indicator <- function(ts_compute_vars,
-                              compute_fun,
-                              ...,
-                              date_index_field = c("date"),
-                              key_fields = NULL,
-                              parallel = TRUE) {
-
-  # Define method to compute single group
-  .compute_indicator_single_group <- function(ts_compute_vars,
-                                                compute_fun,
-                                                ...,
-                                                date_index_field = c("date"),
-                                                key_fields = NULL) {
-
-    # validate params
-    assertive::assert_is_data.frame(ts_compute_vars)
-    assertive::assert_is_function(compute_fun)
-
-    # compute indicator
-    ts_indicator <- NULL
-    tryCatch({
-      ts_indicator <- compute_fun(ts_compute_vars,
-        date_index_field = date_index_field,
-        key_fields = key_fields,
-
-        ...
-      )
-    },
-    error = function(cnd) {
-
-      # inform user of failure and return NULL
-      key_id <- ""
-      if (!is.null(key_fields) & NROW(ts_compute_vars) > 0) {
-        key_id <- paste0(ts_compute_vars[1, key_fields], collapse = "-")
-      }
-      msg <- sprintf(
-        "Fail to compute indictor for %s:\n  %s",
-        key_id,
-        cnd$message
-      )
-      rlang::inform(msg)
-
-      ts_indicator <- NULL
-    }
-    )
-    return(ts_indicator)
-  }
-
-
-  # -- Main Function --
-
-  # validate params
-  assertive::assert_is_data.frame(ts_compute_vars)
-  assertive::assert_is_function(compute_fun)
-
-  # pre-process ts_input_vars
-  ts_compute_vars <- tibble::as.tibble(ts_compute_vars)
-  arrange_expr <- rlang::parse_exprs(c(key_fields, date_index_field))
-  ts_compute_vars <- ts_compute_vars %>%
-    dplyr::arrange(!!!arrange_expr)
-
-  # Work for single/multi group dataset
-  if (is.null(key_fields)) {
-
-    # For single group
-    ds_indicator <- .compute_indicator_single_group(ts_compute_vars,
-      compute_fun = compute_fun,
-      ...,
-      date_index_field = date_index_field,
-      key_fields = key_fields
-    )
-  } else {
-
-    # For mutlti groups by key_fieilds
-    ds_indicator <- plyr::ddply(ts_compute_vars,
-      .variables = key_fields,
-      .fun = .compute_indicator_single_group,
-      compute_fun = compute_fun,
-      ...,
-      date_index_field = date_index_field,
-      key_fields = key_fields,
-      .parallel = parallel,
-      .progress = plyr::progress_win(title = "Computing...")
-    )
-  }
-
-  if (!is.null(ds_indicator)) {
-    ds_indicator <- tibble::as.tibble(ds_indicator)
-  }
-
-  return(ds_indicator)
-}
 
 

@@ -56,7 +56,9 @@ expect_type_fields <- function(.data, .expect_type = c(
         purrr::as_mapper(~(typeof(.) == "integer"))
       },
       "double" = {
-        purrr::as_mapper(~(typeof(.) == "double"))
+        # need to exclude Date type whose tyepof also is double
+        purrr::as_mapper(~(typeof(.) == "double" &&
+                             (!inherits(., what = "Date"))))
       },
       "character" = {
         purrr::as_mapper(~(typeof(.) == "character"))

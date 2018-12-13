@@ -163,7 +163,7 @@ test_that("create_indicator", {
 
   expect_is(ds_indicator, "data.frame")
   expect_fields <- c("date", "stkcd", "indcd", "period",
-                     unique(ds_vars$ind_name),
+                     unique(ds_vars$ind_code),
                      indicator_code)
   actual_fields <- names(ds_indicator)
   expect_true(all(actual_fields %in% expect_fields))
