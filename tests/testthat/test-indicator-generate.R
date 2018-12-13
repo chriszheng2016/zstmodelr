@@ -1,5 +1,5 @@
 # Tests for function of indicator generate  ----
-context("Tests for function of indicator generate ")
+context("Tests for function of indicator generate")
 
 # set up testing context
 dsn <- "GTA_SQLData"

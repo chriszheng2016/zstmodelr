@@ -65,8 +65,8 @@ test_ds_vars <- function(dates, peroid) {
       rep("mclsprc", length(dates))
     ),
     ind_value = c(
-      rep(1, length(dates)),
-      rep(2, length(dates))
+      rep(1.1, length(dates)),
+      rep(2.1, length(dates))
     )
     # ind_value = c(runif(length(dates)),
     #               runif(length(dates)))
@@ -128,7 +128,7 @@ test_that("ind_attr_def_indcd", {
 
 # Tests for function of indicator define - non-generic functions ----
 
-context("Tests for function of indicator definie - non-generic functions")
+context("Tests for function of indicator define - non-generic functions")
 
 test_that("create_indicator_def_fun", {
 
@@ -284,7 +284,7 @@ test_that("prioritize_indicator_defs", {
 
 # Tests for function of indicator define - Internal functions ----
 
-context("Tests for function of indicator definie - Internal functions")
+context("Tests for function of indicator define - Internal functions")
 
 test_that("create_defs_trees", {
   new_indicators_defs <- test_indicator_defs[FALSE, ] %>%
