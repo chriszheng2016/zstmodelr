@@ -319,7 +319,7 @@ create_indicator_def_fun <- function(indicator_code,
     # it assume value fields of vars are double and
     # attr fields are not double
     value_fields_vars <- expect_type_fields(ds_vars,
-      .expect_type = "double"
+      expect_type = "double"
     )
 
     # combine key fields and indicators
@@ -343,11 +343,11 @@ create_indicator_def_fun <- function(indicator_code,
     # it assumes indicator fields are double fields, non-double
     # fields are non_indicator fields
     result_indicator_fields <- expect_type_fields(ts_indicator,
-      .expect_type = "double"
+      expect_type = "double"
     )
     result_non_indicator_fields <- expect_type_fields(ts_indicator,
-      .expect_type = "double",
-      .negate = TRUE
+      expect_type = "double",
+      negate = TRUE
     )
     ts_indicator <- ts_indicator %>%
       dplyr::select(!!result_non_indicator_fields, !!result_indicator_fields)

@@ -20,14 +20,85 @@ test_that("check_fields, with various arguments", {
   # check_fields on existed fields ====
   for (field in names(ds_various_type)) {
     check_fields(ds_various_type,
-      .fields = field
+      fields = field
     )
   }
 
   # check_fields on non-existed fields ====
   expect_error(check_fields(ds_various_type,
-    .fields = "Date"
+    fields = "Date"
   ))
+})
+
+test_that("is_type_field, with various arguments", {
+
+  # is_type_field on regualar data type ====
+  expect_type_fields <- names(ds_various_type)
+  for (i in seq_along(expect_type_fields)) {
+    expect_field_type <- expect_type_fields[i]
+    expect_type_true <- is_type_field(ds_various_type,
+                                   expect_type = expect_field_type)
+    expect_fields <- expect_type_fields[expect_type_true]
+    expect_true(expect_field_type %in% expect_fields)
+
+  }
+  # numeric fields should include numeric, integer and double
+  expect_type_true <- is_type_field(
+    ds_various_type,
+    "numeric"
+  )
+  expect_fields <- expect_type_fields[expect_type_true]
+  expect_true(all(expect_fields %in% c("numeric", "integer", "double")))
+
+  # double fields don't include date
+  expect_type_true <- is_type_field(
+    ds_various_type,
+    "double"
+  )
+  expect_fields <- expect_type_fields[expect_type_true]
+  expect_true(all(expect_fields %in% c("numeric", "double")))
+  expect_true(!("date" %in% expect_fields))
+
+  # is_type_field on negate regualar data type ====
+  expect_field_types <- names(ds_various_type)
+  for (i in seq_along(expect_field_types)) {
+    expect_field_type <- expect_field_types[i]
+    expect_type_true <- is_type_field(ds_various_type,
+                                        expect_type = expect_field_type,
+                                        negate = TRUE
+    )
+    expect_fields <- expect_type_fields[expect_type_true]
+    expect_true(!(expect_field_type %in% expect_fields))
+  }
+
+  # non-numeric fields shouldn't include numeric, integer and double
+  expect_type_true <- is_type_field(ds_various_type,
+                                      "numeric",
+                                      negate = TRUE
+  )
+  expect_fields <- expect_type_fields[expect_type_true]
+  expect_true(all(!(expect_fields %in% c("numeric", "integer", "double"))))
+
+  # non-double fields should include date
+  expect_type_true <- is_type_field(
+    ds_various_type,
+    "double",
+    negate = TRUE
+  )
+  expect_fields <- expect_type_fields[expect_type_true]
+  expect_true(all(!expect_fields %in% c("numeric", "double")))
+  expect_true("date" %in% expect_fields)
+
+
+  # is_type_field on predicate_fun ====
+  expect_type_true <- is_type_field(ds_various_type,
+                                    expect_type = expect_field_type,
+                                    predicate_fun = inherits,
+                                    what = "Date"
+  )
+  expect_fields <- expect_type_fields[expect_type_true]
+  expect_true(expect_fields == "date")
+
 })
 
 test_that("expect_type_fields, with various arguments", {
@@ -37,7 +108,7 @@ test_that("expect_type_fields, with various arguments", {
   for (i in seq_along(expect_type_fields)) {
     expect_field_type <- expect_type_fields[i]
     expect_fields <- expect_type_fields(ds_various_type,
-      .expect_type = expect_field_type
+      expect_type = expect_field_type
     )
     expect_true(expect_field_type %in% expect_fields)
   }
@@ -48,14 +119,21 @@ test_that("expect_type_fields, with various arguments", {
   )
   expect_true(all(expect_fields %in% c("numeric", "integer", "double")))
 
+  # double fields don't include date
+  expect_fields <- expect_type_fields(
+    ds_various_type,
+    "double"
+  )
+  expect_true(all(expect_fields %in% c("numeric", "double")))
+  expect_true(!("date" %in% expect_fields))
 
   # expect_type_fields on negate regualar data type ====
   expect_field_types <- names(ds_various_type)
   for (i in seq_along(expect_field_types)) {
     expect_field_type <- expect_field_types[i]
     expect_fields <- expect_type_fields(ds_various_type,
-      .expect_type = expect_field_type,
-      .negate = TRUE
+      expect_type = expect_field_type,
+      negate = TRUE
     )
     expect_true(!(expect_field_type %in% expect_fields))
   }
@@ -63,15 +141,24 @@ test_that("expect_type_fields, with various arguments", {
   # non-numeric fields shouldn't include numeric, integer and double
   expect_fields <- expect_type_fields(ds_various_type,
     "numeric",
-    .negate = TRUE
+    negate = TRUE
   )
   expect_true(all(!(expect_fields %in% c("numeric", "integer", "double"))))
 
+  # non-double fields should include date
+  expect_fields <- expect_type_fields(
+    ds_various_type,
+    "double",
+    negate = TRUE
+  )
+  expect_true(all(!expect_fields %in% c("numeric", "double")))
+  expect_true("date" %in% expect_fields)
 
-  # expect_type_fields on .predicate fun ====
+
+  # expect_type_fields on predicate_fun ====
   expect_fields <- expect_type_fields(ds_various_type,
-    .expect_type = expect_field_type,
-    .predicate = inherits,
+    expect_type = expect_field_type,
+    predicate_fun = inherits,
     what = "Date"
   )
   expect_true(expect_fields == "date")

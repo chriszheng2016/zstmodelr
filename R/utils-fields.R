@@ -1,30 +1,32 @@
 
 # Check whether fields exsit in data
-check_fields <- function(.data, .fields) {
+check_fields <- function(data, fields) {
 
   # validate params
-  .data_sym <- rlang::ensym(.data)
+  data_sym <- rlang::ensym(data)
 
-  assertive::assert_is_not_null(.data)
-  assertive::assert_is_character(.fields)
+  assertive::assert_is_not_null(data)
+  assertive::assert_is_character(fields)
 
-  all_fields <- names(.data)
+  all_fields <- names(data)
 
-  # check whether the fields are exist in .data
-  fields_are_existed <- .fields %in% all_fields
+  # check whether the fields are exist in data
+  fields_are_existed <- fields %in% all_fields
   if (any(!fields_are_existed)) {
     msg <- sprintf(
       "Some fields(%s) don't exist in %s",
-      .fields[!fields_are_existed],
-      as.character(.data_sym)
+      fields[!fields_are_existed],
+      as.character(data_sym)
     )
     rlang::abort(msg)
   }
 }
 
-# Identify fields with specified type
-# numeric means an object of typeof intger or double
-expect_type_fields <- function(.data, .expect_type = c(
+# Check whether fields are specified type
+# Notice:
+#  numeric means intger or double;
+#  double don't include date.
+is_type_field <- function(data, expect_type = c(
                                  "numeric",
                                  "integer",
                                  "double",
@@ -34,19 +36,17 @@ expect_type_fields <- function(.data, .expect_type = c(
                                  "list",
                                  "NA"
                                ),
-                               .negate = FALSE,
-                               .predicate = NULL,
+                               negate = FALSE,
+                               predicate_fun = NULL,
                                ...) {
   # validate params
-  assertive::assert_is_not_null(.data)
-  assertive::assert_is_logical(.negate)
-
-  all_fields <- names(.data)
+  assertive::assert_is_not_null(data)
+  assertive::assert_is_logical(negate)
 
   # build fun of expecation
-  if (is.null(.predicate)) {
-    .expect_type <- match.arg(.expect_type)
-    predicate_fun <- switch(.expect_type,
+  if (is.null(predicate_fun)) {
+    expect_type <- match.arg(expect_type)
+    predicate_fun <- switch(expect_type,
       "numeric" = {
         # numeric means an object of typeof intger or double
         # purrr::as_mapper(~(inherits(., what = "numeric")))
@@ -58,7 +58,7 @@ expect_type_fields <- function(.data, .expect_type = c(
       "double" = {
         # need to exclude Date type whose tyepof also is double
         purrr::as_mapper(~(typeof(.) == "double" &&
-                             (!inherits(., what = "Date"))))
+          (!inherits(., what = "Date"))))
       },
       "character" = {
         purrr::as_mapper(~(typeof(.) == "character"))
@@ -79,17 +79,48 @@ expect_type_fields <- function(.data, .expect_type = c(
       }
     )
   } else {
-    assertive::assert_is_function(.predicate)
-    predicate_fun <- .predicate
+    assertive::assert_is_function(predicate_fun)
+    predicate_fun <- predicate_fun
   }
 
   # need to get negative expected fields
-  if (.negate) {
+  if (negate) {
     predicate_fun <- purrr::negate(predicate_fun)
   }
 
   # use fun of expection to get result
-  are_expect_fields <- purrr::map_lgl(.data, predicate_fun, ...)
+  are_expect_fields <- purrr::map_lgl(data, predicate_fun, ...)
+
+  return(are_expect_fields)
+}
+
+
+
+# Identify fields with specified type
+expect_type_fields <- function(data, expect_type = c(
+                                 "numeric",
+                                 "integer",
+                                 "double",
+                                 "character",
+                                 "date",
+                                 "factor",
+                                 "list",
+                                 "NA"
+                               ),
+                               negate = FALSE,
+                               predicate_fun = NULL,
+                               ...) {
+  # validate params
+  assertive::assert_is_not_null(data)
+  assertive::assert_is_logical(negate)
+
+  # find out whether field is specified type
+  are_expect_fields <- is_type_field(data,
+                                     expect_type = expect_type,
+                                     negate = negate,
+                                     predicate_fun = predicate_fun,
+                                     ...)
+  all_fields <- names(data)
   expect_fields <- all_fields[are_expect_fields]
 
   return(expect_fields)
