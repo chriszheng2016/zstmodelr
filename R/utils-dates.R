@@ -135,8 +135,8 @@ isRegularYearly <- function(x){
 #'  use looser test(irregular).
 #'
 #' @family utility functions of dates
-#' @return  return "D" for daily, "M" for monthly, "Q" for quarterly, "Y" for yearly,
-#'  "U" for unkown.
+#' @return  return "day" for daily, "month" for monthly, "quarter" for quarterly,
+#'  "year" for yearly, "unknown" for unkown date period.
 #'
 #' @export
 guess_dates_period <- function(dates_series, regular = FALSE) {
@@ -144,37 +144,37 @@ guess_dates_period <- function(dates_series, regular = FALSE) {
   # validate params
   stopifnot(!is.null(dates_series), lubridate::is.Date(dates_series))
 
-  dates_period <- "U"
+  dates_period <- "unknown"
 
   # it is a monthly date series?
-  if (dates_period == "U") {
+  if (dates_period == "unknown") {
     if (is_periodic_dates(dates_series, freq_rule = "day",
                           regular = regular)) {
-      dates_period <- "D"
+      dates_period <- "day"
     }
   }
 
   # it is a monthly date series?
-  if (dates_period == "U") {
+  if (dates_period == "unknown") {
     if (is_periodic_dates(dates_series, freq_rule = "month",
                           regular = regular)) {
-      dates_period <- "M"
+      dates_period <- "month"
     }
   }
 
   # it is a quarterly date series?
-  if (dates_period == "U") {
+  if (dates_period == "unknown") {
     if (is_periodic_dates(dates_series, freq_rule = "quarter",
                           regular = regular)) {
-      dates_period <- "Q"
+      dates_period <- "quarter"
     }
   }
 
   # it is a yearly date series?
-  if (dates_period == "U") {
+  if (dates_period == "unknown") {
     if (is_periodic_dates(dates_series, freq_rule = "year",
                           regular = regular)) {
-      dates_period <- "Y"
+      dates_period <- "year"
     }
   }
 

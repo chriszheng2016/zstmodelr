@@ -95,29 +95,29 @@ test_that("guess_dates_period, with various arguments", {
   # guess_dates_period on default arguments  ====
 
   # >>guess_dates_period on regular dates series  ----
-  expect_true(guess_dates_period(regular_daily_dates) == "D")
-  expect_true(guess_dates_period(regular_monthly_dates) == "M")
-  expect_true(guess_dates_period(regular_quarterly_dates) == "Q")
-  expect_true(guess_dates_period(regular_yearly_dates) == "Y")
+  expect_true(guess_dates_period(regular_daily_dates) == "day")
+  expect_true(guess_dates_period(regular_monthly_dates) == "month")
+  expect_true(guess_dates_period(regular_quarterly_dates) == "quarter")
+  expect_true(guess_dates_period(regular_yearly_dates) == "year")
 
   # >>guess_dates_period on irregular dates series  ----
-  expect_true(guess_dates_period(irregular_daily_dates) == "D")
-  expect_true(guess_dates_period(irregular_monthly_dates) == "M")
-  expect_true(guess_dates_period(irregular_quarterly_dates) == "Q")
-  expect_true(guess_dates_period(irregular_yearly_dates) == "Y")
+  expect_true(guess_dates_period(irregular_daily_dates) == "day")
+  expect_true(guess_dates_period(irregular_monthly_dates) == "month")
+  expect_true(guess_dates_period(irregular_quarterly_dates) == "quarter")
+  expect_true(guess_dates_period(irregular_yearly_dates) == "year")
 
   # guess_dates_period on various arguments  ====
 
   # >>guess_dates_period on regular dates series  ----
-  expect_true(guess_dates_period(regular_daily_dates, regular = TRUE) == "D")
-  expect_true(guess_dates_period(regular_monthly_dates, regular = TRUE) == "M")
-  expect_true(guess_dates_period(regular_quarterly_dates, regular = TRUE) == "Q")
-  expect_true(guess_dates_period(regular_yearly_dates, regular = TRUE) == "Y")
+  expect_true(guess_dates_period(regular_daily_dates, regular = TRUE) == "day")
+  expect_true(guess_dates_period(regular_monthly_dates, regular = TRUE) == "month")
+  expect_true(guess_dates_period(regular_quarterly_dates, regular = TRUE) == "quarter")
+  expect_true(guess_dates_period(regular_yearly_dates, regular = TRUE) == "year")
 
   # >>guess_dates_period on irregular dates series  ----
-  expect_true(guess_dates_period(irregular_daily_dates, regular = FALSE) == "D")
-  expect_true(guess_dates_period(irregular_monthly_dates, regular = FALSE) == "M")
-  expect_true(guess_dates_period(irregular_quarterly_dates, regular = FALSE) == "Q")
-  expect_true(guess_dates_period(irregular_yearly_dates, regular = FALSE) == "Y")
+  expect_true(guess_dates_period(irregular_daily_dates, regular = FALSE) == "day")
+  expect_true(guess_dates_period(irregular_monthly_dates, regular = FALSE) == "month")
+  expect_true(guess_dates_period(irregular_quarterly_dates, regular = FALSE) == "quarter")
+  expect_true(guess_dates_period(irregular_yearly_dates, regular = FALSE) == "year")
 
 })

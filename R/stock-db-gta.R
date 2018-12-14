@@ -1114,19 +1114,19 @@ get_indicators_from_source.gta_db <- function(stock_db,
           # turn it into the last day of period
           dates_period <- guess_dates_period(ts_date)
           switch(dates_period,
-            "D" = {
+            "day" = {
               period_unit <- "day"
             },
-            "M" = {
+            "month" = {
               period_unit <- "month"
             },
-            "Q" = {
+            "quarter" = {
               period_unit <- "quarter"
             },
-            "Y" = {
+            "year" = {
               period_unit <- "year"
             },
-            "U" = {
+            "unknown" = {
               period_unit <- "day"
             }
           )
@@ -1209,7 +1209,7 @@ get_indicators_from_source.gta_db <- function(stock_db,
     # transform it into longer and narrower format if specified
     if (ouput_format == "long") {
       # use numeric fields as value fields for tansform
-      value_fields <- expect_type_fields(ds_indicators, .expect_type = "double")
+      value_fields <- expect_type_fields(ds_indicators, expect_type = "double")
       if (length(value_fields) > 0) {
         ds_indicators <- ds_indicators %>%
           tidyr::gather(
