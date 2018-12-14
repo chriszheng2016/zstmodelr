@@ -178,7 +178,7 @@ test_that("create_indicator", {
 test_that("modify_indicator", {
 
   # load dataset of indicator dataset to modify
-  ds_origin_indicator <- readRDS("./data/ds_test_ind_m_ep_ttm.rds")
+  ts_origin_indicator <- readRDS("./data/ds_test_modify_indicator.rds")
 
   # a factory to build attr_fun
   make_attr_fun <- function(attr_value) {
@@ -196,18 +196,18 @@ test_that("modify_indicator", {
   )
 
   # modify indicators by using attribute definition
-  ds_modify_indicator <- modify_indicator(ds_origin_indicator,
+  ts_modify_indicator <- modify_indicator(ts_origin_indicator,
     modify_fun = ind_attr_def_fun,
     date_index_field = "date",
     key_fields = "stkcd",
     parallel = FALSE
   )
 
-  expect_is(ds_modify_indicator, "data.frame")
-  expect_fields <- c(names(ds_origin_indicator), attr_name)
-  actual_fields <- names(ds_modify_indicator)
+  expect_is(ts_modify_indicator, "data.frame")
+  expect_fields <- c(names(ts_origin_indicator), attr_name)
+  actual_fields <- names(ts_modify_indicator)
   expect_true(all(actual_fields %in% expect_fields))
-  expect_true(all(ds_modify_indicator[attr_name] == attr_value1))
+  expect_true(all(ts_modify_indicator[attr_name] == attr_value1))
 
   # modify indicators with existed attrubute ====
   attr_name <- "indcd"
@@ -219,7 +219,7 @@ test_that("modify_indicator", {
 
   # don't change existed attribute
   expect_warning(
-    ds_modify_indicator <- modify_indicator(ds_modify_indicator,
+    ts_modify_indicator <- modify_indicator(ts_modify_indicator,
       modify_fun = ind_attr_def_fun,
       date_index_field = "date",
       key_fields = "stkcd",
@@ -227,15 +227,15 @@ test_that("modify_indicator", {
     )
   )
 
-  expect_is(ds_modify_indicator, "data.frame")
-  expect_fields <- c(names(ds_origin_indicator), attr_name)
-  actual_fields <- names(ds_modify_indicator)
+  expect_is(ts_modify_indicator, "data.frame")
+  expect_fields <- c(names(ts_origin_indicator), attr_name)
+  actual_fields <- names(ts_modify_indicator)
   expect_true(all(actual_fields %in% expect_fields))
-  expect_true(all(ds_modify_indicator[attr_name] == attr_value1))
+  expect_true(all(ts_modify_indicator[attr_name] == attr_value1))
 
   # replace exsited attribute
   expect_warning(
-    ds_modify_indicator <- modify_indicator(ds_modify_indicator,
+    ts_modify_indicator <- modify_indicator(ts_modify_indicator,
                                             modify_fun = ind_attr_def_fun,
                                             replace_exist = TRUE,
                                             date_index_field = "date",
@@ -244,10 +244,10 @@ test_that("modify_indicator", {
     )
   )
 
-  expect_is(ds_modify_indicator, "data.frame")
-  expect_fields <- c(names(ds_origin_indicator), attr_name)
-  actual_fields <- names(ds_modify_indicator)
+  expect_is(ts_modify_indicator, "data.frame")
+  expect_fields <- c(names(ts_origin_indicator), attr_name)
+  actual_fields <- names(ts_modify_indicator)
   expect_true(all(actual_fields %in% expect_fields))
-  expect_true(all(ds_modify_indicator[attr_name] == attr_value2))
+  expect_true(all(ts_modify_indicator[attr_name] == attr_value2))
 
 })
