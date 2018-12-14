@@ -10,10 +10,10 @@ Lag <- function(x, k = 1) {
   # Shift data at current timeline
   if (k > 0) {
     # shift backward
-    lag_x <- dplyr::lag(x, n = k )
-  }  else if (k < 0) {
+    lag_x <- dplyr::lag(x, n = k)
+  } else if (k < 0) {
     # shift forward
-    lag_x <- dplyr::lead(x, n = abs(k) )
+    lag_x <- dplyr::lead(x, n = abs(k))
   } else {
     # don't shift
     lag_x <- x
@@ -53,37 +53,55 @@ Demean <- function(x) {
   demean_x <- x - mean(x, na.rm = TRUE)
 
   return(demean_x)
-
 }
 
-# Compute ttm for  a series
-TTM <- function(dates, x) {
+# Trail a periodic series
+TrailSeries <- function(date, x) {
 
-  # valiate params
-  assertive::assert_is_date(dates)
+  date_expr <- rlang::enexpr(date)
+  x_expr <- rlang::enexpr(x)
 
-  # compute demean
-  ttm_x <- x - mean(x, na.rm = TRUE)
+  #validate params
+  assertive::assert_is_date(date)
+  assertive::assert_is_vector(x)
 
-  return(ttm_x)
+  # predicate period of dates
+  period <- guess_dates_period(date, regular = TRUE)
 
+  # trail data by periodic dates
+  if (period != "unknown") {
+    # trail regular periodic series
+    trail_x <- trail_periodic_series(date,
+                                     data_series = x,
+                                     period = period,
+                                     fun = sum)
+  } else {
+    msg <- sprintf("Can't trail series(%s) with irregular periodic date(%s), return NAs ",
+                   rlang::expr_text(x_expr),
+                   rlang::expr_text(date_expr)
+                   )
+    rlang::abort(msg)
+  }
+
+  #only ouput a vector of data
+  trail_x <- trail_x[[1]]
+
+  return(trail_x)
 }
 
 # Beta between two vars
 Beta <- function(y, x) {
-
   model <- lm(y ~ x)
-  beta <- coef(model)['x']
+  beta <- coef(model)["x"]
 
   return(beta)
-
 }
 
 # Functions for defining dynamic indicator expr ----
 
 # provide dyamic indicator of risfree rate
 RiskFreeRate <- function(stock_db, indicator_code,
-                            period = c("day", "month", "quarter", "year")) {
+                         period = c("day", "month", "quarter", "year")) {
 
   # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "stock_db"))
@@ -93,9 +111,8 @@ RiskFreeRate <- function(stock_db, indicator_code,
   assertive::assert_is_character(indicator_code)
 
   rf_return <- get_riskfree_rate(stock_db, period = period)
-  rf_return <- dplyr::rename(rf_return, !!indicator_code := riskfree_return )
+  rf_return <- dplyr::rename(rf_return, !!indicator_code := riskfree_return)
 
   return(rf_return)
-
 }
 

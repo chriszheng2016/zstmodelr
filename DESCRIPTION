@@ -61,6 +61,7 @@ Collate:
     'utils-logfile.R'
     'utils-profile.R'
     'utils-report.R'
+    'utils-series.R'
     'utils-timeseries.R'
     'utils.R'
     'zstmodelr.R'

@@ -30,10 +30,10 @@ compute_indicator <- function(ts_compute_vars,
 
   # Define method to compute single group
   .compute_indicator_single_group <- function(ts_compute_vars,
-                                              compute_fun,
-                                              ...,
-                                              date_index_field = c("date"),
-                                              key_fields = NULL) {
+                                                compute_fun,
+                                                ...,
+                                                date_index_field = c("date"),
+                                                key_fields = NULL) {
 
     # validate params
     assertive::assert_is_data.frame(ts_compute_vars)
@@ -43,10 +43,10 @@ compute_indicator <- function(ts_compute_vars,
     ts_indicator <- NULL
     tryCatch({
       ts_indicator <- compute_fun(ts_compute_vars,
-                                  date_index_field = date_index_field,
-                                  key_fields = key_fields,
+        date_index_field = date_index_field,
+        key_fields = key_fields,
 
-                                  ...
+        ...
       )
     },
     error = function(cnd) {
@@ -75,6 +75,8 @@ compute_indicator <- function(ts_compute_vars,
   # validate params
   assertive::assert_is_data.frame(ts_compute_vars)
   assertive::assert_is_function(compute_fun)
+  # can't process data.frame with zero data
+  assertive::assert_all_are_true(NROW(ts_compute_vars) > 0)
 
   # pre-process ts_input_vars
   ts_compute_vars <- tibble::as.tibble(ts_compute_vars)
@@ -87,24 +89,28 @@ compute_indicator <- function(ts_compute_vars,
 
     # For single group
     ds_indicator <- .compute_indicator_single_group(ts_compute_vars,
-                                                    compute_fun = compute_fun,
-                                                    ...,
-                                                    date_index_field = date_index_field,
-                                                    key_fields = key_fields
+      compute_fun = compute_fun,
+      ...,
+      date_index_field = date_index_field,
+      key_fields = key_fields
     )
   } else {
 
     # For mutlti groups by key_fieilds
     ds_indicator <- plyr::ddply(ts_compute_vars,
-                                .variables = key_fields,
-                                .fun = .compute_indicator_single_group,
-                                compute_fun = compute_fun,
-                                ...,
-                                date_index_field = date_index_field,
-                                key_fields = key_fields,
-                                .parallel = parallel,
-                                .progress = plyr::progress_win(title = "Computing...")
+      .variables = key_fields,
+      .fun = .compute_indicator_single_group,
+      compute_fun = compute_fun,
+      ...,
+      date_index_field = date_index_field,
+      key_fields = key_fields,
+      .parallel = parallel,
+      .progress = plyr::progress_win(title = "Computing...")
     )
+
+    # If there are no results, dplyr::ddply will return a data frame
+    # with zero rows and columns
+    if (NROW(ds_indicator) == 0) ds_indicator <- NULL
   }
 
   if (!is.null(ds_indicator)) {
@@ -190,12 +196,12 @@ create_indicator <- function(ts_def_vars,
 
   # compute result
   ds_new_indicator <- compute_indicator(ts_def_vars,
-                                        compute_fun = ind_def_fun,
-                                        debug = debug,
-                                        ...,
-                                        date_index_field = date_index_field,
-                                        key_fields = key_fields,
-                                        parallel = parallel
+    compute_fun = ind_def_fun,
+    debug = debug,
+    ...,
+    date_index_field = date_index_field,
+    key_fields = key_fields,
+    parallel = parallel
   )
 
   return(ds_new_indicator)
@@ -239,11 +245,11 @@ modify_indicator <- function(ts_indicator,
 
   # compute result
   ts_ind_attribute <- compute_indicator(ts_indicator,
-                                        compute_fun = modify_fun,
-                                        ...,
-                                        date_index_field = date_index_field,
-                                        key_fields = key_fields,
-                                        parallel = parallel
+    compute_fun = modify_fun,
+    ...,
+    date_index_field = date_index_field,
+    key_fields = key_fields,
+    parallel = parallel
   )
 
   # combine attribute into indicator
@@ -266,8 +272,8 @@ modify_indicator <- function(ts_indicator,
 
         ds_modify_indicator <- ts_indicator %>%
           dplyr::left_join(ts_ind_attribute,
-                           by = c(date_index_field, key_fields),
-                           suffix = c(".x", "")
+            by = c(date_index_field, key_fields),
+            suffix = c(".x", "")
           ) %>%
           dplyr::select(-dplyr::ends_with(".x")) %>%
           dplyr::select(
@@ -294,7 +300,7 @@ modify_indicator <- function(ts_indicator,
       # add new attribute
       ds_modify_indicator <- ts_indicator %>%
         dplyr::left_join(ts_ind_attribute,
-                         by = c(date_index_field, key_fields)
+          by = c(date_index_field, key_fields)
         ) %>%
         dplyr::select(
           !!date_index_field,
@@ -305,6 +311,3 @@ modify_indicator <- function(ts_indicator,
 
   return(ds_modify_indicator)
 }
-
-
-

@@ -10,17 +10,15 @@ stock_db <- stock_db(gta_db, dsn)
 suppressMessages(db_ready <- open_stock_db(stock_db))
 # skip tests if test dsn is not ready
 skip_if_not(db_ready,
-            message = sprintf("DSN(%s) is not ready, skip all tests for stock_db", dsn)
+  message = sprintf("DSN(%s) is not ready, skip all tests for stock_db", dsn)
 )
 suppressMessages(init_stock_db(stock_db))
-
 
 # Functions for defining indicator expr ----
 
 series_length <- 10
 
 test_that("Lag", {
-
   x <- sample(1:series_length, series_length)
   y <- sample(1:series_length, series_length)
 
@@ -59,11 +57,10 @@ test_that("GrowthRate", {
   # GrowthRate with default arguments ====
   expect_growth <- 0.5
   x <- 1:series_length
-  x <- purrr::accumulate(x, ~ .x * (1 + expect_growth))
+  x <- purrr::accumulate(x, ~.x * (1 + expect_growth))
 
   actual_growth <- GrowthRate(x)
   expect_equal(mean(actual_growth, na.rm = TRUE), expect_growth)
-
 })
 
 test_that("Ratio", {
@@ -75,7 +72,6 @@ test_that("Ratio", {
 
   actual_Ratio <- Ratio(x, y)
   expect_equal(mean(actual_Ratio, na.rm = TRUE), expect_ratio)
-
 })
 
 test_that("Demean", {
@@ -85,7 +81,49 @@ test_that("Demean", {
   x_demean <- Demean(x)
 
   expect_true(mean(x_demean, na.rm = TRUE) == 0)
+})
 
+test_that("TrailSeries", {
+
+  # function to create time series
+  .create_periodic_accumlated_ts <- function(start_date, end_date,
+                                               period = c("day", "month", "quarter")) {
+    match.arg(period)
+    generate_periodic_data <- switch(period,
+      "day" = lubridate::yday,
+      "month" = lubridate::month,
+      "quarter" = lubridate::quarter
+    )
+
+    date <- seq(start_date, end_date, by = period)
+    date <- lubridate::ceiling_date(date, unit = period) - 1
+    x <- generate_periodic_data(date)
+    ts <- tibble::tibble(date = date, x = x, y = x * 2)
+    return(ts)
+  }
+
+  # TrailSeries on valid date series ====
+  start_date <- as.Date("2018/1/1")
+  end_date <- as.Date("2019/12/31")
+  ts_regular <- .create_periodic_accumlated_ts(start_date, end_date,
+                                               period = "quarter")
+
+  ts_trail <- TrailSeries(ts_regular$date, x = ts_regular$x)
+  expect_true(is.vector(ts_trail))
+  expect_equivalent(mean(ts_trail, na.rm = TRUE), max(ts_regular$x))
+
+
+  # TrailSeries on invalid date series ====
+  ts_irregular <- ts_regular
+  ts_irregular$date <- ts_irregular$date + sample(c(-1, 0, 1),
+    size = length(ts_irregular$date),
+    replace = TRUE
+  )
+  expect_error(TrailSeries(ts_irregular$date,
+    x = ts_irregular$x
+  ),
+  regexp = "with irregular periodic date"
+  )
 })
 
 test_that("Beta", {
@@ -94,9 +132,8 @@ test_that("Beta", {
   expect_beta <- 2
   x <- sample(1:series_length, series_length)
   y <- x * expect_beta
-  actual_beta <- Beta(y*2, x*2)
+  actual_beta <- Beta(y * 2, x * 2)
   expect_equivalent(actual_beta, expect_beta)
-
 })
 
 # Functions for defining dynamic indicator expr ----
@@ -115,10 +152,12 @@ test_that("RiskFreeRate", {
 
   # RiskFreeRate with various arguments ====
   ds_indicators_info <- tibble::tibble(
-    indicator_code = c("d_riskfree_rate",
-                 "m_riskfree_rate",
-                 "q_riskfree_rate",
-                 "y_riskfree_rate"),
+    indicator_code = c(
+      "d_riskfree_rate",
+      "m_riskfree_rate",
+      "q_riskfree_rate",
+      "y_riskfree_rate"
+    ),
     period = c("day", "month", "quarter", "year")
   )
 
@@ -127,8 +166,9 @@ test_that("RiskFreeRate", {
     period <- ds_indicators_info$period[[i]]
 
     rf_return <- RiskFreeRate(stock_db,
-                              indicator_code = indicator_code,
-                              period = period)
+      indicator_code = indicator_code,
+      period = period
+    )
 
     expect_is(rf_return, "data.frame")
     expect_fields <- c("date", "period", indicator_code)
@@ -137,7 +177,6 @@ test_that("RiskFreeRate", {
     expect_true(is_periodic_dates(rf_return$date, freq_rule = period))
     expect_true(all(rf_return$period %in% period))
   }
-
 })
 
 # clear up testing conext

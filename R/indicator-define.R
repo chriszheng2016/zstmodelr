@@ -178,37 +178,6 @@ create_indicator_def_fun <- function(indicator_code,
     return(result)
   }
 
-  # define rollify methods for evaluation
-  .rollify <- function(.data, window, .f, ...,
-                         unlist = TRUE, na_value = NULL) {
-
-    # validate params
-    assertive::assert_is_data.frame(.data)
-
-    roll_length <- NROW(.data)
-
-    # initialize `output` vector
-    output <- rlang::rep_along(1:roll_length, list(na_value))
-
-    # get rolling result
-    if (window <= roll_length) {
-      for (i in window:roll_length) {
-        f_data <- .data[(i - window + 1):i, ]
-        output[[i]] <- .f(f_data, ...)
-      }
-    }
-
-    # unlist result if request, except foratomic scalar
-    if (unlist) {
-      is_scalar_atomic <- purrr::map_lgl(output, rlang::is_scalar_atomic)
-      if (all(is_scalar_atomic)) {
-        output <- unlist(output)
-      }
-    }
-
-    return(output)
-  }
-
   # define ds_var process
   .process_vars <- function(ds_vars,
                               date_index_field = c("date"),
@@ -285,8 +254,8 @@ create_indicator_def_fun <- function(indicator_code,
     # Evaluate exprs in ds_vars
     if (rolly_window > 0) {
       # rolling evalattion
-      ds_indicator <- .rollify(ds_vars,
-        .eval_expr,
+      ds_indicator <- rollify_series(ds_vars,
+        fun = .eval_expr,
         window = rolly_window,
         unlist = TRUE,
         na_value = NA
