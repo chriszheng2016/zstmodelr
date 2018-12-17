@@ -310,6 +310,7 @@ ts_asfreq.tbl_df <- function(ts_dataset,
     if (need_refreq && success) {
       new_timeseries <- reindex_by_replace.tbl_df(ts_df,
         new_date_index = new_date_index,
+        date_index_field = date_index_field,
         fillna_method = fillna_method
       )
     }
@@ -649,7 +650,7 @@ reindex_by_replace.tbl_df <- function(ts_df,
 
   # reindex timeseries by replacing with new index
   ts_result <- new_date_index.tib %>%
-    dplyr::left_join(ts_result, by = "date")
+    dplyr::left_join(ts_result, by = date_index_field)
 
   return(ts_result)
 }
