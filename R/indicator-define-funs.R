@@ -55,35 +55,53 @@ Demean <- function(x) {
   return(demean_x)
 }
 
-# Trail a periodic series
-TrailSeries <- function(date, x) {
-
+# Make a quarterly TTM(Trial Twelve Month) series
+Quarter_TTM <- function(date, x) {
   date_expr <- rlang::enexpr(date)
   x_expr <- rlang::enexpr(x)
 
-  #validate params
+  # validate params
   assertive::assert_is_date(date)
   assertive::assert_is_vector(x)
 
+  # get quarter dataset
+  ds_origin <- tibble::tibble(date = date, x = x)
+  ds_origin <- ds_origin %>%
+    dplyr::filter(lubridate::month(date) %in% c(3, 6, 9, 12))
+
+  # make regular quarter dataset
+  ds_origin_quarter <- ts_asfreq(ds_origin,
+    freq_rule = "quarter",
+    fillna_method = "nfill",
+    date_index_field = "date",
+    key_fields = NULL,
+    parallel = FALSE
+  )
+
   # predicate period of dates
-  period <- guess_dates_period(date, regular = TRUE)
+  period <- guess_dates_period(ds_origin_quarter$date, regular = TRUE)
 
   # trail data by periodic dates
   if (period != "unknown") {
-    # trail regular periodic series
-    trail_x <- trail_periodic_series(date,
-                                     data_series = x,
-                                     period = period,
-                                     fun = sum)
+
+    # trail dataset of value_fields
+    trail_x <- trail_periodic_series(ds_origin_quarter$date,
+      data_series = ds_origin_quarter$x,
+      period = period,
+      trailing_month = 12L,
+      agg_fun = sum,
+      na.rm = TRUE
+    )
   } else {
-    msg <- sprintf("Can't trail series(%s) with irregular periodic date(%s), return NAs ",
-                   rlang::expr_text(x_expr),
-                   rlang::expr_text(date_expr)
-                   )
+    msg <- sprintf(
+      "Can't trail series(%s) with irregular periodic date(%s).",
+      rlang::expr_text(x_expr),
+      rlang::expr_text(date_expr)
+    )
     rlang::abort(msg)
   }
 
-  #only ouput a vector of data
+  # only ouput a vector of data
   trail_x <- trail_x[[1]]
 
   return(trail_x)
@@ -115,4 +133,3 @@ RiskFreeRate <- function(stock_db, indicator_code,
 
   return(rf_return)
 }
-

@@ -123,7 +123,8 @@ setGeneric(
 #'
 #' @param indicator_code   A character for indicator code.
 #' @param indicator_expr   A expr as a formula to compute indicator.
-#' @param rolly_window   A integer as rolly computing window.
+#' @param rolly_window   A numeric as rolly computing window, default 0 means
+#'  no rollying.
 #' @param period   A periodicity of indicator, i.e. "day", "month",
 #'    "quarter", "yearly".
 #'
@@ -145,6 +146,7 @@ create_indicator_def_fun <- function(indicator_code,
   # validate params
   assertive::assert_is_character(indicator_code)
   assertive::assert_is_call(indicator_expr)
+  assertive::assert_is_numeric(rolly_window)
   assertive::assert_all_are_greater_than_or_equal_to(rolly_window, 0)
 
   # avoid side-effect of lazy-eval
@@ -256,7 +258,7 @@ create_indicator_def_fun <- function(indicator_code,
       # rolling evalattion
       ds_indicator <- rollify_series(ds_vars,
         fun = .eval_expr,
-        window = rolly_window,
+        window = as.integer(rolly_window),
         unlist = TRUE,
         na_value = NA
       )

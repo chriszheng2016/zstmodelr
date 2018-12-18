@@ -45,7 +45,6 @@ compute_indicator <- function(ts_compute_vars,
       ts_indicator <- compute_fun(ts_compute_vars,
         date_index_field = date_index_field,
         key_fields = key_fields,
-
         ...
       )
     },
@@ -53,7 +52,7 @@ compute_indicator <- function(ts_compute_vars,
 
       # inform user of failure and return NULL
       key_id <- ""
-      if (!is.null(key_fields) & NROW(ts_compute_vars) > 0) {
+      if (!is.null(key_fields) && NROW(ts_compute_vars) > 0) {
         key_id <- paste0(ts_compute_vars[1, key_fields], collapse = "-")
       }
       msg <- sprintf(
@@ -130,7 +129,8 @@ compute_indicator <- function(ts_compute_vars,
 #' @param ...       Params to ind_def_fun.
 #' @param debug     A logic to deterimine whether to turn on debug in createing
 #'  indicator. Default FAlSE means not to use debug.
-#' @param date_index_field  Name of date index field of ts_vars, default 'date'.
+#' @param date_index_field  Name of date index field of ts_def_vars,
+#'  default 'date'.
 #' @param key_fields    A character vector of key fields, which identify unique
 #'   observation in each date.
 #' @param parallel   A logic to deterimine whether to use parallel processing.
@@ -217,7 +217,8 @@ create_indicator <- function(ts_def_vars,
 #' @param ...          Params to modify_fun.
 #' @replace_exist      Wether to replace existed attribute fields.
 #'  Default FALSE, means don't replace existed field.
-#' @param date_index_field  Name of date index field of ts_vars, default 'date'.
+#' @param date_index_field  Name of date index field of ts_indicator,
+#'  default 'date'.
 #' @param key_fields    A character vector of key fields, which identify unique
 #'   observation in each date.
 #' @param parallel   A logic to deterimine whether to use parallel processing.

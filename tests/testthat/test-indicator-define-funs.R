@@ -83,47 +83,49 @@ test_that("Demean", {
   expect_true(mean(x_demean, na.rm = TRUE) == 0)
 })
 
-test_that("TrailSeries", {
+test_that("Quarter_TTM", {
 
   # function to create time series
-  .create_periodic_accumlated_ts <- function(start_date, end_date,
-                                               period = c("day", "month", "quarter")) {
+  create_periodic_ts <- function(start_date,
+                                 end_date,
+                                 accumulated = TRUE,
+                                 period = c("day", "month", "quarter")) {
     match.arg(period)
-    generate_periodic_data <- switch(period,
-      "day" = lubridate::yday,
-      "month" = lubridate::month,
-      "quarter" = lubridate::quarter
+    accumulated_periodic_data <- switch(period,
+                                        "day" = lubridate::yday,
+                                        "month" = lubridate::month,
+                                        "quarter" = lubridate::quarter
     )
 
     date <- seq(start_date, end_date, by = period)
     date <- lubridate::ceiling_date(date, unit = period) - 1
-    x <- generate_periodic_data(date)
+
+    if (accumulated) {
+      # accumulated data with increament of 1
+      x <- accumulated_periodic_data(date)
+    } else {
+      # non-accumulated data with no-increament
+      x <- rep(1.0, length(date))
+    }
+
     ts <- tibble::tibble(date = date, x = x, y = x * 2)
     return(ts)
   }
 
-  # TrailSeries on valid date series ====
+  # Quarter_TTM on valid date series ====
+  # create periodic timeseries
   start_date <- as.Date("2018/1/1")
   end_date <- as.Date("2019/12/31")
-  ts_regular <- .create_periodic_accumlated_ts(start_date, end_date,
-                                               period = "quarter")
-
-  ts_trail <- TrailSeries(ts_regular$date, x = ts_regular$x)
-  expect_true(is.vector(ts_trail))
-  expect_equivalent(mean(ts_trail, na.rm = TRUE), max(ts_regular$x))
-
-
-  # TrailSeries on invalid date series ====
-  ts_irregular <- ts_regular
-  ts_irregular$date <- ts_irregular$date + sample(c(-1, 0, 1),
-    size = length(ts_irregular$date),
-    replace = TRUE
+  ts_quarter_regular <- create_periodic_ts(start_date, end_date,
+                               accumulated = TRUE,
+                               period = "quarter"
   )
-  expect_error(TrailSeries(ts_irregular$date,
-    x = ts_irregular$x
-  ),
-  regexp = "with irregular periodic date"
-  )
+
+  ts_trail <- Quarter_TTM(ts_quarter_regular$date, ts_quarter_regular$x)
+
+  expect_equivalent(mean(ts_trail, na.rm = TRUE), 4)
+  expect_equal(sum(is.na(ts_trail)), 3)
+
 })
 
 test_that("Beta", {
