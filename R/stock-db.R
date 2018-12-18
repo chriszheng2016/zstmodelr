@@ -241,7 +241,7 @@ setGeneric(
 #'
 #' @param stock_db      A stock database object to operate.
 #' @param table_name    Name of target table.
-#' @param stock_cd_list A list of stock cd, default value of NULL means.
+#' @param stock_cd_list A character vector of stock cd, default value of NULL means.
 #'     all stock data will be returned.
 #'
 #' @family stock_db generics
@@ -386,6 +386,71 @@ setGeneric(
     standardGeneric("get_market_return")
   }
 )
+
+#' Get financial report timesereis from stock_db
+#'
+#' Generic function to get financial report timesereis from stock_db.
+#'
+#' @param stock_db    A stock database object to operate.
+#'
+#' @param stock_cd_list A character vector of stock cd, default value of NULL means.
+#'     all stock data will be returned.
+#'
+#' @param statement   A string of statement type, i.e. "income",
+#'  "blance_sheet", "cashflow_direct","cashflow_indrect".
+#'
+#'  @param consolidated A logic inidcate report is consolidated or not.
+#'   Default TRUE means consolidated report, FALSE means parenet company
+#'   report.
+#'
+#' @param period_type Date period for time series, e.g. "quarter",
+#' "year", by default value is  "quarter".
+#' @param period_date Choose start/end date of period as the date for
+#' observation
+#'
+#' @family stock_db generics
+#'
+#' @return A data frame of report timeseries if succeed, otherwise NULL.
+#' @export
+#'
+#' @examples
+
+# S3 generic definition
+# get_finacial_report <- function(stock_db,
+#                               stock_cd_list = NULL,
+#                               statement = c(
+#                                 "income",
+#                                 "blance_sheet",
+#                                 "cashflow_direct",
+#                                 "cashflow_indrect"
+#                               ),
+#                               consolidated = TRUE,
+#                               period_type = c("quarter", "year"),
+#                               period_date = c("end","start"),
+#                               ...) {
+#   UseMethod("get_finacial_report")
+# }
+
+# S4 generic definition
+setGeneric(
+  name = "get_finacial_report",
+  signature = c("stock_db"),
+  def = get_finacial_report <- function(stock_db,
+                                        stock_cd_list = NULL,
+                                        statement = c(
+                                          "income",
+                                          "blance_sheet",
+                                          "cashflow_direct",
+                                          "cashflow_indrect"
+                                        ),
+                                        consolidated = TRUE,
+                                        period_type = c("quarter", "year"),
+                                        period_date = c("end", "start"),
+                                        ...) {
+    standardGeneric("get_finacial_report")
+  }
+)
+
 
 #' Get indicators from specified source in stock_db
 #'

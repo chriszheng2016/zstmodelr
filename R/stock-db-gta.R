@@ -23,6 +23,11 @@
   "TRD_CNMONT", # name for TRD_Cnmont_综合市场月度回报
   "TRD_YEARCM", # name for TRD_Yearcm_综合市场年度回报
 
+  "FS_COMBAS", # name for FS_Combas_资产负债表
+  "FS_COMINS", # name for FS_Comins_损益表
+  "FS_COMSDFD", # name for FS_Comscfd_现金流量表(直接)
+  "FS_COMSCFI", # name for FS_Comscfi_现金流量表(间接)
+
   "TRD_NRRATE", # name for TRD_Nrrate_利率
 
   "TRD_STOCK_INDUSTRY", # name for table with stock dustry info
@@ -880,6 +885,176 @@ setMethod(
   }
 )
 
+
+# Get financial report timesereis from stock_db
+# Method definition for s3 generic
+#' @describeIn get_finacial_report get financial report timeseries from a database of gta_db class
+#' @export
+get_finacial_report.gta_db <- function(stock_db,
+                                       stock_cd_list = NULL,
+                                       statement = c(
+                                         "income",
+                                         "blance_sheet",
+                                         "cashflow_direct",
+                                         "cashflow_indrect"
+                                       ),
+                                       consolidated = TRUE,
+                                       period_type = c("quarter", "year"),
+                                       period_date = c("end", "start")) {
+
+  # validate params
+  stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
+  if (is.null(stock_db$connection)) {
+    stop("Stock db isn't connected, try to connect db again")
+  }
+  assertive::assert_is_logical(consolidated)
+
+  statement <- match.arg(statement)
+  switch(statement,
+    "income" = {
+      table_name <- stock_db$table_list[["FS_COMINS"]]
+    },
+    "blance_sheet" = {
+      table_name <- stock_db$table_list[["FS_COMBAS"]]
+    },
+    "cashflow_direct" = {
+      table_name <- stock_db$table_list[["FS_COMSDFD"]]
+    },
+    "cashflow_indrect" = {
+      table_name <- stock_db$table_list[["FS_COMSCFI"]]
+    }
+  )
+
+  success <- TRUE
+  ds_report <- NULL
+
+  # get financial report from stock_db
+  ds_report_raw <- get_stock_dataset(stock_db,
+    table_name = table_name,
+    stock_cd_list = stock_cd_list
+  )
+  if (!is.null(ds_report_raw)) {
+    ds_report <- ds_report_raw %>%
+      tibble::as.tibble()
+  } else {
+    success <- FALSE
+  }
+
+
+  # filter report by type
+  if (success) {
+    if (consolidated) {
+      ds_report <- ds_report_raw %>%
+        dplyr::filter(typrep == "A") %>%
+        dplyr::select(-typrep)
+    } else {
+      ds_report <- ds_report_raw %>%
+        dplyr::filter(typrep == "B") %>%
+        dplyr::select(-typrep)
+    }
+  }
+
+  # get report by period type
+  period_type <- match.arg(period_type)
+  if (success) {
+
+    # filter out data at month of 3,6,9,12
+    ds_report <- ds_report %>%
+      dplyr::mutate(
+        date = accper,
+        month_index = lubridate::month(date)
+      ) %>%
+      dplyr::filter(month_index %in% c(3, 6, 9, 12)) %>%
+      dplyr::select(-accper)
+
+    # filter year or quarter report
+    if (period_type == "year") {
+      ds_report <- ds_report %>%
+        dplyr::filter(month_index == 12)
+    }
+
+    ds_report <- ds_report %>%
+      dplyr::select(-month_index)
+  }
+
+
+  # translate date into last day of period, add period field
+  if (success) {
+    ts_date <- as.Date(ds_report$date)
+
+    # turn it into the last day of period
+    dates_period <- guess_dates_period(ts_date)
+    switch(dates_period,
+      "day" = {
+        period_unit <- "day"
+      },
+      "month" = {
+        period_unit <- "month"
+      },
+      "quarter" = {
+        period_unit <- "quarter"
+      },
+      "year" = {
+        period_unit <- "year"
+      },
+      "unknown" = {
+        period_unit <- "day"
+      }
+    )
+
+    # change date to start/end date of period
+    period_date <- match.arg(period_date)
+    if (period_date == "start") {
+      # first day of period
+      ts_date <- lubridate::floor_date(ts_date, unit = period_unit)
+    } else {
+      # last day of period = ceiling_date -1
+      ceiling_date <- lubridate::ceiling_date(ts_date,
+        unit = period_unit,
+        change_on_boundary = TRUE
+      )
+      ts_date <- ceiling_date - 1
+    }
+
+    ds_report <- dplyr::mutate(ds_report, date = ts_date)
+  }
+
+
+  # Build final result
+  ts_report <- NULL
+  if (success) {
+    ts_report <- ds_report %>%
+      dplyr::arrange(date, stkcd) %>%
+      dplyr::select(date, stkcd, dplyr::everything())
+  }
+
+  return(ts_report)
+}
+# Method definition for s4 generic
+#' @describeIn get_finacial_report get financial report timeseries from a database of gta_db class
+#' @export
+setMethod(
+  "get_finacial_report",
+  signature(stock_db = "gta_db"),
+  function(stock_db,
+             stock_cd_list,
+             statement,
+             consolidated,
+             period_type,
+             period_date,
+             ...) {
+    get_finacial_report.gta_db(
+      stock_db = stock_db,
+      statement = statement,
+      consolidated = consolidated,
+      period_type = period_type,
+      period_date = period_date
+    )
+  }
+)
+
+
+
 # Get indicators from specified data source(table/file) in stock_db
 # Method definition for s3 generic
 #'  @param data_filters   A list of filter to apply on result data. The list
@@ -972,7 +1147,7 @@ get_indicators_from_source.gta_db <- function(stock_db,
       path_indicator_source <- file.path(path_dir_indicator, indicator_source)
 
       # get indicators from different format of file
-      ds_indicators_raw <- tryCatch({
+      result <- tryCatch({
         switch(file_ext,
           "rds" = {
             readRDS(path_indicator_source)
@@ -980,7 +1155,7 @@ get_indicators_from_source.gta_db <- function(stock_db,
           "csv" = {
             suppressMessages(
               readr::read_csv(path_indicator_source,
-                              locale = readr::locale(encoding = "CP936")
+                locale = readr::locale(encoding = "CP936")
               )
             )
           }, {
@@ -993,16 +1168,18 @@ get_indicators_from_source.gta_db <- function(stock_db,
           }
         )
       },
-      error = function(cnd) {
+      error = function(e) e)
+      if (inherits(result, "error")) {
         msg <- sprintf(
-          "Faild to read indicator from %s:\n%s",
+          "Fail to read indicator from %s:\n%s",
           path_indicator_source,
-          conditionMessage(cnd)
+          conditionMessage(result)
         )
         rlang::warn(msg)
-        return(NULL)
+        ds_indicators_raw <- NULL
+      } else {
+        ds_indicators_raw <- result
       }
-      )
     }
   )
 
@@ -1055,6 +1232,12 @@ get_indicators_from_source.gta_db <- function(stock_db,
             rlang::inform(msg)
           }
         }
+      }
+
+      # convert numeric stkcd into string stkcd if need
+      if (("stkcd" %in% ds_field_names) && is.numeric(ds_indicators$stkcd)) {
+        ds_indicators <- ds_indicators %>%
+          dplyr::mutate(stkcd = sprintf("%06d", stkcd))
       }
 
       # rename and transform date-related field if needed
@@ -1136,13 +1319,30 @@ get_indicators_from_source.gta_db <- function(stock_db,
             unit = period_unit,
             change_on_boundary = TRUE
           )
+
+          # keep original ts_date for filter invalid date
+          origin_ts_date <- ts_date
+
           ts_date <- ceiling_date - 1
 
           # add period field and translated date field
           ds_indicators <- dplyr::mutate(ds_indicators,
             period = period_unit,
+            origin_date = origin_ts_date,
             date = ts_date
           )
+
+          # filter out data with invalid date accoring peroid
+          # speccal coding for quarterly financial report
+          if (dates_period == "quarter") {
+            ds_indicators <- ds_indicators %>%
+              dplyr::filter(lubridate::month(origin_date)
+              %in% c(3, 6, 9, 12))
+          }
+
+          # remove origin_date fields
+          ds_indicators <- ds_indicators %>%
+            dplyr::select(-origin_date)
 
           # put "period" field into output non-indicators field
           output_non_indicators <- c(output_non_indicators, "period")
@@ -1197,7 +1397,6 @@ get_indicators_from_source.gta_db <- function(stock_db,
         indicator_source
       )
       rlang::abort(msg)
-
     }
   }
 
@@ -1737,19 +1936,16 @@ dir_path_db.gta_db <- function(stock_db,
   dir_id <- match.arg(dir_id)
   dir_path <- profile_get_varible_setting(gta_profile_name, dir_id)
 
-  # check whether the dir exists
+  # check whether the dir exists and return full path
   if (!is.null(dir_path)) {
     if (force) {
-      tryCatch({
-        dir_path <- normalizePath(dir_path, winslash = "/")
-      },
-      error = function(cnd) {
-        msg <- conditionMessage(cnd)
-        message(msg)
-      }
-      )
+      # return path whether it exist or not.
+      dir_path <- normalizePath(dir_path, winslash = "/",
+                                mustWork = FALSE)
     } else {
-      dir_path <- normalizePath(dir_path, winslash = "/")
+      # check whether path exist and return path
+      dir_path <- normalizePath(dir_path, winslash = "/",
+                                mustWork = TRUE)
     }
   }
 
