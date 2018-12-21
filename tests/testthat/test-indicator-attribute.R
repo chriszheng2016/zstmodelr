@@ -88,7 +88,39 @@ test_that("attr_indictors_indcd", {
   expect_fields <- c(names(ts_indicators_long), "indcd")
   acutal_fields <- names(ts_indicators_long_with_attr)
   expect_true(all(acutal_fields %in% expect_fields))
+})
 
+test_that("attr_indictors_trdstat", {
+
+  # attr_indictors_trdstat on ts_indicator of wide format ====
+
+  # load indicators dataset to add attribute
+  ts_indicators_wide <- readRDS("./data/ts_indicators_wide.rds")
+
+  # add attribute
+  ts_indicators_wide_with_attr <- attr_indictors_trdstat(stock_db,
+    ts_indicators = ts_indicators_wide
+  )
+
+  expect_is(ts_indicators_wide_with_attr, "data.frame")
+  expect_fields <- c(names(ts_indicators_wide), "trdstat")
+  acutal_fields <- names(ts_indicators_wide_with_attr)
+  expect_true(all(acutal_fields %in% expect_fields))
+
+  # attr_indictors_trdstat on ts_indicator long format ====
+
+  # load indicators dataset to add attribute
+  ts_indicators_long <- readRDS("./data/ts_indicators_long.rds")
+
+  # add attribute
+  ts_indicators_long_with_attr <- attr_indictors_trdstat(stock_db,
+    ts_indicators = ts_indicators_long
+  )
+
+  expect_is(ts_indicators_long_with_attr, "data.frame")
+  expect_fields <- c(names(ts_indicators_long), "trdstat")
+  acutal_fields <- names(ts_indicators_long_with_attr)
+  expect_true(all(acutal_fields %in% expect_fields))
 })
 
 # clear up testing conext

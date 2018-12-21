@@ -257,11 +257,14 @@ test_that("get_finacial_report, with various arguments", {
   # get_finacial_report with arguments: statement ====
   ds_test_statement <- tibble::tribble(
     ~statement,      ~field_pattern,
-    #-------------/---------------/
-    "income",           "^b",
-    "blance_sheet",     "^a",
-    "cashflow_direct",  "^c",
-    "cashflow_indrect", "^d"
+    #-------------/------------------/
+    "blance_sheet",         "^a",
+    "income",               "^b",
+    "cashflow_direct",      "^c",
+    "cashflow_indrect",     "^d",
+    "income_ttm",           "^b\\w*_ttm$",
+    "cashflow_direct_ttm",  "^c\\w*_ttm$",
+    "cashflow_indrect_ttm", "^d\\w*_ttm$"
   )
 
   for ( i in seq_len(NROW(ds_test_statement))) {
@@ -636,13 +639,21 @@ test_that("get_stock_industry, with various arguments", {
 
 test_that("get_spt_stocks, with various arguments", {
 
+  trade_status <- c("A" = "list",
+                    "B" = "st",
+                    "D" = "*st",
+                    "C" = "pt",
+                    "S" = "suspend",
+                    "T" = "pre_delist",
+                    "X" = "delist")
+
   # get_spt_stocks with default arguments ====
   ds_spt_stocks <- get_spt_stocks(stock_db)
   expect_is(ds_spt_stocks, "data.frame")
-  # expect_fields <- c("date", "stkcd", "indcd")
-  # actual_fields <- names(ds_spt_stocks)
-  # expect_equal(actual_fields, expect_fields)
-
+  expect_fields <- c("stkcd", "date", "status_code", "trade_status")
+  actual_fields <- names(ds_spt_stocks)
+  expect_equal(actual_fields, expect_fields)
+  expect_true(all(unique(ds_spt_stocks$trade_status) %in% trade_status))
 
 })
 

@@ -396,8 +396,9 @@ setGeneric(
 #' @param stock_cd_list A character vector of stock cd, default value of NULL means.
 #'     all stock data will be returned.
 #'
-#' @param statement   A string of statement type, i.e. "income",
-#'  "blance_sheet", "cashflow_direct","cashflow_indrect".
+#' @param statement   A string of statement type, i.e. "blance_sheet",
+#' "income", "cashflow_direct","cashflow_indrect",
+#' "income_ttm", "cashflow_direct_ttm", "cashflow_indrect_ttm".
 #'
 #'  @param consolidated A logic inidcate report is consolidated or not.
 #'   Default TRUE means consolidated report, FALSE means parenet company
@@ -419,10 +420,13 @@ setGeneric(
 # get_finacial_report <- function(stock_db,
 #                               stock_cd_list = NULL,
 #                               statement = c(
-#                                 "income",
 #                                 "blance_sheet",
+#                                 "income",
 #                                 "cashflow_direct",
-#                                 "cashflow_indrect"
+#                                 "cashflow_indrect",
+#                                 "income_ttm",
+#                                 "cashflow_direct_ttm",
+#                                 "cashflow_indrect_ttm"
 #                               ),
 #                               consolidated = TRUE,
 #                               period_type = c("quarter", "year"),
@@ -438,10 +442,13 @@ setGeneric(
   def = get_finacial_report <- function(stock_db,
                                         stock_cd_list = NULL,
                                         statement = c(
-                                          "income",
                                           "blance_sheet",
+                                          "income",
                                           "cashflow_direct",
-                                          "cashflow_indrect"
+                                          "cashflow_indrect",
+                                          "income_ttm",
+                                          "cashflow_direct_ttm",
+                                          "cashflow_indrect_ttm"
                                         ),
                                         consolidated = TRUE,
                                         period_type = c("quarter", "year"),

@@ -25,8 +25,11 @@
 
   "FS_COMBAS", # name for FS_Combas_资产负债表
   "FS_COMINS", # name for FS_Comins_损益表
-  "FS_COMSDFD", # name for FS_Comscfd_现金流量表(直接)
-  "FS_COMSCFI", # name for FS_Comscfi_现金流量表(间接)
+  "FS_COMINS_TTM", # name for FS_Comins_ttm_损益表
+  "FS_COMSDFD", # name for FS_Comscfd_现金流量表_直接
+  "FS_COMSDFD_TTM", # name for FS_Comscfd_ttm_现金流量表_直接
+  "FS_COMSCFI", # name for FS_Comscfi_现金流量表_间接
+  "FS_COMSCFI_TTM", # name for FS_Comscfi_ttm_现金流量表_间接
 
   "TRD_NRRATE", # name for TRD_Nrrate_利率
 
@@ -467,7 +470,7 @@ get_stock_dataset.gta_db <- function(stock_db, table_name, stock_cd_list = NULL)
     # Coerce stock code to 6 digit of characters
     if (!is.character(stock_cd_list)) {
       stock_cd_list <- stringr::str_pad(stock_cd_list, width = 6, pad = "0")
-      msg <- "Coerce stock cd to character of 6 digits if it were number"
+      msg <- "Coerce stock cd to character of 6 digits if it were numeric"
       warnings(msg)
     }
 
@@ -893,10 +896,13 @@ setMethod(
 get_finacial_report.gta_db <- function(stock_db,
                                        stock_cd_list = NULL,
                                        statement = c(
-                                         "income",
                                          "blance_sheet",
+                                         "income",
                                          "cashflow_direct",
-                                         "cashflow_indrect"
+                                         "cashflow_indrect",
+                                         "income_ttm",
+                                         "cashflow_direct_ttm",
+                                         "cashflow_indrect_ttm"
                                        ),
                                        consolidated = TRUE,
                                        period_type = c("quarter", "year"),
@@ -911,17 +917,26 @@ get_finacial_report.gta_db <- function(stock_db,
 
   statement <- match.arg(statement)
   switch(statement,
-    "income" = {
-      table_name <- stock_db$table_list[["FS_COMINS"]]
-    },
     "blance_sheet" = {
       table_name <- stock_db$table_list[["FS_COMBAS"]]
+    },
+    "income" = {
+      table_name <- stock_db$table_list[["FS_COMINS"]]
     },
     "cashflow_direct" = {
       table_name <- stock_db$table_list[["FS_COMSDFD"]]
     },
     "cashflow_indrect" = {
       table_name <- stock_db$table_list[["FS_COMSCFI"]]
+    },
+    "income_ttm" = {
+      table_name <- stock_db$table_list[["FS_COMINS_TTM"]]
+    },
+    "cashflow_direct_ttm" = {
+      table_name <- stock_db$table_list[["FS_COMSDFD_TTM"]]
+    },
+    "cashflow_indrect_ttm" = {
+      table_name <- stock_db$table_list[["FS_COMSCFI_TTM"]]
     }
   )
 
@@ -1238,6 +1253,8 @@ get_indicators_from_source.gta_db <- function(stock_db,
       if (("stkcd" %in% ds_field_names) && is.numeric(ds_indicators$stkcd)) {
         ds_indicators <- ds_indicators %>%
           dplyr::mutate(stkcd = sprintf("%06d", stkcd))
+        msg <- "Coerce stock cd to character of 6 digits if it were numeric"
+        rlang::warn(msg)
       }
 
       # rename and transform date-related field if needed
@@ -1815,15 +1832,62 @@ get_spt_stocks.gta_db <- function(stock_db) {
     table_name = table_name
   )
 
+  # get company info from database
+  table_name <- stock_db$table_list[["TRD_Co"]]
+  ds_company_info <- get_table_dataset(stock_db,
+                                         table_name = table_name
+  )
+
   # build result
-  ds_spt_stocks <- ds_spt_stocks_raw %>%
+  ds_spt_stocks_raw <- ds_spt_stocks_raw %>%
     tibble::as_tibble() %>%
     dplyr::mutate(
       annoudt = lubridate::as_date(annoudt),
       execudt = lubridate::as_date(execudt)
     )
 
-  return(ds_spt_stocks)
+  # get inital status of spt stocks at listing date
+  spt_stkcds <- unique(ds_spt_stocks_raw$stkcd)
+  ds_spt_stocks_initital_status <- ds_company_info %>%
+    tibble::as_tibble() %>%
+    dplyr::filter(stkcd %in% spt_stkcds) %>%
+    dplyr::mutate(status_code = "A", date = lubridate::as_date(listdt)) %>%
+    dplyr::select(stkcd, date , status_code)
+
+  # get changed status of spt stocks after listing date
+  ds_spt_stocks_changed_status <- ds_spt_stocks_raw %>%
+    tidyr::separate(chgtype,
+                    into = c("before_status","after_status"),
+                    sep = 1 ) %>%
+    dplyr::select(stkcd, date = execudt, status_code = after_status)
+
+  # get full history of status of spt stocks
+  ds_spt_stocks_status <- ds_spt_stocks_changed_status %>%
+    dplyr::bind_rows(ds_spt_stocks_initital_status) %>%
+    dplyr::arrange(stkcd, date)
+
+  # translate status_code into status_name
+  #A:正常上市
+  #B:ST
+  #D:*ST
+  #C:PT
+  #S:代表暂停上市
+  #T:代表退市整理期
+  #X:代表终止上市
+  trade_status <- c("A" = "list",
+                    "B" = "st",
+                    "D" = "*st",
+                    "C" = "pt",
+                    "S" = "suspend",
+                    "T" = "pre_delist",
+                    "X" = "delist")
+
+  # add status_names fields crossponding to status_code
+  ds_spt_stocks_status <- ds_spt_stocks_status %>%
+    dplyr::mutate(trade_status = trade_status[status_code])
+
+  return(ds_spt_stocks_status)
+
 }
 # Method definition for s4 generic
 #' @describeIn get_spt_stocks  get stock info of special treatment from

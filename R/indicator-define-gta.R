@@ -25,7 +25,7 @@ get_indicator_defs.gta_db <- function(stock_db) {
 
   # create indicator_defs
   indicator_defs <- NULL
-  if (!is.null(customized_indictors_info))  {
+  if (!is.null(customized_indictors_info)) {
     indicator_defs <- build_indicator_defs.gta_db(stock_db, customized_indictors_info)
   }
 
@@ -140,7 +140,7 @@ setMethod(
 # Get attribute definition function of industry code from gta_db
 # Method definition for s3 generic
 #' @describeIn ind_attr_def_indcd  get attribute definition function of
-#' industry code from databaseof gta_db class.
+#' industry code from database of gta_db class.
 #' @export
 ind_attr_def_indcd.gta_db <- function(stock_db) {
 
@@ -156,9 +156,14 @@ ind_attr_def_indcd.gta_db <- function(stock_db) {
   # create attrubtue def
   ind_attr_indcd <- NULL
   if (!is.null(ds_stock_industry)) {
+    # build fun for computing att_value
+    attr_value_fun <- purrr::partial(compute_attr_value.gta_db,
+      find_stock_attr_fun = find_stock_indcd.gta_db,
+      ds_attr_source = ds_stock_industry
+    )
+    # create attr def
     ind_attr_indcd <- create_attribute_def_fun("indcd",
-      attr_fun = match_indcds.gta_db,
-      ds_stock_industry = ds_stock_industry
+      attr_fun = attr_value_fun
     )
   }
 
@@ -166,13 +171,57 @@ ind_attr_def_indcd.gta_db <- function(stock_db) {
 }
 # Method definition for s4 generic
 #' @describeIn ind_attr_def_indcd  get attribute definition function of
-#' industry code from databaseof gta_db class.
+#' industry code from database of gta_db class.
 ##' @export
 setMethod(
   "ind_attr_def_indcd",
   signature(stock_db = "gta_db"),
   function(stock_db, ...) {
     ind_attr_def_indcd.gta_db(stock_db)
+  }
+)
+
+# Get attribute definition function of trading status from gta_db
+# Method definition for s3 generic
+#' @describeIn ind_attr_def_tradstat  get attribute definition function of
+#' trading status from database of gta_db class.
+#' @export
+ind_attr_def_trdstat.gta_db <- function(stock_db) {
+
+  # validate params
+  stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
+  if (is.null(stock_db$connection)) {
+    stop("Stock db isn't connected, try to connect db again")
+  }
+
+  # get spt stocks info from stock_db
+  ds_spt_stocks <- get_spt_stocks(stock_db)
+
+  # create attrubtue def
+  ind_attr_trdstat <- NULL
+  if (!is.null(ds_spt_stocks)) {
+    # build fun for computing att_value
+    attr_value_fun <- purrr::partial(compute_attr_value.gta_db,
+      find_stock_attr_fun = find_stock_trdstat.gta_db,
+      ds_attr_source = ds_spt_stocks
+    )
+    # create attr def
+    ind_attr_trdstat <- create_attribute_def_fun("trdstat",
+      attr_fun = attr_value_fun
+    )
+  }
+
+  return(ind_attr_trdstat)
+}
+# Method definition for s4 generic
+#' @describeIn ind_attr_def_trdstat  get attribute definition function of
+#' trading status from database of gta_db class.
+##' @export
+setMethod(
+  "ind_attr_def_trdstat",
+  signature(stock_db = "gta_db"),
+  function(stock_db, ...) {
+    ind_attr_def_trdstat.gta_db(stock_db)
   }
 )
 
@@ -200,7 +249,7 @@ build_indicator_defs.gta_db <- function(stock_db, customized_indictors_info) {
 
     # convert ind_keys
     ind_keys <- stringr::str_split(indicator_defs$ind_keys,
-                                   pattern = ","
+      pattern = ","
     )
     ind_keys <- purrr::map(ind_keys, stringr::str_trim)
     indicator_defs$ind_keys <- ind_keys
@@ -231,10 +280,12 @@ build_indicator_defs.gta_db <- function(stock_db, customized_indictors_info) {
   }
 
   # select output fields
-  output_fields <- c("ind_code", "ind_type", "ind_name", "ind_category",
-                     "ind_source", "ind_description", "ind_formula",
-                     "ind_keys", "rolling_window", "period", "output_format",
-                     "is_active", "ind_expr", "ind_def_fun", "ind_vars")
+  output_fields <- c(
+    "ind_code", "ind_type", "ind_name", "ind_category",
+    "ind_source", "ind_description", "ind_formula",
+    "ind_keys", "rolling_window", "period", "output_format",
+    "is_active", "ind_expr", "ind_def_fun", "ind_vars"
+  )
   indicator_defs <- indicator_defs %>%
     dplyr::select(output_fields)
 
@@ -242,8 +293,35 @@ build_indicator_defs.gta_db <- function(stock_db, customized_indictors_info) {
   return(indicator_defs)
 }
 
-# Get indcd for a stock at specified date
-find_indcd.gta_db <- function(date, stkcd, ds_stock_industry) {
+# Compute attr values for stocks at various dates
+compute_attr_value.gta_db <- function(dates,
+                                      stkcds,
+                                      find_stock_attr_fun,
+                                      ds_attr_source,
+                                      ...) {
+  # validate params
+  assertive::assert_is_date(dates)
+  assertive::assert_is_character(stkcds)
+  assertive::assert_is_function(find_stock_attr_fun)
+  assertive::assert_is_data.frame(ds_attr_source)
+
+  # limit ds_attr_source to target stocks
+  ds_attr_source <- ds_attr_source %>%
+    dplyr::filter(stkcd %in% unique(stkcds))
+
+  # get attribute values by matching dates/stkcds
+  attr_values <- purrr::map2_chr(
+    .x = dates, .y = stkcds,
+    .f = find_stock_attr_fun,
+    ds_attr_source,
+    ...
+  )
+
+  return(attr_values)
+}
+
+# Find indcd for a stock at specified date
+find_stock_indcd.gta_db <- function(date, stkcd, ds_stock_industry) {
 
   # validate params
   assertive::assert_is_character(stkcd)
@@ -263,20 +341,23 @@ find_indcd.gta_db <- function(date, stkcd, ds_stock_industry) {
   return(indcd)
 }
 
-# Get indcds by matching dates and stkcds
-match_indcds.gta_db <- function(dates, stkcds, ds_stock_industry, ...) {
+# Find trading status for a stock at specified date
+find_stock_trdstat.gta_db <- function(date, stkcd, ds_spt_stocks) {
 
   # validate params
-  assertive::assert_is_date(dates)
-  assertive::assert_is_character(stkcds)
-  assertive::assert_is_data.frame(ds_stock_industry)
+  assertive::assert_is_character(stkcd)
+  assertive::assert_is_date(date)
+  assertive::assert_is_data.frame(ds_spt_stocks)
 
-  ds_stock_industry <- ds_stock_industry %>%
-    dplyr::filter(stkcd %in% unique(stkcds))
+  # find trdstat by date and stkcd
+  trdstat <- "list"
+  ds_match_trdstat <- ds_spt_stocks %>%
+    dplyr::arrange(stkcd, date) %>%
+    dplyr::filter(stkcd == !!stkcd, date <= !!date)
+  result_rows <- NROW(ds_match_trdstat)
+  if (result_rows > 0) {
+    trdstat <- ds_match_trdstat$trade_status[[result_rows]]
+  }
 
-  matched_indcds <- purrr::map2_chr(
-    .x = dates, .y = stkcds,
-    .f = find_indcd.gta_db,
-    ds_stock_industry = ds_stock_industry
-  )
+  return(trdstat)
 }

@@ -61,8 +61,9 @@ attr_indictors_indcd <- function(stock_db,
   return(ts_indicator_with_indcd)
 }
 
-# Add special treatment attribute to indicators
-attr_indictors_spt <- function(stock_db,
+
+# Add trading status attribute to indicators
+attr_indictors_trdstat <- function(stock_db,
                                ts_indicators,
                                parallel = TRUE) {
 
@@ -73,15 +74,15 @@ attr_indictors_spt <- function(stock_db,
   }
   assertive::assert_is_data.frame(ts_indicators)
 
-  # create spt attribute def
-  new_attr_spt <- ind_attr_def_spt(stock_db)
+  # create trdstat attribute def
+  new_attr_trdstat <- ind_attr_def_trdstat(stock_db)
 
-  # add indcd attribute to indicators
-  ts_indicator_with_spt <- attr_indictors(ts_indicators,
-                                            new_attr_def = new_attr_spt,
+  # add trdstat attribute to indicators
+  ts_indicator_with_trdstat <- attr_indictors(ts_indicators,
+                                            new_attr_def = new_attr_trdstat,
                                             parallel = parallel)
 
-  return(ts_indicator_with_spt)
+  return(ts_indicator_with_trdstat)
 
 }
 

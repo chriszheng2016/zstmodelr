@@ -114,6 +114,35 @@ setGeneric(
   }
 )
 
+#' Get attribute definition function of trading status from stock_db
+#'
+#' Generic function to get attribute definition function of trading status
+#'  from stock_db.
+#'
+#' @param stock_db         A stock database object to operate.
+#'
+#' @family indicator build functions
+#'
+#' @return A function of attribute definition of trading status if succeed,
+#'  otherwise NULL.
+#'
+#' @export
+#'
+#' @examples
+# S3 generic definition
+# ind_attr_def_trdstat <- function(stock_db, ...){
+#   UseMethod("ind_attr_def_trdstat")
+# }
+# S4 generic definition
+setGeneric(
+  name = "ind_attr_def_trdstat",
+  signature = c("stock_db"),
+  def = ind_attr_def_trdstat <- function(stock_db, ...) {
+    standardGeneric("ind_attr_def_trdstat")
+  }
+)
+
+
 
 # Non-generic functions for indicator defining  ---------------------------------
 

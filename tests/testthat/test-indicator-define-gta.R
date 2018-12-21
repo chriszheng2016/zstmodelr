@@ -44,25 +44,80 @@ test_that("build_indicator_defs.gta_db", {
 
 })
 
-test_that("find_indcd.gta_db", {
+test_that("find_stock_indcd.gta_db", {
 
-  # find_indcd.gta_db with default arguments ====
-  date <- as.Date("2018-9-30")
+  # find_stock_indcd.gta_db with default arguments ====
   stkcd <- "000829"
 
-  actual_indcd <- find_indcd.gta_db(date, stkcd, ds_stock_industry)
+  start_date <- min(ds_stock_industry$date[ds_stock_industry$stkcd == stkcd])
+  end_date <- Sys.Date()
+  dates <- seq(start_date, end_date, by = "month")
+  dates <- lubridate::ceiling_date(dates, unit = "month") - 1
 
-  expect_indcd <- ds_stock_industry %>%
-    dplyr::filter(stkcd == !!stkcd, date == !!date) %>%
-    dplyr::select(indcd) %>%
-    as.character()
+  for (i in seq_len(length(dates))) {
+    date = dates[i]
 
-  expect_equal(actual_indcd, expect_indcd)
+    actual_indcd <- find_stock_indcd.gta_db(date, stkcd, ds_stock_industry)
+
+    # expect record is the latest matched record
+    ds_expect_indcd <- ds_stock_industry %>%
+      dplyr::filter(stkcd == !!stkcd, date <= !!date) %>%
+      dplyr::select(indcd, date)
+    expect_indcd <- dplyr::last(ds_expect_indcd$indcd,
+                                ds_expect_indcd$date)
+
+    expect_equal(actual_indcd, expect_indcd)
+
+  }
+
+
 })
 
-test_that("match_indcds.gta_db", {
+test_that("find_stock_trdstat.gta_db", {
 
-  # find_indcd.gta_db with default arguments ====
+  # find_stock_trdstat.gta_db with default arguments ====
+  # >> stock has record in spt_stocks ----
+  stkcd <- "000004"
+  suppressMessages(
+    ds_spt_stocks <- get_spt_stocks(stock_db)
+  )
+
+  start_date <- min(ds_spt_stocks$date[ds_spt_stocks$stkcd == stkcd])
+  end_date <- Sys.Date()
+  dates <- seq(start_date, end_date, by = "month")
+  dates <- lubridate::ceiling_date(dates, unit = "month") - 1
+
+  for (i in seq_len(length(dates))) {
+    date = dates[i]
+    actual_trdstat <- find_stock_trdstat.gta_db(date, stkcd, ds_spt_stocks)
+
+    # expect record is the latest matched record
+    ds_expect_trdstat <- ds_spt_stocks %>%
+      dplyr::filter(stkcd == !!stkcd, date <= !!date) %>%
+      dplyr::select(trade_status, date)
+    expect_trdstat <- dplyr::last(ds_expect_trdstat$trade_status,
+                                  ds_expect_trdstat$date)
+
+    expect_equal(actual_trdstat, expect_trdstat)
+
+  }
+
+  # >> stock hasn't record in spt_stocks ----
+  stkcd <- "600031"
+  date <- lubridate::as_date("2018-9-30")
+  suppressMessages(
+    ds_spt_stocks <- get_spt_stocks(stock_db)
+  )
+
+  actual_trdstat <- find_stock_trdstat.gta_db(date, stkcd, ds_spt_stocks)
+  expect_trdstat <- "list"
+  expect_equal(actual_trdstat, expect_trdstat)
+
+})
+
+test_that("compute_attr_value.gta_db", {
+
+  # compute_attr_value.gta_db with default arguments ====
   stkcds <- c("000829", "600066")
 
   dates_stkcds_indcds <- ds_stock_industry %>%
@@ -70,16 +125,19 @@ test_that("match_indcds.gta_db", {
     dplyr::filter(stkcd %in% !!stkcds) %>%
     dplyr::select(date, stkcd, indcd)
 
-  actual_indcds <- match_indcds.gta_db(
-    dates_stkcds_indcds$date,
-    dates_stkcds_indcds$stkcd,
-    ds_stock_industry
+  actual_indcds <- compute_attr_value.gta_db(
+    dates = dates_stkcds_indcds$date,
+    stkcds = dates_stkcds_indcds$stkcd,
+    find_stock_attr_fun = find_stock_indcd.gta_db,
+    ds_attr_source = ds_stock_industry
   )
 
   expect_indcds <- as.character(dates_stkcds_indcds$indcd)
 
   expect_equal(actual_indcds, expect_indcds)
+
 })
+
 
 # clear up testing conext
 suppressMessages(close_stock_db(stock_db))

@@ -125,6 +125,12 @@ test_that("ind_attr_def_indcd", {
   expect_true(is.function(new_attr_indcd))
 })
 
+test_that("ind_attr_def_trdstat", {
+
+  # ind_attr_def_trdstat with default arguments ====
+  new_attr_tradstat <- ind_attr_def_trdstat(stock_db)
+  expect_true(is.function(new_attr_tradstat))
+})
 
 # Tests for function of indicator define - non-generic functions ----
 
