@@ -1,31 +1,32 @@
 
 #' Generate indicators in batch mode
 #'
-#' Generate indistors in batch from stock_db.
+#' Generate customized indicators of stock_db in batch, and save into files.
 #'
-#' There are two methods of generating indicators:
+#' @details
+#'
+#'    There are two methods of generating indicators:
 #' \itemize{
-#'       \item formal production: produce final result of indicators on full
-#'       dataset from stock_db, which takes longer time ;
-#'       \item validating defintion: produce trial results of indicators on
-#'       small dataset from stock_db, which takes shorter time.
+#'   \item \strong{formal production}: produce final result of indicators on full dataset
+#'    from stock_db, which will take longer time ;
+#'   \item \strong{validating defintion}: produce trial results of indicators on small
+#'   dataset from stock_db, which will take shorter time.
 #'   }
 #'
 #' @param stock_db  A stock database object to operate.
 #' @param ds_indicator_defs  A dataframe of indicator definintion to generate.
-#' @param validate_def A logical, whether to validate indicator definition.
-#'  Default False, means to produce indicators on full dataset, not validating
-#'  definintion on small datasets.
+#' @param validate_def A logical determine whether to validate indicator
+#'   definition or not.Default FALSE, means to produce indicators on full
+#'   dataset, TRUE means to validate definintion on small datasets.
 #' @param parallel   A logic to deterimine whether to use parallel processing.
 #'   Default TRUE means to use parallel processing.
-#' @param log_file_prefix  A character of log file prefix to name log file.
-#'    Log file is named as format of "log_file_prefix(current).csv"
-#'  Default is "generate_indicator_log".
-#' @param log_dir Path to save log file. If NULL, don't save log file
-#'   by default "./log".
+#' @param log_file_prefix  A character of log file prefix to name log file. Log
+#'   file is named as format of "log_file_prefix(current).csv" Default is
+#'   "generate_indicator_log".
+#' @param log_dir Path to save log file. If NULL, don't save log file by default
+#'   "./log".
 #'
-#'
-#' @family indicator build functions
+#' @family indicator generate functions
 #'
 #' @return NULL invisibly. Raise error if anything goes wrong.
 #'
@@ -188,14 +189,15 @@ generate_indictors <- function(stock_db,
 }
 
 
-#' Delete indicators files
+#' Delete indicators in batch mode
 #'
-#' Delete clear indistors files in inidcators dir from stock_db.
+#' Delete cusotmized indicators of stock_db in batch, which clear all customized
+#' built indicator files.
 #'
 #' @param stock_db  A stock database object to operate.
-#' @param ds_indicator_defs  A dataframe of indicator definintion to generate.
+#' @param ds_indicator_defs  A dataframe of indicator definintion to delete.
 #'
-#' @family indicator build functions
+#' @family indicator generate functions
 #'
 #' @return NULL invisibly. Raise error if anything goes wrong.
 #'

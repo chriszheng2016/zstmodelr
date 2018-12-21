@@ -1,4 +1,16 @@
-# create a expr for evaluation from expr, list of exprs, or strings
+#' Utils functions of expr
+#'
+#' Utility functions to handle expr basing on rlang, which is used to facliate
+#' defining indicator.
+#'
+#'
+#' @name utils_expr
+NULL
+
+# Create a expr for evaluation from expr, list of exprs, or strings
+#' @param expr  A expr or list of exprs or string to parse as expr.
+#' @describeIn utils_expr  create a expr for evaluation from expr,
+#' list of exprs, or strings.
 create_expr <- function(expr) {
 
   expr <- rlang::enexpr(expr)
@@ -32,8 +44,9 @@ create_expr <- function(expr) {
   return(result_expr)
 }
 
-
-# Find symbols in expr for NSE version
+# Find symbols in expr by matching pattern.
+#' @param pattern  a character of regular rule for matching.
+#' @describeIn utils_expr  Find symbols in expr by matching pattern.
 find_syms <- function(expr, pattern = NULL, ...) {
 
   expr <- rlang::enexpr(expr)

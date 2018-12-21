@@ -14,7 +14,7 @@ clear_tables(stock_db, ...)
 \item{stock_db}{A stock database object to operate.}
 }
 \value{
-
+NULL invisibly. Raise error if anything goes wrong.
 }
 \description{
 Generic function to Clear existed data in all tables in stock_db.
@@ -25,7 +25,11 @@ Generic function to Clear existed data in all tables in stock_db.
 }}
 
 \seealso{
-Other data managment functions: \code{\link{get_datasource}},
-  \code{\link{import_table}}
+Other data managment: \code{\link{convert_import_file}},
+  \code{\link{get_datasource}}, \code{\link{import_table}},
+  \code{\link{process_files}},
+  \code{\link{read_import_file}},
+  \code{\link{ttm_financial_report}},
+  \code{\link{update_db}}, \code{\link{write_import_file}}
 }
-\concept{data managment functions}
+\concept{data managment}

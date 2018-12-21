@@ -10,14 +10,12 @@
 #'
 #' @param stock_db         A stock database object to operate.
 #'
-#' @family data managment functions
+#' @family data managment
 #'
 #' @return A dataframe of info about importing raw data if succeed,
 #' otherwise NULL.
 #'
 #' @export
-#'
-#' @examples
 # S3 generic definition
 # get_datasource <- function(stock_db, ...){
 #   UseMethod("get_datasource")
@@ -37,7 +35,7 @@ setGeneric(
 #'
 #' @param stock_db         A stock database object to operate.
 #'
-#' @family data managment functions
+#' @family data managment
 #'
 #' @return NULL invisibly. Raise error if anything goes wrong.
 #'
@@ -86,12 +84,11 @@ setGeneric(
 #'  log dir. Default "./log".
 #'
 #'
-#' @family data managment generics
+#' @family data managment
 #'
 #' @return NULL invisibly. Raise error if anything goes wrong.
 #'
 #' @export
-
 # S3 generic definition
 # update_db <- function(stock_db,
 #                          ...) {
@@ -111,41 +108,6 @@ setGeneric(
     standardGeneric("update_db")
   }
 )
-
-
-#' Process importing files in stock database
-#'
-#' Generic function to process importing files in stock database
-#'
-#' Before updating db by importing data, process will build derived
-#' datasets from original files, such as ttm_financial_report, etc.
-#'
-#'
-#' @param stock_db  A stock database object to operate.
-#' @param data_source  Data source info produced by get_datasource(stock_db)
-#' @param retry_log Log file for re-importing tables with recording failure
-#'   in log file. If NULL, it will upate all talbles in data_source, otherse
-#'   only update on these tables with recording failure in log file.
-#'   By default NULL.
-#' @param log_file_prefix  A character of log file prefix to name log file.
-#'    Log file is named as format of "log_file_prefix_XXXX_(current).csv"
-#'  Default is "process_files_log".
-#' @param log_dir Path to save updating log file. If NULL, don't save log file
-#'   by default "./log".
-#'
-#'
-#' @family data managment generics
-#'
-#' @return NULL invisibly. Raise error if anything goes wrong.
-#'
-#' @export
-# S3 generic definition
-# process_files <- function(stock_db,
-#                          ...) {
-#   UseMethod("process_files")
-# }
-
-
 
 #' Import a raw data file into table in stock database
 #'
@@ -176,13 +138,11 @@ setGeneric(
 #' @param log_dir   Path of log dir for saving problem log file,
 #'   by default"./log", if the log path doesn't exsited, it  will be created.
 #'
-#' @family data managment functions
+#' @family data managment
 #'
 #' @return TRUE if success, else FALSE.
-#' @export
 #'
-#' @examples
-
+#' @export
 # S3 generic definition
 # import_table <- function(stock_db,
 #                          input_file,
@@ -222,7 +182,7 @@ setGeneric(
 #' input_files of datasource in following steps:
 #'
 #' \enumerate{
-#'    \item Build input_filess info from all input_files marked by process
+#'    \item Build input_files info from all input_files marked with process
 #'    in datasource or some input_files with recoding failure in retry log file;
 #'    \item Read input_files into original dataframe, process original
 #'    dataframe by using process_fun specified by datasource, and save
@@ -246,7 +206,7 @@ setGeneric(
 #'  as log dir. Default "./log".
 #'
 #'
-#' @family data managment generics
+#' @family data managment
 #'
 #' @return NULL invisibly. Raise error if anything goes wrong.
 #'
@@ -278,19 +238,19 @@ setGeneric(
 #' Read a raw file into a dataframe for processing or importing.
 #'
 #' @param input_file  A name or a path of input data file.
-#' @param input_type  Format of input file, e.g. "txt", "csv".
-#' @param input_dir Working dir of input file, if NULL, use dir of input file as
-#'   working dir, by default NULL,
-#' @param start_index Start index of first line of actual records in data file,
-#'   by default 2L, which means first line is header and actual data starts from
-#'   second lines.
-#' @param ignore_problems Whether to ignore problems when covert data,
-#'   if TRUE, continue to import data but log problems into log file,
-#'   otherwise abort reading process.  By default TRUE.
+#' @param input_type  A charater of input file format, e.g. "txt", "csv".
+#' @param input_dir   A path of working dir of input file, if NULL, use dir of
+#' input file as working dir, default NULL.
+#' @param start_index A integer of start index of first line of actual records
+#'  in data file, by default 2L, which means first line is header and actual
+#'  data starts from second lines.
+#' @param ignore_problems A logical to determine whether to ignore problems
+#'  when covert data, if TRUE, continue to import data but log problems into
+#'  log file, otherwise abort reading process.  By default TRUE.
 #' @param log_dir   Path of log dir for saving problem log file,
 #'   by default"./log", if the log path doesn't exsited, it  will be created.
 #'
-#' @family data managment functions
+#' @family data managment
 #'
 #' @return A dataframe of raw data for importing if succeed, otherwise NULL.
 #'
@@ -430,11 +390,11 @@ read_import_file <- function(input_file,
 #'
 #' @param ds_output  A name or a path of input data file.
 #' @param output_file  A name or a path of input data file.
-#' @param output_type  Format of input file, e.g. "txt", "csv".
-#' @param output_dir Working dir of input file, if NULL, use dir of input file as
-#'   working dir, by default NULL,
+#' @param output_type  A character of output file format, e.g. "txt", "csv".
+#' @param output_dir A path of working dir of output file, if NULL, use dir
+#'  of output file as working dir, by default NULL,
 #'
-#' @family data managment functions
+#' @family data managment
 #'
 #' @return NULL invisibly. Raise error if anything goes wrong.
 #'
@@ -512,11 +472,11 @@ write_import_file <- function(ds_output,
 #' @inheritParams read_import_file
 #'
 #' @param process_fun A function to process input file into output file.
-#' @param ...     Params passed to process_fun.
+#' @param ...     Params to process_fun.
 #'
 #' @inheritParams write_import_file
 #'
-#' @family data managment functions
+#' @family data managment
 #'
 #' @return TRUE if success, else FALSE.
 #'
@@ -541,8 +501,8 @@ convert_import_file <- function(input_file,
   success <- TRUE
 
   # read original data
-  tryCatch({
-    result <- read_import_file(
+  result <- tryCatch({
+    read_import_file(
       input_file,
       input_type = input_type,
       input_dir = input_dir,
@@ -562,11 +522,11 @@ convert_import_file <- function(input_file,
   # process orgiginal data
   ds_processed_data <- NULL
   if (success) {
-    tryCatch({
+    result <- tryCatch({
       if (!is.null(process_fun)) {
-        result <- process_fun(ds_origin_data, ...)
+        process_fun(ds_origin_data, ...)
       } else {
-        result <- ds_origin_data
+        ds_origin_data
       }
     }, error = function(e) e)
     if (inherits(result, "error")) {
@@ -579,8 +539,8 @@ convert_import_file <- function(input_file,
 
   # write process data
   if (success) {
-    tryCatch({
-      result <- write_import_file(ds_processed_data,
+    result <- tryCatch({
+      write_import_file(ds_processed_data,
                         output_file = output_file,
                         output_type = output_type,
                         output_dir = output_dir
@@ -614,7 +574,7 @@ convert_import_file <- function(input_file,
 #' Convert financial report to TTM format
 #'
 #' Convert financial report from normal format(quarterly accumulated format)
-#' to TTM format(Trail Tweleve Month).
+#' to TTM format(Trail Twelve Months).
 #'
 #' @param ds_financial_report   A data.frame of financial report to convert.
 #' @param date_index_field  A character name of date index field of dataframe of
@@ -624,7 +584,7 @@ convert_import_file <- function(input_file,
 #' @param parallel   A logic to deterimine whether to use parallel processing.
 #'   Default TRUE means to use parallel processing.
 #'
-#' @family data managment functions
+#' @family data managment
 #'
 #' @return A dataframe of finacial report of TTM format if succeed,
 #'  otherwise NULL.

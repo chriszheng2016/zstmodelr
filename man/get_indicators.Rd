@@ -19,7 +19,7 @@ get_indicators(stock_db, indicator_codes, ...)
 A dataframe of indicator timeseries if succeed, otherwise NULL.
   In order to store multi-indicators with different periods(day,
   month, quarter, year), returned data frame adapts longer format,
-  which means name of indicator is stored in "ind_name", value of factor
+  which means code of indicator is stored in "ind_code", value of factor
   is stored in "ind_value".
 }
 \description{
@@ -37,10 +37,14 @@ Other stock_db generics: \code{\link{close_stock_db}},
   \code{\link{fetch_table_dataset}},
   \code{\link{get_factors_info}},
   \code{\link{get_factors}},
+  \code{\link{get_finacial_report}},
   \code{\link{get_indicators_from_source}},
   \code{\link{get_market_return}},
   \code{\link{get_profile}},
+  \code{\link{get_riskfree_rate}},
+  \code{\link{get_spt_stocks}},
   \code{\link{get_stock_dataset}},
+  \code{\link{get_stock_industry}},
   \code{\link{get_stock_return}},
   \code{\link{get_table_dataset}},
   \code{\link{init_stock_db}},

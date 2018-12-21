@@ -4,7 +4,7 @@
 \name{get_indicator_vars}
 \alias{get_indicator_vars}
 \alias{get_indicator_vars,gta_db-method}
-\title{Get input vars for computing customzied indicators from stock_db}
+\title{Get input vars for computing customized indicators from stock_db}
 \usage{
 get_indicator_vars(stock_db, indicator_defs, ...)
 
@@ -13,14 +13,16 @@ get_indicator_vars(stock_db, indicator_defs, ...)
 \arguments{
 \item{stock_db}{A stock database object to operate.}
 
-\item{indicator_defs}{A dataframe of indicator definitions.}
+\item{indicator_defs}{A dataframe of indicator definitions, which require
+vars to compute indicators.}
 }
 \value{
-A dataframe of input vars for computing customized indicators if succeed,
-otherwise NULL.
+A dataframe of input vars for computing customized indicators
+if succeed, otherwise NULL.
 }
 \description{
-Generic function to get vars for computing customized indicators from stock_db.
+Generic function to get vars for computing customized indicators
+from stock_db.
 }
 \section{Methods (by class)}{
 \itemize{
@@ -29,9 +31,12 @@ indicators from database of gta_db class.
 }}
 
 \seealso{
-Other indicator build functions: \code{\link{compute_indicator}},
-  \code{\link{create_indicator_def}},
+Other indicator define functions: \code{\link{create_attribute_def_fun}},
+  \code{\link{create_indicator_def_fun}},
   \code{\link{get_indicator_defs}},
-  \code{\link{parse_indicator_vars}}
+  \code{\link{ind_attr_def_indcd}},
+  \code{\link{ind_attr_def_trdstat}},
+  \code{\link{parse_indicator_vars}},
+  \code{\link{prioritize_indicator_defs}}
 }
-\concept{indicator build functions}
+\concept{indicator define functions}

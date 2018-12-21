@@ -1,5 +1,12 @@
 
-# Check whether fields exsit in data
+#' Check whether fields exsit in data or not.
+#' @param  data   a dataframe or matrix to check.
+#' @param  fields a character vector of field names to check.
+#'
+#' @family utils_fields
+#' @return  return invisble NULL if succeed, otherwise raise error.
+#'
+#' @export
 check_fields <- function(data, fields) {
 
   # validate params
@@ -22,10 +29,27 @@ check_fields <- function(data, fields) {
   }
 }
 
-# Check whether fields are specified type
-# Notice:
-#  numeric means intger or double;
-#  double don't include date.
+#' Check whether fields are specified type
+#'
+#' Predicate fields of dataframe are specifed type or not.
+#' @note
+#'  numeric means intger or double; double don't include date.
+#'
+#'
+#' @param data     A vector of date/timestamps.
+#' @param expect_type A character of type to test, e.g. "numeric", "integer",
+#' "double", "character", "date", "factor", "list", "NA"
+#' @param negate  A logical to negate expect_type of not, Default FALSE means
+#'  not to negate the expect_type.
+#' @param predicate_fun  A function used as testing, return TRUE if matched.
+#'  Default NULL means not to use predicate_fun for testing.
+#' @param ... Params to predicate_fun.
+#'
+#'
+#' @family utils_fields
+#' @return  return a vectors of logical with same length of names of dataframe.
+#'
+#' @export
 is_type_field <- function(data, expect_type = c(
                                  "numeric",
                                  "integer",
@@ -95,8 +119,18 @@ is_type_field <- function(data, expect_type = c(
 }
 
 
-
-# Identify fields with specified type
+#' Identify fields with specified type
+#'
+#' Get the field names of dataframe with specified type.
+#'
+#' @inheritParams is_type_field
+#'
+#' @return return a vectors of field names with specified type. If no field is
+#' expect type , return a character(0).
+#'
+#' @family utils_fields
+#'
+#' @export
 expect_type_fields <- function(data, expect_type = c(
                                  "numeric",
                                  "integer",

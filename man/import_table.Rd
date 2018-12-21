@@ -18,7 +18,7 @@ import_table(stock_db, input_file, input_type = c("csv", "txt"),
 \arguments{
 \item{stock_db}{A stock database object to operate.}
 
-\item{input_file}{A Name or a path of input data file.}
+\item{input_file}{A name or a path of input data file.}
 
 \item{input_type}{Format of input file, e.g. "txt", "csv".}
 
@@ -61,7 +61,12 @@ Any problem in converting raw data will be logged in log file
 }}
 
 \seealso{
-Other data managment functions: \code{\link{clear_tables}},
-  \code{\link{get_datasource}}
+Other data managment: \code{\link{clear_tables}},
+  \code{\link{convert_import_file}},
+  \code{\link{get_datasource}},
+  \code{\link{process_files}},
+  \code{\link{read_import_file}},
+  \code{\link{ttm_financial_report}},
+  \code{\link{update_db}}, \code{\link{write_import_file}}
 }
-\concept{data managment functions}
+\concept{data managment}

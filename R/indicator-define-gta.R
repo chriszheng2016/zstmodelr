@@ -6,7 +6,7 @@
 
 # Get definitiona of customzied indicators from gta_db
 #  Method definition for s3 generic
-#' @describeIn get_indicator_defs get indicator defs from database
+# @describeIn get_indicator_defs get indicator defs from database
 #'  of gta_db class.
 #' @export
 get_indicator_defs.gta_db <- function(stock_db) {
@@ -47,7 +47,7 @@ setMethod(
 
 # Get input vars for computing customzied indicators from gta_db
 # Method definition for s3 generic
-#' @describeIn get_indicator_vars get input vars for computing customzied
+# @describeIn get_indicator_vars get input vars for computing customzied
 #'  indicators from database of gta_db class.
 #' @export
 get_indicator_vars.gta_db <- function(stock_db, indicator_defs) {
@@ -95,7 +95,7 @@ setMethod(
 
 # Parse vars in indicator expr from gta_db
 # Method definition for s3 generic
-#' @describeIn parse_indicator_vars parse vars in indicator expr from
+# @describeIn parse_indicator_vars parse vars in indicator expr from
 #'  database of gta_db class.
 #' @export
 parse_indicator_vars.gta_db <- function(stock_db, indicator_expr) {
@@ -139,7 +139,7 @@ setMethod(
 
 # Get attribute definition function of industry code from gta_db
 # Method definition for s3 generic
-#' @describeIn ind_attr_def_indcd  get attribute definition function of
+# @describeIn ind_attr_def_indcd  get attribute definition function of
 #' industry code from database of gta_db class.
 #' @export
 ind_attr_def_indcd.gta_db <- function(stock_db) {
@@ -172,7 +172,7 @@ ind_attr_def_indcd.gta_db <- function(stock_db) {
 # Method definition for s4 generic
 #' @describeIn ind_attr_def_indcd  get attribute definition function of
 #' industry code from database of gta_db class.
-##' @export
+#' @export
 setMethod(
   "ind_attr_def_indcd",
   signature(stock_db = "gta_db"),
@@ -183,7 +183,7 @@ setMethod(
 
 # Get attribute definition function of trading status from gta_db
 # Method definition for s3 generic
-#' @describeIn ind_attr_def_tradstat  get attribute definition function of
+# @describeIn ind_attr_def_tradstat  get attribute definition function of
 #' trading status from database of gta_db class.
 #' @export
 ind_attr_def_trdstat.gta_db <- function(stock_db) {
@@ -227,7 +227,8 @@ setMethod(
 
 
 # Non-generic internal functions for gta_db operation -----------------------
-# build indicator defs from customeized indicator info
+
+# Build indicator defs from customeized indicator info
 build_indicator_defs.gta_db <- function(stock_db, customized_indictors_info) {
 
   # validate params

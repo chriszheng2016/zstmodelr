@@ -23,11 +23,23 @@ all indicators in the source.}
 
 \item{ouput_format}{Output format for data frame, i.e "long" and "wide":
  \itemize{
-     \item in long format: name of indicator is stored in "ind_name", value of indicator
-is stored in "ind_value";
+     \item in long format: code of indicator is stored in "ind_code",
+     value of indicator is stored in "ind_value";
      \item in wide format: value of indicator is stored in
 field named with the name of indicator.
  }}
+
+\item{data_filters}{A list of filter to apply on result data. The list
+consists of items which has field as its name and filter expr string as
+its content, defualt is list( typrep = "typrep == 'A'",
+markettype = "markettype == 21"). Only valid for gta_db.}
+
+\item{date_fields}{A character vector of possible date field in original
+data, which will be renamed as "date". default is c("date", "accper",
+"trddt", "trdmnt", "trdynt","clsdt", "shrchdgt"). Only valid for gta_db.}
+
+\item{retain_fields}{A character vector of possible fields to retain in
+final dataset, default is c("stkcd", "indcd"). Only valid for gta_db.}
 }
 \value{
 A data frame of indicator timeseries if succeed, otherwise NULL.
@@ -46,10 +58,15 @@ Other stock_db generics: \code{\link{close_stock_db}},
   \code{\link{code2name}}, \code{\link{dir_path_db}},
   \code{\link{fetch_table_dataset}},
   \code{\link{get_factors_info}},
-  \code{\link{get_factors}}, \code{\link{get_indicators}},
+  \code{\link{get_factors}},
+  \code{\link{get_finacial_report}},
+  \code{\link{get_indicators}},
   \code{\link{get_market_return}},
   \code{\link{get_profile}},
+  \code{\link{get_riskfree_rate}},
+  \code{\link{get_spt_stocks}},
   \code{\link{get_stock_dataset}},
+  \code{\link{get_stock_industry}},
   \code{\link{get_stock_return}},
   \code{\link{get_table_dataset}},
   \code{\link{init_stock_db}},

@@ -2,21 +2,19 @@
 # Generic functions for indicator defining  ------------------------------
 
 
-#' Get definitions of customzied indicators from stock_db
+#' Get definitions of customized indicators from stock_db
 #'
-#' Generic function to get definition of customized indicators from stock_db.
+#' Generic function to get definitions of customized indicators from stock_db.
 #'
 #' @param stock_db         A stock database object to operate.
 #'
 #'
-#' @family indicator build functions
+#' @family indicator define functions
 #'
 #' @return A dataframe of definitions of customized indicators if succeed,
 #' otherwise NULL.
 #'
 #' @export
-#'
-#' @examples
 # S3 generic definition
 # get_indicator_defs <- function(stock_db, ...){
 #   UseMethod("get_indicator_defs")
@@ -30,21 +28,21 @@ setGeneric(
   }
 )
 
-#' Get input vars for computing customzied indicators from stock_db
+#' Get input vars for computing customized indicators from stock_db
 #'
-#' Generic function to get vars for computing customized indicators from stock_db.
+#' Generic function to get vars for computing customized indicators
+#' from stock_db.
 #'
 #' @param stock_db         A stock database object to operate.
-#' @param indicator_defs   A dataframe of indicator definitions.
+#' @param indicator_defs   A dataframe of indicator definitions, which require
+#'  vars to compute indicators.
 #'
-#' @family indicator build functions
+#' @family indicator define functions
 #'
-#' @return A dataframe of input vars for computing customized indicators if succeed,
-#' otherwise NULL.
+#' @return A dataframe of input vars for computing customized indicators
+#' if succeed, otherwise NULL.
 #'
 #' @export
-#'
-#' @examples
 # S3 generic definition
 # get_indicator_vars <- function(stock_db, indicator_defs, ...){
 #   UseMethod("get_indicator_vars")
@@ -65,13 +63,11 @@ setGeneric(
 #' @param stock_db         A stock database object to operate.
 #' @param indicator_expr   A expr of indicator to parase.
 #'
-#' @family indicator build functions
+#' @family indicator define functions
 #'
 #' @return A character vector of name of vars if succeed, otherwise NULL.
 #'
 #' @export
-#'
-#' @examples
 # S3 generic definition
 # get_indicator_vars <- function(stock_db, indicator_expr, ...){
 #   UseMethod("get_indicator_vars")
@@ -93,14 +89,12 @@ setGeneric(
 #'
 #' @param stock_db         A stock database object to operate.
 #'
-#' @family indicator build functions
+#' @family indicator define functions
 #'
 #' @return A function of attribute definition of industry code if succeed,
 #'  otherwise NULL.
 #'
 #' @export
-#'
-#' @examples
 # S3 generic definition
 # ind_attr_def_indcd <- function(stock_db, ...){
 #   UseMethod("ind_attr_def_indcd")
@@ -121,14 +115,12 @@ setGeneric(
 #'
 #' @param stock_db         A stock database object to operate.
 #'
-#' @family indicator build functions
+#' @family indicator define functions
 #'
 #' @return A function of attribute definition of trading status if succeed,
 #'  otherwise NULL.
 #'
 #' @export
-#'
-#' @examples
 # S3 generic definition
 # ind_attr_def_trdstat <- function(stock_db, ...){
 #   UseMethod("ind_attr_def_trdstat")
@@ -148,17 +140,19 @@ setGeneric(
 
 #' Create definition function of indicator for computing indicator
 #'
-#' Combine indicator params to crate a definition function for computing indicator.
+#' Use indicator params to create a definition function for computing indicator.
+#' The definition function is used by \code{\link{create_indicator}} to compute
+#' indicator timesereis of stocks.
 #'
 #' @param indicator_code   A character for indicator code.
 #' @param indicator_expr   A expr as a formula to compute indicator.
 #' @param rolly_window   A numeric as rolly computing window, default 0 means
 #'  no rollying.
-#' @param period   A periodicity of indicator, i.e. "day", "month",
-#'    "quarter", "yearly".
+#' @param period   A periodicity of indicator, e.g. "day", "month",
+#'    "quarter", "year".
 #'
 #'
-#' @family indicator build functions
+#' @family indicator define functions
 #'
 #' @return A function of indicator definition to compute indicator if succeed,
 #' otherwise NULL.
@@ -362,13 +356,15 @@ create_indicator_def_fun <- function(indicator_code,
 #' Create definition function of new attribute for modifying indicator
 #'
 #' Create a definition function of new attribute for modifying indicator.
+#' The definition function is used by \code{\link{modify_indicator}} to compute
+#' attribute in modifing exsited indicator timesereis of stocks.
 #'
 #' @param attr_name   A character for attribute name.
 #' @param attr_fun   A function to generate attribute.
 #' @param ...   Other arguments to attr_fun.
 #'
 #'
-#' @family indicator build functions
+#' @family indicator define functions
 #'
 #' @return A function of attribute definition to modify indicator if succeed,
 #' otherwise NULL.
@@ -412,18 +408,20 @@ create_attribute_def_fun <- function(attr_name,
 }
 
 
-#' Prioritize indicators defs by dependency  indicators
+#' Prioritize indicators defs by analyzing dependency indicators
 #'
-#' By analysing dependency among indicators, indicator defs will re-ordered by
-#' priority(1 to n) which means 1 is highest and n is lowest. Indicator with
+#' Priroriize indicators defs according prirority means that indicator defs with
+#' higher prority will be in front of that of lower prority.
+#'
+#' By analysing dependency among indicators, indicator defs will be re-ordered
+#' by priority(1 to n), which means 1 is highest and n is lowest. Indicator with
 #' higher priority should be generated before indicator with lower priority.
 #'
-#' Create a definition function of new attribute for modifying indicator.
 #'
 #' @param ds_indicator_defs   A dataframe of indicators definition info.
 #'
 #'
-#' @family indicator build functions
+#' @family indicator define functions
 #'
 #' @return A dataframe of definitions of prioritized indicators if succeed,
 #'  otherwise NULL.
@@ -565,7 +563,7 @@ prioritize_indicator_defs <- function(ds_indicator_defs) {
 
 }
 
-# Internal functions for indicator defining  -------------------------------
+# Internal functions for indicator define  -------------------------------
 
 # Create tress of indicator defs
 create_ind_defs_trees <- function(ds_indicator_defs) {
@@ -609,8 +607,8 @@ as_ind_defs_trees <- function(x) {
 
 }
 
-# Validate indicators to ensure every indicator depends on
-# indicators defined in defs trees
+# Validate indicators to ensure every indicator depends on indicators
+# defined in defs trees
 validate_indicators <- function(ind_defs_trees) {
 
   # validate params
@@ -643,8 +641,8 @@ validate_indicators <- function(ind_defs_trees) {
 }
 
 # Check duplicated indicators.
-# If there is any duplicated indicator, raise error,
-# otherwise output original ind_def_trees.
+# If there is any duplicated indicator, raise error, otherwise output
+# original ind_def_trees.
 check_duplicated_indicators <- function(ind_defs_trees) {
 
   # validate params
@@ -673,9 +671,8 @@ check_duplicated_indicators <- function(ind_defs_trees) {
 }
 
 # Check loop-dependency among indicators.
-# If there is any loop dependeny, raise error,
-# otherwise oupput ind_def_trees by putting root indicators
-# in front of ind_def_trees.
+# If there is any loop dependeny, raise error, otherwise oupput
+# ind_def_trees by putting root indicators in front of ind_def_trees.
 check_loop_depdency <- function(ind_defs_trees) {
 
   # validate params

@@ -1,17 +1,17 @@
-#' Check date series periodic or not
+#' Check date series is periodic or not
 #'
-#' Check whether date series is regular/irregular periodic.
+#' Check whether date series is regular/irregular periodic or not.
 #'
 #' @details
 #' periodic dates includes two kinds:
 #' \itemize{
-#'    \item regular periodic series:
+#'    \item \strong{regular periodic series}:
 #'         a date/time vector is regular periodic, if the vector has not more
 #'     one date/time stamp on each date of peroid and dosen't miss any date of period.
 #'     For example, c("2018-01-01", "2018-02-01", "2018-03-01", "2018-04-01",
 #'     "2018-05-01", "2018-06-01") is a regular monthly periodic dates.
 #'
-#'    \item irrgular periodic series:
+#'    \item \strong{irrgular periodic series}:
 #'        a date/time vector is regular periodic, if the vector has more one
 #'     date/time stamp on each date of peroid or miss some date of period.
 #'     For example, c("2018-01-01", "2018-02-01", "2018-04-01",
@@ -24,11 +24,11 @@
 #'  "year", default "Day".
 #' @param regular    Whether to test date series as a regular periodic series
 #'  or not. Since irregular test is looser than regluar test, irregluar test
-#'  on regluar series will return true. Default is FALSE, which means we will
+#'  on regluar series will always return true. Default is FALSE, which means we will
 #'  use looser test(irregular).
 #'
-#' @family utility functions of dates
-#' @return   return TRUE if dates is periodic.
+#' @family utils_dates
+#' @return   return TRUE if dates is periodic, otherwise FALSE.
 #' @export
 is_periodic_dates <- function(dates_series,
                               freq_rule = c("day", "month", "quarter", "year"),
@@ -134,7 +134,7 @@ isRegularYearly <- function(x){
 #'  on regluar series will return true. Default is FALSE, which means we will
 #'  use looser test(irregular).
 #'
-#' @family utility functions of dates
+#' @family utils_dates
 #' @return  return "day" for daily, "month" for monthly, "quarter" for quarterly,
 #'  "year" for yearly, "unknown" for unkown date period.
 #'

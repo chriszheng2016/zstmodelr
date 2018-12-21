@@ -27,7 +27,11 @@ database of gta_db class
 }}
 
 \seealso{
-Other data managment functions: \code{\link{clear_tables}},
-  \code{\link{import_table}}
+Other data managment: \code{\link{clear_tables}},
+  \code{\link{convert_import_file}},
+  \code{\link{import_table}}, \code{\link{process_files}},
+  \code{\link{read_import_file}},
+  \code{\link{ttm_financial_report}},
+  \code{\link{update_db}}, \code{\link{write_import_file}}
 }
-\concept{data managment functions}
+\concept{data managment}

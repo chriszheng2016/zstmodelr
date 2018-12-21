@@ -6,7 +6,7 @@
 
 # Get data source info for importing raw data
 # Method definition for s3 generic
-#' @describeIn get_datasource get data source for importing raw data into
+# @describeIn get_datasource get data source for importing raw data into
 #'   database of gta_db class
 #' @export
 get_datasource.gta_db <- function(stock_db) {
@@ -65,7 +65,7 @@ setMethod(
 
 # Clear data in all tables in stock database
 # Method definition for s3 generic
-#' @describeIn clear_tables clear data in all tables in a database of gta_db class
+# @describeIn clear_tables clear data in all tables in a database of gta_db class
 #' @export
 clear_tables.gta_db <- function(stock_db) {
 
@@ -105,7 +105,7 @@ setMethod(
 
 # Update tables in stock database
 # Method definition for s3/s4 generic
-#' @describeIn update_db update tables in a database of gta_db class
+# @describeIn update_db update tables in a database of gta_db class
 #' @export
 update_db.gta_db <- function(stock_db,
                              data_source = get_datasource(stock_db),
@@ -251,7 +251,7 @@ setMethod(
 
 # Import a raw data file into table in stock database
 # Method definition for s3 generic
-#' @describeIn import_table import raw data into table in a database of gta_db class
+# @describeIn import_table import raw data into table in a database of gta_db class
 #' @export
 import_table.gta_db <- function(stock_db,
                                 input_file,
@@ -361,7 +361,7 @@ setMethod(
 
 # Process importing files in stock database
 # Method definition for s3/s4 generic
-#' @describeIn process_files process importing files in a database of gta_db class
+# @describeIn process_files process importing files in a database of gta_db class
 #' @export
 process_files.gta_db <- function(stock_db,
                                  data_source = get_datasource(stock_db),

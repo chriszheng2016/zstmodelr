@@ -18,7 +18,7 @@
 #'   default NA.
 #'
 #'
-#' @family utility functions of series
+#' @family utils_series
 #'
 #' @return A vector or list of result with same length of original series
 #'  if succeed, otherwise a vector of NAs with same length of orginal series.
@@ -72,8 +72,8 @@ rollify_series <- function(data_series, fun, ..., window = 1L,
 
 #' Trail periodic time series
 #'
-#' Trail periodic time sereis( accumaulated or not) means to apply aggregating
-#'  function in specified months windows.
+#' Trailing periodic time sereis( accumaulated or not accumaulated) means to
+#'  apply aggregating function in specified months windows.
 #'
 #' @param dates         A vector of data.
 #' @param datas_series  A dataframe or matrix of numeric series to trail.
@@ -89,7 +89,7 @@ rollify_series <- function(data_series, fun, ..., window = 1L,
 #'
 #'
 #'
-#' @family utility functions of series
+#' @family utils_series
 #'
 #' @return A dataframe of trailed data if succeed, otherwise a dataframe with
 #'  zero length.

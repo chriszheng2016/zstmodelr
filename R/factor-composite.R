@@ -16,8 +16,6 @@
 #'
 #' @return            a dataset of new factor.
 #' @export
-#'
-#' @examples
 composite_factor <- function(ds_factors,
                                    aggregate_formula,
                                    drop = TRUE) {
@@ -79,8 +77,6 @@ composite_factor <- function(ds_factors,
 #' @return            a formula of compoiste factor,
 #' like \code{composite_factor ~ 0.33*PE + 0.33*PB + 0.33*PS}.
 #' @export
-#'
-#' @examples
 weight_formula <- function(factors_weight,
                            new_factor_name = "composite_factor") {
 
@@ -119,8 +115,6 @@ weight_formula <- function(factors_weight,
 #'
 #' @return      a list of factorS weight with colums of factor_name, factor_weight.
 #' @export
-#'
-#' @examples
 factors_weight_equal <- function(factors_list) {
 
   # Validate params

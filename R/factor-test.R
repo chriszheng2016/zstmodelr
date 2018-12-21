@@ -50,9 +50,6 @@ setClass("factor_test_sort_portfolios",
 #' @return                 A object of factor_test_uniregress class.
 #'
 #' @export
-#'
-#' @examples
-
 factor_test_uniregress <- function(ds_test,
                                    regress_fun,
                                    ...,
@@ -188,9 +185,6 @@ factor_test_uniregress <- function(ds_test,
 #' @return                 A object of factor_test_IC class.
 #'
 #' @export
-#'
-#' @examples
-
 factor_test_IC <- function(ds_test,
                            IC_fun,
                            ...,
@@ -323,9 +317,6 @@ factor_test_IC <- function(ds_test,
 #' @return                 A object of factor_test_sort_portfolios class.
 #'
 #' @export
-#'
-#' @examples
-
 factor_test_sort_portfolios <- function(ds_test,
                                       sort_portfolios_fun,
                                       ...,
@@ -516,9 +507,6 @@ factor_test_sort_portfolios <- function(ds_test,
 #'                         factor_value.
 #'
 #' @export
-#'
-#' @examples
-
 build_sort_portfolios <- function(stocks_list,
                                   factor_value_list,
                                   stocks_weight_list = NULL,

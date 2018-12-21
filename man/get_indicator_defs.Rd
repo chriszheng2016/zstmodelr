@@ -4,7 +4,7 @@
 \name{get_indicator_defs}
 \alias{get_indicator_defs}
 \alias{get_indicator_defs,gta_db-method}
-\title{Get definitions of customzied indicators from stock_db}
+\title{Get definitions of customized indicators from stock_db}
 \usage{
 get_indicator_defs(stock_db, ...)
 
@@ -18,7 +18,7 @@ A dataframe of definitions of customized indicators if succeed,
 otherwise NULL.
 }
 \description{
-Generic function to get definition of customized indicators from stock_db.
+Generic function to get definitions of customized indicators from stock_db.
 }
 \section{Methods (by class)}{
 \itemize{
@@ -27,9 +27,12 @@ of gta_db class.
 }}
 
 \seealso{
-Other indicator build functions: \code{\link{compute_indicator}},
-  \code{\link{create_indicator_def}},
+Other indicator define functions: \code{\link{create_attribute_def_fun}},
+  \code{\link{create_indicator_def_fun}},
   \code{\link{get_indicator_vars}},
-  \code{\link{parse_indicator_vars}}
+  \code{\link{ind_attr_def_indcd}},
+  \code{\link{ind_attr_def_trdstat}},
+  \code{\link{parse_indicator_vars}},
+  \code{\link{prioritize_indicator_defs}}
 }
-\concept{indicator build functions}
+\concept{indicator define functions}

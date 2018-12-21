@@ -1,9 +1,24 @@
+#' Utils functions of profile
+#'
+#' Utility functions to handle profile, which contains configration
+#' information of stock database.
+#'
+#'
+#' @name utils_profile
+NULL
+
 
 .PACKAGE_NAME <- "zstmodelr"
 .PROFILE_DIR <- "etc"
 
-
 # get full path of profile
+#' @param profile_name  A character of profile name, e.g. .GTA_PROFILE_FILE
+#' or "gta_profile.xlsx".
+#' @param profile_dir   A character name of dir where profile is located.
+#' Default .PROFILE_DIR is etc in package directory.
+#' @return \strong{get_profile_path}: A path of profile if succeed, otherwise "".
+#' @describeIn utils_profile  get full path of profile.
+#' @export
 get_profile_path <- function(profile_name, profile_dir = .PROFILE_DIR ) {
 
   profile_path <- system.file(profile_dir,
@@ -21,13 +36,18 @@ get_profile_path <- function(profile_name, profile_dir = .PROFILE_DIR ) {
 }
 
 # Get table name value from profile of database
-profile_get_varible_setting <- function(profile_name, variable) {
-  stopifnot(!is.null(profile_name), is.character(profile_name))
+#' @param profile_path path of profile to get data from.
+#' @param variable A character of name of variable to get.
+#' @return \strong{others}: A dataframe of setting if succeed, othwise NULL.
+#' @describeIn utils_profile  get table name value from profile of database.
+#' @export
+profile_get_varible_setting <- function(profile_path, variable) {
+  stopifnot(!is.null(profile_path), is.character(profile_path))
   stopifnot(!is.null(variable), is.character(variable))
 
   setting_value <- NULL
   # profile_setting <- read.csv(profile, stringsAsFactors = FALSE, encoding = "UTF-8")
-  varible_setting <- readxl::read_excel(profile_name, sheet = "Variable_Setting")
+  varible_setting <- readxl::read_excel(profile_path, sheet = "Variable_Setting")
   if (!is.null(varible_setting)) {
     # get value for the vairable
     setting_value <- varible_setting$var_value[varible_setting$var_name == variable ]
@@ -41,11 +61,18 @@ profile_get_varible_setting <- function(profile_name, variable) {
 }
 
 # Get info of indicators from profile of database
-profile_get_factors <- function(profile_name, factor_codes = NULL,
+#' @param factor_codes  A character vector of factor codes to fetch.
+#' Default NULL means to fetch all factors.
+#' @param factor_groups A character vector of factor groups to fetch.
+#' Default NULL means to fetch all factor groups.
+#'
+#' @describeIn utils_profile  get table name value from profile of database.
+#' @export
+profile_get_factors <- function(profile_path, factor_codes = NULL,
                                               factor_groups = NULL) {
-  stopifnot(!is.null(profile_name), is.character(profile_name))
+  stopifnot(!is.null(profile_path), is.character(profile_path))
 
-  factor_indicator_map <- readxl::read_excel(profile_name,
+  factor_indicator_map <- readxl::read_excel(profile_path,
     sheet = "Factor_Indicator_Map"
   )
 
@@ -58,7 +85,7 @@ profile_get_factors <- function(profile_name, factor_codes = NULL,
     if (nrow(matched_factors) == 0) {
       msg <- sprintf(
         "No entry matched '%s' was found in %s",
-        factor_codes, profile_name
+        factor_codes, profile_path
       )
       warning(msg)
       matched_factors <- NULL
@@ -73,7 +100,7 @@ profile_get_factors <- function(profile_name, factor_codes = NULL,
     if (nrow(matched_factors) == 0) {
       msg <- sprintf(
         "No entry matched '%s' was found in %s",
-        factor_groups, profile_name
+        factor_groups, profile_path
       )
       warning(msg)
       matched_factors <- NULL
@@ -98,14 +125,14 @@ profile_get_factors <- function(profile_name, factor_codes = NULL,
   return(matched_factors)
 }
 
-
-
 # Get data source for importing raw data
-profile_get_datasource_files <- function(profile_name) {
-  stopifnot(!is.null(profile_name), is.character(profile_name))
+#' @describeIn utils_profile  get data source for importing raw data.
+#' @export
+profile_get_datasource_files <- function(profile_path) {
+  stopifnot(!is.null(profile_path), is.character(profile_path))
 
   # get Data source setting
-  datasource_files <- readxl::read_excel(profile_name,
+  datasource_files <- readxl::read_excel(profile_path,
     sheet = "DataSource_Files"
   )
 
@@ -117,13 +144,17 @@ profile_get_datasource_files <- function(profile_name) {
 }
 
 # Get info of indicators from profile of database
-profile_get_indicators <- function(profile_name, indicator_codes = NULL) {
+#' @param indicator_codes  A character vector of indicator codes to fetch.
+#'  Default NULL means to fetch all indicators.
+#' @describeIn utils_profile  get info of indicators from profile of database.
+#' @export
+profile_get_indicators <- function(profile_path, indicator_codes = NULL) {
 
   #validate params
-  stopifnot(!is.null(profile_name), is.character(profile_name))
+  stopifnot(!is.null(profile_path), is.character(profile_path))
 
   # get Data source setting
-  indicators_info <- readxl::read_excel(profile_name,
+  indicators_info <- readxl::read_excel(profile_path,
     sheet = "Indicator_list"
   )
 
@@ -134,7 +165,7 @@ profile_get_indicators <- function(profile_name, indicator_codes = NULL) {
     if (nrow(matched_indicators_info) == 0) {
       msg <- sprintf(
         "No entry matched '%s' was found in %s",
-        indicator_codes, profile_name
+        indicator_codes, profile_path
       )
       warning(msg)
       matched_indicators_info <- NULL
@@ -157,11 +188,14 @@ profile_get_indicators <- function(profile_name, indicator_codes = NULL) {
 }
 
 # Get info of customized indicators from profile of database
-profile_get_customized_indicators <- function(profile_name) {
-  stopifnot(!is.null(profile_name), is.character(profile_name))
+#' @describeIn utils_profile  get info of customized indicators from profile
+#'  of database.
+#' @export
+profile_get_customized_indicators <- function(profile_path) {
+  stopifnot(!is.null(profile_path), is.character(profile_path))
 
   # get Data source setting
-  customized_indicators_info <- readxl::read_excel(profile_name,
+  customized_indicators_info <- readxl::read_excel(profile_path,
     sheet = "Customized_Indicator"
   )
 

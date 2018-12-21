@@ -17,7 +17,7 @@ get_market_return(stock_db, period_type = c("day", "month", "year"),
 \arguments{
 \item{stock_db}{A stock database object to operate.}
 
-\item{period_type}{Date peroid for time series, e.g. "day", "month",
+\item{period_type}{Date period for time series, e.g. "day", "month",
 "year", by default value is  "day".}
 
 \item{period_date}{Choose start/end date of period as the date for
@@ -42,9 +42,13 @@ Other stock_db generics: \code{\link{close_stock_db}},
   \code{\link{fetch_table_dataset}},
   \code{\link{get_factors_info}},
   \code{\link{get_factors}},
+  \code{\link{get_finacial_report}},
   \code{\link{get_indicators_from_source}},
   \code{\link{get_indicators}}, \code{\link{get_profile}},
+  \code{\link{get_riskfree_rate}},
+  \code{\link{get_spt_stocks}},
   \code{\link{get_stock_dataset}},
+  \code{\link{get_stock_industry}},
   \code{\link{get_stock_return}},
   \code{\link{get_table_dataset}},
   \code{\link{init_stock_db}},

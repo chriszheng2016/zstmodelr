@@ -15,13 +15,13 @@ on regluar series will return true. Default is FALSE, which means we will
 use looser test(irregular).}
 }
 \value{
-return "D" for daily, "M" for monthly, "Q" for quarterly, "Y" for yearly,
- "U" for unkown.
+return "day" for daily, "month" for monthly, "quarter" for quarterly,
+ "year" for yearly, "unknown" for unkown date period.
 }
 \description{
 Guess periodicity of date series
 }
 \seealso{
-Other utility functions of dates: \code{\link{is_periodic_dates}}
+Other utils_dates: \code{\link{is_periodic_dates}}
 }
-\concept{utility functions of dates}
+\concept{utils_dates}

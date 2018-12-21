@@ -28,9 +28,12 @@ database of gta_db class.
 }}
 
 \seealso{
-Other indicator build functions: \code{\link{compute_indicator}},
-  \code{\link{create_indicator_def}},
+Other indicator define functions: \code{\link{create_attribute_def_fun}},
+  \code{\link{create_indicator_def_fun}},
   \code{\link{get_indicator_defs}},
-  \code{\link{get_indicator_vars}}
+  \code{\link{get_indicator_vars}},
+  \code{\link{ind_attr_def_indcd}},
+  \code{\link{ind_attr_def_trdstat}},
+  \code{\link{prioritize_indicator_defs}}
 }
-\concept{indicator build functions}
+\concept{indicator define functions}

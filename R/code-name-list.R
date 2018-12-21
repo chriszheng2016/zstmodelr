@@ -2,7 +2,6 @@
 
 # Class definition of code_name_list class -----------------------------------
 
-#'@@include stock-db.R
 
 
 # Class definition of code_name_list class
@@ -22,10 +21,8 @@ setClassUnion("code_name_listOrNull", c("code_name_list","NULL"))
 #' @param names a vector of name
 #'
 #' @return a object of code_name_list
-#' @export
 #'
-#' @examples
-
+#' @export
 code_name_list <- function(codes, names) {
 
   stopifnot(!is.null(codes), !is.null(names))
@@ -46,7 +43,7 @@ code_name_list <- function(codes, names) {
 # Generic functions implemetation by code_name_list class ------------------------
 
 # Translate code into name in code_name_list
-#' @describeIn code2name Translate code into name in a object of code_name_list
+# @describeIn code2name Translate code into name in a object of code_name_list
 #' @export
 code2name.code_name_list <- function(x, code) {
 
@@ -69,6 +66,8 @@ code2name.code_name_list <- function(x, code) {
 
 }
 # Method definition for s4 generic
+#' @describeIn code2name Translate code into name in a object of code_name_list
+#' @export
 setMethod("code2name",
           signature(x = "code_name_list"),
           function(x, code, ...) {
@@ -76,7 +75,7 @@ setMethod("code2name",
           })
 
 # Translate name into code in code_name_list
-#' @describeIn name2code Translate name into code in a object of code_name_list
+# @describeIn name2code Translate name into code in a object of code_name_list
 #' @export
 name2code.code_name_list <- function(x, name) {
 
@@ -89,6 +88,8 @@ name2code.code_name_list <- function(x, name) {
 
 }
 # Method definition for s4 generic
+#' @describeIn name2code Translate name into code in a object of code_name_list
+#' @export
 setMethod("name2code",
           signature(x = "code_name_list"),
           function(x, name, ...) {

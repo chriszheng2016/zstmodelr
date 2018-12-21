@@ -24,8 +24,6 @@
 #'
 #' @return           A converted timeseres.
 #' @export
-#'
-#' @examples
 # S3 generic definition
 ts_resample <- function(ts_dataset, freq_rule = c("day", "month", "quarter", "year"),
                         fillna_method = c("nfill", "ffill", "bfill"),
@@ -64,9 +62,8 @@ ts_resample <- function(ts_dataset, freq_rule = c("day", "month", "quarter", "ye
 #'  "nfill", "bfill","ffill", default nfill(fill with NA).
 #'
 #' @return            A converted timeseres
-#' @export
 #'
-#' @examples
+#' @export
 # S3 generic definition
 ts_asfreq <- function(ts_dataset,
                       freq_rule = c("day", "month", "quarter", "year"),
@@ -111,9 +108,8 @@ ts_asfreq <- function(ts_dataset,
 
 #'
 #' @return            A lagged timeseres
-#' @export
 #'
-#' @examples
+#' @export
 # S3 generic definition
 ts_lag <- function(ts_dataset,
                    k = 1,

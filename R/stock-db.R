@@ -101,7 +101,6 @@ setGeneric(
 #' @return TRUE if succeed else FALSE.
 #' @export
 #'
-#' @examples
 
 
 # S3 generic definition
@@ -130,7 +129,7 @@ setGeneric(
 #' otherwise raise a error
 #' @export
 #'
-#' @examples
+
 # S3 generic definition
 # get_profile <- function(stock_db, profile_name, ...){
 #   UseMethod("get_profile")
@@ -153,12 +152,15 @@ setGeneric(
 #' @family stock_db generics
 #'
 #' @return TRUE if succeed else FALSE.
-#' @export
 #'
 #' @examples
+#' \dontrun{
 #' stock_db <- stock_db(gta_db, "GTA_SQLData")
 #' open_stock_db(stock_db)
 #' init_stock_db(stock_db)
+#' }
+#'
+#' @export
 
 # S3 generic definition
 # init_stock_db <- function(stock_db, ...) {
@@ -184,13 +186,16 @@ setGeneric(
 #' @family stock_db generics
 #'
 #' @return A vectors of characters of table names.
-#' @export
 #'
 #' @examples
+#' \dontrun{
 #' stock_db <- stock_db(gta_db, "GTA_SQLData")
 #' open_stock_db(stock_db)
 #' init_stock_db(stock_db)
 #' list_stock_tables(stock_db)
+#' }
+#'
+#' @export
 
 # S3 generic definition
 # list_stock_tables <- function(stock_db,...) {
@@ -216,16 +221,12 @@ setGeneric(
 #' @family stock_db generics
 #'
 #' @return A data frame if succeed, otherwise NULL.
-#' @export
 #'
-#' @examples
-#' ds_trd_mnth.df <- get_table_dataset(stock_db, table_name = "TRD_Mnth_月个股回报率")
-
+#' @export
 # S3 generic definition
 # get_table_dataset <- function(stock_db, table_name,...) {
 #   UseMethod("get_table_dataset")
 # }
-
 # S4 generic definition
 setGeneric(
   name = "get_table_dataset",
@@ -287,7 +288,7 @@ setGeneric(
 #' @return A list of names of table fetched if succeed.
 #' @export
 #'
-#' @examples
+
 
 # S3 generic definition
 # fetch_table_dataset <- function(stock_db, table_list, ...) {
@@ -321,7 +322,7 @@ setGeneric(
 #' @return A timeseries of stock return.
 #' @export
 #'
-#' @examples
+
 
 # S3 generic definition
 # get_stock_return <- function(stock_db,
@@ -363,7 +364,7 @@ setGeneric(
 #' @return A timeseries of market return.
 #' @export
 #'
-#' @examples
+
 
 # S3 generic definition
 # get_market_return <- function(stock_db,
@@ -414,7 +415,7 @@ setGeneric(
 #' @return A data frame of report timeseries if succeed, otherwise NULL.
 #' @export
 #'
-#' @examples
+
 
 # S3 generic definition
 # get_finacial_report <- function(stock_db,
@@ -483,7 +484,7 @@ setGeneric(
 #' @return A data frame of indicator timeseries if succeed, otherwise NULL.
 #' @export
 #'
-#' @examples
+
 # S3 generic definition
 # get_indicators_from_source <- function(stock_db, indicator_source,
 #                                          indicator_codes = NULL,
@@ -517,7 +518,7 @@ setGeneric(
 #' @return NULL invisibly. Raise error if anything goes wrong.
 #' @export
 #'
-#' @examples
+
 # S3 generic definition
 # save_indicators_to_source <- function(stock_db, indicator_source,
 #                                       ts_indicators, ...)
@@ -551,7 +552,7 @@ setGeneric(
 #'   is stored in "ind_value".
 #' @export
 #'
-#' @examples
+
 # S3 generic definition
 # get_indicators <- function(stock_db, indicator_codes, ...){
 #   UseMethod("get_indicators")
@@ -581,7 +582,7 @@ setGeneric(
 #'   is stored in "factor_value".
 #' @export
 #'
-#' @examples
+
 # S3 generic definition
 # get_factors <- function(stock_db, factor_codes, ...){
 #   UseMethod("get_factors")
@@ -611,7 +612,7 @@ setGeneric(
 #' @return A dataframe of matched factors if succeed, otherwise NULL.
 #' @export
 #'
-#' @examples
+
 # S3 generic definition
 # get_factors_info <- function(stock_db, ,factor_codes = NULL,
 #                              factor_group = NULL,...){
@@ -639,7 +640,7 @@ setGeneric(
 #'  otherwise NULL.
 #' @export
 #'
-#' @examples
+
 # S3 generic definition
 # get_stock_industry <- function(stock_db, ...){
 #   UseMethod("get_stock_industry")
@@ -664,7 +665,7 @@ setGeneric(
 #' @return A dataframe stock info of special treatment if succeed, otherwise NULL.
 #' @export
 #'
-#' @examples
+
 # S3 generic definition
 # get_spt_stocks <- function(stock_db, ...){
 #   UseMethod("get_spt_stocks")
@@ -692,7 +693,7 @@ setGeneric(
 #' @return A dataframe of riskfree rate timeseries if succeed, otherwise NULL.
 #' @export
 #'
-#' @examples
+
 # S3 generic definition
 # get_riskfree_rate <- function(stock_db, period = c("day", "month",
 #                                                 "quarter", "year"), ...){
@@ -734,7 +735,7 @@ setGeneric(
 #'  If the path of dir dosen't exist and force = FALSE, it will raise a error.
 #' @export
 #'
-#' @examples
+
 # S3 generic definition
 # dir_path_db <- function(stock_db,
 #                      dir_id = c("DIR_DB_DATA",
@@ -774,7 +775,7 @@ setGeneric(
 #' @return A timeseries of assets return.
 #' @export
 #'
-#' @examples
+
 
 get_assets_return <- function(benchmark_return, stocks_return) {
   stopifnot(
@@ -974,7 +975,7 @@ fetch_stock_field_dataset <- function(ds_source.df,
 #' @return     A name or a vector of names.
 #' @export
 #'
-#' @examples
+
 
 # S3 generic definition
 # code2name <- function(x, code, ...) {
@@ -1004,7 +1005,7 @@ setGeneric(
 #' @return      A code or a vector of codes.
 #' @export
 #'
-#' @examples
+
 
 # S3 generic definition
 # name2code <- function(x, name, ...) {

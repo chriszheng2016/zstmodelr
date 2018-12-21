@@ -1,15 +1,17 @@
 
-#' Compute indicator by function and variables timeseries
+#' Compute indicator by customized function and variables timeseries
 #'
-#' Use Computing function and variable timeseries to compute indicator.
-#' Its is an working horse behind create_indicator, modify_indicator.
+#' Use customized function and variable timeseries to compute indicator.
+#' Its is a working horse behind \code{\link{create_indicator}},
+#' \code{\link{modify_indicator}}.
 #'
-#' @param ts_compute_vars   A dataframe of variables timeseries to compute.
+#' @param ts_compute_vars   A dataframe of variable timeseries to compute.
 #' @param compute_fun   A function of computing indicator.
 #' @param ...       Params to compute_fun.
 #' @param date_index_field  Name of date index field of ts_vars, default 'date'.
 #' @param key_fields    A character vector of key fields, which identify unique
-#'   observation in each date.
+#'   observation in each date. Default NULL means to not devide data into
+#'   groups.
 #' @param parallel   A logic to deterimine whether to use parallel processing.
 #'   Default TRUE means to use parallel processing.
 #'
@@ -19,8 +21,6 @@
 #' @return A dataframe of result timeseries if succeed, otherwise NULL.
 #'
 #' @export
-#'
-#' @examples
 compute_indicator <- function(ts_compute_vars,
                               compute_fun,
                               ...,
@@ -41,30 +41,32 @@ compute_indicator <- function(ts_compute_vars,
 
     # compute indicator
     ts_indicator <- NULL
-    tryCatch({
-      ts_indicator <- compute_fun(ts_compute_vars,
+    result <- tryCatch({
+      compute_fun(ts_compute_vars,
         date_index_field = date_index_field,
         key_fields = key_fields,
         ...
       )
-    },
-    error = function(cnd) {
+    }, error = function(e) e)
 
+    if (inherits(result, "error")) {
       # inform user of failure and return NULL
       key_id <- ""
       if (!is.null(key_fields) && NROW(ts_compute_vars) > 0) {
         key_id <- paste0(ts_compute_vars[1, key_fields], collapse = "-")
       }
+      error_msg <- conditionMessage(result)
       msg <- sprintf(
         "Fail to compute indictor for %s:\n  %s",
         key_id,
-        cnd$message
+        error_msg
       )
       rlang::inform(msg)
-
       ts_indicator <- NULL
+    } else {
+      ts_indicator <- result
     }
-    )
+
     return(ts_indicator)
   }
 
@@ -124,7 +126,7 @@ compute_indicator <- function(ts_compute_vars,
 #'
 #' Use definition function and variable timeseries to create indicator.
 #'
-#' @param ts_def_vars   A dataframe of variables timeseries to create indicator.
+#' @param ts_def_vars   A dataframe of variable timeseries to create indicator.
 #' @param ind_def_fun   A function of defining indicator.
 #' @param ...       Params to ind_def_fun.
 #' @param debug     A logic to deterimine whether to turn on debug in createing
@@ -132,7 +134,8 @@ compute_indicator <- function(ts_compute_vars,
 #' @param date_index_field  Name of date index field of ts_def_vars,
 #'  default 'date'.
 #' @param key_fields    A character vector of key fields, which identify unique
-#'   observation in each date.
+#'   observation in each date. Default NULL means to not devide data into
+#'   groups.
 #' @param parallel   A logic to deterimine whether to use parallel processing.
 #'   Default TRUE means to use parallel processing.
 #'
@@ -142,6 +145,40 @@ compute_indicator <- function(ts_compute_vars,
 #' @return A dataframe of new indicator timeseries if succeed, otherwise NULL.
 #'
 #' @export
+#' @examples
+#' \dontrun{
+#'
+#'   # load vars dataset for generating indicators
+#'   ds_all_vars <- get_indicator_vars(stock_db,
+#'                                  indicator_defs = ds_indicator_defs)
+#'
+#'   # create ind_expr
+#'   indicator_formula <- c("stock_return <- mretwd
+#'                           market_return <- cmretwdtl
+#'                           model <- lm(stock_return ~ market_return)
+#'                           beta <- coef(model)['market_return']")
+#'   indicator_expr <- create_expr(!!indicator_formula)
+#'
+#'   # create def_fun for indicator
+#'   indicator_def_fun <- create_indicator_def_fun(
+#'       indicator_code = "m_stock_beta1",
+#'       indicator_expr = indicator_expr,
+#'       rolly_window = 12,
+#'       period = "month"
+#'       )
+#'
+#'   # create a indicator from vars dataset.
+#'   ts_indicator <- create_indicator(
+#'         ds_def_vars,
+#'         ind_def_fun = ind_def_fun,
+#'         debug = FALSE,
+#'         date_index_field = "date",
+#'         key_fields = "stkcd",
+#'         parallel = TRUE
+#'         )
+#'
+#' }
+#'
 create_indicator <- function(ts_def_vars,
                              ind_def_fun,
                              ...,
@@ -210,17 +247,19 @@ create_indicator <- function(ts_def_vars,
 
 #' Modify indicator to add new attribute
 #'
-#' Use modifying function to modify indicator timeseries to add new attribute.
+#' Use modifying function to modify indicator timeseries,
+#'  e.g. add new attribute to existed indicator timeseries.
 #'
 #' @param ts_indicator A dataframe of indicaotr timeseries to modify.
 #' @param modify_fun   A function of modify indicator.
 #' @param ...          Params to modify_fun.
-#' @replace_exist      Wether to replace existed attribute fields.
-#'  Default FALSE, means don't replace existed field.
+#' @param replace_exist      A logical to determine whether to replace existed
+#'  attribute fields. Default FALSE means to not replace existed field.
 #' @param date_index_field  Name of date index field of ts_indicator,
 #'  default 'date'.
 #' @param key_fields    A character vector of key fields, which identify unique
-#'   observation in each date.
+#'   observation in each date. Default NULL means to not devide data into
+#'   groups.
 #' @param parallel   A logic to deterimine whether to use parallel processing.
 #'   Default TRUE means to use parallel processing.
 #'
@@ -228,6 +267,46 @@ create_indicator <- function(ts_def_vars,
 #' @family indicator build functions
 #'
 #' @return A dataframe of modified indicator timeseries if succeed, otherwise NULL.
+#'
+#' @examples
+#'
+#' \dontrun{
+#'
+#'   # modify ts_indicator with customized ind_attr_def_fun
+#'
+#'   # create attribute definition function of customized attribute
+#'   attr_fun <- function(date, stkcd, ...) {
+#'                  "attr_value"
+#'                }
+#'   ind_attr_def_fun <- create_attribute_def_fun(
+#'         attr_name,
+#'         attr_fun = attr_fun
+#'         )
+#'   # modify existed ts_indicators
+#'   ts_modify_indicator <- modify_indicator(ts_modify_indicator,
+#'        modify_fun = ind_attr_def_fun,
+#'        date_index_field = "date",
+#'        key_fields = "stkcd",
+#'        parallel = FALSE
+#'       )
+#'
+#'
+#'   # modify ts_indicator with pre-defined ind_attr_def_fun
+#'
+#'   # create defintion function of pre-defined attribute of indcd
+#'   new_attr_indcd <- ind_attr_def_indcd(stock_db)
+#'
+#'   # modify existed ts_indicators
+#'   ts_indicator <- modify_indicator(
+#'       ts_indicator = ts_indicator,
+#'       modify_fun = new_attr_indcd,
+#'       replace_exist = FALSE,
+#'       date_index_field = "date",
+#'       key_fields = "stkcd",
+#'       parallel = FALSE
+#    )
+#'
+#' }
 #'
 #' @export
 modify_indicator <- function(ts_indicator,

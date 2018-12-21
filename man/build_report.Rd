@@ -24,6 +24,10 @@ save in directory of template file, otherwise in outpout_dir}
 
 \item{quiet}{TRUE to suppress printing of the pandoc command line.}
 }
+\value{
+
+}
 \description{
 Use data rank as new data
 }
+\concept{utils_report}

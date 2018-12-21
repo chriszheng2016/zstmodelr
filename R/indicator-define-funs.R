@@ -4,7 +4,33 @@
 
 # Functions for defining indicator expr ----
 
+#' Utils functions to facilitate defining indicator expr
+#'
+#' Functions are only used in defining indicator expr.
+#'
+#' @note In order to be different form normal R function, we use CamelCase
+#'  stlye for functions name.
+#'
+#' @details
+#'  In order to facilitate defining indicator expr, there are two kinds of
+#'  expr functions:
+#'  \itemize{
+#'     \item \strong{expr_funs to define customized indicator}:
+#'       calling function to generate a result series, like
+#'        \code{Lag}, \code{GrowthRate}, \code{Ratio},
+#'        \code{Demean}, \code{Quarter_TTM}, \code{Beta}, etc.
+#'     \item \strong{expr_funs to define dynamic indicator}:
+#'       provide dynamic time series from database.
+#'
+#'  }
+#'
+#'
+#' @name indicator_expr_funs
+NULL
+
 # Lag a series by k periods
+#' @describeIn indicator_expr_funs  lag a sereis at k period.
+#' (k>0 lag behind, k<0 lag ahead)
 Lag <- function(x, k = 1) {
 
   # Shift data at current timeline
@@ -22,6 +48,7 @@ Lag <- function(x, k = 1) {
 }
 
 # Growth rate of a series
+#' @describeIn indicator_expr_funs  compute growth rate of a sereis.
 GrowthRate <- function(x) {
 
   # compute growth
@@ -35,6 +62,7 @@ GrowthRate <- function(x) {
 }
 
 # Ratio of two series
+#' @describeIn indicator_expr_funs  compute ratio of two sereis.
 Ratio <- function(x_numerator, y_denominator) {
 
   # compute ratio
@@ -47,6 +75,7 @@ Ratio <- function(x_numerator, y_denominator) {
 }
 
 # Substract mean from a series
+#' @describeIn indicator_expr_funs  substract mean from a series.
 Demean <- function(x) {
 
   # compute demean
@@ -56,6 +85,8 @@ Demean <- function(x) {
 }
 
 # Make a quarterly TTM(Trial Twelve Month) series
+#' @describeIn indicator_expr_funs  make a quarterly TTM(Trial Twelve Month)
+#'  series.
 Quarter_TTM <- function(date, x) {
   date_expr <- rlang::enexpr(date)
   x_expr <- rlang::enexpr(x)
@@ -107,7 +138,8 @@ Quarter_TTM <- function(date, x) {
   return(trail_x)
 }
 
-# Beta between two vars
+# Beta between two varable series
+#' @describeIn indicator_expr_funs  compute beta between two varable series
 Beta <- function(y, x) {
   model <- lm(y ~ x)
   beta <- coef(model)["x"]
@@ -117,7 +149,9 @@ Beta <- function(y, x) {
 
 # Functions for defining dynamic indicator expr ----
 
-# provide dyamic indicator of risfree rate
+# Provide timeseries of dynamic indicator of risfree rate
+#' @describeIn indicator_expr_funs  provide timeseries of dynamic indicator of
+#' risfree rate.
 RiskFreeRate <- function(stock_db, indicator_code,
                          period = c("day", "month", "quarter", "year")) {
 
