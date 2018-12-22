@@ -19,6 +19,6 @@ Delete cusotmized indicators of stock_db in batch, which clear all customized
 built indicator files.
 }
 \seealso{
-Other indicator generate functions: \code{\link{generate_indictors}}
+Other indicator generate functions: \code{\link{generate_indicators}}
 }
 \concept{indicator generate functions}

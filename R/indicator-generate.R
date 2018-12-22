@@ -31,7 +31,7 @@
 #' @return NULL invisibly. Raise error if anything goes wrong.
 #'
 #' @export
-generate_indictors <- function(stock_db,
+generate_indicators <- function(stock_db,
                                ds_indicator_defs,
                                validate_def = FALSE,
                                parallel = TRUE,
@@ -51,7 +51,8 @@ generate_indictors <- function(stock_db,
 
   # load vars dataset for generating indicators
   ds_all_vars <- get_indicator_vars(stock_db,
-                                    indicator_defs = ds_indicator_defs)
+    indicator_defs = ds_indicator_defs
+  )
   if (is.null(ds_all_vars)) success <- FALSE
 
 
@@ -61,7 +62,7 @@ generate_indictors <- function(stock_db,
     if (validate_def) {
 
       # filter vars to small scale dataset to validate indicator definition
-      validate_stkcds <- c("600031", "600066", NA)
+      validate_stkcds <- c("600031", "000157", "600066", "000550", NA)
       ds_all_vars <- ds_all_vars %>%
         dplyr::filter(stkcd %in% validate_stkcds)
 
@@ -105,7 +106,7 @@ generate_indictors <- function(stock_db,
       success <- TRUE
       if (!is.null(ind_def_fun)) {
         msg <- sprintf(
-          "\nCompute indicator: %s(%s) ...\n", indicator_def$ind_code,
+          "\nGenerate indicator: %s(%s) ...\n", indicator_def$ind_code,
           indicator_def$ind_name
         )
         rlang::inform(msg)
@@ -122,7 +123,19 @@ generate_indictors <- function(stock_db,
           key_fields = key_fields,
           parallel = parallel
         )
-        if (is.null(ts_indicator)) success <- FALSE
+        if (!is.null(ts_indicator)) {
+          msg <- sprintf(
+            "..succeed in creating %s..",
+            indicator_def$ind_code
+          )
+        } else {
+          msg <- sprintf(
+            "..fail to create %s..",
+            indicator_def$ind_code
+          )
+          success <- FALSE
+        }
+        rlang::inform(msg)
 
         # add attribute of industry code(indcd)
         # Notice: indcd must use stkcd as key_fields
@@ -137,21 +150,52 @@ generate_indictors <- function(stock_db,
               parallel = parallel
             )
           }
-          if (is.null(ts_indicator)) success <- FALSE
+          if (!is.null(ts_indicator)) {
+            msg <- sprintf(
+              "..succeed in adding indcd to %s..",
+              indicator_def$ind_code
+            )
+          } else {
+            msg <- sprintf(
+              "..fail to add indcd to %s..",
+              indicator_def$ind_code
+            )
+            success <- FALSE
+          }
+          rlang::inform(msg)
         }
 
 
         # save indicators into source
         if (success) {
-          save_indicators_to_source(stock_db,
+          save_indicators_with_default <- purrr::possibly(
+            save_indicators_to_source,
+            otherwise = FALSE,
+            quiet = TRUE
+          )
+          result <- save_indicators_with_default(stock_db,
             indicator_source = indicator_def$ind_source,
             ts_indicators = ts_indicator
           )
+
+          if (is.null(result)) {
+            msg <- sprintf(
+              "..succeed in saving %s..",
+              indicator_def$ind_code
+            )
+          } else {
+            msg <- sprintf(
+              "..fail to save %s..",
+              indicator_def$ind_code
+            )
+            success <- FALSE
+          }
+          rlang::inform(msg)
         }
 
         if (success) {
           msg <- sprintf(
-            "Compute indicator successfully, save in: %s(%s) in %s.\n",
+            "Generate indicator successfully, save in: %s(%s) in %s.\n",
             indicator_def$ind_code,
             indicator_def$ind_name,
             indicator_def$ind_source
@@ -159,7 +203,7 @@ generate_indictors <- function(stock_db,
           rlang::inform(msg)
         } else {
           msg <- sprintf(
-            "Fail to compute indicator: %s(%s), because ind_def_fun is NULL.\n",
+            "Fail to generate indicator: %s(%s), because ind_def_fun is NULL.\n",
             indicator_def$ind_code,
             indicator_def$ind_name
           )
@@ -170,8 +214,10 @@ generate_indictors <- function(stock_db,
       # record results
       ds_log$success[i] <- success
       # write log for generating operation
-      log_file_path <- save_log(ds_log, log_file_prefix = log_file_prefix,
-                                log_dir = log_dir)
+      log_file_path <- save_log(ds_log,
+        log_file_prefix = log_file_prefix,
+        log_dir = log_dir
+      )
     }
   }
 
@@ -184,8 +230,6 @@ generate_indictors <- function(stock_db,
 
     rlang::inform(msg)
   }
-
-
 }
 
 
@@ -203,7 +247,7 @@ generate_indictors <- function(stock_db,
 #'
 #' @export
 delete_indicators <- function(stock_db,
-                             ds_indicator_defs) {
+                              ds_indicator_defs) {
 
   # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "stock_db"))
@@ -213,15 +257,10 @@ delete_indicators <- function(stock_db,
   assertive::assert_is_data.frame(ds_indicator_defs)
 
   # remove indicators files in indicator dir
-  dir_indicators <- dir_path_db(stock_db,"DIR_DB_DATA_INDICATOR")
-  path_ouput_files <- paste0(dir_indicators,"/",ds_indicator_defs$ind_source)
-  quiet_file_remove <- purrr::possibly(file.remove, otherwise = FALSE )
+  dir_indicators <- dir_path_db(stock_db, "DIR_DB_DATA_INDICATOR")
+  path_ouput_files <- paste0(dir_indicators, "/", ds_indicator_defs$ind_source)
+  quiet_file_remove <- purrr::possibly(file.remove, otherwise = FALSE)
   purrr::walk(path_ouput_files, ~quiet_file_remove(.x))
 
   return(invisible(NULL))
-
 }
-
-
-
-

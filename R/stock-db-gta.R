@@ -1547,6 +1547,8 @@ save_indicators_to_source.gta_db <- function(stock_db,
       )
     }
   )
+
+  return(invisible(NULL))
 }
 # Method definition for s4 generic
 #' @describeIn save_indicators_to_source  save indicator timeseries to

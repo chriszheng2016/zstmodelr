@@ -59,11 +59,14 @@ rollify_series <- function(data_series, fun, ..., window = 1L,
     rlang::abort(msg)
   }
 
-  # unlist result if request, except foratomic scalar
+  # unlist result if request, except for atomic scalar
   if (unlist) {
     is_scalar_atomic <- purrr::map_lgl(output, ~(rlang::is_scalar_atomic(.x)))
     if (all(is_scalar_atomic)) {
       output <- unlist(output)
+    } else {
+      msg <- sprintf("can't unlist non-atomic scalar, return list as rollified result")
+      rlang::warn(msg)
     }
   }
 

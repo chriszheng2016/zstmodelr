@@ -57,7 +57,7 @@ compute_indicator <- function(ts_compute_vars,
       }
       error_msg <- conditionMessage(result)
       msg <- sprintf(
-        "Fail to compute indictor for %s:\n  %s",
+        "Fail to compute indicator for %s:\n  %s",
         key_id,
         error_msg
       )

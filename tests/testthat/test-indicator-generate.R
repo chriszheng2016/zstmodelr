@@ -14,7 +14,7 @@ skip_if_not(db_ready,
 suppressMessages(init_stock_db(stock_db))
 
 # prepare test datasets
-customized_indictors_info <- tibble::tibble(
+customized_indicators_info <- tibble::tibble(
   ind_code = c("m_ep_ttm", "q_ep_ttm"),
   ind_type = "",
   ind_name = c("Month_EP_TTM", "Quater_EP_TTM"),
@@ -37,15 +37,15 @@ customized_indictors_info <- tibble::tibble(
 )
 
 # create test_indicator_defs
-test_indicator_defs <- build_indicator_defs.gta_db(stock_db, customized_indictors_info)
+test_indicator_defs <- build_indicator_defs.gta_db(stock_db, customized_indicators_info)
 
-test_that("generate_indictors", {
+test_that("generate_indicators", {
 
   log_file_prefix <- "generate_indicator_log"
   log_dir <- "./log"
 
-  # generate_indictors with various arguments ====
-  ds_indicators <- generate_indictors(stock_db,
+  # generate_indicators with various arguments ====
+  ds_indicators <- generate_indicators(stock_db,
                                       ds_indicator_defs = test_indicator_defs,
                                       validate_def = TRUE
   )
@@ -66,11 +66,11 @@ test_that("generate_indictors", {
   log_info <- read_log(basename(log_file_path), log_dir = log_dir)
   expect_true(all(test_indicator_defs$ind_code %in% log_info$ind_code))
 
-  # generate_indictors with various arguments ====
+  # generate_indicators with various arguments ====
   log_file_prefix <- "generate_indicator_log1"
   log_dir <- "./log"
 
-  ds_indicators <- generate_indictors(stock_db,
+  ds_indicators <- generate_indicators(stock_db,
                                       ds_indicator_defs = test_indicator_defs,
                                       validate_def = TRUE,
                                       parallel = FALSE,

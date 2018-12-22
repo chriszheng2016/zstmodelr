@@ -2,7 +2,7 @@
 library(zstmodelr)
 
 # Procduce indicators
-produce_indictors <- function(dsn = c("GTA_SQLData"),
+produce_indicators <- function(dsn = c("GTA_SQLData"),
                               validate_def = FALSE,
                               parallel = TRUE) {
 
@@ -25,7 +25,7 @@ produce_indictors <- function(dsn = c("GTA_SQLData"),
 
     # produce indicators in batch mode
     log_file_prefix <- sprintf("generate_indicator_log(batch#%d)", i)
-    generate_indictors(stock_db,
+    generate_indicators(stock_db,
       ds_indicator_defs = ds_indicator_defs,
       validate_def = validate_def,
       parallel = parallel,
@@ -77,14 +77,14 @@ clear_indicators <- function(dsn = c("GTA_SQLData"),
 }
 
 # Main function to indicator producers
-indictor_producer <- function(dsn = c("GTA_SQLData"),
+indicator_producer <- function(dsn = c("GTA_SQLData"),
                               fun = c("produce", "clear"),
                               ...) {
   dsn <- match.arg(dsn)
   fun <- match.arg(fun)
   switch(fun,
     "produce" = {
-      produce_indictors(dsn, ...)
+      produce_indicators(dsn, ...)
     },
     "clear" = {
       clear_indicators(dsn, ...)
@@ -95,16 +95,16 @@ indictor_producer <- function(dsn = c("GTA_SQLData"),
 # Run indicators producer
 #
 # Produce indicator in parallel process(Production)
-# indictor_producer(fun = "produce", parallel = TRUE)
+# indicator_producer(fun = "produce", parallel = TRUE)
 #
 # Produce indicator in non-parallel process(Debug)
-# indictor_producer(fun = "produce", parallel = FALSE)
+# indicator_producer(fun = "produce", parallel = FALSE)
 #
 # Validate indicator definition
-# indictor_producer(fun = "produce", validate_def = TRUE, parallel = FALSE)
+# indicator_producer(fun = "produce", validate_def = TRUE, parallel = FALSE)
 #
 ## Clear all indicators files by default
-# indictor_producer(fun = "clear")
+# indicator_producer(fun = "clear")
 #
 # Clear all indicators files forcefully
-# indictor_producer(fun = "clear", force = TRUE)
+# indicator_producer(fun = "clear", force = TRUE)

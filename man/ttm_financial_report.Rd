@@ -26,7 +26,7 @@ A dataframe of finacial report of TTM format if succeed,
 }
 \description{
 Convert financial report from normal format(quarterly accumulated format)
-to TTM format(Trail Tweleve Month).
+to TTM format(Trail Twelve Months).
 }
 \seealso{
 Other data managment: \code{\link{clear_tables}},

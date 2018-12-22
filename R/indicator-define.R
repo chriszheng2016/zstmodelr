@@ -190,7 +190,7 @@ create_indicator_def_fun <- function(indicator_code,
     # redefine eval_tidy to return default value and display error,
     # if an error occured in evaluating expr
     eval_tidy_with_dfault <- purrr::possibly(rlang::eval_tidy,
-      otherwise = NULL,
+      otherwise = NA,
       quiet = FALSE
     )
 
@@ -304,7 +304,6 @@ create_indicator_def_fun <- function(indicator_code,
 
     # create timeseries for indicators
     ts_indicator <- tibble::tibble(
-      date = ds_vars$date,
       period = !!period,
       !!indicator_code := ds_indicator
     )
@@ -320,12 +319,12 @@ create_indicator_def_fun <- function(indicator_code,
     if (debug) {
       # keep all fields of ds_vars in final result
       ts_indicator <- ds_vars %>%
-        dplyr::left_join(ts_indicator, by = date_index_field)
+        dplyr::bind_cols(ts_indicator)
     } else {
       # remove value indicators of ds_vars in final result
       ts_indicator <- ds_vars %>%
         dplyr::select(-!!value_fields_vars) %>%
-        dplyr::left_join(ts_indicator, by = date_index_field)
+        dplyr::bind_cols(ts_indicator)
     }
 
     # filter non-na result
