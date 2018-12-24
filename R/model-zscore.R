@@ -22,9 +22,6 @@
 #'
 #' @return            a dataset of factors z-score
 #' @export
-#'
-#' @examples
-
 factors_zscore <- function(ds_factors,
                            aggregate_formula = NULL,
                            group_by = NULL,
@@ -91,9 +88,6 @@ factors_zscore <- function(ds_factors,
 #'
 #' @return            a datasets of filtered stocks
 #' @export
-#'
-#' @examples
-
 zscore_filter_stocks <- function(ds_zscores,
                                  ranking_field = "stk_score",
                                  ranking_number  = 5) {

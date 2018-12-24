@@ -1,4 +1,4 @@
-context("Tests for report utitlity functions")
+context("Tests for utitlity functions of report")
 
 test_that("build_report, with various arguments", {
 

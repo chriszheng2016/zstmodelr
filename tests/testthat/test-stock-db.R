@@ -1,12 +1,11 @@
-# unit testing for stock_db (generic class of stock database)
 
-library(zstmodelr)
-
-# Tests for stock_db class - generic functions ----
-context("Tests for stock_db class - generic functions")
+# Tests for functions of stock_db  - generic functions ----
+context("Tests for function of stock_db - generic functions")
 
 # set up testing context
 dsn <- "GTA_SQLData"
+DB_PROFILE_FILE <- "gta_profile.xlsx"
+
 stock_db <- stock_db(gta_db, dsn)
 suppressMessages(db_ready <- open_stock_db(stock_db))
 # skip tests if test dsn is not ready
@@ -17,6 +16,8 @@ suppressMessages(init_stock_db(stock_db))
 
 
 test_that("Open and close stock_db", {
+
+  # open_stock_db/close_stock_db with default arguments ====
   stock_db1 <- stock_db(gta_db, "GTA_SQLData")
   expect_is(stock_db1, "stock_db")
   expect_true(open_stock_db(stock_db1))
@@ -24,7 +25,20 @@ test_that("Open and close stock_db", {
   expect_true(close_stock_db(stock_db1))
 })
 
+test_that("get profile of stock db", {
+
+  # get_profile with default arguments ====
+  expect_true(file.exists(get_profile(stock_db)))
+
+  # get_profile with various arguments ====
+  expect_true(file.exists(get_profile(stock_db, DB_PROFILE_FILE)))
+  expect_error(get_profile(stock_db, "invalid_profile.xlsx"))
+})
+
+
 test_that("Init param of stock db", {
+
+  # init_stock_db with default arguments ====
   expect_true(init_stock_db(stock_db))
   expect_error(init_stock_db(non_stock_db))
 })
@@ -226,14 +240,338 @@ test_that("get_market_return, with various arguments", {
   expect_equivalent(expect, actual)
 })
 
-test_that("get_factor_indicator, with various arguments", {
 
-  # get_factor_indicator with default arguments ====
-  factor_list <- c("FAT", "ROCE")
-  ds_factors <- get_factor_indicator(stock_db, factor_list)
-  expect_fields <- c("date", "periodtype", "stkcd", "indcd", "ROCE", "FAT")
-  expect_true(all(names(ds_factors) %in% expect_fields))
-  expect_true(is.character(ds_factors$stkcd))
+test_that("get_finacial_report, with various arguments", {
+
+  # get_finacial_report with default arguments ====
+  ts_report <- get_finacial_report(stock_db)
+  expect_is(ts_report, "data.frame")
+  expect_true(all(c("date",  "stkcd") %in% names(ts_report)))
+  expect_true(lubridate::is.Date(ts_report$date))
+  expect_true(is.character(ts_report$stkcd))
+  expect_true(is_periodic_dates(ts_report$date, freq_rule = "quarter"))
+
+
+  stock_cd_list <- c("600031", "600066")
+
+  # get_finacial_report with arguments: statement ====
+  ds_test_statement <- tibble::tribble(
+    ~statement,      ~field_pattern,
+    #-------------/------------------/
+    "blance_sheet",         "^a",
+    "income",               "^b",
+    "cashflow_direct",      "^c",
+    "cashflow_indrect",     "^d",
+    "income_ttm",           "^b\\w*_ttm$",
+    "cashflow_direct_ttm",  "^c\\w*_ttm$",
+    "cashflow_indrect_ttm", "^d\\w*_ttm$"
+  )
+
+  for ( i in seq_len(NROW(ds_test_statement))) {
+    statement <- ds_test_statement$statement[i]
+    pattern <- ds_test_statement$field_pattern[i]
+
+    ts_report <- get_finacial_report(stock_db,
+                                     stock_cd_list = stock_cd_list,
+                                     statement = statement,
+                                     period_type = "quarter",
+                                     period_date = "end")
+    expect_is(ts_report, "data.frame")
+    expect_true(all(c("date",  "stkcd") %in% names(ts_report)))
+    expect_true(lubridate::is.Date(ts_report$date))
+    expect_true(is.character(ts_report$stkcd))
+    expect_true(any(stringr::str_detect(names(ts_report), pattern = pattern)))
+  }
+
+  # get_finacial_report with arguments: consolidated ====
+  consolidated = TRUE
+
+  # get_finacial_report with arguments: period_type ====
+  ts_report <- get_finacial_report(stock_db,
+                                  stock_cd_list = stock_cd_list,
+                                  period_type = "quarter")
+  expect_is(ts_report, "data.frame")
+  expect_true(all(c("date",  "stkcd") %in% names(ts_report)))
+  expect_true(lubridate::is.Date(ts_report$date))
+  expect_true(is.character(ts_report$stkcd))
+  expect_true(all(lubridate::month(ts_report$date) %in% c(3, 6, 9, 12)))
+
+  ts_report <- get_finacial_report(stock_db,
+                                   stock_cd_list = stock_cd_list,
+                                   period_type = "year")
+  expect_is(ts_report, "data.frame")
+  expect_true(all(c("date",  "stkcd") %in% names(ts_report)))
+  expect_true(lubridate::is.Date(ts_report$date))
+  expect_true(is.character(ts_report$stkcd))
+  expect_true(all(lubridate::month(ts_report$date) %in% c(12)))
+
+
+  # get_finacial_report with arguments: period_date ====
+  ts_report <- get_finacial_report(stock_db,
+                                   stock_cd_list = stock_cd_list,
+                                   period_date = "start")
+  expect_is(ts_report, "data.frame")
+  expect_true(all(c("date",  "stkcd") %in% names(ts_report)))
+  expect_true(lubridate::is.Date(ts_report$date))
+  expect_true(is.character(ts_report$stkcd))
+  expect_true(all(lubridate::day(ts_report$date) %in% c(1)))
+
+  ts_report <- get_finacial_report(stock_db,
+                                   stock_cd_list = stock_cd_list,
+                                   period_date = "end")
+  expect_is(ts_report, "data.frame")
+  expect_true(all(c("date",  "stkcd") %in% names(ts_report)))
+  expect_true(lubridate::is.Date(ts_report$date))
+  expect_true(is.character(ts_report$stkcd))
+  expect_true(all(lubridate::day(ts_report$date) %in% c(28,29,30,31)))
+
+})
+
+
+
+test_that("save_indicators_to_source, with various arguments", {
+
+  # test dataset for save
+  ts_dates <- seq(as.Date("2018/1/1"), as.Date("2018/12/31"), by = "month")
+  ts_dates <- lubridate::ceiling_date(ts_dates, unit = "month") - 1
+  ts_indicators <- tibble::tibble(
+    date = ts_dates,
+    stkcd = rep(600031, length(ts_dates)),
+    ind01 = rep(1.1, length(ts_dates))
+  )
+
+  # save_indicators_to_source into a rds file ====
+  indicator_source <- "test-ind01.rds"
+  save_indicators_to_source(stock_db,
+    indicator_source = indicator_source,
+    ts_indicators = ts_indicators
+  )
+
+  path_indicators <- dir_path_db(stock_db,
+    dir_id = "DIR_DB_DATA_INDICATOR"
+  )
+  path_indicator_source <- file.path(path_indicators, indicator_source)
+  expect_true(file.exists(path_indicator_source))
+
+  # save_indicators_to_source into a csv file ====
+  indicator_source <- "test-ind01.csv"
+  save_indicators_to_source(stock_db,
+    indicator_source = indicator_source,
+    ts_indicators = ts_indicators
+  )
+  path_indicators <- dir_path_db(stock_db,
+    dir_id = "DIR_DB_DATA_INDICATOR"
+  )
+  path_indicator_source <- file.path(path_indicators, indicator_source)
+  expect_true(file.exists(path_indicator_source))
+
+  # save_indicators_to_source into unsupported format file ====
+  indicator_source <- "test-ind01.xlsx"
+  expect_error(
+    save_indicators_to_source(stock_db,
+      indicator_source = indicator_source,
+      ts_indicators = ts_indicators
+    ),
+    "unsupport format file"
+  )
+
+
+  # save_indicators_to_source into a table ====
+  indicator_source <- "test-ind01"
+  expect_error(save_indicators_to_source(stock_db,
+    indicator_source = indicator_source,
+    ts_indicators = ts_indicators
+  ))
+
+  # save_indicators_to_source into a dynamic source ====
+  indicator_source <- "{get_riskfree_rate(stock_db, period = 'month')}"
+  expect_error(save_indicators_to_source(stock_db,
+                                         indicator_source = indicator_source,
+                                         ts_indicators = ts_indicators
+  ))
+
+})
+
+
+test_that("get_indicators_from_source, with various arguments", {
+
+  # get_indicators_from_source with default arguments ====
+  ds_indicators <- get_indicators_from_source(stock_db,
+    indicator_source = "TRD_Year"
+  )
+
+  if (!is.null(ds_indicators)) {
+    expect_fields <- c("date", "period", "stkcd", "ind_code", "ind_value")
+    expect_true(all(expect_fields %in% names(ds_indicators)))
+    expect_true(inherits(ds_indicators$date, "Date"))
+    expect_true(unique(ds_indicators$period) == "year")
+    expect_true(is.character(ds_indicators$stkcd))
+  }
+
+  # get_indicators_from_source from table of predfined indicator ====
+
+  # output in "long" format
+  indicator_source <- "FR_T1"
+  indicator_codes <- c("f010101a", "f010201a")
+
+  ds_indicators <- get_indicators_from_source(stock_db,
+    indicator_source = indicator_source,
+    indicator_codes = indicator_codes,
+    ouput_format = "long"
+  )
+  if (!is.null(ds_indicators)) {
+    expect_fields <- c("date", "period", "stkcd", "ind_code", "ind_value")
+    expect_true(all(expect_fields %in% names(ds_indicators)))
+    expect_true(inherits(ds_indicators$date, "Date"))
+    expect_true(unique(ds_indicators$period) == "quarter")
+    expect_true(is.character(ds_indicators$stkcd))
+  }
+
+  # output in "wide" format
+  ds_indicators <- get_indicators_from_source(stock_db,
+    indicator_source = indicator_source,
+    indicator_codes = indicator_codes,
+    ouput_format = "wide"
+  )
+  if (!is.null(ds_indicators)) {
+    expect_fields <- c(
+      "date", "period", "stkcd", "indcd", indicator_codes
+    )
+    expect_true(all(expect_fields %in% names(ds_indicators)))
+    expect_true(inherits(ds_indicators$date, "Date"))
+    expect_true(unique(ds_indicators$period) == "quarter")
+    expect_true(is.character(ds_indicators$stkcd))
+  }
+
+  # get_indicators_from_source from file of customized indicator ====
+
+  # rds format of inidcator file
+
+  # output in "long" format
+  indicator_source <- "test-ind01.rds"
+  indicator_codes <- c("ind01")
+  ds_indicators <- get_indicators_from_source(stock_db,
+    indicator_source = indicator_source,
+    indicator_codes = indicator_codes,
+    ouput_format = "long"
+  )
+  if (!is.null(ds_indicators)) {
+    expect_fields <- c("date", "stkcd", "period", "ind_code", "ind_value")
+    expect_true(all(expect_fields %in% names(ds_indicators)))
+    expect_true(inherits(ds_indicators$date, "Date"))
+    expect_true(unique(ds_indicators$period) == "month")
+  }
+
+  # output in "wide" format
+  ds_indicators <- get_indicators_from_source(stock_db,
+    indicator_source = indicator_source,
+    indicator_codes = indicator_codes,
+    ouput_format = "wide"
+  )
+  if (!is.null(ds_indicators)) {
+    expect_fields <- c("date", "stkcd", "period", indicator_codes)
+    expect_true(all(expect_fields %in% names(ds_indicators)))
+    expect_true(inherits(ds_indicators$date, "Date"))
+    expect_true(unique(ds_indicators$period) == "month")
+  }
+
+  # csv format of inidcator file
+
+  # output in "long" format
+  indicator_source <- "test-ind01.csv"
+  indicator_codes <- c("ind01")
+  ds_indicators <- get_indicators_from_source(stock_db,
+    indicator_source = indicator_source,
+    indicator_codes = indicator_codes,
+    ouput_format = "long"
+  )
+  if (!is.null(ds_indicators)) {
+    expect_fields <- c("date", "stkcd", "period", "ind_code", "ind_value")
+    expect_true(all(expect_fields %in% names(ds_indicators)))
+    expect_true(inherits(ds_indicators$date, "Date"))
+    expect_true(unique(ds_indicators$period) == "month")
+  }
+
+  # output in "wide" format
+  ds_indicators <- get_indicators_from_source(stock_db,
+    indicator_source = indicator_source,
+    indicator_codes = indicator_codes,
+    ouput_format = "wide"
+  )
+  if (!is.null(ds_indicators)) {
+    expect_fields <- c("date", "stkcd", "period", indicator_codes)
+    expect_true(all(expect_fields %in% names(ds_indicators)))
+    expect_true(inherits(ds_indicators$date, "Date"))
+    expect_true(unique(ds_indicators$period) == "month")
+  }
+
+  # unsuport format of inidcator file
+  indicator_source <- "test-ind01.xlsx"
+  indicator_codes <- c("ind01")
+  expect_warning(
+    ds_indicators <- get_indicators_from_source(stock_db,
+      indicator_source = indicator_source,
+      indicator_codes = indicator_codes,
+      ouput_format = "wide"
+    ),
+    "unsupport format file"
+  )
+
+  # get_indicators_from_source from dynamic source of indicator ====
+  # output in "long" format
+  indicator_source <- "{get_riskfree_rate(stock_db, period = 'month')}"
+  indicator_codes <- c("riskfree_return")
+
+  ds_indicators <- get_indicators_from_source(stock_db,
+                                              indicator_source = indicator_source,
+                                              indicator_codes = indicator_codes,
+                                              ouput_format = "long"
+  )
+  if (!is.null(ds_indicators)) {
+    expect_fields <- c("date", "period", "ind_code", "ind_value")
+    expect_true(all(expect_fields %in% names(ds_indicators)))
+    expect_true(inherits(ds_indicators$date, "Date"))
+    expect_true(unique(ds_indicators$period) == "month")
+  }
+
+  # output in "wide" format
+  ds_indicators <- get_indicators_from_source(stock_db,
+                                              indicator_source = indicator_source,
+                                              indicator_codes = indicator_codes,
+                                              ouput_format = "wide"
+  )
+  if (!is.null(ds_indicators)) {
+    expect_fields <- c("date", "period", indicator_codes)
+    expect_true(all(expect_fields %in% names(ds_indicators)))
+    expect_true(inherits(ds_indicators$date, "Date"))
+    expect_true(unique(ds_indicators$period) == "month")
+  }
+
+
+})
+
+
+test_that("get_indicators, with various arguments", {
+
+  # get_indicators with default arguments ====
+  indicator_codes <- c("f010101a", "f010201a")
+  ds_indicators <- get_indicators(stock_db, indicator_codes)
+  expect_fields <- c("date", "period", "stkcd", "ind_code", "ind_value")
+  expect_true(all(expect_fields %in% names(ds_indicators)))
+  expect_true(all(ds_indicators$ind_code %in% tolower(indicator_codes)))
+})
+
+test_that("get_factors, with various arguments", {
+
+  # get_factors with default arguments ====
+  factor_codes <- c("FAT", "ROCE")
+  ds_factors <- get_factors(stock_db, factor_codes)
+  expect_fields <- c(
+    "date", "period", "stkcd", "indcd",
+    "factor_name", "factor_value"
+  )
+  expect_true(all(expect_fields %in% names(ds_factors)))
+  expect_true(all(ds_factors$factor_name %in% factor_codes))
 })
 
 test_that("get_factors_info, with various arguments", {
@@ -241,7 +579,6 @@ test_that("get_factors_info, with various arguments", {
   # get_factors_info with default arguments ====
   ds_matched_factors <- get_factors_info(stock_db)
   expect_is(ds_matched_factors, "data.frame")
-  # data.frame fields
   expected_fields <- c(
     "factor_code", "factor_name", "factor_type",
     "factor_group", "factor_description"
@@ -249,39 +586,120 @@ test_that("get_factors_info, with various arguments", {
   actual_fields <- names(ds_matched_factors)
   expect_equal(actual_fields, expected_fields)
 
-  # get_factors_info with one factor group ====
-  factor_groups <- "Operating Profitability"
+  # get_factors_info with factor_codes ====
+  factor_codes <- c("GPM", "OPM")
   ds_matched_factors <- get_factors_info(stock_db,
-    factor_groups = factor_groups
+    factor_codes = factor_codes
   )
-  expect_is(ds_matched_factors, "data.frame")
-  # data.frame fields
-  actual_fields <- names(ds_matched_factors)
-  expect_equal(actual_fields, expected_fields)
-  # fetched factor_groups
-  expect_true(all(unique(ds_matched_factors$factor_group) %in% factor_groups))
+  if (!is.null(ds_matched_factors)) {
+    expect_is(ds_matched_factors, "data.frame")
+    actual_fields <- names(ds_matched_factors)
+    expect_equal(actual_fields, expected_fields)
+    expect_true(all(ds_matched_factors$factor_code %in% factor_codes))
+  }
 
-  # get_factors_info with multi factor groups ====
+  # get_factors_info with factor_groups ====
   factor_groups <- c("Operating Profitability", "Valuation")
   ds_matched_factors <- get_factors_info(stock_db,
     factor_groups = factor_groups
   )
-  expect_is(ds_matched_factors, "data.frame")
-  # data.frame fields
-  actual_fields <- names(ds_matched_factors)
-  expect_equal(actual_fields, expected_fields)
-  # fetched factor_groups
-  expect_true(all(unique(ds_matched_factors$factor_group) %in% factor_groups))
+  if (!is.null(ds_matched_factors)) {
+    expect_is(ds_matched_factors, "data.frame")
+    actual_fields <- names(ds_matched_factors)
+    expect_equal(actual_fields, expected_fields)
+    expect_true(all(ds_matched_factors$factor_group %in% factor_groups))
+  }
 
-  # get_factors_info with all factor groups ====
-  ds_matched_factors <- get_factors_info(stock_db, factor_groups = NULL)
-  expect_is(ds_matched_factors, "data.frame")
-  # data.frame fields
-  actual_fields <- names(ds_matched_factors)
-  expect_equal(actual_fields, expected_fields)
+  get_riskfree_rate.gta_db
 
-  # fetched factor_groups
-  expect_gte(length(unique(ds_matched_factors$factor_group)), 0)
+  # get_factors_info with factor_codes and factor_groups ====
+  factor_codes <- c("GPM", "OPM")
+  factor_groups <- c("Operating Profitability", "Valuation")
+  ds_matched_factors <- get_factors_info(stock_db,
+    factor_groups = factor_groups
+  )
+  if (!is.null(ds_matched_factors)) {
+    expect_is(ds_matched_factors, "data.frame")
+    actual_fields <- names(ds_matched_factors)
+    expect_equal(actual_fields, expected_fields)
+    expect_true(all(ds_matched_factors$factor_group %in% factor_groups))
+  }
+})
+
+test_that("get_stock_industry, with various arguments", {
+
+  # get_stock_industry with default arguments ====
+  ds_stock_industry <- get_stock_industry(stock_db)
+  expect_is(ds_stock_industry, "data.frame")
+  expect_fields <- c("date", "stkcd", "indcd")
+  actual_fields <- names(ds_stock_industry)
+  expect_equal(actual_fields, expect_fields)
+
+})
+
+test_that("get_spt_stocks, with various arguments", {
+
+  trade_status <- c("A" = "list",
+                    "B" = "st",
+                    "D" = "*st",
+                    "C" = "pt",
+                    "S" = "suspend",
+                    "T" = "pre_delist",
+                    "X" = "delist")
+
+  # get_spt_stocks with default arguments ====
+  ds_spt_stocks <- get_spt_stocks(stock_db)
+  expect_is(ds_spt_stocks, "data.frame")
+  expect_fields <- c("stkcd", "date", "status_code", "trade_status")
+  actual_fields <- names(ds_spt_stocks)
+  expect_equal(actual_fields, expect_fields)
+  expect_true(all(unique(ds_spt_stocks$trade_status) %in% trade_status))
+
+})
+
+test_that("get_riskfree_rate, with various arguments", {
+
+  # get_riskfree_rate with default arguments ====
+  ds_riskfree_rate <- get_riskfree_rate(stock_db)
+  expect_fields <- c("date", "period", "riskfree_return")
+  actual_fields <- names(ds_riskfree_rate)
+  expect_is(ds_riskfree_rate, "data.frame")
+  expect_equal(actual_fields, expect_fields)
+  expect_true(is_periodic_dates(ds_riskfree_rate$date,
+    freq_rule = "day",
+    regular = TRUE
+  ))
+
+  # get_riskfree_rate with various arguments ====
+  periods <- c("day", "month", "quarter", "year")
+  for (period in periods) {
+    ds_riskfree_rate <- get_riskfree_rate(stock_db, period = period)
+    expect_fields <- c("date", "period", "riskfree_return")
+    actual_fields <- names(ds_riskfree_rate)
+    expect_is(ds_riskfree_rate, "data.frame")
+    expect_equal(actual_fields, expect_fields)
+    expect_true(is_periodic_dates(ds_riskfree_rate$date,
+      freq_rule = period,
+      regular = TRUE
+    ))
+  }
+})
+
+test_that("dir_path_db, with various arguments", {
+
+  # dir_path with default arguments ====
+  dir_id <- c(
+    "DIR_DB_DATA",
+    "DIR_DB_DATA_SOURCE",
+    "DIR_DB_DATA_ORIGIN",
+    "DIR_DB_DATA_LOG",
+    "DIR_DB_DATA_INDICATOR"
+  )
+
+  for (i in seq_along(dir_id)) {
+    dir_path <- dir_path_db(stock_db, dir_id = dir_id[i])
+    expect_true(dirname(dir_path) != "")
+  }
 })
 
 test_that("Translation between code and name", {

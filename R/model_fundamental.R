@@ -19,8 +19,6 @@
 #' @return                 a object of factor_test_uniregress class.
 #'
 #' @export
-#'
-#' @examples
 model_build_fundamental <- function(ds_build,
                               regress_method = c("cross_section", "pooling"),
                               regress_fun,

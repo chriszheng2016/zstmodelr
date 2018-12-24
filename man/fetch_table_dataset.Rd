@@ -16,7 +16,7 @@ fetch_table_dataset(stock_db, table_list, ...)
 \item{table_list}{A character vector of table names.}
 }
 \value{
-A list of names of table fetched successfully.
+A list of names of table fetched if succeed.
 }
 \description{
 Generic function to fetch many datasets from stock_db.
@@ -28,14 +28,23 @@ Generic function to fetch many datasets from stock_db.
 
 \seealso{
 Other stock_db generics: \code{\link{close_stock_db}},
-  \code{\link{code2name}},
-  \code{\link{get_factor_indicator}},
+  \code{\link{code2name}}, \code{\link{dir_path_db}},
   \code{\link{get_factors_info}},
+  \code{\link{get_factors}},
+  \code{\link{get_finacial_report}},
+  \code{\link{get_indicators_from_source}},
+  \code{\link{get_indicators}},
   \code{\link{get_market_return}},
+  \code{\link{get_profile}},
+  \code{\link{get_riskfree_rate}},
+  \code{\link{get_spt_stocks}},
   \code{\link{get_stock_dataset}},
+  \code{\link{get_stock_industry}},
   \code{\link{get_stock_return}},
   \code{\link{get_table_dataset}},
   \code{\link{init_stock_db}},
   \code{\link{list_stock_tables}}, \code{\link{name2code}},
-  \code{\link{open_stock_db}}
+  \code{\link{open_stock_db}},
+  \code{\link{save_indicators_to_source}}
 }
+\concept{stock_db generics}

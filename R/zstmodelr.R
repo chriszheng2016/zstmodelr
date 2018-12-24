@@ -19,9 +19,8 @@
 #' @docType package
 #' @aliases NULL
 #'
-#' @import rlang
 #' @import ggplot2
-#' @import methods
+
 NULL
 
 

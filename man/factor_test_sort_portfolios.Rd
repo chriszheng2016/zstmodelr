@@ -6,7 +6,8 @@
 \usage{
 factor_test_sort_portfolios(ds_test, sort_portfolios_fun, ...,
   output_type = c("summary", "raw"), factor_field = "factor_name",
-  date_field = "date", stkcd_field = "stkcd", return_field = "return")
+  date_field = "date", stkcd_field = "stkcd",
+  return_field = "return")
 }
 \arguments{
 \item{ds_test}{A timeseries dataset with descriptors of factors for test.}

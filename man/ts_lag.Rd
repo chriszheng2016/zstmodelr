@@ -9,7 +9,7 @@
 ts_lag(ts_dataset, k = 1, trim = TRUE, ...)
 
 \method{ts_lag}{tbl_df}(ts_dataset, k = 1, trim = TRUE, ...,
-  date_index_field = c("date"), key_fields = NULL)
+  date_index_field = c("date"), key_fields = NULL, parallel = TRUE)
 
 \method{ts_lag}{timeSeries}(ts_dataset, k = 1, trim = TRUE, ...)
 }
@@ -36,12 +36,15 @@ Only be used for tibble dataset.}
 
 \item{key_fields}{A character vector of key fields, which identify unique
 observation in each date. Only be used for tibble dataset.}
+
+\item{parallel}{A logic to deterimine whether to use parallel processing.
+default TRUE means to use parallel processing.}
 }
 \value{
 A lagged timeseres
 }
 \description{
-Shift data of timeseries(except date) forward and backward according current
+Generic function to shift data of timeseries(except date) forward and backward according current
 timeline
 }
 \details{

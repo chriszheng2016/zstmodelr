@@ -18,9 +18,6 @@
 #'
 #' @return            a dataset of normalized factors
 #' @export
-#'
-#' @examples
-
 normalize_factors <- function(ds_factors,
                               factors_list = NULL,
                               group_by = NULL,
@@ -95,9 +92,6 @@ normalize_factors <- function(ds_factors,
 #'
 #' @return            a vector of normalized data
 #' @export
-#'
-#' @examples
-
 normalize <- function(x, clean_extremes_method = c("sigma","mad"),
                          standard_method = c("normal","rank"), ...) {
 
@@ -157,9 +151,6 @@ normalize <- function(x, clean_extremes_method = c("sigma","mad"),
 #'
 #' @return      a vector of data without extremes
 #' @export
-#'
-#' @examples
-
 clean_extremes_sigma <- function(x, n_sigma = 3, extreme_value = c("limit","NA")){
 
   # Validate params
@@ -204,8 +195,6 @@ clean_extremes_sigma <- function(x, n_sigma = 3, extreme_value = c("limit","NA")
 #'
 #' @return      a vector of data without extremes
 #' @export
-#'
-#' @examples
 clean_extremes_mad <- function(x, n_dmad = 3, extreme_value = c("limit","NA")){
 
   # Validate params
@@ -285,9 +274,6 @@ clean_extremes_mad <- function(x, n_dmad = 3, extreme_value = c("limit","NA")){
 #'
 #' @return      a vector of standardized data
 #' @export
-#'
-#' @examples
-
 standardize_normal_scale <- function(x) {
 
   # Validate params
@@ -310,9 +296,6 @@ standardize_normal_scale <- function(x) {
 #'
 #' @return      a vector of standardized data
 #' @export
-#'
-#' @examples
-
 standardize_rank_scale <- function(x) {
 
   # Validate params

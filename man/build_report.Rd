@@ -6,8 +6,8 @@
 \usage{
 build_report(report_template, report_params = NULL,
   output_format = c("html_document", "pdf_document", "word_document",
-  "rticles::ctex"), output_sn = NULL, output_dir = "output", quiet = TRUE,
-  ...)
+  "rticles::ctex"), output_sn = NULL, output_dir = "output",
+  quiet = TRUE, ...)
 }
 \arguments{
 \item{report_template}{a rmd file as report template.}
@@ -24,6 +24,10 @@ save in directory of template file, otherwise in outpout_dir}
 
 \item{quiet}{TRUE to suppress printing of the pandoc command line.}
 }
+\value{
+
+}
 \description{
 Use data rank as new data
 }
+\concept{utils_report}

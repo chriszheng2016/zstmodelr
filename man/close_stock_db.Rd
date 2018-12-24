@@ -14,7 +14,7 @@ close_stock_db(stock_db, ...)
 \item{stock_db}{A stock database object to operate.}
 }
 \value{
-TRUE if success, else FALSE.
+TRUE if succeed else FALSE.
 }
 \description{
 Generic function to close a stock database.
@@ -26,14 +26,24 @@ Generic function to close a stock database.
 
 \seealso{
 Other stock_db generics: \code{\link{code2name}},
+  \code{\link{dir_path_db}},
   \code{\link{fetch_table_dataset}},
-  \code{\link{get_factor_indicator}},
   \code{\link{get_factors_info}},
+  \code{\link{get_factors}},
+  \code{\link{get_finacial_report}},
+  \code{\link{get_indicators_from_source}},
+  \code{\link{get_indicators}},
   \code{\link{get_market_return}},
+  \code{\link{get_profile}},
+  \code{\link{get_riskfree_rate}},
+  \code{\link{get_spt_stocks}},
   \code{\link{get_stock_dataset}},
+  \code{\link{get_stock_industry}},
   \code{\link{get_stock_return}},
   \code{\link{get_table_dataset}},
   \code{\link{init_stock_db}},
   \code{\link{list_stock_tables}}, \code{\link{name2code}},
-  \code{\link{open_stock_db}}
+  \code{\link{open_stock_db}},
+  \code{\link{save_indicators_to_source}}
 }
+\concept{stock_db generics}

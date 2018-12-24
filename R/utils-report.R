@@ -13,11 +13,11 @@
 #' save in directory of template file, otherwise in outpout_dir
 #' @param quiet TRUE to suppress printing of the pandoc command line.
 #'
-#' @return
-#' @export
+#' @family utils_report
 #'
-#' @examples
-
+#' @return
+#'
+#' @export
 build_report <- function(report_template ,
                          report_params = NULL,
                          output_format = c("html_document", "pdf_document",

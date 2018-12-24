@@ -20,6 +20,7 @@ Imports: fPortfolio,
     PerformanceAnalytics,
     plyr,
     tidyverse,
+    tibbletime,
     modelr,
     broom,
     car,
@@ -28,18 +29,24 @@ Imports: fPortfolio,
     shinydashboard,
     DBI,
     odbc
-RoxygenNote: 6.1.0
+RoxygenNote: 6.1.1
 Collate: 
     'stock-db.R'
     'code-name-list.R'
     'stock-db-gta.R'
-    'datamgt.R'
-    'datamgt-gta.R'
+    'data-mgt.R'
+    'data-mgt-gta.R'
     'factor-analyses.R'
     'factor-composite.R'
     'factor-normalize.R'
     'factor-test.R'
     'factor-tools.R'
+    'indicator-attribute.R'
+    'indicator-build.R'
+    'indicator-define-funs.R'
+    'indicator-define.R'
+    'indicator-define-gta.R'
+    'indicator-generate.R'
     'model-backtest.R'
     'model-predict.R'
     'model-zscore.R'
@@ -48,7 +55,13 @@ Collate:
     'shiny-factor-tools.R'
     'stock-db-default.R'
     'testthat-extends.R'
+    'utils-dates.R'
+    'utils-expr.R'
+    'utils-fields.R'
+    'utils-logfile.R'
+    'utils-profile.R'
     'utils-report.R'
+    'utils-series.R'
     'utils-timeseries.R'
     'utils.R'
     'zstmodelr.R'

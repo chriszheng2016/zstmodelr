@@ -16,11 +16,11 @@ get_stock_dataset(stock_db, table_name, stock_cd_list = NULL, ...)
 
 \item{table_name}{Name of target table.}
 
-\item{stock_cd_list}{A list of stock cd, default value of NULL means.
+\item{stock_cd_list}{A character vector of stock cd, default value of NULL means.
 all stock data will be returned.}
 }
 \value{
-A data frame on success, or NULL.
+A data frame on succeed otherwise NULL.
 }
 \description{
 Generic function to get a dataset of a list of stock_cd from table in stock.
@@ -38,14 +38,23 @@ ds_trd_dalyr.df <- get_stock_dataset(stock_db,
 }
 \seealso{
 Other stock_db generics: \code{\link{close_stock_db}},
-  \code{\link{code2name}},
+  \code{\link{code2name}}, \code{\link{dir_path_db}},
   \code{\link{fetch_table_dataset}},
-  \code{\link{get_factor_indicator}},
   \code{\link{get_factors_info}},
+  \code{\link{get_factors}},
+  \code{\link{get_finacial_report}},
+  \code{\link{get_indicators_from_source}},
+  \code{\link{get_indicators}},
   \code{\link{get_market_return}},
+  \code{\link{get_profile}},
+  \code{\link{get_riskfree_rate}},
+  \code{\link{get_spt_stocks}},
+  \code{\link{get_stock_industry}},
   \code{\link{get_stock_return}},
   \code{\link{get_table_dataset}},
   \code{\link{init_stock_db}},
   \code{\link{list_stock_tables}}, \code{\link{name2code}},
-  \code{\link{open_stock_db}}
+  \code{\link{open_stock_db}},
+  \code{\link{save_indicators_to_source}}
 }
+\concept{stock_db generics}

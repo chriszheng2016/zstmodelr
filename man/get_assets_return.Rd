@@ -12,7 +12,7 @@ get_assets_return(benchmark_return, stocks_return)
 \item{stocks_return}{A timeseries of a group stock stocks}
 }
 \value{
-A timeseries of assets return
+A timeseries of assets return.
 }
 \description{
 Get assets return timeseries by combining marekt return anad stocks return

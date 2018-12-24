@@ -4,8 +4,9 @@
 \alias{factor_test_uniregress}
 \title{Creator of factor_test_unigress class}
 \usage{
-factor_test_uniregress(ds_test, regress_fun, ..., output_type = c("summary",
-  "raw"), factor_field = "factor_name", date_field = "date")
+factor_test_uniregress(ds_test, regress_fun, ...,
+  output_type = c("summary", "raw"), factor_field = "factor_name",
+  date_field = "date")
 }
 \arguments{
 \item{ds_test}{A timeseries dataset with descriptors of factors for test}
