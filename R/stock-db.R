@@ -828,7 +828,7 @@ get_stock_field_dataset <- function(ds_source.df,
   # Validate param
   if (is.null(ds_source.df) || missing(stock_cd)
   || missing(target_field) || missing(date_field)) {
-    stop("ds_source.df, stock_cd, target_field, date_field  mustn't be null")
+    rlang::abort("ds_source.df, stock_cd, target_field, date_field  mustn't be null")
   }
 
   # Check whether the datafields existed
@@ -845,12 +845,12 @@ get_stock_field_dataset <- function(ds_source.df,
     }
 
     error_msg <- sprintf("%s dosen't exist in dataset ", error_fields)
-    stop(error_msg)
+    rlang::abort(error_msg)
   }
 
   tseries_type <- match.arg(tseries_type)
   if (is.null(tseries_type)) {
-    warning("teries_type should be timeSeries or xts, set as timeSeries by default")
+    rlang::warn("teries_type should be timeSeries or xts, set as timeSeries by default")
     tseries_type <- "timeSeries"
   }
 
@@ -913,7 +913,7 @@ fetch_stock_field_dataset <- function(ds_source.df,
 
   # Validate params
   if (is.null(ds_source.df) || missing(stock_cd_list)) {
-    stop("ds_source.df, stock_cd_list mustn't be null")
+    rlang::abort("ds_source.df, stock_cd_list mustn't be null")
   }
 
   stopifnot(length(stock_cd_list) != 0, length(ds_source.df) != 0)
