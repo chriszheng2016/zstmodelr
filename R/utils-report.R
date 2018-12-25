@@ -52,8 +52,8 @@ build_report <- function(report_template ,
     paste0(output_filename_main, outout_filename_ext)
   }
 
-  msg <- sprintf("generate report for %s ...\n", report_template)
-  message(msg)
+  msg <- sprintf("Get report template from %s ...\n", report_template)
+  rlang::inform(msg)
 
   rmarkdown::render(input = report_template,
                     params = report_params,
@@ -64,7 +64,7 @@ build_report <- function(report_template ,
                     encoding = "UTF-8",
                     ...)
 
-  msg <- sprintf("generate %s in %s\n", output_filename, output_dir)
-  message(msg)
+  msg <- sprintf("Generate %s into %s\n", output_filename, output_dir)
+  rlang::inform(msg)
 
 }
