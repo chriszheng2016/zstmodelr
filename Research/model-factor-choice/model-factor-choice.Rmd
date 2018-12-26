@@ -32,13 +32,17 @@ output:
     toc: yes
     toc_depth: 4
 params:
-  backtest_end_date:
-    label: 'backtest end date:'
-    value: '2017-12-31'
-  backtest_start_date:
-    label: 'backtest start date:'
+  
+  test_start_date:
+    label: 'test start date:'
+    input: date
     value: '2016-01-01'
-  debug_mode: no
+      
+  test_end_date:
+    label: 'test end date:'
+    input: date
+    value: '2017-12-31'
+    
   factors_list:
     choices:
     - GPM
@@ -53,12 +57,11 @@ params:
     value:
     - GPM
     - ROCE
-  tmpfile_fundamental_factors: temp/fundamental_factors.rds
-  tmpfile_fundamental_normal_factors: temp/fundamental_normal_factors.rds
-  tmpfile_fundamental_normal_factors_lag_period: temp/fundamental_normal_factors_lag_period.rds
-  tmpfile_fundamental_normal_factors_period: temp/fundamental_normal_factors_period.rds
-  tmpfile_stocks_return: temp/stocks_return.rds
-  tmpfile_stocks_return_period: temp/stocks_return_period.rds
+  test_stkcds:
+    label: 'target stkcds:'
+    input: text
+    value: '600031, 000157, 600066, 000550'
+    
 classoption: hyperref,
 ---
 
@@ -82,8 +85,8 @@ knitr::opts_chunk$set(
   message = FALSE,
   collapse = TRUE,
   fig.align = "center",
-  fig.show = 'hold',
-  out.width = '80%',
+  fig.show = "hold",
+  out.width = "80%",
   tidy = TRUE
 )
 
@@ -109,26 +112,35 @@ options(tibble.print_min = 10L, tibble.print_max = 20L)
 
 ## 研究参数设置(Study Params)
 ```{r set_params}
-# Set params of study
 
-# fundamental_factors_list <- c("GPM", "ROCE", "PE", "PB", "CUR", "QR")
-fundamental_factors_list <- params$factors_list
+# Target factors list
+# target_factors_list <- c("GPM", "ROCE", "PE", "PB", "CUR", "QR")
+target_factors_list <- params$factors_list
 
-# period of backtest
-start_date <- params$backtest_start_date
-end_date <- params$backtest_end_date
+# Test stocks list
+if (params$test_stkcds != 'all') {
+  test_stkcds <- stringr::str_split(params$test_stkcds, pattern = ",")
+  test_stkcds <- stringr::str_trim(unlist(test_stkcds))
+} else {
+  test_stkcds <- NULL
+}
+
+# period of test
+start_date <- params$test_start_date
+end_date <- params$test_end_date
+
 ```
 
 主要评估参数如下：
 
 * **评估因子:** `r params$factors_list`
 
-* **回溯期间:** `r params$backtest_start_date` ~ `r params$backtest_end_date`
+* **回溯期间:** `r params$test_start_date` ~ `r params$test_end_date`
 
 * **股票池:** 全A股，剔除ST、PT股票，剔除每个截面期一下交易日停牌的股票。
 
 
-```{r fetch_factors_data, cache=TRUE, cache.extra = list(params$debug_mode, params$factors_list, params$backtest_start_date, params$backtest_end_date)}
+```{r fetch_factors_data, cache=FALSE, cache.extra = list(params$test_start_date, params$test_end_date, params$factors_list, params$test_stkcds)}
 
 # Open gta stock databse
 stock_db <- stock_db(gta_db, "GTA_SQLData")
@@ -140,35 +152,61 @@ invisible(init_stock_db(stock_db))
 # Get factors info
 factors_info <- get_factors_info(stock_db, factor_groups = NULL)
 
+# Get fundamental indicators
+fundamental_factors_raw <- get_factors(stock_db,
+  factor_codes = target_factors_list
+)
 
-if (!params$debug_mode) {
-
-
-  # Get fundamental indicators
-  fundamental_factors <- get_factors(stock_db,
-    factor_list = fundamental_factors_list
-  )
-  fundamental_factors <- fundamental_factors %>%
-    tidyr::spread(key = "factor_name", value = "factor_value") %>%
-    dplyr::arrange(stkcd, date)
-    
-
-  # Get stocks return
-  stocks_return <- get_stock_return(stock_db,
-    stock_cd_list = NULL,
-    period_type = "month",
-    period_date = "end",
-    output_type = "tibble"
-  )
-  # Save temp file for debug
-  saveRDS(fundamental_factors, file = params$tmpfile_fundamental_factors)
-  saveRDS(stocks_return, file = params$tmpfile_stocks_return)
-} else {
-
-  # Use read temp file to debug
-  fundamental_factors <- readRDS(params$tmpfile_fundamental_factors)
-  stocks_return <- readRDS(params$tmpfile_stocks_return)
+# Filter factors for target stocks
+if (!is.null(test_stkcds)) {
+  fundamental_factors_raw <- fundamental_factors_raw %>%
+    dplyr::filter(stkcd %in% test_stkcds)
 }
+
+# Filter factors in specified dates
+fundamental_factors_raw <- fundamental_factors_raw %>%
+    dplyr::filter(date >= start_date & date <= end_date) %>%
+    dplyr::arrange(stkcd, date)
+
+# Convert to long format to wide format
+if (all(c("factor_name","factor_value") %in% names(fundamental_factors_raw))) {
+  fundamental_factors_raw <- fundamental_factors_raw %>%
+   tidyr::spread(key = "factor_name", value = "factor_value")
+}
+
+# Notice: add attribute only work for wide format.
+# Add industry code attribute to factors
+if (!("indcd" %in% names(fundamental_factors_raw))) {
+  fundamental_factors_raw <- attr_indictors_indcd(stock_db,
+    fundamental_factors_raw,
+    parallel = TRUE
+  )
+}
+
+# Add trading status atttribute to factors
+if (!("trdstat" %in% names(fundamental_factors_raw))) {
+  fundamental_factors_raw <- attr_indictors_trdstat(stock_db,
+    fundamental_factors_raw,
+    parallel = TRUE
+  )
+}
+
+# Filter factors only for list stocks
+fundamental_factors <- fundamental_factors_raw %>%
+  dplyr::filter(trdstat == "list") %>%
+  dplyr::select(-trdstat)
+
+# Get stocks return
+stocks_return_raw <- get_stock_return(stock_db,
+  stock_cd_list = test_stkcds,
+  period_type = "month",
+  period_date = "end",
+  output_type = "tibble"
+)
+
+# Filter stocks return in specified dates
+stocks_return <- stocks_return_raw %>%
+    dplyr::filter(date >= start_date & date <= end_date)
 
 ```
 
@@ -210,7 +248,7 @@ if (!params$debug_mode) {
 
 # Display target factors information
 target_factors_info <- factors_info %>%
-  dplyr::filter(factor_code %in% fundamental_factors_list)
+  dplyr::filter(factor_code %in% target_factors_list)
 
 knitr::kable(
   target_factors_info,
@@ -219,7 +257,6 @@ knitr::kable(
   digits = 3,
   caption = "目标因子信息"
 )
-
 ```
 
 
@@ -290,64 +327,47 @@ knitr::kable(
 - 对去除异常值的因子序列采用“直接标准化”.
 
 
-```{r factors_Normalization, cache=TRUE, autodep= TRUE}
+```{r factors_Normalization, cache=FALSE, autodep= TRUE}
 
-if (!params$debug_mode) {
-
-  # Normalize the factor indicators
-  fundamental_normal_factors <- fundamental_factors %>%
-    dplyr::filter(date >= start_date & date <= end_date) %>%
-    normalize_factors(
-      group_by = c("date"),
-      clean_extremes_method = "sigma",
-      standard_method = "normal"
-    )
-
-  # Resample factors by specified frequency
-  fundamental_normal_factors_period <- fundamental_normal_factors %>%
-    ts_resample(
-      key_fields = "stkcd", freq_rule = "month",
-      fillna_method = "ffill", agg_method = mean
-    )
-
-  # Resample return by specified frequency
-  stocks_return_period <- stocks_return %>%
-    dplyr::filter(date >= start_date & date <= end_date) %>%
-    ts_resample(
-      key_fields = "stkcd", freq_rule = "month",
-      fillna_method = "nfill",
-      agg_method = function(x) prod(1 + x, na.rm = TRUE) - 1
-    )
-
-  # Lag factors to avoid peeking ahead bias
-  fundamental_normal_factors_lag_period <- ts_lag(
-    fundamental_normal_factors_period,
-    k = 1,
-    trim = FALSE,
-    key_fields = c("stkcd", "period", "indcd")
+# Normalize the factor indicators
+fundamental_normal_factors <- fundamental_factors %>%
+  normalize_factors(
+    group_by = c("date"),
+    clean_extremes_method = "sigma",
+    standard_method = "normal"
   )
-  
-  # Save temp file for debug
-  saveRDS(fundamental_normal_factors,
-    file = params$tmpfile_fundamental_normal_factors
-  )
-  saveRDS(fundamental_normal_factors_period,
-    file = params$tmpfile_fundamental_normal_factors_period
-  )
-  saveRDS(stocks_return_period,
-    file = params$tmpfile_stocks_return_period
-  )
-  saveRDS(fundamental_normal_factors_lag_period,
-    file = params$tmpfile_fundamental_normal_factors_lag_period
-  )
-} else {
 
-  # Read temp file to debug
-  fundamental_normal_factors <- readRDS(params$tmpfile_fundamental_normal_factors)
-  fundamental_normal_factors_period <- readRDS(params$tmpfile_fundamental_normal_factors_period)
-  stocks_return_period <- readRDS(params$tmpfile_stocks_return_period)
-  fundamental_normal_factors_lag_period <- readRDS(params$tmpfile_fundamental_normal_factors_lag_period)
-}
+# Convert factors into specified frequency
+fundamental_normal_factors_period <- fundamental_normal_factors %>%
+  ts_asfreq(
+    freq_rule = "month", fillna_method = "ffill",
+    date_index_field = "date", key_fields = "stkcd",
+    parallel = TRUE
+  )
+
+# Resample return by specified frequency
+stocks_return_period <- stocks_return %>%
+  # dplyr::filter(date >= start_date & date <= end_date) %>%
+  ts_resample(
+    freq_rule = "month", fillna_method = "nfill",
+    date_index_field = "date", key_fields = "stkcd",
+    agg_method = function(x) {
+      prod(1 + x, na.rm = TRUE) - 1
+    },
+    parallel = TRUE
+  )
+
+# Lag factors to avoid peeking ahead bias
+fundamental_normal_factors_lag_period <- ts_lag(
+  fundamental_normal_factors_period,
+  k = 3,
+  trim = FALSE,
+  date_index_field = c("date"),
+  key_fields = c("stkcd", "period", "indcd"),
+  parallel = TRUE
+)
+
+
 ```
 
 ## 因子分布状况(Factor Distribution Exploration)
@@ -358,8 +378,10 @@ if (!params$debug_mode) {
 
 # summarize factors distribution
 summary_fundamental_normal_factors <- fundamental_normal_factors %>%
-  tidyr::gather(key = "factor_name", value = "factor_exposure", 
-                fundamental_factors_list) %>%
+  tidyr::gather(
+    key = "factor_name", value = "factor_exposure",
+    target_factors_list
+  ) %>%
   dplyr::group_by(factor_name, date) %>%
   dplyr::summarise_at("factor_exposure",
     funs(
@@ -463,7 +485,7 @@ knitr::kable(
 * t.test_p: 对因子收益序列均值非零$t$检验的$p$概率值, 小于0.05时均值显著不为0
 * normal.test_p: 正态分布检验(Shapiro-Wilk)$p$概率值，小于0.05时判定因子收益序列非正态分布。 
 
-```{r factor_test_Uniregression_common, cache=TRUE, autodep= TRUE}
+```{r factor_test_Uniregression_common, cache=FALSE, autodep= TRUE}
 
 # Build test data dataset
 ds_test_uniregression <- stocks_return_period %>%
@@ -473,35 +495,33 @@ ds_test_uniregression <- stocks_return_period %>%
 
 
 # Model of conducting univariate regression test
-model_univariate_crossection_regression <- function(df, 
-                                              neutralize = c("non", "industry"),
-                                              ...) {
+model_univariate_crossection_regression <- function(df,
+                                                    neutralize = c("non", "industry"),
+                                                    ...) {
   # Conduct regression
-  neutralize = match.arg(neutralize)
+  neutralize <- match.arg(neutralize)
   switch(neutralize,
-         "non" = {
-            # Conduct cross-section regression
-            regress_result <- lm(return ~ factor_exposure, data = df, ...)
-         },
-         "industry" = {
-           # Remove impact of industry on factor return
-           lm_deindustrialize <- lm(return ~ indcd, 
-                                    data = df, 
-                                    na.action = na.exclude )
-           
-           # Use residual to conduct regression
-           neutral_return <- residuals(lm_deindustrialize)
-           stopifnot(length(neutral_return) == length(df$return))
-           df$return <- neutral_return
-           regress_result <- lm(return ~ factor_exposure, data = df, ...)
-           
-         })
-  
+    "non" = {
+      # Conduct cross-section regression
+      regress_result <- lm(return ~ factor_exposure, data = df, ...)
+    },
+    "industry" = {
+      # Remove impact of industry on factor return
+      lm_deindustrialize <- lm(return ~ indcd,
+        data = df,
+        na.action = na.exclude
+      )
+
+      # Use residual to conduct regression
+      neutral_return <- residuals(lm_deindustrialize)
+      stopifnot(length(neutral_return) == length(df$return))
+      df$return <- neutral_return
+      regress_result <- lm(return ~ factor_exposure, data = df, ...)
+    }
+  )
+
   return(regress_result)
-  
 }
-
-
 ```
 
 
@@ -513,7 +533,7 @@ model_univariate_crossection_regression <- function(df,
 # Condcut factor uniregress test
 result_test_uniregression <- factor_test_uniregress(ds_test_uniregression,
   regress_fun = model_univariate_crossection_regression,
-  neutralize = "non", 
+  neutralize = "non",
   output_type = "summary",
   factor_field = "factor_name",
   date_field = "date"
@@ -531,8 +551,6 @@ knitr::kable(
 # Plot test result
 
 plot(result_test_uniregression)
-
-
 ```
 
 
@@ -543,7 +561,7 @@ plot(result_test_uniregression)
 # Condcut factor uniregress test
 result_test_uniregression_industry <- factor_test_uniregress(ds_test_uniregression,
   regress_fun = model_univariate_crossection_regression,
-  neutralize = "industry", 
+  neutralize = "industry",
   output_type = "summary",
   factor_field = "factor_name",
   date_field = "date"
@@ -560,7 +578,6 @@ knitr::kable(
 
 # Plot test result
 plot(result_test_uniregression_industry)
-
 ```
 
 
@@ -613,7 +630,7 @@ plot(result_test_uniregression_industry)
 * t.test_p: 对信息系数序列均值非零$t$检验的$p$概率值, 小于0.05时均值显著不为0
 * normal.test_p: 正态分布检验(Shapiro-Wilk)$p$概率值，小于0.05时判定信息系数序列非正态分布。
 
-```{r factor_test_IC_common, cache=TRUE, autodep= TRUE}
+```{r factor_test_IC_common, cache=FALSE, autodep= TRUE}
 
 # Build test dataset for single period test
 ds_test_IC <- stocks_return_period %>%
@@ -626,52 +643,57 @@ ds_test_IC <- stocks_return_period %>%
 k_periods <- 12
 ds_test_IC_multiperiod <- tibble::tibble(k = 1:k_periods, ds_test_IC = list(0))
 for (k in seq_along(ds_test_IC_multiperiod$k)) {
-  
+
   # Lag factors datase k periods
   factors_lag_k_period <- ts_lag(fundamental_normal_factors_period,
-                                 k = k,
-                                 trim = FALSE,
-                                 key_fields = c("stkcd", "period", "indcd"))
+    k = k,
+    trim = FALSE,
+    key_fields = c("stkcd", "period", "indcd")
+  )
   # Combine return and factors
   ds_test_IC <- stocks_return_period %>%
     dplyr::inner_join(factors_lag_k_period, by = c("date", "stkcd")) %>%
     tidyr::gather(-(date:indcd), key = "factor_name", value = "factor_exposure") %>%
     dplyr::select(date, stkcd, indcd, return, factor_name, factor_exposure)
-  
+
   ds_test_IC_multiperiod$ds_test_IC[[k]] <- ds_test_IC
 }
 
 # Method of conducting IC test
-model_compute_IC <- function(df, 
+model_compute_IC <- function(df,
                              neutralize = c("non", "industry"),
                              ...) {
-  
+
   # Conduct corr test
-  neutralize = match.arg(neutralize)
+  neutralize <- match.arg(neutralize)
   switch(neutralize,
-         "non" = {
-           # Overall test
-           suppressWarnings({
-             IC_result <- cor.test(x = df$return, y = df$factor_exposure, ...)                })
-         },
-         "industry" = {
-           
-           # Remove impact of industry on facgtor exporusre
-           lm_deindustrialize <- lm(factor_exposure ~ indcd, 
-                                    data = df, 
-                                    na.action = na.exclude )
-           
-           # Use residual to conduct test
-           neutral_factor_exposure <- residuals(lm_deindustrialize)
-           suppressWarnings({
-             IC_result <- cor.test(x = df$return, 
-                                   y = neutral_factor_exposure, ...)
-           })
-         })
-  
+    "non" = {
+      # Overall test
+      suppressWarnings({
+        IC_result <- cor.test(x = df$return, y = df$factor_exposure, ...)
+      })
+    },
+    "industry" = {
+
+      # Remove impact of industry on facgtor exporusre
+      lm_deindustrialize <- lm(factor_exposure ~ indcd,
+        data = df,
+        na.action = na.exclude
+      )
+
+      # Use residual to conduct test
+      neutral_factor_exposure <- residuals(lm_deindustrialize)
+      suppressWarnings({
+        IC_result <- cor.test(
+          x = df$return,
+          y = neutral_factor_exposure, ...
+        )
+      })
+    }
+  )
+
   return(IC_result)
 }
-
 ```
 
 
@@ -684,7 +706,7 @@ model_compute_IC <- function(df,
 # Condcut factor IC test
 result_test_IC <- factor_test_IC(ds_test_IC,
   IC_fun = model_compute_IC,
-  neutralize = "non", 
+  neutralize = "non",
   method = "spearman",
   output_type = "summary",
   factor_field = "factor_name",
@@ -709,48 +731,54 @@ plot(result_test_IC)
 ```{r factor_test_IC_multi_period_overall, fig.cap='因子信息系数(IC)多期评估结果(综合评估)'}
 
 # Condcut factor IC test of multiperiods
-result_test_IC_multiperiod <- tibble::tibble(k = 1:k_periods, 
-                                             result_test_IC = list(0))
+result_test_IC_multiperiod <- tibble::tibble(
+  k = 1:k_periods,
+  result_test_IC = list(0)
+)
 for (k in seq_along(result_test_IC_multiperiod$k)) {
-  result_test_IC <-  factor_test_IC(ds_test_IC_multiperiod$ds_test_IC[[k]],
-                                      IC_fun = model_compute_IC,
-                                      neutralize = "non", 
-                                      method = "spearman",
-                                      output_type = "summary",
-                                      factor_field = "factor_name",
-                                      date_field = "date")
-  
+  result_test_IC <- factor_test_IC(ds_test_IC_multiperiod$ds_test_IC[[k]],
+    IC_fun = model_compute_IC,
+    neutralize = "non",
+    method = "spearman",
+    output_type = "summary",
+    factor_field = "factor_name",
+    date_field = "date"
+  )
+
   result_test_IC_multiperiod$result_test_IC[[k]] <- result_test_IC@summary
 }
 
 # Reshape result datasets
 result_test_IC_multiperiod <- result_test_IC_multiperiod %>%
-     tidyr::unnest(result_test_IC) %>%
-     dplyr::arrange(factor_name, k)
- 
+  tidyr::unnest(result_test_IC) %>%
+  dplyr::arrange(factor_name, k)
+
 # Plot tendency of ICs in term of k periods
-result_test_IC_multiperiod  %>%
-    ggplot(aes(x = k)) +
-    geom_line(aes( y = avg)) +
-    facet_wrap( ~ factor_name ) +
-    scale_x_continuous(breaks = seq(1,k_periods,1)) +
-    labs( title = "因子IC均值在不同期限变化趋势",
-          x = "时期k",
-          y = "IC均值") +
-    theme(plot.title = element_text(hjust = 0.5)) 
+result_test_IC_multiperiod %>%
+  ggplot(aes(x = k)) +
+  geom_line(aes(y = avg)) +
+  facet_wrap(~factor_name) +
+  scale_x_continuous(breaks = seq(1, k_periods, 1)) +
+  labs(
+    title = "因子IC均值在不同期限变化趋势",
+    x = "时期k",
+    y = "IC均值"
+  ) +
+  theme(plot.title = element_text(hjust = 0.5))
 
 # Plot t.test siginificancy of ICs in term of k periods
-result_test_IC_multiperiod  %>%
-    ggplot(aes(x = k)) +
-    geom_bar(aes(y = t.test_p), stat = "identity") +
-    geom_hline(yintercept = 0.05, color = "red", linetype = "dashed") +
-    facet_wrap( ~ factor_name ) +
-    scale_x_continuous(breaks = seq(1,k_periods,1)) +
-    labs( title = "因子IC均值在不同期限T测试显著性",
-          x = "时期k",
-          y = "IC序列t检测p值") + 
-    theme(plot.title = element_text(hjust = 0.5)) 
-
+result_test_IC_multiperiod %>%
+  ggplot(aes(x = k)) +
+  geom_bar(aes(y = t.test_p), stat = "identity") +
+  geom_hline(yintercept = 0.05, color = "red", linetype = "dashed") +
+  facet_wrap(~factor_name) +
+  scale_x_continuous(breaks = seq(1, k_periods, 1)) +
+  labs(
+    title = "因子IC均值在不同期限T测试显著性",
+    x = "时期k",
+    y = "IC序列t检测p值"
+  ) +
+  theme(plot.title = element_text(hjust = 0.5))
 ```
 
 
@@ -764,7 +792,7 @@ result_test_IC_multiperiod  %>%
 # Condcut factor IC test
 result_test_IC_industry <- factor_test_IC(ds_test_IC,
   IC_fun = model_compute_IC,
-  neutralize = "industry", 
+  neutralize = "industry",
   method = "spearman",
   output_type = "summary",
   factor_field = "factor_name",
@@ -782,7 +810,6 @@ knitr::kable(
 
 # Plot test result
 plot(result_test_IC_industry)
-
 ```
 
 **因子信息系数(IC)多期评估结果如下：**
@@ -790,48 +817,54 @@ plot(result_test_IC_industry)
 ```{r factor_test_IC_multi_period_industry, fig.cap='因子信息系数(IC)多期评估结果(行业中性评估)'}
 
 # Condcut factor IC test of multiperiods
-result_test_IC_multiperiod <- tibble::tibble(k = 1:k_periods, 
-                                             result_test_IC = list(0))
+result_test_IC_multiperiod <- tibble::tibble(
+  k = 1:k_periods,
+  result_test_IC = list(0)
+)
 for (k in seq_along(result_test_IC_multiperiod$k)) {
-  result_test_IC <-  factor_test_IC(ds_test_IC_multiperiod$ds_test_IC[[k]],
-                                      IC_fun = model_compute_IC,
-                                      neutralize = "industry", 
-                                      method = "spearman",
-                                      output_type = "summary",
-                                      factor_field = "factor_name",
-                                      date_field = "date")
-  
+  result_test_IC <- factor_test_IC(ds_test_IC_multiperiod$ds_test_IC[[k]],
+    IC_fun = model_compute_IC,
+    neutralize = "industry",
+    method = "spearman",
+    output_type = "summary",
+    factor_field = "factor_name",
+    date_field = "date"
+  )
+
   result_test_IC_multiperiod$result_test_IC[[k]] <- result_test_IC@summary
 }
 
 # Reshape result datasets
 result_test_IC_multiperiod <- result_test_IC_multiperiod %>%
-     tidyr::unnest(result_test_IC) %>%
-     dplyr::arrange(factor_name, k)
- 
+  tidyr::unnest(result_test_IC) %>%
+  dplyr::arrange(factor_name, k)
+
 # Plot tendency of ICs in term of k periods
-result_test_IC_multiperiod  %>%
-    ggplot(aes(x = k)) +
-    geom_line(aes( y = avg)) +
-    facet_wrap( ~ factor_name ) +
-    scale_x_continuous(breaks = seq(1,k_periods,1)) +
-    labs( title = "因子IC均值在不同期限变化趋势",
-          x = "时期k",
-          y = "IC均值") +
-    theme(plot.title = element_text(hjust = 0.5)) 
+result_test_IC_multiperiod %>%
+  ggplot(aes(x = k)) +
+  geom_line(aes(y = avg)) +
+  facet_wrap(~factor_name) +
+  scale_x_continuous(breaks = seq(1, k_periods, 1)) +
+  labs(
+    title = "因子IC均值在不同期限变化趋势",
+    x = "时期k",
+    y = "IC均值"
+  ) +
+  theme(plot.title = element_text(hjust = 0.5))
 
 # Plot t.test siginificancy of ICs in term of k periods
-result_test_IC_multiperiod  %>%
-    ggplot(aes(x = k)) +
-    geom_bar(aes( y = t.test_p), stat = "identity") +
-    geom_hline(yintercept = 0.05, color = "red", linetype = "dashed") +
-    facet_wrap( ~ factor_name ) +
-    scale_x_continuous(breaks = seq(1,k_periods,1)) +
-    labs( title = "因子IC均值在不同期限T测试显著性",
-          x = "时期k",
-          y = "IC序列t检测p值") + 
-    theme(plot.title = element_text(hjust = 0.5))
-
+result_test_IC_multiperiod %>%
+  ggplot(aes(x = k)) +
+  geom_bar(aes(y = t.test_p), stat = "identity") +
+  geom_hline(yintercept = 0.05, color = "red", linetype = "dashed") +
+  facet_wrap(~factor_name) +
+  scale_x_continuous(breaks = seq(1, k_periods, 1)) +
+  labs(
+    title = "因子IC均值在不同期限T测试显著性",
+    x = "时期k",
+    y = "IC序列t检测p值"
+  ) +
+  theme(plot.title = element_text(hjust = 0.5))
 ```
 
 
@@ -888,7 +921,7 @@ result_test_IC_multiperiod  %>%
   * Annualized Standard Deviation：组合的年化收益的标准差；
   * Annualized Sharpe Ratio (Rf=0%)：组合的年化夏普比率。
 
-```{r factor_test_portfolio_sorts_common, cache=TRUE, autodep= TRUE}
+```{r factor_test_portfolio_sorts_common, cache=FALSE, autodep= TRUE}
 # Build test data dataset
 ds_test_sort_portfolios <- stocks_return_period %>%
   dplyr::inner_join(fundamental_normal_factors_lag_period, by = c("date", "stkcd")) %>%
@@ -897,45 +930,46 @@ ds_test_sort_portfolios <- stocks_return_period %>%
 
 
 # Method to build sort portfolios
-model_sort_portfolios <- function(df, ngroup = 5, 
+model_sort_portfolios <- function(df, ngroup = 5,
                                   neutralize = c("non", "industry"),
-                                  ... ) {
-  
+                                  ...) {
+
   # Build portfolio group by portfolio groups
-  neutralize = match.arg(neutralize)
+  neutralize <- match.arg(neutralize)
   switch(neutralize,
-         "non" = {
-           # Build overal N portfolios 
-           sort_portfolios <- build_sort_portfolios(
-                stocks_list = df$stkcd,
-                factor_value_list = df$factor_exposure,
-                stocks_weight_list = NULL,
-                ngroup = ngroup)
-         },
-         "industry" = {
-           # Group data by industry
-           df_by_industry <- df %>%
-             dplyr::group_by(indcd)
-          
-           # Build N portfolios in echa industry
-           portfolios_by_industry <- df_by_industry %>%
-             dplyr::summarise(groups = list(build_sort_portfolios(
-                                     stocks_list = stkcd,
-                                     factor_value_list = factor_exposure,
-                                     stocks_weight_list = NULL,
-                                     ngroup = ngroup))) 
-           
-           # combine N portfolios in each industry into overal N portolios
-           sort_portfolios <- portfolios_by_industry %>%
-             tidyr::unnest(groups) %>%
-             dplyr::arrange(portfolio_group, stkcd) %>%
-             dplyr::select(-indcd)
-          
-         })
-  
+    "non" = {
+      # Build overal N portfolios
+      sort_portfolios <- build_sort_portfolios(
+        stocks_list = df$stkcd,
+        factor_value_list = df$factor_exposure,
+        stocks_weight_list = NULL,
+        ngroup = ngroup
+      )
+    },
+    "industry" = {
+      # Group data by industry
+      df_by_industry <- df %>%
+        dplyr::group_by(indcd)
+
+      # Build N portfolios in echa industry
+      portfolios_by_industry <- df_by_industry %>%
+        dplyr::summarise(groups = list(build_sort_portfolios(
+          stocks_list = stkcd,
+          factor_value_list = factor_exposure,
+          stocks_weight_list = NULL,
+          ngroup = ngroup
+        )))
+
+      # combine N portfolios in each industry into overal N portolios
+      sort_portfolios <- portfolios_by_industry %>%
+        tidyr::unnest(groups) %>%
+        dplyr::arrange(portfolio_group, stkcd) %>%
+        dplyr::select(-indcd)
+    }
+  )
+
   return(sort_portfolios)
 }
-
 ```
 
 
@@ -948,7 +982,7 @@ model_sort_portfolios <- function(df, ngroup = 5,
 # Condcut portfolio sorts test
 result_test_sort_portfolios <- factor_test_sort_portfolios(ds_test_sort_portfolios,
   sort_portfolios_fun = model_sort_portfolios,
-  ngroup = 5, 
+  ngroup = 5,
   neutralize = "non",
   output_type = "summary",
   factor_field = "factor_name",
@@ -991,7 +1025,7 @@ plot(result_test_sort_portfolios)
 # Condcut portfolio sorts test
 result_test_sort_portfolios_industry <- factor_test_sort_portfolios(ds_test_sort_portfolios,
   sort_portfolios_fun = model_sort_portfolios,
-  ngroup = 5, 
+  ngroup = 5,
   neutralize = "industry",
   output_type = "summary",
   factor_field = "factor_name",
@@ -1053,42 +1087,56 @@ plot(result_test_sort_portfolios_industry)
 # Evalue test result to find petential significant factors
 evalute_test_result <- function(summary_test_result,
                                 signif_level = 0.05) {
-  
+
   # Evaluate all factors
   eval_result_all <- summary_test_result %>%
     dplyr::arrange(factor_name, test) %>%
-    dplyr::mutate(significant = {ifelse(t.test_p <= signif_level, "yes", "no")},
-                  direction = {ifelse(avg > 0,"positive", 
-                                        ifelse(avg < 0, "negtive", "NA"))},
-                  effect = {ifelse(((direction == "positive") && (odds > 1)) 
-                                   || ((direction == "negtive") && (odds < 1)),
-                                      "strong", "weak")}) %>%
-    dplyr::select(factor_name, test, t.test_p, significant, 
-                  avg, odds, direction, effect)
-  
+    dplyr::mutate(
+      significant = {
+        ifelse(t.test_p <= signif_level, "yes", "no")
+      },
+      direction = {
+        ifelse(avg > 0, "positive",
+          ifelse(avg < 0, "negtive", "NA")
+        )
+      },
+      effect = {
+        ifelse(((direction == "positive") && (odds > 1))
+        || ((direction == "negtive") && (odds < 1)),
+        "strong", "weak"
+        )
+      }
+    ) %>%
+    dplyr::select(
+      factor_name, test, t.test_p, significant,
+      avg, odds, direction, effect
+    )
+
   # Get potential significant factors
   potential_factors <- eval_result_all %>%
-    dplyr::filter( significant == "yes") %>%
+    dplyr::filter(significant == "yes") %>%
     dplyr::select(factor_name)
   potential_factors <- unique(as.vector(potential_factors$factor_name))
-  
+
   # Potential factor evaluation results
   eval_result_potentials <- eval_result_all %>%
     dplyr::filter(factor_name %in% potential_factors) %>%
     dplyr::select(test, factor_name, t.test_p) %>%
     dplyr::group_by(factor_name) %>%
-    dplyr::mutate(significant = ifelse(any(t.test_p <= signif_level), 
-                                       "yes", "no")) %>%
+    dplyr::mutate(significant = ifelse(any(t.test_p <= signif_level),
+      "yes", "no"
+    )) %>%
     tidyr::spread(key = test, value = t.test_p)
-  
-  # Build results 
-  eval_result <- list(potential_factors = potential_factors,
-                      potential_result = eval_result_potentials,
-                      all_result = eval_result_all)
-  
+
+  # Build results
+  eval_result <- list(
+    potential_factors = potential_factors,
+    potential_result = eval_result_potentials,
+    all_result = eval_result_all
+  )
+
   return(eval_result)
 }
-
 ```
 
 
@@ -1100,33 +1148,33 @@ evalute_test_result <- function(summary_test_result,
 
 # Integrate results for evaluation
 summary_test_uniregression <- result_test_uniregression@summary %>%
-                        dplyr::mutate(test = "uniregression_test") %>%
-                        dplyr::select(test, dplyr::everything())
+  dplyr::mutate(test = "uniregression_test") %>%
+  dplyr::select(test, dplyr::everything())
 
 summary_test_IC <- result_test_IC@summary %>%
-             dplyr::mutate(test = "IC_test")  %>%
-             dplyr::select(test, dplyr::everything())
+  dplyr::mutate(test = "IC_test") %>%
+  dplyr::select(test, dplyr::everything())
 
 summary_test_sort_portfolios <- result_test_sort_portfolios@summary %>%
-                          dplyr::mutate(test = "sort_portfolios_test") %>%
-                          dplyr::select(test, dplyr::everything())
+  dplyr::mutate(test = "sort_portfolios_test") %>%
+  dplyr::select(test, dplyr::everything())
 
 summary_all_test <- summary_test_uniregression %>%
-        dplyr::bind_rows(summary_test_IC) %>%
-        dplyr::bind_rows(summary_test_sort_portfolios) 
+  dplyr::bind_rows(summary_test_IC) %>%
+  dplyr::bind_rows(summary_test_sort_portfolios)
 
-# Evalue all test results 
-eval_result <- evalute_test_result(summary_all_test, signif_level = 0.05)  
+# Evalue all test results
+eval_result <- evalute_test_result(summary_all_test, signif_level = 0.05)
 
 # Print evluation result of all factors
 knitr::kable(
-      eval_result$all_result,
-      format = "pandoc",
-      align = "c",
-      digits = 3,
-      longtable = TRUE,
-      caption = "Evaluation of factors(Overall Test)")
-
+  eval_result$all_result,
+  format = "pandoc",
+  align = "c",
+  digits = 3,
+  longtable = TRUE,
+  caption = "Evaluation of factors(Overall Test)"
+)
 ```
 
 **潜在有效因子：**
@@ -1144,14 +1192,14 @@ cat(potential_facotrs_list)
 
 # Print evaluation result of potential factors
 if (nrow(eval_result$potential_result) > 0) {
-knitr::kable(
+  knitr::kable(
     eval_result$potential_result,
     format = "pandoc",
     align = "c",
     digits = 3,
-    caption = "Potential Effective Factors(Overall Test)")
+    caption = "Potential Effective Factors(Overall Test)"
+  )
 }
-
 ```
 
 
@@ -1161,33 +1209,33 @@ knitr::kable(
 
 # Integrate results for evaluation
 summary_test_uniregression <- result_test_uniregression_industry@summary %>%
-                        dplyr::mutate(test = "uniregression_test") %>%
-                        dplyr::select(test, dplyr::everything())
+  dplyr::mutate(test = "uniregression_test") %>%
+  dplyr::select(test, dplyr::everything())
 
 summary_test_IC <- result_test_IC_industry@summary %>%
-             dplyr::mutate(test = "IC_test")  %>%
-             dplyr::select(test, dplyr::everything())
+  dplyr::mutate(test = "IC_test") %>%
+  dplyr::select(test, dplyr::everything())
 
 summary_test_sort_portfolios <- result_test_sort_portfolios_industry@summary %>%
-                          dplyr::mutate(test = "sort_portfolios_test") %>%
-                          dplyr::select(test, dplyr::everything())
+  dplyr::mutate(test = "sort_portfolios_test") %>%
+  dplyr::select(test, dplyr::everything())
 
 summary_all_test <- summary_test_uniregression %>%
-        dplyr::bind_rows(summary_test_IC) %>%
-        dplyr::bind_rows(summary_test_sort_portfolios) 
-        
-# Evalue all test results 
-eval_result_industry <- evalute_test_result(summary_all_test, signif_level = 0.05)  
+  dplyr::bind_rows(summary_test_IC) %>%
+  dplyr::bind_rows(summary_test_sort_portfolios)
+
+# Evalue all test results
+eval_result_industry <- evalute_test_result(summary_all_test, signif_level = 0.05)
 
 # Print evluation result of all factors
 knitr::kable(
-      eval_result_industry$all_result,
-      format = "pandoc",
-      align = "c",
-      digits = 3,
-      longtable = TRUE,
-      caption = "Evaluation of factors(Neutral-Industry Test)")
-
+  eval_result_industry$all_result,
+  format = "pandoc",
+  align = "c",
+  digits = 3,
+  longtable = TRUE,
+  caption = "Evaluation of factors(Neutral-Industry Test)"
+)
 ```
 
 **潜在有效因子：**
@@ -1204,12 +1252,13 @@ cat(potential_facotrs_list)
 # Print evaluation result of potential factors
 if (nrow(eval_result_industry$potential_result) > 0) {
   knitr::kable(
-      eval_result$potential_result,
-      format = "pandoc",
-      align = "c",
-      digits = 3,
-      caption = "Potential Effective Factors(Neutral Industry Test)")
+    eval_result$potential_result,
+    format = "pandoc",
+    align = "c",
+    digits = 3,
+    caption = "Potential Effective Factors(Neutral Industry Test)"
+  )
 }
-
 ```
+
 
