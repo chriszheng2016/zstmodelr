@@ -114,13 +114,17 @@ profile_get_factors <- function(profile_path, factor_codes = NULL,
     indicator_is_na <- is.na(matched_factors$indicator_code)
     if (any(indicator_is_na)) {
       msg <- sprintf(
-        "factor(%s) didn't have vaild indicaotr_code, please check!!",
+        "factor(%s) didn't have vaild indicator_code, please check!!",
         matched_factors$factor_code[indicator_is_na]
       )
       stop(msg)
     }
 
   }
+
+  # output only active factor
+  matched_factors <- matched_factors %>%
+    dplyr::filter(is_active == TRUE)
 
   return(matched_factors)
 }
