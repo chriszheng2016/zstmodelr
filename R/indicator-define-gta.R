@@ -119,8 +119,14 @@ parse_indicator_vars.gta_db <- function(stock_db, indicator_expr) {
   if (!is.null(all_indictors_info)) {
     all_indictors_codes <- all_indictors_info$ind_code
 
-    syms_in_indicators <- all_indictors_codes %in% tolower(syms)
-    indicator_vars <- all_indictors_codes[syms_in_indicators]
+    syms_are_indicators <- syms %in% all_indictors_codes
+    indicator_vars <- syms[syms_are_indicators]
+    non_indicator_vars <- syms[!syms_are_indicators]
+
+    msg <- sprintf("Indicator vars in expr: %s;\nNon_indicator vars in expr: %s.",
+                   paste0(indicator_vars, collapse = ","),
+                   paste0(non_indicator_vars, collapse = ","))
+    rlang::inform(msg)
   }
 
   return(indicator_vars)
