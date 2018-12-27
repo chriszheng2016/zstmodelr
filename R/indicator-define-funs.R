@@ -74,6 +74,29 @@ Ratio <- function(x_numerator, y_denominator) {
   return(ratio)
 }
 
+# Sum multiple series
+Sum <- function(..., substitute_NA = c("zero", "mean", "median", "keep")) {
+
+  series_list <- list(...)
+
+  # substitute NA in sereis
+  substitute_NA = match.arg(substitute_NA)
+  replace_na_value <- switch(substitute_NA,
+    "zero" = function(x) 0,
+    "mean" = purrr::partial(mean, na.rm = TRUE),
+    "median" = purrr::partial(median, na.rm = TRUE),
+    "keep" = function(x) x
+  )
+  series_list_no_na <- purrr::map(series_list, ~ifelse(is.na(.x),
+                                                       replace_na_value(.x),
+                                                       .x))
+
+  # sum series without NA
+  result_series <- purrr::reduce(series_list_no_na, .f = `+`)
+
+  return(result_series)
+}
+
 # Substract mean from a series
 #' @describeIn indicator_expr_funs  substract mean from a series.
 Demean <- function(x) {
