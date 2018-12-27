@@ -61,7 +61,7 @@ setGeneric(
 #' Generic function to parse vars in indicator expr from stock_db.
 #'
 #' @param stock_db         A stock database object to operate.
-#' @param indicator_expr   A expr of indicator to parase.
+#' @param indicator_expr   A expr of indicator to parse.
 #'
 #' @family indicator define functions
 #'
@@ -508,48 +508,69 @@ prioritize_indicator_defs <- function(ds_indicator_defs) {
   # validate params
   assertive::assert_is_data.frame(ds_indicator_defs)
 
-  # build defs_trees to parase dependency among indicators
+  # build defs_trees to parse dependency among indicators
   ind_defs_trees <- create_ind_defs_trees(ds_indicator_defs)
+
+  # clean defs_defs
+  ind_defs_trees <- .clean_ind_defs_trees(ind_defs_trees)
 
   # set priority for indicators according to dependency
   ds_indicator_defs_priority <- ds_indicator_defs %>%
     dplyr::mutate(priority = NA)
   priority <- 1
-  while (NROW(ind_defs_trees) > 0) {
 
-    # clean ind_defs trees
-    ind_defs_trees <- .clean_ind_defs_trees(ind_defs_trees)
+  # go through each def tree in def_trees to find proper priority.
+  for (i in seq_len(NROW(ind_defs_trees))) {
 
-    # find indenpendent indicators of head tree of def_trees
-    root_defs_tree <- ind_defs_trees[1, ]
-    root_ind_code <- root_defs_tree$ind_code
-    independ_indicators <- .find_independ_indcators(root_ind_code,
-      ind_defs_trees = ind_defs_trees
-    )
+    defs_tree_node <- ind_defs_trees[i, ]
 
-    # set priority for independent indicator
-    ds_indicator_defs_priority$priority[ds_indicator_defs_priority$ind_code
-      %in% independ_indicators] <- priority
+    # set priority for each target tree in ind_def_trees
+    if (defs_tree_node$is_root_node) {
 
-    # reset priority for next indicator
-    if (root_ind_code %in% independ_indicators) {
-      # when indicator of head_defs_tree is independent indicator,
-      # it means analyzing head_defs_tree has finished, we should
-      # move to next head_defs_tree and reset priority to 1
-      priority <- 1
-    } else {
-      # otherwise, we still in analyzing sub-tree of head_defs_tree,
-      # move priority to next level
-      priority <- priority + 1
+      # get a target tree for setting priority
+      target_ind_defs_tree <- ind_defs_trees[i:NROW(ind_defs_trees),]
+      target_ind_defs_tree <- as_ind_defs_trees(target_ind_defs_tree)
+
+      # set priority for the targt tree
+      while (NROW(target_ind_defs_tree) > 0) {
+
+        # clean target ind_defs trees
+        target_ind_defs_tree <- .clean_ind_defs_trees(target_ind_defs_tree)
+
+        # find indenpendent indicators from root node of target tree of def_trees
+        defs_tree <- target_ind_defs_tree[1, ]
+
+        root_ind_code <- defs_tree$ind_code
+        independ_indicators <- .find_independ_indcators(root_ind_code,
+          ind_defs_trees = target_ind_defs_tree
+        )
+
+        # set priority for independent indicator
+        ds_indicator_defs_priority$priority[ds_indicator_defs_priority$ind_code
+          %in% independ_indicators] <- priority
+
+        # reset priority for next indicator
+        if (root_ind_code %in% independ_indicators) {
+          # when indicator of head_defs_tree is independent indicator,
+          # it means analyzing head_defs_tree has finished, we should
+          # move to next head_defs_tree and reset priority to 1
+          priority <- 1
+        } else {
+          # otherwise, we still in analyzing sub-tree of head_defs_tree,
+          # move priority to next level
+          priority <- priority + 1
+        }
+
+        # get new trees by removing found independent indicators
+        target_ind_defs_tree <- target_ind_defs_tree %>%
+          dplyr::filter(!(ind_code %in% independ_indicators))
+
+        target_ind_defs_tree <- as_ind_defs_trees(target_ind_defs_tree)
+
+      }
     }
-
-    # get new trees by removing found independent indicators
-    ind_defs_trees <- ind_defs_trees %>%
-      dplyr::filter(!(ind_code %in% independ_indicators))
-
-    ind_defs_trees <- as_ind_defs_trees(ind_defs_trees)
-
   }
+
 
   # re-order and re-group indicator defs by priority
   ds_indicator_defs_priority <- ds_indicator_defs_priority %>%
@@ -570,18 +591,20 @@ create_ind_defs_trees <- function(ds_indicator_defs) {
   # validate params
   assertive::assert_is_data.frame(ds_indicator_defs)
 
-  # build defs_trees to parase dependency among indicators
+  # build defs_trees to parse dependency among indicators
   if (all(c("ind_code", "ind_vars") %in% names(ds_indicator_defs))) {
     defs_trees_info <- ds_indicator_defs %>%
-      dplyr::select(ind_code, depend_ind_codes = ind_vars)
-  } else if (all(c("ind_code", "depend_ind_codes") %in% names(ds_indicator_defs))) {
+      dplyr::select(ind_code, depend_ind_codes = ind_vars) %>%
+      dplyr::mutate(is_root_node = NA)
+  } else if (all(c("ind_code", "depend_ind_codes", "is_root_node") %in%
+                 names(ds_indicator_defs))) {
     defs_trees_info <- ds_indicator_defs
   } else {
     msg <- "Invalid data.frame of indicators_defs."
     rlang::abort(msg)
   }
 
-  # creaet new class
+  # create new class
   defs_trees <- tibble::new_tibble(
     defs_trees_info,
     subclass = "ind_defs_trees"
@@ -692,9 +715,9 @@ check_loop_depdency <- function(ind_defs_trees) {
     # No loop dependency among indicators
     # put root indicators in the front of defs_tree
     pass_defs_trees <- ind_defs_trees %>%
-      dplyr::mutate(is_root_indicator = (ind_code %in% root_indicators)) %>%
-      dplyr::arrange(desc(is_root_indicator)) %>%
-      dplyr::select(-is_root_indicator)
+      dplyr::mutate(is_root_node = (ind_code %in% root_indicators)) %>%
+      dplyr::arrange(desc(is_root_node))
+      # dplyr::select(-is_root_node)
   } else {
     # found loop dependency
     msg <- sprintf(
