@@ -304,6 +304,40 @@ setGeneric(
   }
 )
 
+#' Get stock info from stock_db
+#'
+#' Generic function to get stock info from stock_db.
+#'
+#' @param stock_db    A stock database object to operate.
+#' @param stock_cd_list A list of stock cd, default value of NULL means
+#'  all stock data will return.
+#' @param market_type  A character of market type of stocks to fetch, e.g. "all",
+#'  "A", "B". Default "all" means to fetch all stocks.
+#'
+#' @family stock_db generics
+#'
+#' @return A dataframe of stock info.
+#' @export
+#'
+# S3 generic definition
+# get_stock_info <- function(stock_db,
+#                              stock_cd_list = NULL,
+#                              ...) {
+#   UseMethod("get_stock_info")
+# }
+
+# S4 generic definition
+setGeneric(
+  name = "get_stock_info",
+  signature = c("stock_db"),
+  def = get_stock_info <- function(stock_db,
+                                   stock_cd_list = NULL,
+                                  ...) {
+    standardGeneric("get_stock_info")
+  }
+)
+
+
 #' Get stock return timeseries from stock_db
 #'
 #' Generic function to get stock return timeseries from stock_db.
@@ -322,8 +356,6 @@ setGeneric(
 #' @return A timeseries of stock return.
 #' @export
 #'
-
-
 # S3 generic definition
 # get_stock_return <- function(stock_db,
 #                              stock_cd_list = NULL,

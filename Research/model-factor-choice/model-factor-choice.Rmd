@@ -137,7 +137,7 @@ end_date <- params$test_end_date
 
 * **回溯期间:** `r params$test_start_date` ~ `r params$test_end_date`
 
-* **股票池:** 全A股，剔除ST、PT股票，剔除每个截面期一下交易日停牌的股票。
+* **股票池:** 全A股及创业板，剔除ST、PT股票，剔除每个截面期一下交易日停牌的股票。
 
 
 ```{r fetch_factors_data, cache=FALSE, cache.extra = list(params$test_start_date, params$test_end_date, params$factors_list, params$test_stkcds)}
@@ -148,6 +148,13 @@ open_stock_db(stock_db)
 
 # Initate the stock database
 invisible(init_stock_db(stock_db))
+
+# Limit test_stock to A stocks and Growth stocks
+ds_test_stock_info <- get_stock_info(stock_db, 
+                                     stock_cd_list = test_stkcds)
+ds_test_stock_info <- ds_test_stock_info %>%
+  dplyr::filter(market_type %in% c("SH_A", "SZ_A", "SZ_G"))
+test_stkcds <- ds_test_stock_info$stkcd
 
 # Get factors info
 factors_info <- get_factors_info(stock_db, factor_groups = NULL)

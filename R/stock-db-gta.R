@@ -602,6 +602,66 @@ setMethod(
   }
 )
 
+# Get stock info from stock_db
+# Method definition for s3 generic
+# @describeIn get_stock_info get stock info from a database of gta_db class
+#' @export
+get_stock_info.gta_db <- function(stock_db,
+                                  stock_cd_list = NULL){
+
+  # validate params
+  stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
+  if (is.null(stock_db$connection)) {
+    rlang::abort("Stock db isn't connected, try to connect db again")
+  }
+  if(!is.null(stock_cd_list)) assertive::assert_is_character(stock_cd_list)
+
+
+  # get riskfree rate from database
+  table_name <- stock_db$table_list[["TRD_Co"]]
+  ds_stock_info_raw <- get_table_dataset(stock_db,
+                                         table_name = table_name
+  )
+  ds_stock_info_raw <- tibble::as_tibble(ds_stock_info_raw)
+
+  # filter stock_info by stkcds
+  if (!is.null(stock_cd_list)) {
+    ds_stock_info_raw <- ds_stock_info_raw %>%
+      dplyr::filter(stkcd %in% stock_cd_list)
+  }
+
+  # covert marekt_type
+  market_type = c("SH_A", "SH_B","SZ_A", "SZ_B", "SZ_G")
+  markeytype = c(1,2,4,8,16)
+  names(market_type) <- markeytype
+  ds_stock_info_raw <- ds_stock_info_raw %>%
+    dplyr::mutate(market_type = unname(market_type[as.character(markettype)]))
+
+  # build output datasets
+  ds_stock_info <- ds_stock_info_raw %>%
+    dplyr::select(stkcd, stkname = stknme,
+                  indcd = nindcd, indname = nindnme,
+                  establish_date = estbdt,
+                  list_date = listdt,
+                  market_type
+                  )
+
+  return(ds_stock_info)
+
+}
+# Method definition for s4 generic
+#' @describeIn get_stock_info get stock info from a database of gta_db class
+#' @export
+setMethod(
+  "get_stock_info",
+  signature(stock_db = "gta_db"),
+  function(stock_db, stock_cd_list, ...) {
+    get_stock_info.gta_db(
+           stock_db, stock_cd_list)
+  }
+)
+
+
 # Get stock return timeseries from stock_db
 # Method definition for s3 generic
 # @describeIn get_stock_return get stock return timeseries from a database of gta_db class
@@ -1060,6 +1120,7 @@ setMethod(
              ...) {
     get_finacial_report.gta_db(
       stock_db = stock_db,
+      stock_cd_list = stock_cd_list,
       statement = statement,
       consolidated = consolidated,
       period_type = period_type,

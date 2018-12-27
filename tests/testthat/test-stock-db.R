@@ -95,6 +95,36 @@ test_that("fetch_table_dataset, with various arguments", {
   }
 })
 
+
+test_that("get_stock_info, with various arguments", {
+
+  # get_stock_info with default arguments ====
+  ds_stock_info <- get_stock_info(stock_db)
+  expect_fields <- c("stkcd", "stkname",
+                     "indcd", "indname",
+                     "establish_date", "list_date",
+                     "market_type")
+  actual_fields <- names(ds_stock_info)
+
+  expect_is(ds_stock_info, "data.frame")
+  expect_true(all(actual_fields %in% expect_fields))
+
+
+  # get_stock_info with various arguments ====
+  stock_cd_list <- c("600031", "000157")
+
+  ds_stock_info <- get_stock_info(stock_db, stock_cd_list = stock_cd_list)
+  expect_fields <- c("stkcd", "stkname",
+                     "indcd", "indname",
+                     "establish_date", "list_date",
+                     "market_type")
+  actual_fields <- names(ds_stock_info)
+
+  expect_is(ds_stock_info, "data.frame")
+  expect_true(all(actual_fields %in% expect_fields))
+  expect_true(all(unique(ds_stock_info$stkcd) %in% stock_cd_list))
+})
+
 test_that("get_stock_return, with various arguments", {
 
   # get_stock_return with arguments: output_type ====
@@ -280,6 +310,7 @@ test_that("get_finacial_report, with various arguments", {
     expect_true(all(c("date",  "stkcd") %in% names(ts_report)))
     expect_true(lubridate::is.Date(ts_report$date))
     expect_true(is.character(ts_report$stkcd))
+    expect_true(all(ts_report$stkcd %in% stock_cd_list))
     expect_true(any(stringr::str_detect(names(ts_report), pattern = pattern)))
   }
 
@@ -294,6 +325,7 @@ test_that("get_finacial_report, with various arguments", {
   expect_true(all(c("date",  "stkcd") %in% names(ts_report)))
   expect_true(lubridate::is.Date(ts_report$date))
   expect_true(is.character(ts_report$stkcd))
+  expect_true(all(ts_report$stkcd %in% stock_cd_list))
   expect_true(all(lubridate::month(ts_report$date) %in% c(3, 6, 9, 12)))
 
   ts_report <- get_finacial_report(stock_db,
@@ -303,6 +335,7 @@ test_that("get_finacial_report, with various arguments", {
   expect_true(all(c("date",  "stkcd") %in% names(ts_report)))
   expect_true(lubridate::is.Date(ts_report$date))
   expect_true(is.character(ts_report$stkcd))
+  expect_true(all(ts_report$stkcd %in% stock_cd_list))
   expect_true(all(lubridate::month(ts_report$date) %in% c(12)))
 
 
@@ -314,6 +347,7 @@ test_that("get_finacial_report, with various arguments", {
   expect_true(all(c("date",  "stkcd") %in% names(ts_report)))
   expect_true(lubridate::is.Date(ts_report$date))
   expect_true(is.character(ts_report$stkcd))
+  expect_true(all(ts_report$stkcd %in% stock_cd_list))
   expect_true(all(lubridate::day(ts_report$date) %in% c(1)))
 
   ts_report <- get_finacial_report(stock_db,
@@ -323,6 +357,7 @@ test_that("get_finacial_report, with various arguments", {
   expect_true(all(c("date",  "stkcd") %in% names(ts_report)))
   expect_true(lubridate::is.Date(ts_report$date))
   expect_true(is.character(ts_report$stkcd))
+  expect_true(all(ts_report$stkcd %in% stock_cd_list))
   expect_true(all(lubridate::day(ts_report$date) %in% c(28,29,30,31)))
 
 })
@@ -557,8 +592,10 @@ test_that("get_indicators, with various arguments", {
   indicator_codes <- c("f010101a", "f010201a")
   ds_indicators <- get_indicators(stock_db, indicator_codes)
   expect_fields <- c("date", "period", "stkcd", "ind_code", "ind_value")
-  expect_true(all(expect_fields %in% names(ds_indicators)))
-  expect_true(all(ds_indicators$ind_code %in% tolower(indicator_codes)))
+  if (!is.null(ds_indicators)) {
+    expect_true(all(expect_fields %in% names(ds_indicators)))
+    expect_true(all(ds_indicators$ind_code %in% tolower(indicator_codes)))
+  }
 })
 
 test_that("get_factors, with various arguments", {
@@ -570,21 +607,26 @@ test_that("get_factors, with various arguments", {
     "date", "period", "stkcd", "indcd",
     "factor_name", "factor_value"
   )
-  expect_true(all(expect_fields %in% names(ds_factors)))
-  expect_true(all(ds_factors$factor_name %in% factor_codes))
+  if (!is.null(ds_factors)) {
+    expect_true(all(expect_fields %in% names(ds_factors)))
+    expect_true(all(ds_factors$factor_name %in% factor_codes))
+  }
 })
 
 test_that("get_factors_info, with various arguments", {
 
   # get_factors_info with default arguments ====
   ds_matched_factors <- get_factors_info(stock_db)
-  expect_is(ds_matched_factors, "data.frame")
   expected_fields <- c(
     "factor_code", "factor_name", "factor_type",
     "factor_group", "factor_description"
   )
-  actual_fields <- names(ds_matched_factors)
-  expect_equal(actual_fields, expected_fields)
+  if (!is.null(ds_matched_factors)) {
+    expect_is(ds_matched_factors, "data.frame")
+    actual_fields <- names(ds_matched_factors)
+    expect_equal(actual_fields, expected_fields)
+  }
+
 
   # get_factors_info with factor_codes ====
   factor_codes <- c("GPM", "OPM")
