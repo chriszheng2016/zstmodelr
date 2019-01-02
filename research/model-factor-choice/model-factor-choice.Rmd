@@ -9,12 +9,12 @@ geometry:
 editor_options:
   chunk_output_type: inline
 output:
-  html_document:
+  html_notebook:
     fig_caption: yes
     number_sections: yes
     toc: yes
     toc_depth: 4
-  html_notebook:
+  html_document:
     fig_caption: yes
     number_sections: yes
     toc: yes
@@ -39,10 +39,10 @@ params:
     value: '2016-01-01'
       
   test_end_date:
+    
     label: 'test end date:'
     input: date
     value: '2017-12-31'
-    
   factors_list:
     choices:
     - GPM
@@ -58,10 +58,10 @@ params:
     - GPM
     - ROCE
   test_stkcds:
+    
     label: 'target stkcds:'
     input: text
     value: '600031, 000157, 600066, 000550'
-    
 classoption: hyperref,
 ---
 
@@ -154,7 +154,7 @@ ds_test_stock_info <- get_stock_info(stock_db,
                                      stock_cd_list = test_stkcds)
 ds_test_stock_info <- ds_test_stock_info %>%
   dplyr::filter(market_type %in% c("SH_A", "SZ_A", "SZ_G"))
-test_stkcds <- ds_test_stock_info$stkcd
+test_stkcds <- unique(ds_test_stock_info$stkcd)
 
 # Get factors info
 factors_info <- get_factors_info(stock_db, factor_groups = NULL)
@@ -205,15 +205,35 @@ fundamental_factors <- fundamental_factors_raw %>%
 
 # Get stocks return
 stocks_return_raw <- get_stock_return(stock_db,
-  stock_cd_list = test_stkcds,
+  stock_cd_list = NULL,
   period_type = "month",
   period_date = "end",
   output_type = "tibble"
 )
 
+# Filter stocks return for target stocks
+if (!is.null(test_stkcds)) {
+  stocks_return_raw <- stocks_return_raw %>%
+    dplyr::filter(stkcd %in% test_stkcds)
+}
+
 # Filter stocks return in specified dates
-stocks_return <- stocks_return_raw %>%
-    dplyr::filter(date >= start_date & date <= end_date)
+stocks_return_raw <- stocks_return_raw %>%
+    dplyr::filter(date >= start_date & date <= end_date) %>%
+    dplyr::arrange(stkcd, date)
+
+# Get riskfree rate
+riskfree_rate <- get_riskfree_rate(stock_db, period = "month")
+
+# Get excess return of stocks
+stocks_excess_return <- stocks_excess_return(stocks_return_raw, 
+                                             ts_riskfree_rate = riskfree_rate,
+                                             period = "month", 
+                                             period_date = "end")
+# Use excess return as stock return
+stocks_return <- stocks_excess_return %>%
+  dplyr::select(date, stkcd, return = excess_return)
+
 
 ```
 
@@ -225,21 +245,24 @@ stocks_return <- stocks_return_raw %>%
 
     用于衡量股票价格是否相对偏高或偏低，因素值较大的公司，意味公司股票可能被高估或具有较高的未来成长性。
 
-* **清偿能力因子(Solvency Factors)：**
-
-    用于衡量一个公司不同类别的流动资金偿还负债的能力。清偿能力因素值较大的公司具有更好的资金流动性或清偿债务的能力，并且较少受到于由支付债务和其它负债而破产的威胁。
-
 * **营运效率因子(Operating Efficency Factors)**
 
     用于描述公司对短期和长期资产的运营绩效。因素值较大的公司，比较充分地利用了资产。
 
-* **营运盈利能力因子(Operating Profitability Factors)**
+* **盈利能力因子(Operating Profitability Factors)**
 
     用于衡量公司获取利润的能力。因素值较大的公司，具有较强的竞争能力，可获得较好的较高的利润。
 
 * **财务风险因子(Finacial Risk Factors)**
 
-    用于衡量公司可能面临破产的风险，即对应对销售暂时放缓或突遇经济时，公司能会较大  的利润波动和面临较高的财务压力，以至于导致破产。
+    用于衡量一个公司因财务问题而破产的风险，包括短期清偿风险和长期杠杆风险风险：
+    
+  - **短期清偿风险**：
+  用于衡量一个公司不同类别的流动资金偿还负债的能力。清偿能力因素值较大的公司具有更好的资金流动性或清偿债务的能力，并且较少受到于由支付债务和其它负债而破产的威胁;
+  
+  - **长期杠杆风险**：
+  用于衡量公司面临不利市场环境可能面临破产的风险，即对应对销售暂时放缓或突遇经济时，杠杆较高的公司能会由于较大的利润波动而面临较高的财务压力，以至于导致破产。
+  
 
 * **流动性风险因子(Liquidity Factors)**
 
@@ -380,18 +403,16 @@ fundamental_normal_factors_lag_period <- ts_lag(
 ## 因子分布状况(Factor Distribution Exploration)
 
   对规范化后因子数据，计算在每个时间截面的因子分布参数(平均值等)，对计算参数时间序列的平均值，获得分布参数如下：
-
 ```{r factor_test_summarize_factors}
-
-# summarize factors distribution
-summary_fundamental_normal_factors <- fundamental_normal_factors %>%
+# compute stats of factors in deferent periods
+stats_fundamental_normal_factors <- fundamental_normal_factors %>%
   tidyr::gather(
     key = "factor_name", value = "factor_exposure",
     target_factors_list
   ) %>%
   dplyr::group_by(factor_name, date) %>%
   dplyr::summarise_at("factor_exposure",
-    funs(
+    dplyr::funs(
       obs = mean(length(.)),
       nas = sum(is.na(.)),
       mean,
@@ -406,11 +427,22 @@ summary_fundamental_normal_factors <- fundamental_normal_factors %>%
       kurtosis = PerformanceAnalytics::kurtosis
     ),
     na.rm = TRUE
-  ) %>%
+  )
+
+stats_fundamental_normal_factors %>%
+    ggplot(aes(x = factor_name, y = mean)) +
+      geom_boxplot() +
+      geom_hline(yintercept = 0, color = "blue", linetype = "dashed") +
+      coord_flip() +
+      labs(title = "因子均值分布",
+          x = "因子",
+          y = "因子均值")
+
+# summarize factors distribution
+summary_fundamental_normal_factors <- stats_fundamental_normal_factors %>%
   dplyr::select(-date) %>%
   dplyr::group_by(factor_name) %>%
-  dplyr::summarise_all(mean)
-
+  dplyr::summarise_all(mean, na.rm = TRUE)
 
 knitr::kable(
   summary_fundamental_normal_factors,
@@ -419,8 +451,8 @@ knitr::kable(
   digits = 3,
   caption = "因子分布情况总览"
 )
-```
 
+```
 注意：kurtosis 为超过正态分布峰度的数值。
 
 
@@ -488,9 +520,9 @@ knitr::kable(
 * pos_pct: 因子收益序列中正值比例；
 * neg_pct: 因子收益序列中负值比例；
 * odds: 因子收益序列胜率=正值比例/负值比例； 
-* t.test_t: 对因子收益序列均值非零$t$检验的$t$统计量 绝对值大于2时均值显著不为0；
-* t.test_p: 对因子收益序列均值非零$t$检验的$p$概率值, 小于0.05时均值显著不为0
-* normal.test_p: 正态分布检验(Shapiro-Wilk)$p$概率值，小于0.05时判定因子收益序列非正态分布。 
+* t.test_t: 对因子收益序列均值非零$t$检验的$t$统计量。当绝对值大于2时，判定均值显著不为0；
+* t.test_p: 对因子收益序列均值非零$t$检验的$p$概率值。当小于0.05时，判定均值显著不为0
+* normal.test_p: 正态分布检验(Shapiro-Wilk)$p$概率值。当小于0.05时，判定因子收益序列非正态分布。 
 
 ```{r factor_test_Uniregression_common, cache=FALSE, autodep= TRUE}
 
@@ -647,24 +679,24 @@ ds_test_IC <- stocks_return_period %>%
 
 
 # Build test dataset for multiperiod test
-k_periods <- 12
-ds_test_IC_multiperiod <- tibble::tibble(k = 1:k_periods, ds_test_IC = list(0))
-for (k in seq_along(ds_test_IC_multiperiod$k)) {
-
-  # Lag factors datase k periods
-  factors_lag_k_period <- ts_lag(fundamental_normal_factors_period,
-    k = k,
-    trim = FALSE,
-    key_fields = c("stkcd", "period", "indcd")
-  )
-  # Combine return and factors
-  ds_test_IC <- stocks_return_period %>%
-    dplyr::inner_join(factors_lag_k_period, by = c("date", "stkcd")) %>%
-    tidyr::gather(-(date:indcd), key = "factor_name", value = "factor_exposure") %>%
-    dplyr::select(date, stkcd, indcd, return, factor_name, factor_exposure)
-
-  ds_test_IC_multiperiod$ds_test_IC[[k]] <- ds_test_IC
-}
+# k_periods <- 12
+# ds_test_IC_multiperiod <- tibble::tibble(k = 1:k_periods, ds_test_IC = list(0))
+# for (k in seq_along(ds_test_IC_multiperiod$k)) {
+# 
+#   # Lag factors datase k periods
+#   factors_lag_k_period <- ts_lag(fundamental_normal_factors_period,
+#     k = k,
+#     trim = FALSE,
+#     key_fields = c("stkcd", "period", "indcd")
+#   )
+#   # Combine return and factors
+#   ds_test_IC <- stocks_return_period %>%
+#     dplyr::inner_join(factors_lag_k_period, by = c("date", "stkcd")) %>%
+#     tidyr::gather(-(date:indcd), key = "factor_name", value = "factor_exposure") %>%
+#     dplyr::select(date, stkcd, indcd, return, factor_name, factor_exposure)
+# 
+#   ds_test_IC_multiperiod$ds_test_IC[[k]] <- ds_test_IC
+# }
 
 # Method of conducting IC test
 model_compute_IC <- function(df,
@@ -737,55 +769,55 @@ plot(result_test_IC)
 
 ```{r factor_test_IC_multi_period_overall, fig.cap='因子信息系数(IC)多期评估结果(综合评估)'}
 
-# Condcut factor IC test of multiperiods
-result_test_IC_multiperiod <- tibble::tibble(
-  k = 1:k_periods,
-  result_test_IC = list(0)
-)
-for (k in seq_along(result_test_IC_multiperiod$k)) {
-  result_test_IC <- factor_test_IC(ds_test_IC_multiperiod$ds_test_IC[[k]],
-    IC_fun = model_compute_IC,
-    neutralize = "non",
-    method = "spearman",
-    output_type = "summary",
-    factor_field = "factor_name",
-    date_field = "date"
-  )
-
-  result_test_IC_multiperiod$result_test_IC[[k]] <- result_test_IC@summary
-}
-
-# Reshape result datasets
-result_test_IC_multiperiod <- result_test_IC_multiperiod %>%
-  tidyr::unnest(result_test_IC) %>%
-  dplyr::arrange(factor_name, k)
-
-# Plot tendency of ICs in term of k periods
-result_test_IC_multiperiod %>%
-  ggplot(aes(x = k)) +
-  geom_line(aes(y = avg)) +
-  facet_wrap(~factor_name) +
-  scale_x_continuous(breaks = seq(1, k_periods, 1)) +
-  labs(
-    title = "因子IC均值在不同期限变化趋势",
-    x = "时期k",
-    y = "IC均值"
-  ) +
-  theme(plot.title = element_text(hjust = 0.5))
-
-# Plot t.test siginificancy of ICs in term of k periods
-result_test_IC_multiperiod %>%
-  ggplot(aes(x = k)) +
-  geom_bar(aes(y = t.test_p), stat = "identity") +
-  geom_hline(yintercept = 0.05, color = "red", linetype = "dashed") +
-  facet_wrap(~factor_name) +
-  scale_x_continuous(breaks = seq(1, k_periods, 1)) +
-  labs(
-    title = "因子IC均值在不同期限T测试显著性",
-    x = "时期k",
-    y = "IC序列t检测p值"
-  ) +
-  theme(plot.title = element_text(hjust = 0.5))
+# # Condcut factor IC test of multiperiods
+# result_test_IC_multiperiod <- tibble::tibble(
+#   k = 1:k_periods,
+#   result_test_IC = list(0)
+# )
+# for (k in seq_along(result_test_IC_multiperiod$k)) {
+#   result_test_IC <- factor_test_IC(ds_test_IC_multiperiod$ds_test_IC[[k]],
+#     IC_fun = model_compute_IC,
+#     neutralize = "non",
+#     method = "spearman",
+#     output_type = "summary",
+#     factor_field = "factor_name",
+#     date_field = "date"
+#   )
+# 
+#   result_test_IC_multiperiod$result_test_IC[[k]] <- result_test_IC@summary
+# }
+# 
+# # Reshape result datasets
+# result_test_IC_multiperiod <- result_test_IC_multiperiod %>%
+#   tidyr::unnest(result_test_IC) %>%
+#   dplyr::arrange(factor_name, k)
+# 
+# # Plot tendency of ICs in term of k periods
+# result_test_IC_multiperiod %>%
+#   ggplot(aes(x = k)) +
+#   geom_line(aes(y = avg)) +
+#   facet_wrap(~factor_name) +
+#   scale_x_continuous(breaks = seq(1, k_periods, 1)) +
+#   labs(
+#     title = "因子IC均值在不同期限变化趋势",
+#     x = "时期k",
+#     y = "IC均值"
+#   ) +
+#   theme(plot.title = element_text(hjust = 0.5))
+# 
+# # Plot t.test siginificancy of ICs in term of k periods
+# result_test_IC_multiperiod %>%
+#   ggplot(aes(x = k)) +
+#   geom_bar(aes(y = t.test_p), stat = "identity") +
+#   geom_hline(yintercept = 0.05, color = "red", linetype = "dashed") +
+#   facet_wrap(~factor_name) +
+#   scale_x_continuous(breaks = seq(1, k_periods, 1)) +
+#   labs(
+#     title = "因子IC均值在不同期限T测试显著性",
+#     x = "时期k",
+#     y = "IC序列t检测p值"
+#   ) +
+#   theme(plot.title = element_text(hjust = 0.5))
 ```
 
 
@@ -823,55 +855,55 @@ plot(result_test_IC_industry)
 
 ```{r factor_test_IC_multi_period_industry, fig.cap='因子信息系数(IC)多期评估结果(行业中性评估)'}
 
-# Condcut factor IC test of multiperiods
-result_test_IC_multiperiod <- tibble::tibble(
-  k = 1:k_periods,
-  result_test_IC = list(0)
-)
-for (k in seq_along(result_test_IC_multiperiod$k)) {
-  result_test_IC <- factor_test_IC(ds_test_IC_multiperiod$ds_test_IC[[k]],
-    IC_fun = model_compute_IC,
-    neutralize = "industry",
-    method = "spearman",
-    output_type = "summary",
-    factor_field = "factor_name",
-    date_field = "date"
-  )
-
-  result_test_IC_multiperiod$result_test_IC[[k]] <- result_test_IC@summary
-}
-
-# Reshape result datasets
-result_test_IC_multiperiod <- result_test_IC_multiperiod %>%
-  tidyr::unnest(result_test_IC) %>%
-  dplyr::arrange(factor_name, k)
-
-# Plot tendency of ICs in term of k periods
-result_test_IC_multiperiod %>%
-  ggplot(aes(x = k)) +
-  geom_line(aes(y = avg)) +
-  facet_wrap(~factor_name) +
-  scale_x_continuous(breaks = seq(1, k_periods, 1)) +
-  labs(
-    title = "因子IC均值在不同期限变化趋势",
-    x = "时期k",
-    y = "IC均值"
-  ) +
-  theme(plot.title = element_text(hjust = 0.5))
-
-# Plot t.test siginificancy of ICs in term of k periods
-result_test_IC_multiperiod %>%
-  ggplot(aes(x = k)) +
-  geom_bar(aes(y = t.test_p), stat = "identity") +
-  geom_hline(yintercept = 0.05, color = "red", linetype = "dashed") +
-  facet_wrap(~factor_name) +
-  scale_x_continuous(breaks = seq(1, k_periods, 1)) +
-  labs(
-    title = "因子IC均值在不同期限T测试显著性",
-    x = "时期k",
-    y = "IC序列t检测p值"
-  ) +
-  theme(plot.title = element_text(hjust = 0.5))
+# # Condcut factor IC test of multiperiods
+# result_test_IC_multiperiod <- tibble::tibble(
+#   k = 1:k_periods,
+#   result_test_IC = list(0)
+# )
+# for (k in seq_along(result_test_IC_multiperiod$k)) {
+#   result_test_IC <- factor_test_IC(ds_test_IC_multiperiod$ds_test_IC[[k]],
+#     IC_fun = model_compute_IC,
+#     neutralize = "industry",
+#     method = "spearman",
+#     output_type = "summary",
+#     factor_field = "factor_name",
+#     date_field = "date"
+#   )
+# 
+#   result_test_IC_multiperiod$result_test_IC[[k]] <- result_test_IC@summary
+# }
+# 
+# # Reshape result datasets
+# result_test_IC_multiperiod <- result_test_IC_multiperiod %>%
+#   tidyr::unnest(result_test_IC) %>%
+#   dplyr::arrange(factor_name, k)
+# 
+# # Plot tendency of ICs in term of k periods
+# result_test_IC_multiperiod %>%
+#   ggplot(aes(x = k)) +
+#   geom_line(aes(y = avg)) +
+#   facet_wrap(~factor_name) +
+#   scale_x_continuous(breaks = seq(1, k_periods, 1)) +
+#   labs(
+#     title = "因子IC均值在不同期限变化趋势",
+#     x = "时期k",
+#     y = "IC均值"
+#   ) +
+#   theme(plot.title = element_text(hjust = 0.5))
+# 
+# # Plot t.test siginificancy of ICs in term of k periods
+# result_test_IC_multiperiod %>%
+#   ggplot(aes(x = k)) +
+#   geom_bar(aes(y = t.test_p), stat = "identity") +
+#   geom_hline(yintercept = 0.05, color = "red", linetype = "dashed") +
+#   facet_wrap(~factor_name) +
+#   scale_x_continuous(breaks = seq(1, k_periods, 1)) +
+#   labs(
+#     title = "因子IC均值在不同期限T测试显著性",
+#     x = "时期k",
+#     y = "IC序列t检测p值"
+#   ) +
+#   theme(plot.title = element_text(hjust = 0.5))
 ```
 
 
@@ -1080,13 +1112,13 @@ plot(result_test_sort_portfolios_industry)
 
     当因子序列均值统计显著不为0时，可判断因子对股票回报的影响：
 
- - 序列均值大于0时，因子与股票为正相关；
+  - 序列均值大于0时，因子与股票为正相关；
  
-   当正相关时，如果胜率(odds)大于1时，则相关性较强，否则较弱。
+    当正相关时，如果胜率(odds)大于1时，则相关性较强，否则较弱。
    
- - 序列均值小于0时，因子与股票为负相关；
+  - 序列均值小于0时，因子与股票为负相关；
  
-   当负相关时，如果胜率(odds)小于1时，则相关性较强，否则较弱。
+    当负相关时，如果胜率(odds)小于1时，则相关性较强，否则较弱。
 
 
 ```{r evalute_test_result_common}
@@ -1259,7 +1291,7 @@ cat(potential_facotrs_list)
 # Print evaluation result of potential factors
 if (nrow(eval_result_industry$potential_result) > 0) {
   knitr::kable(
-    eval_result$potential_result,
+    eval_result_industry$potential_result,
     format = "pandoc",
     align = "c",
     digits = 3,
@@ -1268,4 +1300,10 @@ if (nrow(eval_result_industry$potential_result) > 0) {
 }
 ```
 
+```{r clear_context}
+
+# close stock_db
+close_stock_db(stock_db)
+
+```
 
