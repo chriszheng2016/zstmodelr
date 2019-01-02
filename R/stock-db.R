@@ -311,8 +311,6 @@ setGeneric(
 #' @param stock_db    A stock database object to operate.
 #' @param stock_cd_list A list of stock cd, default value of NULL means
 #'  all stock data will return.
-#' @param market_type  A character of market type of stocks to fetch, e.g. "all",
-#'  "A", "B". Default "all" means to fetch all stocks.
 #'
 #' @family stock_db generics
 #'
@@ -331,8 +329,8 @@ setGeneric(
   name = "get_stock_info",
   signature = c("stock_db"),
   def = get_stock_info <- function(stock_db,
-                                   stock_cd_list = NULL,
-                                  ...) {
+                                     stock_cd_list = NULL,
+                                     ...) {
     standardGeneric("get_stock_info")
   }
 )
@@ -473,20 +471,20 @@ setGeneric(
   name = "get_finacial_report",
   signature = c("stock_db"),
   def = get_finacial_report <- function(stock_db,
-                                        stock_cd_list = NULL,
-                                        statement = c(
-                                          "blance_sheet",
-                                          "income",
-                                          "cashflow_direct",
-                                          "cashflow_indrect",
-                                          "income_ttm",
-                                          "cashflow_direct_ttm",
-                                          "cashflow_indrect_ttm"
-                                        ),
-                                        consolidated = TRUE,
-                                        period_type = c("quarter", "year"),
-                                        period_date = c("end", "start"),
-                                        ...) {
+                                          stock_cd_list = NULL,
+                                          statement = c(
+                                            "blance_sheet",
+                                            "income",
+                                            "cashflow_direct",
+                                            "cashflow_indrect",
+                                            "income_ttm",
+                                            "cashflow_direct_ttm",
+                                            "cashflow_indrect_ttm"
+                                          ),
+                                          consolidated = TRUE,
+                                          period_type = c("quarter", "year"),
+                                          period_date = c("end", "start"),
+                                          ...) {
     standardGeneric("get_finacial_report")
   }
 )
@@ -561,7 +559,7 @@ setGeneric(
   name = "save_indicators_to_source",
   signature = c("stock_db"),
   def = save_indicators_to_source <- function(stock_db, indicator_source,
-                                              ts_indicators, ...) {
+                                                ts_indicators, ...) {
     standardGeneric("save_indicators_to_source")
   }
 )
@@ -736,8 +734,10 @@ setGeneric(
   name = "get_riskfree_rate",
   signature = c("stock_db"),
   def = get_riskfree_rate <- function(stock_db,
-                                      period = c("day", "month",
-                                                 "quarter", "year"), ...) {
+                                        period = c(
+                                          "day", "month",
+                                          "quarter", "year"
+                                        ), ...) {
     standardGeneric("get_riskfree_rate")
   }
 )
@@ -783,12 +783,14 @@ setGeneric(
   name = "dir_path_db",
   signature = c("stock_db"),
   def = dir_path_db <- function(stock_db,
-                             dir_id = c("DIR_DB_DATA",
-                                        "DIR_DB_DATA_SOURCE",
-                                        "DIR_DB_DATA_ORIGIN",
-                                        "DIR_DB_DATA_LOG",
-                                        "DIR_DB_DATA_INDICATOR"),
-                             force = TRUE, ...) {
+                                  dir_id = c(
+                                    "DIR_DB_DATA",
+                                    "DIR_DB_DATA_SOURCE",
+                                    "DIR_DB_DATA_ORIGIN",
+                                    "DIR_DB_DATA_LOG",
+                                    "DIR_DB_DATA_INDICATOR"
+                                  ),
+                                  force = TRUE, ...) {
     standardGeneric("dir_path_db")
   }
 )
@@ -806,9 +808,6 @@ setGeneric(
 #'
 #' @return A timeseries of assets return.
 #' @export
-#'
-
-
 get_assets_return <- function(benchmark_return, stocks_return) {
   stopifnot(
     timeSeries::is.timeSeries(benchmark_return),
@@ -847,6 +846,80 @@ get_assets_return <- function(benchmark_return, stocks_return) {
   return(assets_return)
 }
 
+#' Get stocks excess return from stocks return and riskfree_rate
+#'
+#' Get excess return timeseries by combining stocks return and riskfree_rate
+#'
+#' @param ts_stocks_return   A timeseries of stocks_return
+#' @param ts_riskfree_rate   A timeseries of riskfree_rate
+#' @param period             A character of period, e.g. "day", "month",
+#'  "quarter", "year". Default "day".
+#' @param period_date        A character of period_date format, e.g. "start",
+#'  "end", "start" format date as start of the period, "end" format date as end
+#'  of period. Default "start".
+#'
+#'
+#' @return A timeseries of excess return of stocks.
+#' @export
+
+stocks_excess_return <- function(ts_stocks_return,
+                                 ts_riskfree_rate,
+                                 period = c(
+                                   "day", "month",
+                                   "quarter", "year"
+                                 ),
+                                 period_date = c("start", "end")) {
+  ts_stock_return_expr <- rlang::enexpr(ts_stocks_return)
+  ts_riskfree_rate_expr <- rlang::enexpr(ts_riskfree_rate)
+
+  # validate params
+  assertive::assert_is_data.frame(ts_stocks_return)
+  assertive::assert_is_data.frame(ts_riskfree_rate)
+
+  # set date of timeseries
+  period <- match.arg(period)
+  period_date <- match.arg(period_date)
+  if (is_periodic_dates(ts_stocks_return$date, freq_rule = period)) {
+    ts_stocks_return$date <- as_period_date(ts_stocks_return$date,
+                                            period = period,
+                                            period_date = period_date)
+  } else {
+    msg <- sprintf(
+      "The period of date of %s isn't %s",
+      rlang::expr_text(ts_stock_return_expr),
+      period
+    )
+    rlang::abort(msg)
+  }
+
+  if (is_periodic_dates(ts_riskfree_rate$date, freq_rule = period)) {
+    ts_riskfree_rate$date <- as_period_date(ts_riskfree_rate$date,
+                                            period = period,
+                                            period_date = period_date)
+  } else {
+    msg <- sprintf(
+      "The period of date of %s isn't %s",
+      rlang::expr_text(ts_riskfree_rate_expr),
+      period
+    )
+    rlang::abort(msg)
+  }
+
+  # connect riskfree rate with stkcds
+  stkcds <- unique(ts_stocks_return$stkcd)
+  ds_stkcds <- tibble::tibble(stkcd = stkcds)
+  ts_riskfree_rate_with_stkcd <- ds_stkcds %>%
+    dplyr::mutate(data = list(ts_riskfree_rate)) %>%
+    tidyr::unnest(data)
+
+  # combine stocks_return and riskfree_rate to compute excess return
+  ts_stocks_excess_return <- ts_stocks_return %>%
+    dplyr::inner_join(ts_riskfree_rate_with_stkcd, by = c("date", "stkcd")) %>%
+    dplyr::mutate(excess_return = return - riskfree_return)
+
+  return(ts_stocks_excess_return)
+
+}
 
 # Get a timeseries of stock data for specified stock from table datasets
 get_stock_field_dataset <- function(ds_source.df,
@@ -990,7 +1063,6 @@ fetch_stock_field_dataset <- function(ds_source.df,
 
   return(ds_result)
 }
-
 
 # Generic functions for tranlation between code and name -----------------------
 

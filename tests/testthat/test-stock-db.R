@@ -100,10 +100,12 @@ test_that("get_stock_info, with various arguments", {
 
   # get_stock_info with default arguments ====
   ds_stock_info <- get_stock_info(stock_db)
-  expect_fields <- c("stkcd", "stkname",
-                     "indcd", "indname",
-                     "establish_date", "list_date",
-                     "market_type")
+  expect_fields <- c(
+    "stkcd", "stkname",
+    "indcd", "indname",
+    "establish_date", "list_date",
+    "market_type"
+  )
   actual_fields <- names(ds_stock_info)
 
   expect_is(ds_stock_info, "data.frame")
@@ -114,10 +116,12 @@ test_that("get_stock_info, with various arguments", {
   stock_cd_list <- c("600031", "000157")
 
   ds_stock_info <- get_stock_info(stock_db, stock_cd_list = stock_cd_list)
-  expect_fields <- c("stkcd", "stkname",
-                     "indcd", "indname",
-                     "establish_date", "list_date",
-                     "market_type")
+  expect_fields <- c(
+    "stkcd", "stkname",
+    "indcd", "indname",
+    "establish_date", "list_date",
+    "market_type"
+  )
   actual_fields <- names(ds_stock_info)
 
   expect_is(ds_stock_info, "data.frame")
@@ -276,7 +280,7 @@ test_that("get_finacial_report, with various arguments", {
   # get_finacial_report with default arguments ====
   ts_report <- get_finacial_report(stock_db)
   expect_is(ts_report, "data.frame")
-  expect_true(all(c("date",  "stkcd") %in% names(ts_report)))
+  expect_true(all(c("date", "stkcd") %in% names(ts_report)))
   expect_true(lubridate::is.Date(ts_report$date))
   expect_true(is.character(ts_report$stkcd))
   expect_true(is_periodic_dates(ts_report$date, freq_rule = "quarter"))
@@ -286,28 +290,29 @@ test_that("get_finacial_report, with various arguments", {
 
   # get_finacial_report with arguments: statement ====
   ds_test_statement <- tibble::tribble(
-    ~statement,      ~field_pattern,
+    ~statement, ~field_pattern,
     #-------------/------------------/
-    "blance_sheet",         "^a",
-    "income",               "^b",
-    "cashflow_direct",      "^c",
-    "cashflow_indrect",     "^d",
-    "income_ttm",           "^b\\w*_ttm$",
-    "cashflow_direct_ttm",  "^c\\w*_ttm$",
+    "blance_sheet", "^a",
+    "income", "^b",
+    "cashflow_direct", "^c",
+    "cashflow_indrect", "^d",
+    "income_ttm", "^b\\w*_ttm$",
+    "cashflow_direct_ttm", "^c\\w*_ttm$",
     "cashflow_indrect_ttm", "^d\\w*_ttm$"
   )
 
-  for ( i in seq_len(NROW(ds_test_statement))) {
+  for (i in seq_len(NROW(ds_test_statement))) {
     statement <- ds_test_statement$statement[i]
     pattern <- ds_test_statement$field_pattern[i]
 
     ts_report <- get_finacial_report(stock_db,
-                                     stock_cd_list = stock_cd_list,
-                                     statement = statement,
-                                     period_type = "quarter",
-                                     period_date = "end")
+      stock_cd_list = stock_cd_list,
+      statement = statement,
+      period_type = "quarter",
+      period_date = "end"
+    )
     expect_is(ts_report, "data.frame")
-    expect_true(all(c("date",  "stkcd") %in% names(ts_report)))
+    expect_true(all(c("date", "stkcd") %in% names(ts_report)))
     expect_true(lubridate::is.Date(ts_report$date))
     expect_true(is.character(ts_report$stkcd))
     expect_true(all(ts_report$stkcd %in% stock_cd_list))
@@ -315,24 +320,26 @@ test_that("get_finacial_report, with various arguments", {
   }
 
   # get_finacial_report with arguments: consolidated ====
-  consolidated = TRUE
+  consolidated <- TRUE
 
   # get_finacial_report with arguments: period_type ====
   ts_report <- get_finacial_report(stock_db,
-                                  stock_cd_list = stock_cd_list,
-                                  period_type = "quarter")
+    stock_cd_list = stock_cd_list,
+    period_type = "quarter"
+  )
   expect_is(ts_report, "data.frame")
-  expect_true(all(c("date",  "stkcd") %in% names(ts_report)))
+  expect_true(all(c("date", "stkcd") %in% names(ts_report)))
   expect_true(lubridate::is.Date(ts_report$date))
   expect_true(is.character(ts_report$stkcd))
   expect_true(all(ts_report$stkcd %in% stock_cd_list))
   expect_true(all(lubridate::month(ts_report$date) %in% c(3, 6, 9, 12)))
 
   ts_report <- get_finacial_report(stock_db,
-                                   stock_cd_list = stock_cd_list,
-                                   period_type = "year")
+    stock_cd_list = stock_cd_list,
+    period_type = "year"
+  )
   expect_is(ts_report, "data.frame")
-  expect_true(all(c("date",  "stkcd") %in% names(ts_report)))
+  expect_true(all(c("date", "stkcd") %in% names(ts_report)))
   expect_true(lubridate::is.Date(ts_report$date))
   expect_true(is.character(ts_report$stkcd))
   expect_true(all(ts_report$stkcd %in% stock_cd_list))
@@ -341,25 +348,26 @@ test_that("get_finacial_report, with various arguments", {
 
   # get_finacial_report with arguments: period_date ====
   ts_report <- get_finacial_report(stock_db,
-                                   stock_cd_list = stock_cd_list,
-                                   period_date = "start")
+    stock_cd_list = stock_cd_list,
+    period_date = "start"
+  )
   expect_is(ts_report, "data.frame")
-  expect_true(all(c("date",  "stkcd") %in% names(ts_report)))
+  expect_true(all(c("date", "stkcd") %in% names(ts_report)))
   expect_true(lubridate::is.Date(ts_report$date))
   expect_true(is.character(ts_report$stkcd))
   expect_true(all(ts_report$stkcd %in% stock_cd_list))
   expect_true(all(lubridate::day(ts_report$date) %in% c(1)))
 
   ts_report <- get_finacial_report(stock_db,
-                                   stock_cd_list = stock_cd_list,
-                                   period_date = "end")
+    stock_cd_list = stock_cd_list,
+    period_date = "end"
+  )
   expect_is(ts_report, "data.frame")
-  expect_true(all(c("date",  "stkcd") %in% names(ts_report)))
+  expect_true(all(c("date", "stkcd") %in% names(ts_report)))
   expect_true(lubridate::is.Date(ts_report$date))
   expect_true(is.character(ts_report$stkcd))
   expect_true(all(ts_report$stkcd %in% stock_cd_list))
-  expect_true(all(lubridate::day(ts_report$date) %in% c(28,29,30,31)))
-
+  expect_true(all(lubridate::day(ts_report$date) %in% c(28, 29, 30, 31)))
 })
 
 
@@ -421,10 +429,9 @@ test_that("save_indicators_to_source, with various arguments", {
   # save_indicators_to_source into a dynamic source ====
   indicator_source <- "{get_riskfree_rate(stock_db, period = 'month')}"
   expect_error(save_indicators_to_source(stock_db,
-                                         indicator_source = indicator_source,
-                                         ts_indicators = ts_indicators
+    indicator_source = indicator_source,
+    ts_indicators = ts_indicators
   ))
-
 })
 
 
@@ -558,9 +565,9 @@ test_that("get_indicators_from_source, with various arguments", {
   indicator_codes <- c("riskfree_return")
 
   ds_indicators <- get_indicators_from_source(stock_db,
-                                              indicator_source = indicator_source,
-                                              indicator_codes = indicator_codes,
-                                              ouput_format = "long"
+    indicator_source = indicator_source,
+    indicator_codes = indicator_codes,
+    ouput_format = "long"
   )
   if (!is.null(ds_indicators)) {
     expect_fields <- c("date", "period", "ind_code", "ind_value")
@@ -571,9 +578,9 @@ test_that("get_indicators_from_source, with various arguments", {
 
   # output in "wide" format
   ds_indicators <- get_indicators_from_source(stock_db,
-                                              indicator_source = indicator_source,
-                                              indicator_codes = indicator_codes,
-                                              ouput_format = "wide"
+    indicator_source = indicator_source,
+    indicator_codes = indicator_codes,
+    ouput_format = "wide"
   )
   if (!is.null(ds_indicators)) {
     expect_fields <- c("date", "period", indicator_codes)
@@ -581,8 +588,6 @@ test_that("get_indicators_from_source, with various arguments", {
     expect_true(inherits(ds_indicators$date, "Date"))
     expect_true(unique(ds_indicators$period) == "month")
   }
-
-
 })
 
 
@@ -676,18 +681,18 @@ test_that("get_stock_industry, with various arguments", {
   expect_fields <- c("date", "stkcd", "indcd")
   actual_fields <- names(ds_stock_industry)
   expect_equal(actual_fields, expect_fields)
-
 })
 
 test_that("get_spt_stocks, with various arguments", {
-
-  trade_status <- c("A" = "list",
-                    "B" = "st",
-                    "D" = "*st",
-                    "C" = "pt",
-                    "S" = "suspend",
-                    "T" = "pre_delist",
-                    "X" = "delist")
+  trade_status <- c(
+    "A" = "list",
+    "B" = "st",
+    "D" = "*st",
+    "C" = "pt",
+    "S" = "suspend",
+    "T" = "pre_delist",
+    "X" = "delist"
+  )
 
   # get_spt_stocks with default arguments ====
   ds_spt_stocks <- get_spt_stocks(stock_db)
@@ -696,7 +701,6 @@ test_that("get_spt_stocks, with various arguments", {
   actual_fields <- names(ds_spt_stocks)
   expect_equal(actual_fields, expect_fields)
   expect_true(all(unique(ds_spt_stocks$trade_status) %in% trade_status))
-
 })
 
 test_that("get_riskfree_rate, with various arguments", {
@@ -819,7 +823,151 @@ test_that("fetch_stock_field_dataset, with various arguments", {
   expect_true(all(actual_fields %in% expect_fields))
 })
 
+test_that("stocks_excess_return, with various arguments", {
 
+  stkcds <- c("600066", "000550")
+
+  # stocks_excess_return with default arguments ====
+  # get stocks return
+  ts_stock_return <- get_stock_return(stock_db,
+    stock_cd_list = stkcds,
+    period_type = "day",
+    period_date = "end",
+    output_type = "tibble"
+  )
+
+  # get riskfree rate
+  ts_riskfree_rate <- get_riskfree_rate(stock_db,
+    period = "day"
+  )
+
+  # compute excess return of stocks
+  ts_stock_excess_return <- stocks_excess_return(
+    ts_stock_return,
+    ts_riskfree_rate
+  )
+  # validate results
+  expect_fields <- c(
+    "date", "stkcd", "return",
+    "period", "riskfree_return", "excess_return"
+  )
+  expect_true(all(names(ts_stock_excess_return) %in% expect_fields))
+  expect_true(all(na.omit(with(
+    ts_stock_excess_return,
+    (return - riskfree_return) == excess_return
+  ))))
+
+  # stocks_excess_return with various arguments ====
+  # >> argument: period ----
+  # get stock return
+  ts_stock_return <- get_stock_return(stock_db,
+    stock_cd_list = stkcds,
+    period_type = "day",
+    period_date = "end",
+    output_type = "tibble"
+  )
+
+  # get riskfree return
+  ts_riskfree_rate <- get_riskfree_rate(stock_db,
+    period = "day"
+  )
+
+  period_list <- c("day", "month", "quarter", "year")
+  period_date_list <- c("start", "end")
+  for (i in seq_len(length(period_list))) {
+    period <- period_list[i]
+
+    ts_riskfree_rate <- ts_riskfree_rate %>%
+      ts_resample(freq_rule = period, agg_fun = function(x) {
+        prod(1 + x, na.rm = TRUE) - 1
+      })
+
+    ts_stock_return <- ts_stock_return %>%
+      ts_resample(freq_rule = period, agg_fun = function(x) {
+        prod(1 + x, na.rm = TRUE) - 1
+      })
+
+    # compute excess return of stocks
+    ts_stock_excess_return <- stocks_excess_return(ts_stock_return,
+      ts_riskfree_rate,
+      period = period,
+      period_date = "end"
+    )
+
+
+    # validate results
+    expect_fields <- c(
+      "date", "stkcd", "return",
+      "period", "riskfree_return", "excess_return"
+    )
+    expect_true(all(names(ts_stock_excess_return) %in% expect_fields))
+    expect_true(all(na.omit(with(
+      ts_stock_excess_return,
+      (return - riskfree_return) == excess_return
+    ))))
+  }
+
+  # >> argument: period_date ----
+  ts_stock_return <- get_stock_return(stock_db,
+                                      stock_cd_list = stkcds,
+                                      period_type = "month",
+                                      period_date = "end",
+                                      output_type = "tibble"
+  )
+
+  # get riskfree rate
+  ts_riskfree_rate <- get_riskfree_rate(stock_db,
+                                        period = "month"
+  )
+
+  # compute excess return of stocks
+  ts_stock_excess_return <- stocks_excess_return(
+    ts_stock_return,
+    ts_riskfree_rate,
+    period = "month",
+    period_date = "start"
+  )
+
+  # validate results
+  expect_fields <- c(
+    "date", "stkcd", "return",
+    "period", "riskfree_return", "excess_return"
+  )
+  expect_true(all(names(ts_stock_excess_return) %in% expect_fields))
+  expect_true(all(na.omit(with(
+    ts_stock_excess_return,
+    (return - riskfree_return) == excess_return
+  ))))
+
+  expect_true(is_periodic_dates(ts_stock_excess_return$date, freq_rule = "month"))
+  expect_true(all(lubridate::day(ts_stock_excess_return$date) == 1))
+
+
+
+  # compute excess return of stocks
+  ts_stock_excess_return <- stocks_excess_return(
+    ts_stock_return,
+    ts_riskfree_rate,
+    period = "month",
+    period_date = "end"
+  )
+
+  # validate results
+  expect_fields <- c(
+    "date", "stkcd", "return",
+    "period", "riskfree_return", "excess_return"
+  )
+  expect_true(all(names(ts_stock_excess_return) %in% expect_fields))
+  expect_true(all(na.omit(with(
+    ts_stock_excess_return,
+    (return - riskfree_return) == excess_return
+  ))))
+
+  expect_true(is_periodic_dates(ts_stock_excess_return$date, freq_rule = "month"))
+  expect_true(all(lubridate::day(ts_stock_excess_return$date +1 ) == 1))
+
+
+})
 
 # clear up testing conext
 suppressMessages(close_stock_db(stock_db))
