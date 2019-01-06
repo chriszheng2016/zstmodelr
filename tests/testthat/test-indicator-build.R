@@ -218,7 +218,7 @@ test_that("modify_indicator", {
   )
 
   # don't change existed attribute
-  expect_warning(
+  expect_message(
     ts_modify_indicator <- modify_indicator(ts_modify_indicator,
       modify_fun = ind_attr_def_fun,
       date_index_field = "date",
@@ -234,7 +234,7 @@ test_that("modify_indicator", {
   expect_true(all(ts_modify_indicator[attr_name] == attr_value1))
 
   # replace exsited attribute
-  expect_warning(
+  expect_message(
     ts_modify_indicator <- modify_indicator(ts_modify_indicator,
                                             modify_fun = ind_attr_def_fun,
                                             replace_exist = TRUE,

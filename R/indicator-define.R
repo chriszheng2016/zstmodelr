@@ -150,6 +150,9 @@ setGeneric(
 #'  no rollying.
 #' @param period   A periodicity of indicator, e.g. "day", "month",
 #'    "quarter", "year".
+#' @param fillna_method   A method to fill NA , e.g. "ffill", "bfill", "nfill".
+#'  Default "ffill" means to use value before NAs to fill NAs; "bfill" means
+#'  to use data behind NAs to fill NAs; "nfill" means to don't fill NAs.
 #'
 #'
 #' @family indicator define functions
@@ -164,7 +167,10 @@ create_indicator_def_fun <- function(indicator_code,
                                      period = c(
                                        "day", "month",
                                        "quarter", "year"
-                                     )) {
+                                     ),
+                                     fillna_method = c(
+                                       "ffill", "bfill", "nfill"
+                                       )) {
 
   # validate params
   assertive::assert_is_character(indicator_code)
@@ -205,11 +211,15 @@ create_indicator_def_fun <- function(indicator_code,
 
   # define ds_var process
   .process_vars <- function(ds_vars,
-                              date_index_field = c("date"),
-                              re_freq = c(
-                                "day", "month",
-                                "quarter", "year"
-                              )) {
+                            date_index_field = c("date"),
+                            key_fields = NULL,
+                            re_freq = c(
+                              "day", "month",
+                              "quarter", "year"
+                            ),
+                            fillna_method = c(
+                              "ffill", "bfill", "nfill"
+                            )) {
 
     # validate params
     assertive::assert_is_data.frame(ds_vars)
@@ -226,16 +236,17 @@ create_indicator_def_fun <- function(indicator_code,
 
     # re-freq vars in different priods
     re_freq <- match.arg(re_freq)
+    fillna_method <- match.arg(fillna_method)
     ds_vars_by_period <- ds_vars_by_period %>%
       dplyr::mutate(
         refreq_data =
           purrr::map(data,
-            ts_resample,
+            ts_asfreq,
             freq_rule = re_freq,
-            fillna_method = "ffill",
-            agg_method = mean,
-            date_index_field = c("date"),
-            key_fields = NULL
+            fillna_method = fillna_method,
+            date_index_field = date_index_field,
+            key_fields = key_fields,
+            parallel = FALSE
           )
       )
 
@@ -274,7 +285,12 @@ create_indicator_def_fun <- function(indicator_code,
     check_fields(ds_vars, c(date_index_field, key_fields))
 
     # process ds_vars
-    ds_vars <- .process_vars(ds_vars, re_freq = period)
+    ds_vars <- .process_vars(ds_vars,
+      date_index_field = date_index_field,
+      key_fields = key_fields,
+      re_freq = period,
+      fillna_method = fillna_method
+    )
 
     # Evaluate exprs in ds_vars
     if (rolly_window > 0) {
@@ -521,14 +537,13 @@ prioritize_indicator_defs <- function(ds_indicator_defs) {
 
   # go through each def tree in def_trees to find proper priority.
   for (i in seq_len(NROW(ind_defs_trees))) {
-
     defs_tree_node <- ind_defs_trees[i, ]
 
     # set priority for each target tree in ind_def_trees
     if (defs_tree_node$is_root_node) {
 
       # get a target tree for setting priority
-      target_ind_defs_tree <- ind_defs_trees[i:NROW(ind_defs_trees),]
+      target_ind_defs_tree <- ind_defs_trees[i:NROW(ind_defs_trees), ]
       target_ind_defs_tree <- as_ind_defs_trees(target_ind_defs_tree)
 
       # set priority for the targt tree
@@ -566,7 +581,6 @@ prioritize_indicator_defs <- function(ds_indicator_defs) {
           dplyr::filter(!(ind_code %in% independ_indicators))
 
         target_ind_defs_tree <- as_ind_defs_trees(target_ind_defs_tree)
-
       }
     }
   }
@@ -580,7 +594,6 @@ prioritize_indicator_defs <- function(ds_indicator_defs) {
     tidyr::nest(.key = "ds_indicator_defs")
 
   return(ds_indicator_defs_priority)
-
 }
 
 # Internal functions for indicator define  -------------------------------
@@ -597,7 +610,7 @@ create_ind_defs_trees <- function(ds_indicator_defs) {
       dplyr::select(ind_code, depend_ind_codes = ind_vars) %>%
       dplyr::mutate(is_root_node = NA)
   } else if (all(c("ind_code", "depend_ind_codes", "is_root_node") %in%
-                 names(ds_indicator_defs))) {
+    names(ds_indicator_defs))) {
     defs_trees_info <- ds_indicator_defs
   } else {
     msg <- "Invalid data.frame of indicators_defs."
@@ -611,12 +624,10 @@ create_ind_defs_trees <- function(ds_indicator_defs) {
   )
 
   return(defs_trees)
-
 }
 
 # wrapper converter for create_ind_defs_tree
 as_ind_defs_trees <- function(x) {
-
   assertive::assert_is_data.frame(x)
 
   if (inherits(x, "ind_defs_trees")) {
@@ -626,7 +637,6 @@ as_ind_defs_trees <- function(x) {
   }
 
   return(ind_defs_trees)
-
 }
 
 # Validate indicators to ensure every indicator depends on indicators
@@ -635,8 +645,10 @@ validate_indicators <- function(ind_defs_trees) {
 
   # validate params
   assertive::assert_is_data.frame(ind_defs_trees)
-  stopifnot(!is.null(ind_defs_trees),
-            inherits(ind_defs_trees, "ind_defs_trees"))
+  stopifnot(
+    !is.null(ind_defs_trees),
+    inherits(ind_defs_trees, "ind_defs_trees")
+  )
 
   # filter out any ind_code of depend_ind_codes, which never exists
   # in ind_code of defs_trees
@@ -659,7 +671,6 @@ validate_indicators <- function(ind_defs_trees) {
   valid_defs_trees <- as_ind_defs_trees(valid_defs_trees)
 
   return(valid_defs_trees)
-
 }
 
 # Check duplicated indicators.
@@ -669,8 +680,10 @@ check_duplicated_indicators <- function(ind_defs_trees) {
 
   # validate params
   assertive::assert_is_data.frame(ind_defs_trees)
-  stopifnot(!is.null(ind_defs_trees),
-            inherits(ind_defs_trees, "ind_defs_trees"))
+  stopifnot(
+    !is.null(ind_defs_trees),
+    inherits(ind_defs_trees, "ind_defs_trees")
+  )
 
   # check duplicated indicators in defs_tree
   duplicated_ind_codes <- ind_defs_trees$ind_code[duplicated(ind_defs_trees$ind_code)]
@@ -699,8 +712,10 @@ check_loop_depdency <- function(ind_defs_trees) {
 
   # validate params
   assertive::assert_is_data.frame(ind_defs_trees)
-  stopifnot(!is.null(ind_defs_trees),
-            inherits(ind_defs_trees, "ind_defs_trees"))
+  stopifnot(
+    !is.null(ind_defs_trees),
+    inherits(ind_defs_trees, "ind_defs_trees")
+  )
 
   # if no root_indicator existed in defs_trees,
   # there must be loop dependency among trees,
@@ -717,26 +732,17 @@ check_loop_depdency <- function(ind_defs_trees) {
     pass_defs_trees <- ind_defs_trees %>%
       dplyr::mutate(is_root_node = (ind_code %in% root_indicators)) %>%
       dplyr::arrange(desc(is_root_node))
-      # dplyr::select(-is_root_node)
+
   } else {
     # found loop dependency
     msg <- sprintf(
       "Found loop dependency among indicators in defs tree, please check!!"
     )
     rlang::abort(msg)
-
   }
 
   # fix problem of losing class of ind_defs_trees after dplyr process
   pass_defs_trees <- as_ind_defs_trees(pass_defs_trees)
 
   return(pass_defs_trees)
-
 }
-
-
-
-
-
-
-

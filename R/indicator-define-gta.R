@@ -118,13 +118,17 @@ parse_indicator_vars.gta_db <- function(stock_db, indicator_expr) {
   all_indictors_info <- profile_get_indicators(gta_profile_name)
   if (!is.null(all_indictors_info)) {
     all_indictors_codes <- all_indictors_info$ind_code
+    all_indictors_names <- all_indictors_info$ind_name
+    names(all_indictors_names) <- all_indictors_codes
 
     syms_are_indicators <- syms %in% all_indictors_codes
     indicator_vars <- syms[syms_are_indicators]
+    indicator_vars_names <- all_indictors_names[indicator_vars]
     non_indicator_vars <- syms[!syms_are_indicators]
 
-    msg <- sprintf("Indicator vars in expr: %s;\nNon_indicator vars in expr: %s.",
-                   paste0(indicator_vars, collapse = ","),
+    msg <- sprintf("\nIndicator vars in parsed expr: %s;\nNon_indicator vars in parsed expr: %s.",
+                   paste0(indicator_vars, "(",indicator_vars_names, ")",
+                          collapse = ","),
                    paste0(non_indicator_vars, collapse = ","))
     rlang::inform(msg)
   }
@@ -254,6 +258,11 @@ build_indicator_defs.gta_db <- function(stock_db, customized_indictors_info) {
   # create indicator_def
   for (i in seq_len(NROW(indicator_defs))) {
 
+    # Print debug msg
+    msg <- sprintf("\nCreate indicator definition for %s:",
+                   indicator_defs$ind_code[i])
+    rlang::inform(msg)
+
     # convert ind_keys
     ind_keys <- stringr::str_split(indicator_defs$ind_keys,
       pattern = ","
@@ -276,7 +285,8 @@ build_indicator_defs.gta_db <- function(stock_db, customized_indictors_info) {
         indicator_code = indicator_def$ind_code,
         indicator_expr = indicator_expr,
         rolly_window = indicator_def$rolling_window,
-        period = indicator_def$period
+        period = indicator_def$period,
+        fillna_method = indicator_def$fillna_method
       )
       indicator_defs$ind_def_fun[i] <- list(indicator_def_fun)
 

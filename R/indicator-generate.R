@@ -140,11 +140,13 @@ generate_indicators <- function(stock_db,
         # add attribute of industry code(indcd)
         # Notice: indcd must use stkcd as key_fields
         if (success) {
-          if (!("indcd" %in% names(ts_indicator))) {
+          if (!("indcd" %in% names(ts_indicator)) ||
+              any(is.na(ts_indicator$indcd)) ) {
+            # add indcd attribute if no indcd or indcd is not completed
             ts_indicator <- modify_indicator(
               ts_indicator = ts_indicator,
               modify_fun = new_attr_indcd,
-              replace_exist = FALSE,
+              replace_exist = TRUE,
               date_index_field = "date",
               key_fields = "stkcd",
               parallel = parallel
@@ -203,12 +205,20 @@ generate_indicators <- function(stock_db,
           rlang::inform(msg)
         } else {
           msg <- sprintf(
-            "Fail to generate indicator: %s(%s), because ind_def_fun is NULL.\n",
+            "Fail to generate indicator: %s(%s).\n",
             indicator_def$ind_code,
             indicator_def$ind_name
           )
           rlang::warn(msg)
         }
+      } else {
+
+        msg <- sprintf(
+          "Cann't to generate indicator: %s(%s), because ind_def_fun is NULL.\n",
+          indicator_def$ind_code,
+          indicator_def$ind_name
+        )
+        rlang::warn(msg)
       }
 
       # record results

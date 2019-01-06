@@ -65,11 +65,9 @@ test_ds_vars <- function(dates, peroid) {
       rep("mclsprc", length(dates))
     ),
     ind_value = c(
-      rep(1.1, length(dates)),
-      rep(2.1, length(dates))
+      seq(from = 1.1, by = 1, length.out = length(dates)),
+      seq(from = 2.1, by = 1, length.out = length(dates))
     )
-    # ind_value = c(runif(length(dates)),
-    #               runif(length(dates)))
   )
 
   return(ds_vars)
@@ -143,12 +141,10 @@ test_that("create_indicator_def_fun", {
   indicator_code <- test_indicator_defs$ind_code
 
   ind_def_fun <- create_indicator_def_fun(indicator_code,
-    indicator_expr = indicator_expr,
-    rolly_window = 0,
-    period = "month"
-  )
+    indicator_expr = indicator_expr)
   expect_true(is.function(ind_def_fun))
 
+  # create_indicator_def_fun with various arguments ====
   for (i in seq_along(list_ds_vars)) {
     period <- test_indicator_defs$period
     ds_vars <- list_ds_vars[[i]]
@@ -158,8 +154,11 @@ test_that("create_indicator_def_fun", {
     ind_def_fun <- create_indicator_def_fun(indicator_code,
       indicator_expr = indicator_expr,
       rolly_window = 0,
-      period = period
+      period = period,
+      fillna_method = "ffill"
     )
+
+    expect_true(is.function(ind_def_fun))
 
     # use definition function to compute indicator -- No debug
     ds_indicator <- ind_def_fun(ds_vars,

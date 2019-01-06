@@ -147,6 +147,9 @@ trail_periodic_series <- function(dates, data_series,
       }
     )
 
+    # replace NA in series with 0
+    data_series[is.na(data_series)] <- 0
+
     # convert series into dataframe
     ds_date <- tibble::tibble(date = dates)
     ds_series <- tibble::as_tibble(data_series)

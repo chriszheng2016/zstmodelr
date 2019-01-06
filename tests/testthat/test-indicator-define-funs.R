@@ -1,5 +1,5 @@
 # Tests for function of indicator define funs  ----
-context("Tests for function of f indicator define funs")
+context("Tests for function of indicator define funs")
 
 # prepare test datasets
 # set up testing context

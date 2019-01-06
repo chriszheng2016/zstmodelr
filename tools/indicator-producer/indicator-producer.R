@@ -103,7 +103,7 @@ indicator_producer <- function(dsn = c("GTA_SQLData"),
 # Validate indicator definition
 # indicator_producer(fun = "produce", validate_def = TRUE, parallel = FALSE)
 #
-## Clear all indicators files by default
+# Clear all indicators files by default
 # indicator_producer(fun = "clear")
 #
 # Clear all indicators files forcefully

@@ -87,8 +87,7 @@ compute_indicator <- function(ts_compute_vars,
 
   # Work for single/multi group dataset
   if (is.null(key_fields)) {
-
-    # For single group
+    # for single group
     ds_indicator <- .compute_indicator_single_group(ts_compute_vars,
       compute_fun = compute_fun,
       ...,
@@ -96,17 +95,18 @@ compute_indicator <- function(ts_compute_vars,
       key_fields = key_fields
     )
   } else {
-
-    # For mutlti groups by key_fieilds
-    ds_indicator <- plyr::ddply(ts_compute_vars,
-      .variables = key_fields,
-      .fun = .compute_indicator_single_group,
-      compute_fun = compute_fun,
-      ...,
-      date_index_field = date_index_field,
-      key_fields = key_fields,
-      .parallel = parallel,
-      .progress = plyr::progress_win(title = "Computing...")
+    # for mutlti groups by key_fieilds
+    suppressWarnings(
+      ds_indicator <- plyr::ddply(ts_compute_vars,
+        .variables = key_fields,
+        .fun = .compute_indicator_single_group,
+        compute_fun = compute_fun,
+        ...,
+        date_index_field = date_index_field,
+        key_fields = key_fields,
+        .parallel = parallel,
+        .progress = plyr::progress_none()
+      )
     )
 
     # If there are no results, dplyr::ddply will return a data frame
@@ -164,7 +164,8 @@ compute_indicator <- function(ts_compute_vars,
 #'       indicator_code = "m_stock_beta1",
 #'       indicator_expr = indicator_expr,
 #'       rolly_window = 12,
-#'       period = "month"
+#'       period = "month",
+#'       fillna_method = "ffill"
 #'       )
 #'
 #'   # create a indicator from vars dataset.
@@ -362,19 +363,19 @@ modify_indicator <- function(ts_indicator,
           )
 
         msg <- sprintf(
-          "attribute(%s) has existed, and replace by new value.",
+          "Attribute(%s) has existed, but replaced by new value.",
           attr_name
         )
-        rlang::warn(msg)
+        rlang::inform(msg)
       } else {
         # not replace exsisted attributee
         ds_modify_indicator <- ts_indicator
 
         msg <- sprintf(
-          "Attribute(%s) has existed, and old attribute will remains.",
+          "Attribute(%s) has existed, and old value will remain.",
           attr_name
         )
-        rlang::warn(msg)
+        rlang::inform(msg)
       }
     } else {
       # add new attribute
