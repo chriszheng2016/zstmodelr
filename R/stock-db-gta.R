@@ -111,7 +111,7 @@ open_stock_db.gta_db <- function(stock_db) {
     msg <- conditionMessage(con_stock_db)
     success <- FALSE
   } else {
-    msg <- sprintf("Connect data source of %s successfully", stock_db$dsn)
+    msg <- sprintf("Connect data source of %s successfully.", stock_db$dsn)
     stock_db$connection <- con_stock_db
     success <- TRUE
   }
@@ -153,12 +153,12 @@ close_stock_db.gta_db <- function(stock_db) {
     if (inherits(success, "error")) {
 
       # fail to close the connect
-      msg <- sprintf("fail to close the connection of %s", stock_db$dsn)
+      msg <- sprintf("Fail to close the connection of %s.", stock_db$dsn)
       success <- FALSE
     } else {
 
       # close the connection succesfully
-      msg <- sprintf("close the connection of %s successfully", stock_db$dsn)
+      msg <- sprintf("Close the connection of %s successfully.", stock_db$dsn)
       stock_db$connection <- NULL
       success <- TRUE
     }
@@ -233,7 +233,7 @@ init_stock_db.gta_db <- function(stock_db) {
     table_name_value <- profile_get_varible_setting(gta_profile_name, table_name_id)
     if (is.null(table_name_value)) {
       msg <- sprintf(
-        "Fail to load %s from %", table_name_id,
+        "Fail to load %s from %.", table_name_id,
         gta_profile_name
       )
       rlang::abort(msg)
@@ -321,6 +321,8 @@ setMethod(
 
 # Translate name into code for field or stock
 # Method definition for s3 generic
+# @param type  A character of covertion type, e.g, "stock", "field", "industry".
+#  Default "stock" means to covert stock name to stock code.
 # @describeIn name2code Translate name into code in a database of gta_db class
 #' @export
 name2code.gta_db <- function(stock_db, name,
@@ -338,18 +340,22 @@ name2code.gta_db <- function(stock_db, name,
 }
 # Method definition for s4 generic
 # Translate name into code for field or stock
+#' @param type  A character of covertion type, e.g, "stock", "field", "industry".
+#'  Default "stock" means to covert stock name to stock code.
 #' @describeIn name2code Translate name into code in a database of gta_db class
 #' @export
 setMethod(
   "name2code",
   signature(x = "gta_db"),
-  function(x, name, ...) {
-    name2code.gta_db(stock_db = x, name, ...)
+  function(x, name, type = c("stock", "field", "industry"), ...) {
+    name2code.gta_db(stock_db = x, name, type, ...)
   }
 )
 
 # Translate code into name for field or stock
 # Method definition for s3 generic
+# @param type  A character of covertion type, e.g, "stock", "field", "industry".
+#  Default "stock" means to covert stock code to stock name.
 # @describeIn code2name Translate code into name in a database of gta_db class
 #' @export
 code2name.gta_db <- function(stock_db, code,
@@ -366,13 +372,15 @@ code2name.gta_db <- function(stock_db, code,
   return(name)
 }
 # Method definition for s4 generic
+#' @param type  A character of covertion type, e.g, "stock", "field", "industry".
+#'  Default "stock" means to covert stock code to stock name.
 #' @describeIn code2name Translate code into name in a database of gta_db class
 #' @export
 setMethod(
   "code2name",
   signature(x = "gta_db"),
-  function(x, code, ...) {
-    code2name.gta_db(stock_db = x, code, ...)
+  function(x, code, type = c("stock", "field", "industry"), ...) {
+    code2name.gta_db(stock_db = x, code, type, ...)
   }
 )
 # Get a dataset from a table in stock_db
@@ -408,7 +416,7 @@ get_table_dataset.gta_db <- function(stock_db, table_name) {
     msg <- conditionMessage(ds_result)
     ds_result <- NULL
   } else {
-    msg <- sprintf("Get data from %s successfully", table_name)
+    msg <- sprintf("Get data from %s successfully.", table_name)
     colnames(ds_result) <- tolower(colnames(ds_result))
   }
   rlang::inform(msg)
@@ -422,7 +430,7 @@ get_table_dataset.gta_db <- function(stock_db, table_name) {
         ds_result[, stkcd_names] <- stringr::str_pad(ds_result[, stkcd_names],
           width = 6, pad = "0"
         )
-        msg <- "Coerce stock cd to character of 6 digits if it were number"
+        msg <- "Coerce stock cd to character of 6 digits if it were number."
         warnings(msg)
       }
     }
@@ -470,7 +478,7 @@ get_stock_dataset.gta_db <- function(stock_db, table_name, stock_cd_list = NULL)
     # Coerce stock code to 6 digit of characters
     if (!is.character(stock_cd_list)) {
       stock_cd_list <- stringr::str_pad(stock_cd_list, width = 6, pad = "0")
-      msg <- "Coerce stock cd to character of 6 digits if it were numeric"
+      msg <- "Coerce stock cd to character of 6 digits if it were numeric."
       warnings(msg)
     }
 
@@ -511,7 +519,7 @@ get_stock_dataset.gta_db <- function(stock_db, table_name, stock_cd_list = NULL)
     ds_result <- NULL
   } else {
     msg <- sprintf(
-      "Get stock data of(%s) from %s successfully", stock_cd_list_str,
+      "Get stock data of(%s) from %s successfully.", stock_cd_list_str,
       table_name
     )
     colnames(ds_result) <- tolower(colnames(ds_result))
@@ -527,7 +535,7 @@ get_stock_dataset.gta_db <- function(stock_db, table_name, stock_cd_list = NULL)
         ds_result[, stkcd_names] <- stringr::str_pad(ds_result[, stkcd_names],
           width = 6, pad = "0"
         )
-        msg <- "Coerce stock cd to character of 6 digits if it were number"
+        msg <- "Coerce stock cd to character of 6 digits if it were number."
         warnings(msg)
       }
     }
@@ -711,7 +719,7 @@ get_stock_return.gta_db <- function(stock_db, stock_cd_list = NULL,
   # Coerce stock code to 6 digit of characters
   if (!is.null(stock_cd_list) && !is.character(stock_cd_list)) {
     stock_cd_list <- stringr::str_pad(stock_cd_list, width = 6, pad = "0")
-    msg <- "Coerce stock cd to character of 6 digits if it were number"
+    msg <- "Coerce stock cd to character of 6 digits if it were number."
     warnings(msg)
   }
 
@@ -726,7 +734,7 @@ get_stock_return.gta_db <- function(stock_db, stock_cd_list = NULL,
       )
 
     msg <- sprintf(
-      "Get stock return: return table: %s , return field: %s, date field: %s",
+      "Get stock return: return table: %s , return field: %s, date field: %s.",
       table_name, rlang::quo_text(field_return), rlang::quo_text(field_date)
     )
     rlang::inform(msg)
@@ -871,7 +879,7 @@ get_market_return.gta_db <- function(stock_db,
       dplyr::select(date = !!field_date, market_index = !!field_return)
 
     msg <- sprintf(
-      "return table: %s , return field: %s, date field: %s",
+      "Get return data from return table: %s , return field: %s, date field: %s.",
       table_name, rlang::quo_text(field_return), rlang::quo_text(field_date)
     )
     rlang::inform(msg)
@@ -1247,7 +1255,7 @@ get_indicators_from_source.gta_db <- function(stock_db,
       error = function(e) e)
       if (inherits(result, "error")) {
         msg <- sprintf(
-          "Fail to read indicator from %s:\n%s",
+          "Fail to read indicator from %s:\n%s.",
           path_indicator_source,
           conditionMessage(result)
         )
@@ -1314,7 +1322,7 @@ get_indicators_from_source.gta_db <- function(stock_db,
       if (("stkcd" %in% ds_field_names) && is.numeric(ds_indicators$stkcd)) {
         ds_indicators <- ds_indicators %>%
           dplyr::mutate(stkcd = sprintf("%06d", stkcd))
-        msg <- "Coerce stock cd to character of 6 digits if it were numeric"
+        msg <- "Coerce stock cd to character of 6 digits if it were numeric."
         rlang::warn(msg)
       }
 
@@ -1333,12 +1341,12 @@ get_indicators_from_source.gta_db <- function(stock_db,
 
           if (length(match_date_fields) > 1) {
             msg <- sprintf(
-              "More than one possible date field(%s), the first field(%s) is renamed to 'date'",
+              "More than one possible date field(%s), the first field(%s) is renamed to 'date'.",
               stringr::str_c(match_date_fields, collapse = ","),
               date_field
             )
           } else {
-            msg <- sprintf("Date field(%s) is renamed to 'date'", date_field)
+            msg <- sprintf("Date field(%s) is renamed to 'date'.", date_field)
           }
 
           rlang::inform(msg)
@@ -1363,7 +1371,7 @@ get_indicators_from_source.gta_db <- function(stock_db,
         } else {
           # invalid type for date field
           msg <- sprintf(
-            "Fail to translate date field of type of %s",
+            "Fail to translate date field of type of %s.",
             typeof(ds_indicators$date)
           )
           rlang::abort(msg)
@@ -1451,7 +1459,7 @@ get_indicators_from_source.gta_db <- function(stock_db,
       # message results
       if (!is.null(indicator_codes)) {
         msg <- sprintf(
-          "Get indicators: %s(%s) from %s",
+          "Get indicators: %s(%s) from %s.",
           stringr::str_c(indicator_codes, collapse = ","),
           stringr::str_c(code2name(stock_db, indicator_codes, type = "field"),
             collapse = ","
@@ -1460,7 +1468,7 @@ get_indicators_from_source.gta_db <- function(stock_db,
         )
       } else {
         msg <- sprintf(
-          "Get all indicators from %s",
+          "Get all indicators from %s.",
           indicator_source
         )
       }
@@ -1470,7 +1478,7 @@ get_indicators_from_source.gta_db <- function(stock_db,
 
       # some indicators miss from result dataset
       msg <- sprintf(
-        "Indicators: %s aren't in the table of %s",
+        "Indicators: %s aren't in the table of %s.",
         stringr::str_c(indicator_codes[!indicators_is_existed], collapse = ","),
         indicator_source
       )
@@ -1497,7 +1505,7 @@ get_indicators_from_source.gta_db <- function(stock_db,
       } else {
         # raise error for no numeric fields
         msg <- sprintf(
-          "Can't tranfrom into long-formt dataset, since no numeric field in the table of %s",
+          "Can't tranfrom into long-formt dataset, since no numeric field in the table of %s.",
           indicator_source
         )
         rlang::abort(msg)
@@ -2128,7 +2136,7 @@ stock_name_list.gta_db <- function(stock_db) {
     # Coerce stock code to 6 digit of characters of format of "xxxxxxx"
     if (!is.character(codes)) {
       codes <- stringr::str_pad(codes, width = 6, pad = "0")
-      msg <- "Coerce stock cd to character of 6 digits if it were number"
+      msg <- "Coerce stock cd to character of 6 digits if it were number."
       warnings(msg)
     }
 
