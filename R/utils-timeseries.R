@@ -8,18 +8,13 @@
 #' Optionally provide filling method to pad/backfill missing values.
 #' Return aggregating data conformed to a new index with the specified frequency.
 #'
-#' resample is more appropriate if an operation, such as summarization, is
+#' ts_resample is more appropriate if an operation, such as summarization, is
 #' necessary to represent the data at the new frequency.
 #'
-#' @param ts_dataset A timeseries of tibble or timeSeries.
-#'
-#' @param freq_rule  The offset string or object representing target conversion,
-#'  e.g. "day", "month", "quarter", "year", default "Day".
-#' @param fillna_method method to fill holes in reindexed Series, e.g.
-#'  "nfill", "bfill","ffill", default nafill(fill NA)
+#' @inheritParams ts_asfreq
 #' @param agg_fun    Function to aggregate values of group data for new timestamp,
-#'  default setting is mean
-#' @param ...        Argments passed to agg_fun
+#'  default setting is mean.
+#' @param ...        Params passed to agg_fun.
 #'
 #'
 #' @return           A converted timeseres.
@@ -55,11 +50,13 @@ ts_resample <- function(ts_dataset, freq_rule = c("day", "month", "quarter", "ye
 #'
 #' ts_asfreq is more appropriate if use original the data at the new frequency.
 #'
-#' @param ts_dataset   A timeseries of tibble/timeSeries.#
-#' @param freq_rule    The offset string or object representing target conversion,
+#' @param ts_dataset   A timeseries of tibble/timeSeries.
+#' @param freq_rule    A offset string or object representing target conversion,
 #'  e.g. "day", "month", "quarter", "year", default "day".
-#' @param fillna_method  Method to fill holes in reindexed Series, e.g.
-#'  "nfill", "bfill","ffill", default nfill(fill with NA).
+#' @param fillna_method  A method to fill NAs in reindexed Series, e.g.
+#'  "nfill", "ffill", "bfill" . Default "nfill" don't fill NAs; "ffill" means to
+#'  use data before NAs to fill NAs; "bfill" means to use data after NAs to fill
+#'  NAs.
 #'
 #' @return            A converted timeseres
 #'
@@ -99,7 +96,7 @@ ts_asfreq <- function(ts_dataset,
 #'
 #' @param trim             A logical value. By default TRUE, the first missing observation in the return series
 #' will be removed.
-#' @param ...              Argments passed to other methods
+#' @param ...              Params passed to other methods
 #' @param date_index_field Name of date index field of ts_df for resample,
 #' default 'date', Column must be date-like.
 #' Only be used for tibble dataset.
@@ -209,9 +206,9 @@ ts_resample.tbl_df <- function(ts_dataset,
   }
 
   # -- Main function --
+
   # work for single/multi group dataset
   if (is.null(key_fields)) {
-
     # for single group process
     result_ts <- .ts_resample_single_df(ts_dataset,
       freq_rule = freq_rule,
@@ -222,20 +219,20 @@ ts_resample.tbl_df <- function(ts_dataset,
       key_fields = key_fields
     )
   } else {
-
     # for multi groups process
-
-    result_ts <- plyr::ddply(ts_dataset,
-      .variables = key_fields,
-      .fun = .ts_resample_single_df,
-      freq_rule = freq_rule,
-      fillna_method = fillna_method,
-      agg_fun = agg_fun,
-      ...,
-      date_index_field = date_index_field,
-      key_fields = key_fields,
-      .parallel = parallel,
-      .progress = plyr::progress_win(title = "Resampling...")
+    suppressWarnings(
+      result_ts <- plyr::ddply(ts_dataset,
+        .variables = key_fields,
+        .fun = .ts_resample_single_df,
+        freq_rule = freq_rule,
+        fillna_method = fillna_method,
+        agg_fun = agg_fun,
+        ...,
+        date_index_field = date_index_field,
+        key_fields = key_fields,
+        .parallel = parallel,
+        .progress = plyr::progress_none()
+      )
     )
   }
 
@@ -320,9 +317,9 @@ ts_asfreq.tbl_df <- function(ts_dataset,
   }
 
   # -- Main function --
+
   # work for single/multi group dataset
   if (is.null(key_fields)) {
-
     # for single group
     result_ts <- .ts_asfreq_single_df(ts_dataset,
       freq_rule = freq_rule,
@@ -331,17 +328,18 @@ ts_asfreq.tbl_df <- function(ts_dataset,
       key_fields = key_fields
     )
   } else {
-
     # for multi groups
-    result_ts <- plyr::ddply(ts_dataset,
-      .variables = key_fields,
-      .fun = .ts_asfreq_single_df,
-      freq_rule = freq_rule,
-      fillna_method = fillna_method,
-      date_index_field = date_index_field,
-      key_fields = key_fields,
-      .parallel = parallel,
-      .progress = plyr::progress_win(title = "Refreqencing...")
+    suppressWarnings(
+      result_ts <- plyr::ddply(ts_dataset,
+        .variables = key_fields,
+        .fun = .ts_asfreq_single_df,
+        freq_rule = freq_rule,
+        fillna_method = fillna_method,
+        date_index_field = date_index_field,
+        key_fields = key_fields,
+        .parallel = parallel,
+        .progress = plyr::progress_none()
+      )
     )
   }
 
@@ -436,9 +434,9 @@ ts_lag.tbl_df <- function(ts_dataset,
   }
 
   # -- Main function --
+
   # work for single/multi group dataset
   if (is.null(key_fields)) {
-
     # for single group
     result_ts <- .ts_lag_single_df(ts_dataset,
       k = k,
@@ -447,17 +445,18 @@ ts_lag.tbl_df <- function(ts_dataset,
       key_fields = key_fields
     )
   } else {
-
     # for multi groups
-    result_ts <- plyr::ddply(ts_dataset,
-      .variables = key_fields,
-      .fun = .ts_lag_single_df,
-      k = k,
-      trim = trim,
-      date_index_field = date_index_field,
-      key_fields = key_fields,
-      .parallel = parallel,
-      .progress = plyr::progress_win(title = "Lagging...")
+    suppressWarnings(
+      result_ts <- plyr::ddply(ts_dataset,
+        .variables = key_fields,
+        .fun = .ts_lag_single_df,
+        k = k,
+        trim = trim,
+        date_index_field = date_index_field,
+        key_fields = key_fields,
+        .parallel = parallel,
+        .progress = plyr::progress_none()
+      )
     )
   }
 
