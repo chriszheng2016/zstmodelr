@@ -22,6 +22,7 @@ factor_test_report <- function(factors_list,
 
   # build report params
   params <- list(
+    factor_group = factors_group,
     test_start_date = test_start_date,
     test_end_date = test_end_date,
     test_stkcds = test_stkcds
@@ -33,7 +34,7 @@ factor_test_report <- function(factors_list,
       msg <- sprintf("..generate test report for factor:%s ...\n", factor)
       message(msg)
 
-      params <- c(list(factors_list = factor), params)
+      params <- c(list(test_factors = factor), params)
       build_report(
         report_template = report_template,
         report_params = params,
@@ -49,7 +50,7 @@ factor_test_report <- function(factors_list,
     )
     message(msg)
 
-    params <- c(list(factors_list = factors_list), params)
+    params <- c(list(test_factors = factors_list), params)
     build_report(
       report_template = report_template,
       report_params = params,
@@ -65,40 +66,67 @@ factor_test_report <- function(factors_list,
 build_factor_test_reports <- function(dsn = c("GTA_SQLData"),
                                       test_start_date = "1990-01-01",
                                       test_end_date = as.character(Sys.Date()),
-                                      test_portfolio = NULL,
+                                      test_factors = NULL,
+                                      test_factor_groups = NULL,
+                                      test_stocks = NULL,
                                       report_type = c("batch", "single"),
                                       output_format = "html_document") {
+
+  # validate params
+  assertive::assert_is_character(dsn)
+  assertive::assert_is_character(test_start_date)
+  assertive::assert_is_character(test_end_date)
+  if (!is.null(test_factors)) assertive::assert_is_character(test_factors)
+  if (!is.null(test_factor_groups)) assertive::assert_is_character(test_factor_groups)
+  if (!is.null(test_stocks)) assertive::assert_is_character(test_stocks)
 
   # conect to target stock db
   stock_db <- stock_db(gta_db, dsn)
   open_stock_db(stock_db)
   init_stock_db(stock_db)
 
-  # read test portfolio
+  # read factor info
+  ds_factors_info <- get_factors_info(stock_db, factor_groups = NULL)
+
+  # set test stkcds
   test_stkcds <- "all"
-  if (!is.null(test_portfolio)) {
-    if (file.exists(test_portfolio)) {
-      ds_test_portfolio <- readr::read_csv(test_portfolio)
-      test_stkcds <- stringr::str_trim(ds_test_portfolio$stkcd)
-      msg <- sprintf(
-        "Test factors on stock portfolio(%s)",
-        paste0(test_stkcds, collapse = ",")
-      )
-      rlang::inform(msg)
-    } else {
-      msg <- sprintf(
-        "Test portfolio file(%s) dosen't exist, test factors on all stocks",
-        test_portfolio
-      )
-      rlang::warn(msg)
-    }
-  } else {
-    msg <- sprintf("Test factors on all stocks")
+  if (!is.null(test_stocks)) {
+    test_stkcds <- test_stocks
+    msg <- sprintf(
+      "Set test on stocks(%s).",
+      paste0(test_stkcds, collapse = ",")
+    )
     rlang::inform(msg)
   }
 
-  # read factor info
-  ds_factors_info <- get_factors_info(stock_db, factor_groups = NULL)
+  # set test factors
+  if (!is.null(test_factors)) {
+
+    # filter test factors
+    ds_factors_info <- ds_factors_info %>%
+      dplyr::filter(factor_code %in% test_factors)
+
+    msg <- sprintf(
+      "Set test on factors(%s).",
+      paste0(test_factors, collapse = ",")
+    )
+    rlang::inform(msg)
+  }
+
+  # set test factor groups
+  if (!is.null(test_factor_groups)) {
+
+    # filter test factor groups
+    ds_factors_info <- ds_factors_info %>%
+      dplyr::filter(factor_group %in% test_factor_groups)
+
+    msg <- sprintf(
+      "Set test on factor groups(%s).",
+      paste0(test_factor_groups, collapse = ",")
+    )
+    rlang::inform(msg)
+  }
+
 
   # build reports by factor_group
   factors_info_by_group <- ds_factors_info %>%
@@ -106,7 +134,6 @@ build_factor_test_reports <- function(dsn = c("GTA_SQLData"),
     dplyr::summarise(factors_list = list(factor_code))
 
   for (i in seq_along(factors_info_by_group$factor_group)) {
-
     factors_group <- factors_info_by_group$factor_group[i]
     factors_list <- factors_info_by_group$factors_list[i][[1]]
 
@@ -132,8 +159,17 @@ build_factor_test_reports <- function(dsn = c("GTA_SQLData"),
 
 # Run build_factor_test_reports
 #
-# Build factor test reports on all stocks
+# Build factor test reports for all factors on all stocks
 # build_factor_test_reports()
 #
-# Build factor test reports on test stocks
-# build_factor_test_reports(test_portfolio = "test_portfolio.csv")
+# Build factor test reports for all factors on test stocks
+# build_factor_test_reports(test_stocks = c("600031","000157","600066", "000550"))
+#
+# Build factor test reports for some factors on test stocks
+# build_factor_test_reports(test_factors = "ROCE",
+#                           test_stocks = c("600031","000157","600066", "000550"))
+#
+# Build factor test reports for some factor groups on test stocks.
+# build_factor_test_reports(test_factor_groups = "Operating Profitability",
+#                           test_stocks = c("600031","000157","600066", "000550"))
+

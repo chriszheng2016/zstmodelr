@@ -1,5 +1,5 @@
 ---
-title: "研究分析：有效因子筛选识别"
+title: "研究分析：筛选识别有效因子"
 documentclass: ctexart
 geometry:
   - tmargin=2cm
@@ -9,12 +9,12 @@ geometry:
 editor_options:
   chunk_output_type: inline
 output:
-  html_notebook:
+  html_document:
     fig_caption: yes
     number_sections: yes
     toc: yes
     toc_depth: 4
-  html_document:
+  html_notebook:
     fig_caption: yes
     number_sections: yes
     toc: yes
@@ -32,18 +32,12 @@ output:
     toc: yes
     toc_depth: 4
 params:
-  
-  test_start_date:
-    label: 'test start date:'
-    input: date
-    value: '2016-01-01'
-      
-  test_end_date:
-    
-    label: 'test end date:'
-    input: date
-    value: '2017-12-31'
-  factors_list:
+ 
+  factor_group:
+    label: 'Factor Group:'
+    input: text
+    value: 'test group'
+  test_factors:
     choices:
     - GPM
     - ROCE
@@ -52,16 +46,25 @@ params:
     - CUR
     - QR
     input: select
-    label: factors list
+    label: 'Target Factors:'
     multiple: yes
     value:
     - GPM
     - ROCE
   test_stkcds:
-    
-    label: 'target stkcds:'
+    label: 'Target Stkcds:'
     input: text
     value: '600031, 000157, 600066, 000550'
+     
+  test_start_date:
+    label: 'Test Start Date:'
+    input: date
+    value: '2016-01-01'
+      
+  test_end_date:
+    label: 'Test Start Date:'
+    input: date
+    value: '2017-12-31'
 classoption: hyperref,
 ---
 
@@ -113,9 +116,9 @@ options(tibble.print_min = 10L, tibble.print_max = 20L)
 ## 研究参数设置(Study Params)
 ```{r set_params}
 
-# Target factors list
-# target_factors_list <- c("GPM", "ROCE", "PE", "PB", "CUR", "QR")
-target_factors_list <- params$factors_list
+# Test factors list
+# test_factors <- c("GPM", "ROCE", "PE", "PB", "CUR", "QR")
+test_factors <- params$test_factors
 
 # Test stocks list
 if (params$test_stkcds != 'all') {
@@ -133,14 +136,16 @@ end_date <- params$test_end_date
 
 主要评估参数如下：
 
-* **评估因子:** `r params$factors_list`
+* **评估因子组:** `r params$factor_group`
+
+* **评估因子:** `r params$test_factors`
 
 * **回溯期间:** `r params$test_start_date` ~ `r params$test_end_date`
 
 * **股票池:** 全A股及创业板，剔除ST、PT股票，剔除每个截面期一下交易日停牌的股票。
 
 
-```{r fetch_factors_data, cache=FALSE, cache.extra = list(params$test_start_date, params$test_end_date, params$factors_list, params$test_stkcds)}
+```{r fetch_factors_data, cache=FALSE, cache.extra = list(params$test_start_date, params$test_end_date, params$test_factors, params$test_stkcds)}
 
 # Open gta stock databse
 stock_db <- stock_db(gta_db, "GTA_SQLData")
@@ -161,7 +166,7 @@ factors_info <- get_factors_info(stock_db, factor_groups = NULL)
 
 # Get fundamental indicators
 fundamental_factors_raw <- get_factors(stock_db,
-  factor_codes = target_factors_list
+  factor_codes = test_factors
 )
 
 # Filter factors for target stocks
@@ -278,13 +283,15 @@ stocks_return <- stocks_excess_return %>%
 
 # Display target factors information
 target_factors_info <- factors_info %>%
-  dplyr::filter(factor_code %in% target_factors_list)
+  dplyr::filter(factor_code %in% test_factors)
 
 knitr::kable(
   target_factors_info,
-  format = "pandoc",
-  align = "c",
+  format = "html",
+  row.names = TRUE,
+  align = c("c", "c", "c", "c", "l"),
   digits = 3,
+  padding = 5,
   caption = "目标因子信息"
 )
 ```
@@ -357,7 +364,7 @@ knitr::kable(
 - 对去除异常值的因子序列采用“直接标准化”.
 
 
-```{r factors_Normalization, cache=FALSE, autodep= TRUE}
+```{r preprocess_test_factors, cache=FALSE, autodep= TRUE}
 
 # Normalize the factor indicators
 fundamental_normal_factors <- fundamental_factors %>%
@@ -397,18 +404,32 @@ fundamental_normal_factors_lag_period <- ts_lag(
   parallel = TRUE
 )
 
+# Combine factor and return into test dataset
+ds_factor_test <- stocks_return_period %>%
+  dplyr::inner_join(fundamental_normal_factors_lag_period, by = c("date", "stkcd"))
+
+# Save test datatsetz for debug
+rds_file_factor_test <- sprintf("ds_factor_test_(%s).rds",
+                                params$factor_group)
+csv_file_factor_test <- sprintf("ds_factor_test_(%s).csv",
+                                params$factor_group)
+saveRDS(ds_factor_test,
+    file = file.path("temp", rds_file_factor_test))
+
+readr::write_csv(ds_factor_test, 
+    path = file.path("temp", csv_file_factor_test))
 
 ```
 
 ## 因子分布状况(Factor Distribution Exploration)
 
   对规范化后因子数据，计算在每个时间截面的因子分布参数(平均值等)，对计算参数时间序列的平均值，获得分布参数如下：
-```{r factor_test_summarize_factors}
+```{r summarize_test_factors}
 # compute stats of factors in deferent periods
 stats_fundamental_normal_factors <- fundamental_normal_factors %>%
   tidyr::gather(
     key = "factor_name", value = "factor_exposure",
-    target_factors_list
+    test_factors
   ) %>%
   dplyr::group_by(factor_name, date) %>%
   dplyr::summarise_at("factor_exposure",
@@ -432,6 +453,15 @@ stats_fundamental_normal_factors <- fundamental_normal_factors %>%
 stats_fundamental_normal_factors %>%
     ggplot(aes(x = factor_name, y = mean)) +
       geom_boxplot() +
+      geom_hline(yintercept = 0, color = "blue", linetype = "dashed") +
+      coord_flip() +
+      labs(title = "因子均值分布",
+          x = "因子",
+          y = "因子均值")
+
+stats_fundamental_normal_factors %>%
+    ggplot(aes(x = factor_name, y = mean)) +
+      geom_violin() +
       geom_hline(yintercept = 0, color = "blue", linetype = "dashed") +
       coord_flip() +
       labs(title = "因子均值分布",
@@ -527,8 +557,7 @@ knitr::kable(
 ```{r factor_test_Uniregression_common, cache=FALSE, autodep= TRUE}
 
 # Build test data dataset
-ds_test_uniregression <- stocks_return_period %>%
-  dplyr::inner_join(fundamental_normal_factors_lag_period, by = c("date", "stkcd")) %>%
+ds_test_uniregression <- ds_factor_test %>%
   tidyr::gather(-(date:indcd), key = "factor_name", value = "factor_exposure") %>%
   dplyr::select(date, stkcd, indcd, return, factor_name, factor_exposure)
 
@@ -672,8 +701,7 @@ plot(result_test_uniregression_industry)
 ```{r factor_test_IC_common, cache=FALSE, autodep= TRUE}
 
 # Build test dataset for single period test
-ds_test_IC <- stocks_return_period %>%
-  dplyr::inner_join(fundamental_normal_factors_lag_period, by = c("date", "stkcd")) %>%
+ds_test_IC <- ds_factor_test %>%
   tidyr::gather(-(date:indcd), key = "factor_name", value = "factor_exposure") %>%
   dplyr::select(date, stkcd, indcd, return, factor_name, factor_exposure)
 
@@ -962,8 +990,7 @@ plot(result_test_IC_industry)
 
 ```{r factor_test_portfolio_sorts_common, cache=FALSE, autodep= TRUE}
 # Build test data dataset
-ds_test_sort_portfolios <- stocks_return_period %>%
-  dplyr::inner_join(fundamental_normal_factors_lag_period, by = c("date", "stkcd")) %>%
+ds_test_sort_portfolios <- ds_factor_test %>%
   tidyr::gather(-(date:indcd), key = "factor_name", value = "factor_exposure") %>%
   dplyr::select(date, stkcd, indcd, return, factor_name, factor_exposure)
 
