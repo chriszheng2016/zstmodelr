@@ -170,7 +170,7 @@ create_indicator_def_fun <- function(indicator_code,
                                      ),
                                      fillna_method = c(
                                        "ffill", "bfill", "nfill"
-                                       )) {
+                                     )) {
 
   # validate params
   assertive::assert_is_character(indicator_code)
@@ -211,25 +211,30 @@ create_indicator_def_fun <- function(indicator_code,
 
   # define ds_var process
   .process_vars <- function(ds_vars,
-                            date_index_field = c("date"),
-                            key_fields = NULL,
-                            re_freq = c(
-                              "day", "month",
-                              "quarter", "year"
-                            ),
-                            fillna_method = c(
-                              "ffill", "bfill", "nfill"
-                            )) {
+                              date_index_field = c("date"),
+                              key_fields = NULL,
+                              re_freq = c(
+                                "day", "month",
+                                "quarter", "year"
+                              ),
+                              fillna_method = c(
+                                "ffill", "bfill", "nfill"
+                              )) {
 
     # validate params
     assertive::assert_is_data.frame(ds_vars)
 
-    # ensure all import fields are existed
-    check_fields(ds_vars, c("ind_code", "ind_value"))
+    # ensure all import fields exist
+    check_fields(ds_vars, c(
+      date_index_field, key_fields,
+      "period", "ind_code", "ind_value"
+    ))
 
 
     # re-group vars by period
     ds_vars_by_period <- ds_vars %>%
+      dplyr::select(!!date_index_field, !!key_fields,
+                    period, ind_code, ind_value) %>%
       tidyr::spread(key = "ind_code", value = "ind_value") %>%
       dplyr::group_by(period) %>%
       tidyr::nest()
@@ -732,7 +737,6 @@ check_loop_depdency <- function(ind_defs_trees) {
     pass_defs_trees <- ind_defs_trees %>%
       dplyr::mutate(is_root_node = (ind_code %in% root_indicators)) %>%
       dplyr::arrange(desc(is_root_node))
-
   } else {
     # found loop dependency
     msg <- sprintf(
