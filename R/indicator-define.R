@@ -443,8 +443,8 @@ create_attribute_def_fun <- function(attr_name,
 #'
 #' @family indicator define functions
 #'
-#' @return A dataframe of definitions of prioritized indicators if succeed,
-#'  otherwise NULL.
+#' @return A dataframe of definitions of prioritized indicators.
+#'  Raise error if anything goes wrong.
 #' @export
 prioritize_indicator_defs <- function(ds_indicator_defs) {
 
@@ -506,25 +506,7 @@ prioritize_indicator_defs <- function(ds_indicator_defs) {
     return(independ_indicators)
   }
 
-  # function to clean ind_defs_trees to ensure indicators are ok
-  .clean_ind_defs_trees <- function(ind_defs_trees) {
-
-    # validate params
-    assertive::assert_is_data.frame(ind_defs_trees)
-
-    # validate indicators in defs_trees
-    clean_defs_trees <- validate_indicators(ind_defs_trees)
-
-    # check duplicated indicators in defs_trees
-    clean_defs_trees <- check_duplicated_indicators(clean_defs_trees)
-
-    # check loop-dependency among indicators
-    clean_defs_trees <- check_loop_depdency(clean_defs_trees)
-
-    return(clean_defs_trees)
-  }
-
-  # main body of function ---
+  # main body of function
 
   # validate params
   assertive::assert_is_data.frame(ds_indicator_defs)
@@ -533,7 +515,7 @@ prioritize_indicator_defs <- function(ds_indicator_defs) {
   ind_defs_trees <- create_ind_defs_trees(ds_indicator_defs)
 
   # clean defs_defs
-  ind_defs_trees <- .clean_ind_defs_trees(ind_defs_trees)
+  ind_defs_trees <- clean_ind_defs_trees(ind_defs_trees)
 
   # set priority for indicators according to dependency
   ds_indicator_defs_priority <- ds_indicator_defs %>%
@@ -555,7 +537,7 @@ prioritize_indicator_defs <- function(ds_indicator_defs) {
       while (NROW(target_ind_defs_tree) > 0) {
 
         # clean target ind_defs trees
-        target_ind_defs_tree <- .clean_ind_defs_trees(target_ind_defs_tree)
+        target_ind_defs_tree <- clean_ind_defs_trees(target_ind_defs_tree)
 
         # find indenpendent indicators from root node of target tree of def_trees
         defs_tree <- target_ind_defs_tree[1, ]
@@ -601,6 +583,124 @@ prioritize_indicator_defs <- function(ds_indicator_defs) {
   return(ds_indicator_defs_priority)
 }
 
+
+#' Get related indicator_defs of specified indicators
+#'
+#' Get defs of related indicators of specified indicators by analyzing depndency
+#' among indicators
+#'
+#' @param ds_indicator_defs   A dataframe of indicators definition info.
+#'
+#' @param indicator_codes     A character vector of indicator codes.
+#'
+#'
+#' @family indicator define functions
+#'
+#' @return A dataframe of definitions of related indicators.
+#'  Raise error if anything goes wrong.
+#' @export
+related_indicator_defs <- function(ds_indicator_defs,
+                                   indicator_codes) {
+
+  # function to find all indicators related to a indicator recursively
+  .find_related_indcators <- function(ind_code, ind_defs_trees) {
+
+    # validate params
+    assertive::assert_is_character(ind_code)
+    assertive::assert_is_data.frame(ind_defs_trees)
+
+    related_indicators <- character(0)
+
+    # find ind_def node matched by ind_code
+    ind_def <- ind_defs_trees %>%
+      dplyr::filter(ind_code == !!ind_code)
+    if (NROW(ind_def) == 1) {
+
+      # find current indicator def
+      depend_indicators <- unique(ind_def$depend_ind_codes[[1]])
+
+      # judge whether ind_def is independent or not
+      ind_def_is_independent <- is.null(depend_indicators) ||
+        (length(depend_indicators) == 0)
+
+      # process by its dependency
+      if (ind_def_is_independent) {
+        # current indicator is independent indicator:
+        # the indepent indicator is only related indicator
+        related_indicators <- ind_def$ind_code
+      } else {
+        # current indicator is a dependent indicator:
+        # use recursion to find other related indicators of parent indicators
+
+        # get dependent indicators defs of current indicator
+        depend_indicators_def_trees <- ind_defs_trees %>%
+          dplyr::filter(ind_code %in% depend_indicators)
+
+        # find related indicators of dependent indicators of current indicator
+        related_indicators_list <- purrr::map(depend_indicators_def_trees$ind_code,
+                                             .find_related_indcators,
+                                             ind_defs_trees = ind_defs_trees
+        )
+
+        related_indicators <- purrr::flatten_chr(related_indicators_list)
+
+        # combine current_indicator and its related indicators
+        related_indicators <- c(ind_code, related_indicators)
+
+      }
+    } else {
+      # find zero or more than one ind_code in ind_defs_trees
+      msg <- sprintf(
+        "There is %d of %s in ind_defs_trees, not unique one",
+        NROW(ind_def),
+        ind_code
+      )
+      rlang::abort(msg)
+    }
+
+    # only return unqiue indicators
+    related_indicators <- unique(related_indicators)
+
+    return(related_indicators)
+  }
+
+  # main body of function
+
+  # validate params
+  assertive::assert_is_data.frame(ds_indicator_defs)
+  assertive::assert_is_character(indicator_codes)
+
+  # check specifed indicators existed in defs
+  indicator_exsited <- indicator_codes %in% ds_indicator_defs$ind_code
+  if (any(!indicator_exsited)) {
+    msg <- sprintf("There is no indicator definition for %s.",
+                   paste0(indicator_codes[!indicator_exsited], collapse = ",")
+                   )
+    rlang::abort(msg)
+  }
+
+  # build defs_trees to parse dependency among indicators
+  ind_defs_trees <- create_ind_defs_trees(ds_indicator_defs)
+
+  # clean defs_defs
+  ind_defs_trees <- clean_ind_defs_trees(ind_defs_trees)
+
+  # go through all indicators to find out all related indicators
+  all_related_ind_codes <- NULL
+  for (ind_code in  indicator_codes) {
+    related_ind_codes <- .find_related_indcators(ind_code, ind_defs_trees)
+    all_related_ind_codes <- unique(c(all_related_ind_codes, related_ind_codes))
+  }
+
+  # filter ind_defs by related indicators
+  all_related_indicator_defs <- ds_indicator_defs %>%
+    dplyr::filter( ind_code %in% all_related_ind_codes)
+
+  return(all_related_indicator_defs)
+
+}
+
+
 # Internal functions for indicator define  -------------------------------
 
 # Create tress of indicator defs
@@ -642,6 +742,24 @@ as_ind_defs_trees <- function(x) {
   }
 
   return(ind_defs_trees)
+}
+
+# Clean ind_defs_trees to ensure indicators are ok
+clean_ind_defs_trees <- function(ind_defs_trees) {
+
+  # validate params
+  assertive::assert_is_data.frame(ind_defs_trees)
+
+  # validate indicators in defs_trees
+  clean_defs_trees <- validate_indicators(ind_defs_trees)
+
+  # check duplicated indicators in defs_trees
+  clean_defs_trees <- check_duplicated_indicators(clean_defs_trees)
+
+  # check loop-dependency among indicators
+  clean_defs_trees <- check_loop_depdency(clean_defs_trees)
+
+  return(clean_defs_trees)
 }
 
 # Validate indicators to ensure every indicator depends on indicators
