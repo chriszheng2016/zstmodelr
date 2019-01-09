@@ -258,7 +258,6 @@ generate_indicators <- function(stock_db,
 #' @export
 delete_indicators <- function(stock_db,
                               ds_indicator_defs) {
-
   # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "stock_db"))
   if (is.null(stock_db$connection)) {
@@ -268,9 +267,49 @@ delete_indicators <- function(stock_db,
 
   # remove indicators files in indicator dir
   dir_indicators <- dir_path_db(stock_db, "DIR_DB_DATA_INDICATOR")
-  path_ouput_files <- paste0(dir_indicators, "/", ds_indicator_defs$ind_source)
+  path_target_files <- paste0(dir_indicators, "/", ds_indicator_defs$ind_source)
   quiet_file_remove <- purrr::possibly(file.remove, otherwise = FALSE)
-  purrr::walk(path_ouput_files, ~quiet_file_remove(.x))
+  purrr::walk(path_target_files, ~quiet_file_remove(.x))
 
   return(invisible(NULL))
+}
+
+#' Backup indicators in batch mode
+#'
+#' Backup cusotmized indicators of stock_db in batch into backup dir.
+#'
+#' @param stock_db  A stock database object to operate.
+#' @param ds_indicator_defs  A dataframe of indicator definintion to delete.
+#'
+#' @family indicator generate functions
+#'
+#' @return Path of backup dir. Raise error if anything goes wrong.
+#'
+#' @export
+backup_indicators <- function(stock_db,
+                              ds_indicator_defs,
+                              backup_dir = "backup") {
+  # validate params
+  stopifnot(!is.null(stock_db), inherits(stock_db, "stock_db"))
+  if (is.null(stock_db$connection)) {
+    stop("Stock db isn't connected, try to connect db again")
+  }
+  assertive::assert_is_data.frame(ds_indicator_defs)
+  assertive::assert_is_character(backup_dir)
+
+  dir_indicators <- dir_path_db(stock_db, "DIR_DB_DATA_INDICATOR")
+
+  # make backup dir existed
+  backup_date <- as.character(Sys.Date())
+  backup_dir_path <- file.path(dir_indicators, backup_dir, backup_date)
+  if (!dir.exists(backup_dir_path)) {
+    dir.create(backup_dir_path)
+  }
+
+  # backup indicators files into indicator dir
+  path_source_files <- paste0(dir_indicators, "/", ds_indicator_defs$ind_source)
+  quiet_file_copy <- purrr::possibly(file.copy, otherwise = FALSE)
+  purrr::walk(path_source_files, ~quiet_file_copy(.x, to = backup_dir_path))
+
+  return(backup_dir_path)
 }

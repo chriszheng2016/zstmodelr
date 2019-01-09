@@ -96,18 +96,33 @@ test_that("generate_indicators", {
 
 })
 
-test_that("delete_indicators", {
+test_that("backup_indicators", {
 
+  ## backup_indicators with various arguments ====
+  backup_dir = "backup"
+  backup_dir_path <- backup_indicators(stock_db,
+                        ds_indicator_defs = test_indicator_defs,
+                        backup_dir = backup_dir)
+
+  #check output file
+  path_backuup_files <- paste0(backup_dir_path,"/",test_indicator_defs$ind_source)
+  purrr::map(path_backuup_files, ~expect_true(file.exists(.x)))
+
+})
+
+test_that("delete_indicators", {
   ## delete_indicators with various arguments ====
   delete_indicators(stock_db,
                    ds_indicator_defs = test_indicator_defs)
 
   #check output file
   dir_indicators <- dir_path_db(stock_db,"DIR_DB_DATA_INDICATOR")
-  path_ouput_files <- paste0(dir_indicators,"/",test_indicator_defs$ind_source)
-  purrr::map(path_ouput_files, ~expect_false(file.exists(.x)))
+  path_target_files <- paste0(dir_indicators,"/",test_indicator_defs$ind_source)
+  purrr::map(path_target_files, ~expect_false(file.exists(.x)))
 
 })
+
+
 
 # clear up testing conext
 suppressMessages(close_stock_db(stock_db))
