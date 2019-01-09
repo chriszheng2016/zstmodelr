@@ -6,7 +6,8 @@ context("Tests for utitlity functions of series")
 create_periodic_ts <- function(start_date,
                                end_date,
                                accumulated = TRUE,
-                               period = c("day", "month", "quarter")) {
+                               period = c("day", "month", "quarter"),
+                               has_nas = FALSE) {
   match.arg(period)
   accumulated_periodic_data <- switch(period,
     "day" = lubridate::yday,
@@ -17,13 +18,29 @@ create_periodic_ts <- function(start_date,
   date <- seq(start_date, end_date, by = period)
   date <- lubridate::ceiling_date(date, unit = period) - 1
 
+  # Set accutlated or non-accumated data
   if (accumulated) {
     # accumulated data with increament of 1
     x <- accumulated_periodic_data(date)
+
+    # set elements of odd postions of x to NA if need
+    if (has_nas) {
+      x[(1:length(x)) %% 2 == 1] <- NA
+    }
+
   } else {
     # non-accumulated data with no-increament
     x <- rep(1.0, length(date))
+
+    # set elements at odd postions of x to NA if need
+    # and double left non-na elemets
+    if (has_nas) {
+      x[(1:length(x)) %% 2 == 1] <- NA
+      x <- 2 * x
+    }
   }
+
+
 
   ts <- tibble::tibble(date = date, x = x, y = x * 2)
   return(ts)
@@ -36,7 +53,8 @@ test_that("rollify_series, with various arguments", {
   end_date <- as.Date("2019/12/31")
   ts_month <- create_periodic_ts(start_date, end_date,
     accumulated = FALSE,
-    period = "month"
+    period = "month",
+    has_nas = FALSE
   )
 
   # rollify_series with default arguments ====
@@ -99,7 +117,8 @@ test_that("trail_periodic_series, with various arguments", {
   end_date <- as.Date("2019/12/31")
   ts_day <- create_periodic_ts(start_date, end_date,
     accumulated = TRUE,
-    period = "day"
+    period = "day",
+    has_nas = FALSE
   )
 
   ts_trail <- trail_periodic_series(ts_day$date, ts_day[, c("x", "y")])
@@ -149,17 +168,35 @@ test_that("trail_periodic_series, with various arguments", {
   end_date <- as.Date("2019/12/31")
 
   for (accumulated in c(TRUE, FALSE)) {
+
+    # test on ts dataset without NAs
     ts_month <- create_periodic_ts(start_date, end_date,
-      accumulated = accumulated,
-      period = "month"
+                                   accumulated = accumulated,
+                                   period = "month",
+                                   has_nas = FALSE
     )
     ts_trail <- trail_periodic_series(ts_month$date, ts_month[, c("x", "y")],
-      period = "month",
-      accumulated = accumulated
+                                      period = "month",
+                                      accumulated = accumulated
     )
     expect_equivalent(colMeans(ts_trail, na.rm = TRUE), c(12, 24))
     expect_equivalent(sum(is.na(ts_trail$x)), 12 - 1)
     expect_equivalent(sum(is.na(ts_trail$y)), 12 - 1)
+
+    # test on ts dataset with some NAs
+    ts_month <- create_periodic_ts(start_date, end_date,
+                                   accumulated = accumulated,
+                                   period = "month",
+                                   has_nas = TRUE
+    )
+    ts_trail <- trail_periodic_series(ts_month$date, ts_month[, c("x", "y")],
+                                      period = "month",
+                                      accumulated = accumulated
+    )
+    expect_equivalent(colMeans(ts_trail, na.rm = TRUE), c(12, 24))
+    expect_equivalent(sum(is.na(ts_trail$x)), 12 - 1)
+    expect_equivalent(sum(is.na(ts_trail$y)), 12 - 1)
+
   }
 
 
