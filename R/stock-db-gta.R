@@ -1821,7 +1821,8 @@ get_factors_info.gta_db <- function(stock_db,
       factor_name = factor_name,
       factor_type = factor_type,
       factor_group = factor_group,
-      factor_description = factor_description
+      factor_description = factor_description,
+      factor_lag_month = factor_lag_month
     )
 
   return(matched_factors_info)

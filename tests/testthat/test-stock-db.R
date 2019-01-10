@@ -624,7 +624,8 @@ test_that("get_factors_info, with various arguments", {
   ds_matched_factors <- get_factors_info(stock_db)
   expected_fields <- c(
     "factor_code", "factor_name", "factor_type",
-    "factor_group", "factor_description"
+    "factor_group", "factor_description",
+    "factor_lag_month"
   )
   if (!is.null(ds_matched_factors)) {
     expect_is(ds_matched_factors, "data.frame")

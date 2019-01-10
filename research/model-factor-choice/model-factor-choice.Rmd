@@ -38,19 +38,12 @@ params:
     input: text
     value: 'test group'
   test_factors:
-    choices:
-    - GPM
-    - ROCE
-    - PE
-    - PB
-    - CUR
-    - QR
+    choices:  [GPM, ROCE, PE, PB, CUR, QR]
     input: select
     label: 'Target Factors:'
     multiple: yes
-    value:
-    - GPM
-    - ROCE
+    value: [GPM, ROCE]
+    selectize: yes
   test_stkcds:
     label: 'Target Stkcds:'
     input: text
@@ -183,7 +176,9 @@ fundamental_factors_raw <- fundamental_factors_raw %>%
 # Convert to long format to wide format
 if (all(c("factor_name","factor_value") %in% names(fundamental_factors_raw))) {
   fundamental_factors_raw <- fundamental_factors_raw %>%
-   tidyr::spread(key = "factor_name", value = "factor_value")
+   dplyr::select(date, stkcd, indcd, factor_name, factor_value) %>%
+   tidyr::spread(key = "factor_name", value = "factor_value") %>%
+   dplyr::arrange(stkcd, date)
 }
 
 # Notice: add attribute only work for wide format.
@@ -283,6 +278,7 @@ stocks_return <- stocks_excess_return %>%
 
 # Display target factors information
 target_factors_info <- factors_info %>%
+  dplyr::select(-factor_lag_month) %>%
   dplyr::filter(factor_code %in% test_factors)
 
 knitr::kable(
@@ -395,29 +391,71 @@ stocks_return_period <- stocks_return %>%
   )
 
 # Lag factors to avoid peeking ahead bias
-fundamental_normal_factors_lag_period <- ts_lag(
-  fundamental_normal_factors_period,
-  k = 3,
-  trim = FALSE,
-  date_index_field = c("date"),
-  key_fields = c("stkcd", "period", "indcd"),
-  parallel = TRUE
+
+# get lag info of factors
+ds_lag_factors <- factors_info %>%
+  dplyr::filter(factor_code %in% test_factors) %>%
+  dplyr::select(factor_lag_month, factor_code) %>%
+  dplyr::group_by(factor_lag_month) %>%
+  tidyr::nest(.key = factor_codes) %>%
+  dplyr::mutate(factor_codes = purrr::map(
+    factor_codes, ~unname(unlist(.x))))
+
+# prepare dataset for lagging factors
+non_factor_fields <- c("date", "stkcd","indcd")
+ds_lag_factors <- ds_lag_factors %>%
+  dplyr::mutate(ds_fields = purrr::map(
+    factor_codes, ~c(non_factor_fields, .x))) %>%
+  dplyr::mutate(ds_origin_factors = purrr::map(ds_fields,
+    ~(dplyr::select(fundamental_normal_factors_period, .x))
+  ))
+
+# lagging factors with lag setting of factors
+ds_lag_factors <- ds_lag_factors %>%
+  dplyr::mutate(ds_lag_factors = purrr::map2(
+    .x = ds_origin_factors,
+    .y = factor_lag_month,
+    .f = ~ts_lag(
+      ts_dataset = .x,
+      k = .y,
+      trim = FALSE,
+      date_index_field = c("date"),
+      key_fields = c(
+        "stkcd","indcd"),
+      parallel = TRUE
+    )
+  ))
+
+# combine lagged factors datasets into one dataset
+fundamental_normal_factors_lag_period <- purrr::reduce(
+      ds_lag_factors$ds_lag_factors,
+      ~ dplyr::full_join(.x, .y, by = non_factor_fields)
 )
+
 
 # Combine factor and return into test dataset
 ds_factor_test <- stocks_return_period %>%
-  dplyr::inner_join(fundamental_normal_factors_lag_period, by = c("date", "stkcd"))
+  dplyr::inner_join(fundamental_normal_factors_lag_period, 
+                    by = c("date", "stkcd")) %>%
+  dplyr::select(date, stkcd, indcd, dplyr::everything()) %>%
+  dplyr::arrange(stkcd, date)
 
 # Save test datatsetz for debug
-rds_file_factor_test <- sprintf("ds_factor_test_(%s).rds",
-                                params$factor_group)
-csv_file_factor_test <- sprintf("ds_factor_test_(%s).csv",
-                                params$factor_group)
+rds_file_factor_test <- sprintf(
+  "ds_factor_test_(%s).rds",
+  params$factor_group
+)
+csv_file_factor_test <- sprintf(
+  "ds_factor_test_(%s).csv",
+  params$factor_group
+)
 saveRDS(ds_factor_test,
-    file = file.path("temp", rds_file_factor_test))
+  file = file.path("temp", rds_file_factor_test)
+)
 
-readr::write_csv(ds_factor_test, 
-    path = file.path("temp", csv_file_factor_test))
+readr::write_csv(ds_factor_test,
+  path = file.path("temp", csv_file_factor_test)
+)
 
 ```
 
@@ -558,7 +596,8 @@ knitr::kable(
 
 # Build test data dataset
 ds_test_uniregression <- ds_factor_test %>%
-  tidyr::gather(-(date:indcd), key = "factor_name", value = "factor_exposure") %>%
+  tidyr::gather(-c(date, stkcd, indcd, return), 
+                key = "factor_name", value = "factor_exposure") %>%
   dplyr::select(date, stkcd, indcd, return, factor_name, factor_exposure)
 
 
@@ -702,7 +741,8 @@ plot(result_test_uniregression_industry)
 
 # Build test dataset for single period test
 ds_test_IC <- ds_factor_test %>%
-  tidyr::gather(-(date:indcd), key = "factor_name", value = "factor_exposure") %>%
+  tidyr::gather(-c(date, stkcd, indcd, return), 
+                key = "factor_name", value = "factor_exposure") %>%
   dplyr::select(date, stkcd, indcd, return, factor_name, factor_exposure)
 
 
@@ -991,7 +1031,8 @@ plot(result_test_IC_industry)
 ```{r factor_test_portfolio_sorts_common, cache=FALSE, autodep= TRUE}
 # Build test data dataset
 ds_test_sort_portfolios <- ds_factor_test %>%
-  tidyr::gather(-(date:indcd), key = "factor_name", value = "factor_exposure") %>%
+  tidyr::gather(-c(date, stkcd, indcd, return), 
+                key = "factor_name", value = "factor_exposure") %>%
   dplyr::select(date, stkcd, indcd, return, factor_name, factor_exposure)
 
 
