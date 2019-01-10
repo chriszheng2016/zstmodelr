@@ -42,9 +42,10 @@ test_indicator_defs <- build_indicator_defs.gta_db(stock_db, customized_indicato
 test_that("generate_indicators", {
 
   log_file_prefix <- "generate_indicator_log"
-  log_dir <- "./log"
+  log_dir <- "log"
+  validate_stkcds <- c("600031", "000157","600066", "000550")
 
-  # generate_indicators with various arguments ====
+  # generate_indicators with default arguments ====
   ds_indicators <- generate_indicators(stock_db,
                                       ds_indicator_defs = test_indicator_defs,
                                       validate_def = TRUE
@@ -68,11 +69,12 @@ test_that("generate_indicators", {
 
   # generate_indicators with various arguments ====
   log_file_prefix <- "generate_indicator_log1"
-  log_dir <- "./log"
+  log_dir <- "log"
 
   ds_indicators <- generate_indicators(stock_db,
                                       ds_indicator_defs = test_indicator_defs,
                                       validate_def = TRUE,
+                                      validate_stkcds = validate_stkcds,
                                       parallel = FALSE,
                                       log_file_prefix = log_file_prefix,
                                       log_dir = log_dir

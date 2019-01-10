@@ -38,6 +38,7 @@ produce_indicators <- function(dsn = c("GTA_SQLData"),
 
   # produce indicators by order of priority
   log_dir <- dir_path_db(stock_db, dir_id = "DIR_DB_DATA_LOG")
+  validate_stkcds <- c("600031", "000157", "600066", "000550")
   for (i in seq_len(NROW(ds_indicator_defs_priority))) {
     ds_indicator_defs <- ds_indicator_defs_priority$ds_indicator_defs[[i]]
 
@@ -46,6 +47,7 @@ produce_indicators <- function(dsn = c("GTA_SQLData"),
     generate_indicators(stock_db,
       ds_indicator_defs = ds_indicator_defs,
       validate_def = validate_def,
+      validate_stkcds <- validate_stkcds,
       parallel = parallel,
       log_file_prefix = log_file_prefix,
       log_dir = log_dir
