@@ -8,7 +8,7 @@ produce_indicators <- function(dsn = c("GTA_SQLData"),
                                parallel = TRUE) {
 
   # validate params
-  if (is.null(indicator_codes)) assertive::assert_is_character(indicator_codes)
+  if (!is.null(indicator_codes)) assertive::assert_is_character(indicator_codes)
 
   # conect to target stock db
   dsn <- match.arg(dsn)
@@ -27,7 +27,7 @@ produce_indicators <- function(dsn = c("GTA_SQLData"),
     msg <- sprintf("\nProduce related indicators: %s...",
                    paste0(ds_indicator_defs_origin$ind_code, collapse = ","))
   } else {
-    msg <- sprintf("\nProduce all indicators: %s...")
+    msg <- sprintf("\nProduce all indicators...")
   }
 
   # Notice indicators to be produced
