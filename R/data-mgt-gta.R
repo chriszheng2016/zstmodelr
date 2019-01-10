@@ -196,7 +196,7 @@ update_db.gta_db <- function(stock_db,
         ds_log$success[i] <- result
 
         if (result != TRUE) {
-          msg <- sprintf("fail to update %s !!\n", data_source_info$target_table)
+          msg <- sprintf("Fail to update %s !!\n", data_source_info$target_table)
           rlang:::inform(msg)
         }
       } else {
@@ -327,10 +327,10 @@ import_table.gta_db <- function(stock_db,
     }
 
     if (success) {
-      msg <- sprintf("import %s successfully", input_file)
+      msg <- sprintf("Import %s successfully.", input_file)
       rlang::inform(msg)
     } else {
-      msg <- sprintf("fail to import %s, error: %s", input_file, error_msg)
+      msg <- sprintf("Fail to import %s, error: %s.", input_file, error_msg)
       rlang::warn(msg)
     }
 
