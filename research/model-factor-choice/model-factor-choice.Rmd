@@ -38,12 +38,9 @@ params:
     input: text
     value: 'test group'
   test_factors:
-    choices:  [GPM, ROCE, PE, PB, CUR, QR]
-    input: select
+    input: text
     label: 'Target Factors:'
-    multiple: yes
-    value: [GPM, ROCE]
-    selectize: yes
+    value: 'GPM, ROCE'
   test_stkcds:
     label: 'Target Stkcds:'
     input: text
@@ -108,10 +105,20 @@ options(tibble.print_min = 10L, tibble.print_max = 20L)
 
 ## 研究参数设置(Study Params)
 ```{r set_params}
+message("set_params...")
+enter_time <- Sys.time()
 
 # Test factors list
 # test_factors <- c("GPM", "ROCE", "PE", "PB", "CUR", "QR")
-test_factors <- params$test_factors
+# test_factors <- params$test_factors
+if ((params$test_factors != "") && !is.null(params$test_factors)) {
+  test_factors <- stringr::str_split(params$test_factors, pattern = ",")
+  test_factors <- stringr::str_trim(unlist(test_factors))
+  msg <- sprintf("Conduct factor choie test for %s.", params$test_factors)
+  rlang::inform(msg)
+} else {
+  rlang::abort("Test factors can't be empty or NULL.")
+}
 
 # Test stocks list
 if (params$test_stkcds != 'all') {
@@ -124,6 +131,13 @@ if (params$test_stkcds != 'all') {
 # period of test
 start_date <- params$test_start_date
 end_date <- params$test_end_date
+
+
+exit_time <- Sys.time()
+time_used <- lubridate::time_length(exit_time - enter_time, "minute")
+time_used <- format(time_used, digits = 3, scientific = FALSE, 
+                    big.mark = ",", small.mark = ",", small.interval = 3)     
+message(paste("time used:", time_used, "mins"))
 
 ```
 
@@ -139,6 +153,8 @@ end_date <- params$test_end_date
 
 
 ```{r fetch_factors_data, cache=FALSE, cache.extra = list(params$test_start_date, params$test_end_date, params$test_factors, params$test_stkcds)}
+message("fetch_factors_data...")
+enter_time <- Sys.time()
 
 # Open gta stock databse
 stock_db <- stock_db(gta_db, "GTA_SQLData")
@@ -235,6 +251,12 @@ stocks_return <- stocks_excess_return %>%
   dplyr::select(date, stkcd, return = excess_return)
 
 
+exit_time <- Sys.time()
+time_used <- lubridate::time_length(exit_time - enter_time, "minute")
+time_used <- format(time_used, digits = 3, scientific = FALSE, 
+                    big.mark = ",", small.mark = ",", small.interval = 3)     
+message(paste("time used:", time_used, "mins"))
+
 ```
 
 ## 目标因子概要(Target Factor Summary)
@@ -275,6 +297,8 @@ stocks_return <- stocks_excess_return %>%
 
    本次评估目标因子如下：
 ```{r factor_info}
+message("factor_info...")
+enter_time <- Sys.time()
 
 # Display target factors information
 target_factors_info <- factors_info %>%
@@ -290,6 +314,13 @@ knitr::kable(
   padding = 5,
   caption = "目标因子信息"
 )
+
+exit_time <- Sys.time()
+time_used <- lubridate::time_length(exit_time - enter_time, "minute")
+time_used <- format(time_used, digits = 3, scientific = FALSE, 
+                    big.mark = ",", small.mark = ",", small.interval = 3)     
+message(paste("time used:", time_used, "mins"))
+
 ```
 
 
@@ -361,6 +392,9 @@ knitr::kable(
 
 
 ```{r preprocess_test_factors, cache=FALSE, autodep= TRUE}
+
+message("preprocess_test_factors...")
+enter_time <- Sys.time()
 
 # Normalize the factor indicators
 fundamental_normal_factors <- fundamental_factors %>%
@@ -441,21 +475,22 @@ ds_factor_test <- stocks_return_period %>%
   dplyr::arrange(stkcd, date)
 
 # Save test datatsetz for debug
-rds_file_factor_test <- sprintf(
-  "ds_factor_test_(%s).rds",
-  params$factor_group
-)
-csv_file_factor_test <- sprintf(
-  "ds_factor_test_(%s).csv",
-  params$factor_group
-)
+file_factor_test <- sprintf("ds_factor_test_%s(%s)",
+                    params$factor_group, as.character(Sys.Date()))   
+
 saveRDS(ds_factor_test,
-  file = file.path("temp", rds_file_factor_test)
+  file = file.path("temp", paste0(file_factor_test, ".rds"))
 )
 
 readr::write_csv(ds_factor_test,
-  path = file.path("temp", csv_file_factor_test)
+  path = file.path("temp", paste0(file_factor_test, ".csv"))
 )
+
+exit_time <- Sys.time()
+time_used <- lubridate::time_length(exit_time - enter_time, "minute")
+time_used <- format(time_used, digits = 3, scientific = FALSE, 
+                    big.mark = ",", small.mark = ",", small.interval = 3)     
+message(paste("time used:", time_used, "mins"))
 
 ```
 
@@ -463,6 +498,9 @@ readr::write_csv(ds_factor_test,
 
   对规范化后因子数据，计算在每个时间截面的因子分布参数(平均值等)，对计算参数时间序列的平均值，获得分布参数如下：
 ```{r summarize_test_factors}
+message("summarize_test_factors...")
+enter_time <- Sys.time()
+
 # compute stats of factors in deferent periods
 stats_fundamental_normal_factors <- fundamental_normal_factors %>%
   tidyr::gather(
@@ -520,6 +558,11 @@ knitr::kable(
   caption = "因子分布情况总览"
 )
 
+exit_time <- Sys.time()
+time_used <- lubridate::time_length(exit_time - enter_time, "minute")
+time_used <- format(time_used, digits = 3, scientific = FALSE, 
+                    big.mark = ",", small.mark = ",", small.interval = 3)
+message(paste("time used:", time_used, "mins"))
 ```
 注意：kurtosis 为超过正态分布峰度的数值。
 
@@ -593,6 +636,8 @@ knitr::kable(
 * normal.test_p: 正态分布检验(Shapiro-Wilk)$p$概率值。当小于0.05时，判定因子收益序列非正态分布。 
 
 ```{r factor_test_Uniregression_common, cache=FALSE, autodep= TRUE}
+message("factor_test_Uniregression_common...")
+enter_time <- Sys.time()
 
 # Build test data dataset
 ds_test_uniregression <- ds_factor_test %>%
@@ -629,13 +674,21 @@ model_univariate_crossection_regression <- function(df,
 
   return(regress_result)
 }
+
+exit_time <- Sys.time()
+time_used <- lubridate::time_length(exit_time - enter_time, "minute")
+time_used <- format(time_used, digits = 3, scientific = FALSE, 
+                    big.mark = ",", small.mark = ",", small.interval = 3)
+message(paste("time used:", time_used, "mins"))
+
 ```
 
 
 #### 综合评估结果
 
 ```{r factor_test_Uniregression_overall, fig.cap = '因子截面回归评估结果(综合评估)'}
-
+message("factor_test_Uniregression_overall...")
+enter_time <- Sys.time()
 
 # Condcut factor uniregress test
 result_test_uniregression <- factor_test_uniregress(ds_test_uniregression,
@@ -658,12 +711,20 @@ knitr::kable(
 # Plot test result
 
 plot(result_test_uniregression)
+
+exit_time <- Sys.time()
+time_used <- lubridate::time_length(exit_time - enter_time, "minute")
+time_used <- format(time_used, digits = 3, scientific = FALSE, 
+                    big.mark = ",", small.mark = ",", small.interval = 3)
+message(paste("time used:", time_used, "mins"))
 ```
 
 
 #### 行业中性评估结果
 
 ```{r factor_test_Uniregression_industry, fig.cap = '因子截面回归评估结果(行业中性评估)'}
+message("factor_test_Uniregression_industry...")
+enter_time <- Sys.time()
 
 # Condcut factor uniregress test
 result_test_uniregression_industry <- factor_test_uniregress(ds_test_uniregression,
@@ -685,6 +746,13 @@ knitr::kable(
 
 # Plot test result
 plot(result_test_uniregression_industry)
+
+exit_time <- Sys.time()
+time_used <- lubridate::time_length(exit_time - enter_time, "minute")
+time_used <- format(time_used, digits = 3, scientific = FALSE, 
+                    big.mark = ",", small.mark = ",", small.interval = 3)
+message(paste("time used:", time_used, "mins"))
+
 ```
 
 
@@ -738,6 +806,8 @@ plot(result_test_uniregression_industry)
 * normal.test_p: 正态分布检验(Shapiro-Wilk)$p$概率值，小于0.05时判定信息系数序列非正态分布。
 
 ```{r factor_test_IC_common, cache=FALSE, autodep= TRUE}
+message("factor_test_IC_common...")
+enter_time <- Sys.time()
 
 # Build test dataset for single period test
 ds_test_IC <- ds_factor_test %>%
@@ -801,6 +871,12 @@ model_compute_IC <- function(df,
 
   return(IC_result)
 }
+
+exit_time <- Sys.time()
+time_used <- lubridate::time_length(exit_time - enter_time, "minute")
+time_used <- format(time_used, digits = 3, scientific = FALSE, 
+                    big.mark = ",", small.mark = ",", small.interval = 3)
+message(paste("time used:", time_used, "mins"))
 ```
 
 
@@ -809,6 +885,8 @@ model_compute_IC <- function(df,
 **因子信息系数(IC)单期评估结果如下：**
 
 ```{r factor_test_IC_single_period_overall, fig.cap='因子信息系数(IC)单期评估结果(综合评估)'}
+message("factor_test_IC_single_period_overall...")
+enter_time <- Sys.time()
 
 # Condcut factor IC test
 result_test_IC <- factor_test_IC(ds_test_IC,
@@ -831,11 +909,19 @@ knitr::kable(
 
 # Plot test result
 plot(result_test_IC)
+
+exit_time <- Sys.time()
+time_used <- lubridate::time_length(exit_time - enter_time, "minute")
+time_used <- format(time_used, digits = 3, scientific = FALSE, 
+                    big.mark = ",", small.mark = ",", small.interval = 3)
+message(paste("time used:", time_used, "mins"))
 ```
 
 **因子信息系数(IC)多期评估结果如下：**
 
 ```{r factor_test_IC_multi_period_overall, fig.cap='因子信息系数(IC)多期评估结果(综合评估)'}
+# message("factor_test_IC_multi_period_overall...")
+# enter_time <- Sys.time()
 
 # # Condcut factor IC test of multiperiods
 # result_test_IC_multiperiod <- tibble::tibble(
@@ -886,6 +972,12 @@ plot(result_test_IC)
 #     y = "IC序列t检测p值"
 #   ) +
 #   theme(plot.title = element_text(hjust = 0.5))
+
+# exit_time <- Sys.time()
+# time_used <- lubridate::time_length(exit_time - enter_time, "minute")
+# time_used <- format(time_used, digits = 3, scientific = FALSE, 
+#                     big.mark = ",", small.mark = ",", small.interval = 3)
+# message(paste("time used:", time_used, "mins"))
 ```
 
 
@@ -895,6 +987,8 @@ plot(result_test_IC)
 **因子信息系数(IC)单期评估结果如下：**
 
 ```{r factor_test_IC_single_period_industry, fig.cap = '因子信息系数(IC)单期评估结果(行业中性评估)'}
+message("factor_test_IC_single_period_industry...")
+enter_time <- Sys.time()
 
 # Condcut factor IC test
 result_test_IC_industry <- factor_test_IC(ds_test_IC,
@@ -917,11 +1011,20 @@ knitr::kable(
 
 # Plot test result
 plot(result_test_IC_industry)
+
+exit_time <- Sys.time()
+time_used <- lubridate::time_length(exit_time - enter_time, "minute")
+time_used <- format(time_used, digits = 3, scientific = FALSE, 
+                    big.mark = ",", small.mark = ",", small.interval = 3)
+message(paste("time used:", time_used, "mins"))
 ```
 
 **因子信息系数(IC)多期评估结果如下：**
 
 ```{r factor_test_IC_multi_period_industry, fig.cap='因子信息系数(IC)多期评估结果(行业中性评估)'}
+# message("factor_test_IC_multi_period_industry...")
+# enter_time <- Sys.time()
+
 
 # # Condcut factor IC test of multiperiods
 # result_test_IC_multiperiod <- tibble::tibble(
@@ -972,6 +1075,14 @@ plot(result_test_IC_industry)
 #     y = "IC序列t检测p值"
 #   ) +
 #   theme(plot.title = element_text(hjust = 0.5))
+
+
+# exit_time <- Sys.time()
+# time_used <- lubridate::time_length(exit_time - enter_time, "minute")
+# time_used <- format(time_used, digits = 3, scientific = FALSE, 
+#                     big.mark = ",", small.mark = ",", small.interval = 3)
+# message(paste("time used:", time_used, "mins"))
+                
 ```
 
 
@@ -1029,6 +1140,9 @@ plot(result_test_IC_industry)
   * Annualized Sharpe Ratio (Rf=0%)：组合的年化夏普比率。
 
 ```{r factor_test_portfolio_sorts_common, cache=FALSE, autodep= TRUE}
+message("factor_test_portfolio_sorts_common...")
+enter_time <- Sys.time()
+
 # Build test data dataset
 ds_test_sort_portfolios <- ds_factor_test %>%
   tidyr::gather(-c(date, stkcd, indcd, return), 
@@ -1077,6 +1191,12 @@ model_sort_portfolios <- function(df, ngroup = 5,
 
   return(sort_portfolios)
 }
+
+exit_time <- Sys.time()
+time_used <- lubridate::time_length(exit_time - enter_time, "minute")
+time_used <- format(time_used, digits = 3, scientific = FALSE, 
+                    big.mark = ",", small.mark = ",", small.interval = 3)
+message(paste("time used:", time_used, "mins"))
 ```
 
 
@@ -1084,7 +1204,8 @@ model_sort_portfolios <- function(df, ngroup = 5,
 
    
 ```{r factor_test_portfolio_sorts_overall, fig.cap = '因子组合分类评估结果(综合评估)'}
-
+message("factor_test_portfolio_sorts_overall...")
+enter_time <- Sys.time()
 
 # Condcut portfolio sorts test
 result_test_sort_portfolios <- factor_test_sort_portfolios(ds_test_sort_portfolios,
@@ -1121,13 +1242,20 @@ knitr::kable(
 
 # Plot test result
 plot(result_test_sort_portfolios)
+
+exit_time <- Sys.time()
+time_used <- lubridate::time_length(exit_time - enter_time, "minute")
+time_used <- format(time_used, digits = 3, scientific = FALSE, 
+                    big.mark = ",", small.mark = ",", small.interval = 3)
+message(paste("time used:", time_used, "mins"))
 ```
 
 #### 行业中性评估结果
 
 
 ```{r factor_test_portfolio_sorts_industry, fig.cap = '因子组合分类评估结果(行业中性评估)'}
-
+message("factor_test_portfolio_sorts_industry...")
+enter_time <- Sys.time()
 
 # Condcut portfolio sorts test
 result_test_sort_portfolios_industry <- factor_test_sort_portfolios(ds_test_sort_portfolios,
@@ -1164,6 +1292,12 @@ knitr::kable(
 
 # Plot test result
 plot(result_test_sort_portfolios_industry)
+
+exit_time <- Sys.time()
+time_used <- lubridate::time_length(exit_time - enter_time, "minute")
+time_used <- format(time_used, digits = 3, scientific = FALSE, 
+                    big.mark = ",", small.mark = ",", small.interval = 3)
+message(paste("time used:", time_used, "mins"))
 ```
 
 # 评估汇总( Evaluation Summary)
@@ -1190,6 +1324,8 @@ plot(result_test_sort_portfolios_industry)
 
 
 ```{r evalute_test_result_common}
+message("evalute_test_result_common...")
+enter_time <- Sys.time()
 
 # Evalue test result to find petential significant factors
 evalute_test_result <- function(summary_test_result,
@@ -1244,6 +1380,13 @@ evalute_test_result <- function(summary_test_result,
 
   return(eval_result)
 }
+
+exit_time <- Sys.time()
+time_used <- lubridate::time_length(exit_time - enter_time, "minute")
+time_used <- format(time_used, digits = 3, scientific = FALSE, 
+                    big.mark = ",", small.mark = ",", small.interval = 3)
+message(paste("time used:", time_used, "mins"))
+
 ```
 
 
@@ -1252,6 +1395,8 @@ evalute_test_result <- function(summary_test_result,
 ### 综合评估结果
 
 ```{r evaluate_test_result_overall}
+message("evaluate_test_result_overall...")
+enter_time <- Sys.time()
 
 # Integrate results for evaluation
 summary_test_uniregression <- result_test_uniregression@summary %>%
@@ -1282,11 +1427,20 @@ knitr::kable(
   longtable = TRUE,
   caption = "Evaluation of factors(Overall Test)"
 )
+
+
+exit_time <- Sys.time()
+time_used <- lubridate::time_length(exit_time - enter_time, "minute")
+time_used <- format(time_used, digits = 3, scientific = FALSE, 
+                    big.mark = ",", small.mark = ",", small.interval = 3)
+message(paste("time used:", time_used, "mins"))
 ```
 
 **潜在有效因子：**
 
 ```{r potential_factors_overall, results='asis'}
+message("potential_factors_overall...")
+enter_time <- Sys.time()
 
 # Print potential factors
 if (length(eval_result$potential_factors) > 0) {
@@ -1307,12 +1461,21 @@ if (nrow(eval_result$potential_result) > 0) {
     caption = "Potential Effective Factors(Overall Test)"
   )
 }
+
+
+exit_time <- Sys.time()
+time_used <- lubridate::time_length(exit_time - enter_time, "minute")
+time_used <- format(time_used, digits = 3, scientific = FALSE, 
+                    big.mark = ",", small.mark = ",", small.interval = 3)
+message(paste("time used:", time_used, "mins"))
 ```
 
 
 ### 行业中性评估结果
 
 ```{r evaluate_test_result_industry}
+message("evaluate_test_result_industry...")
+enter_time <- Sys.time()
 
 # Integrate results for evaluation
 summary_test_uniregression <- result_test_uniregression_industry@summary %>%
@@ -1343,11 +1506,20 @@ knitr::kable(
   longtable = TRUE,
   caption = "Evaluation of factors(Neutral-Industry Test)"
 )
+
+exit_time <- Sys.time()
+time_used <- lubridate::time_length(exit_time - enter_time, "minute")
+time_used <- format(time_used, digits = 3, scientific = FALSE, 
+                    big.mark = ",", small.mark = ",", small.interval = 3)
+message(paste("time used:", time_used, "mins"))
 ```
 
 **潜在有效因子：**
 
 ```{r potential_factors_industry, results='asis'}
+message("potential_factors_industry...")
+enter_time <- Sys.time()
+
 # Print potential factors
 if (length(eval_result_industry$potential_factors) > 0) {
   potential_facotrs_list <- eval_result_industry$potential_factors
@@ -1366,9 +1538,16 @@ if (nrow(eval_result_industry$potential_result) > 0) {
     caption = "Potential Effective Factors(Neutral Industry Test)"
   )
 }
+
+exit_time <- Sys.time()
+time_used <- lubridate::time_length(exit_time - enter_time, "minute")
+time_used <- format(time_used, digits = 3, scientific = FALSE, 
+                    big.mark = ",", small.mark = ",", small.interval = 3)
+message(paste("time used:", time_used, "mins"))
 ```
 
 ```{r clear_context}
+message("clear_context...")
 
 # close stock_db
 close_stock_db(stock_db)

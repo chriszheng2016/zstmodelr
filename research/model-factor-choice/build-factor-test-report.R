@@ -31,7 +31,7 @@ factor_test_report <- function(factors_list,
   report_type <- match.arg(report_type)
   if (report_type == "single") {
     for (factor in factors_list) {
-      msg <- sprintf("..generate test report for factor:%s ...\n", factor)
+      msg <- sprintf("..generate test report for factor:%s ..\n", factor)
       message(msg)
 
       params <- c(list(test_factors = factor), params)
@@ -44,13 +44,13 @@ factor_test_report <- function(factors_list,
       )
     }
   } else {
+    test_factors <- stringr::str_c(factors_list, collapse = ",")
     msg <- sprintf(
-      "..generate test report for factor:%s ...\n",
-      stringr::str_c(factors_list, collapse = ",")
-    )
+      "..generate test report for factor:%s ..\n",
+      test_factors)
     message(msg)
 
-    params <- c(list(test_factors = factors_list), params)
+    params <- c(list(test_factors = test_factors), params)
     build_report(
       report_template = report_template,
       report_params = params,
