@@ -60,6 +60,7 @@ classoption: hyperref,
 
 
 ```{r setup, include=FALSE  }
+enter_time <- Sys.time()
 
 library(fPortfolio)
 library(PerformanceAnalytics)
@@ -106,7 +107,7 @@ options(tibble.print_min = 10L, tibble.print_max = 20L)
 ## 研究参数设置(Study Params)
 ```{r set_params}
 message("set_params...")
-enter_time <- Sys.time()
+start_time <- Sys.time()
 
 # Test factors list
 # test_factors <- c("GPM", "ROCE", "PE", "PB", "CUR", "QR")
@@ -114,7 +115,7 @@ enter_time <- Sys.time()
 if ((params$test_factors != "") && !is.null(params$test_factors)) {
   test_factors <- stringr::str_split(params$test_factors, pattern = ",")
   test_factors <- stringr::str_trim(unlist(test_factors))
-  msg <- sprintf("Conduct factor choie test for %s.", params$test_factors)
+  msg <- sprintf("Conduct factor choice test for %s.", params$test_factors)
   rlang::inform(msg)
 } else {
   rlang::abort("Test factors can't be empty or NULL.")
@@ -1551,6 +1552,12 @@ message("clear_context...")
 
 # close stock_db
 close_stock_db(stock_db)
+
+end_time <- Sys.time()
+total_time_used <- lubridate::time_length(end_time - start_time, "minute")
+total_time_used <- format(total_time_used, digits = 3, scientific = FALSE, 
+                    big.mark = ",", small.mark = ",", small.interval = 3)
+message(paste("time used:", total_time_used, "mins"))
 
 ```
 
