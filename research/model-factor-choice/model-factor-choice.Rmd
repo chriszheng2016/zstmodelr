@@ -191,29 +191,31 @@ fundamental_factors_raw <- fundamental_factors_raw %>%
     dplyr::arrange(stkcd, date)
 
 # Convert to long format to wide format
+# Notice: only use keep date and stkcd when conduct spreading, since some 
+# factors's indcd could be NA which will lead to duplidated records with 
+# same date and stkcd after spreading factor_name and factor_value.
 if (all(c("factor_name","factor_value") %in% names(fundamental_factors_raw))) {
   fundamental_factors_raw <- fundamental_factors_raw %>%
-   dplyr::select(date, stkcd, indcd, factor_name, factor_value) %>%
+   dplyr::select(date, stkcd, factor_name, factor_value) %>%
    tidyr::spread(key = "factor_name", value = "factor_value") %>%
    dplyr::arrange(stkcd, date)
 }
 
-# Notice: add attribute only work for wide format.
+
 # Add industry code attribute to factors
-if (!("indcd" %in% names(fundamental_factors_raw))) {
-  fundamental_factors_raw <- attr_indictors_indcd(stock_db,
+# Notice: 
+# 1. add attribute only work for wide format since it need ind_code 
+# and ind_value in long format, 
+# 2. nned rebuild indcd since indcd was removed in above process
+fundamental_factors_raw <- attr_indictors_indcd(stock_db,
     fundamental_factors_raw,
-    parallel = TRUE
-  )
-}
+    parallel = TRUE)
+
 
 # Add trading status atttribute to factors
-if (!("trdstat" %in% names(fundamental_factors_raw))) {
-  fundamental_factors_raw <- attr_indictors_trdstat(stock_db,
+fundamental_factors_raw <- attr_indictors_trdstat(stock_db,
     fundamental_factors_raw,
-    parallel = TRUE
-  )
-}
+    parallel = TRUE)
 
 # Filter factors only for list stocks
 fundamental_factors <- fundamental_factors_raw %>%
@@ -436,7 +438,7 @@ ds_lag_factors <- factors_info %>%
   dplyr::mutate(factor_codes = purrr::map(
     factor_codes, ~unname(unlist(.x))))
 
-# prepare dataset for lagging factors
+# prepare dataset for lagging factors according factors' lag setting
 non_factor_fields <- c("date", "stkcd","indcd")
 ds_lag_factors <- ds_lag_factors %>%
   dplyr::mutate(ds_fields = purrr::map(
@@ -445,7 +447,7 @@ ds_lag_factors <- ds_lag_factors %>%
     ~(dplyr::select(fundamental_normal_factors_period, .x))
   ))
 
-# lagging factors with lag setting of factors
+# lagging factors according to factors' lag setting
 ds_lag_factors <- ds_lag_factors %>%
   dplyr::mutate(ds_lag_factors = purrr::map2(
     .x = ds_origin_factors,
@@ -461,7 +463,7 @@ ds_lag_factors <- ds_lag_factors %>%
     )
   ))
 
-# combine lagged factors datasets into one dataset
+# combine lagged factor datasets into one dataset
 fundamental_normal_factors_lag_period <- purrr::reduce(
       ds_lag_factors$ds_lag_factors,
       ~ dplyr::full_join(.x, .y, by = non_factor_fields)
@@ -469,6 +471,8 @@ fundamental_normal_factors_lag_period <- purrr::reduce(
 
 
 # Combine factor and return into test dataset
+# Notice: use inner_joing to ensure all filter on factors also
+# applying on return dataset.
 ds_factor_test <- stocks_return_period %>%
   dplyr::inner_join(fundamental_normal_factors_lag_period, 
                     by = c("date", "stkcd")) %>%
