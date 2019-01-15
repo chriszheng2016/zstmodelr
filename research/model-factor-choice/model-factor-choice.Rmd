@@ -211,15 +211,14 @@ fundamental_factors_raw <- attr_indictors_indcd(stock_db,
     fundamental_factors_raw,
     parallel = TRUE)
 
-
 # Add trading status atttribute to factors
 fundamental_factors_raw <- attr_indictors_trdstat(stock_db,
     fundamental_factors_raw,
     parallel = TRUE)
 
-# Filter factors only for list stocks
+# Filter factors only for list stocks with indcd info
 fundamental_factors <- fundamental_factors_raw %>%
-  dplyr::filter(trdstat == "list") %>%
+  dplyr::filter(trdstat == "list", !is.na(indcd) ) %>%
   dplyr::select(-trdstat)
 
 # Get stocks return

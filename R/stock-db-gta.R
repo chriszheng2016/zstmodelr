@@ -1500,7 +1500,8 @@ get_indicators_from_source.gta_db <- function(stock_db,
           tidyr::gather(
             key = "ind_code",
             value = "ind_value",
-            !!value_fields
+            !!value_fields,
+            na.rm = TRUE
           )
       } else {
         # raise error for no numeric fields
