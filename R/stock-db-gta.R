@@ -615,20 +615,20 @@ setMethod(
 # @describeIn get_stock_info get stock info from a database of gta_db class
 #' @export
 get_stock_info.gta_db <- function(stock_db,
-                                  stock_cd_list = NULL){
+                                  stock_cd_list = NULL) {
 
   # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
   if (is.null(stock_db$connection)) {
     rlang::abort("Stock db isn't connected, try to connect db again")
   }
-  if(!is.null(stock_cd_list)) assertive::assert_is_character(stock_cd_list)
+  if (!is.null(stock_cd_list)) assertive::assert_is_character(stock_cd_list)
 
 
   # get riskfree rate from database
   table_name <- stock_db$table_list[["TRD_Co"]]
   ds_stock_info_raw <- get_table_dataset(stock_db,
-                                         table_name = table_name
+    table_name = table_name
   )
   ds_stock_info_raw <- tibble::as_tibble(ds_stock_info_raw)
 
@@ -639,23 +639,23 @@ get_stock_info.gta_db <- function(stock_db,
   }
 
   # covert marekt_type
-  market_type = c("SH_A", "SH_B","SZ_A", "SZ_B", "SZ_G")
-  markeytype = c(1,2,4,8,16)
+  market_type <- c("SH_A", "SH_B", "SZ_A", "SZ_B", "SZ_G")
+  markeytype <- c(1, 2, 4, 8, 16)
   names(market_type) <- markeytype
   ds_stock_info_raw <- ds_stock_info_raw %>%
     dplyr::mutate(market_type = unname(market_type[as.character(markettype)]))
 
   # build output datasets
   ds_stock_info <- ds_stock_info_raw %>%
-    dplyr::select(stkcd, stkname = stknme,
-                  indcd = nindcd, indname = nindnme,
-                  establish_date = estbdt,
-                  list_date = listdt,
-                  market_type
-                  )
+    dplyr::select(stkcd,
+      stkname = stknme,
+      indcd = nindcd, indname = nindnme,
+      establish_date = estbdt,
+      list_date = listdt,
+      market_type
+    )
 
   return(ds_stock_info)
-
 }
 # Method definition for s4 generic
 #' @describeIn get_stock_info get stock info from a database of gta_db class
@@ -665,7 +665,8 @@ setMethod(
   signature(stock_db = "gta_db"),
   function(stock_db, stock_cd_list, ...) {
     get_stock_info.gta_db(
-           stock_db, stock_cd_list)
+      stock_db, stock_cd_list
+    )
   }
 )
 
@@ -1252,7 +1253,8 @@ get_indicators_from_source.gta_db <- function(stock_db,
           }
         )
       },
-      error = function(e) e)
+      error = function(e) e
+      )
       if (inherits(result, "error")) {
         msg <- sprintf(
           "Fail to read indicator from %s:\n%s.",
@@ -1908,7 +1910,7 @@ get_spt_stocks.gta_db <- function(stock_db) {
   # get company info from database
   table_name <- stock_db$table_list[["TRD_Co"]]
   ds_company_info <- get_table_dataset(stock_db,
-                                         table_name = table_name
+    table_name = table_name
   )
 
   # build result
@@ -1925,13 +1927,14 @@ get_spt_stocks.gta_db <- function(stock_db) {
     tibble::as_tibble() %>%
     dplyr::filter(stkcd %in% spt_stkcds) %>%
     dplyr::mutate(status_code = "A", date = lubridate::as_date(listdt)) %>%
-    dplyr::select(stkcd, date , status_code)
+    dplyr::select(stkcd, date, status_code)
 
   # get changed status of spt stocks after listing date
   ds_spt_stocks_changed_status <- ds_spt_stocks_raw %>%
     tidyr::separate(chgtype,
-                    into = c("before_status","after_status"),
-                    sep = 1 ) %>%
+      into = c("before_status", "after_status"),
+      sep = 1
+    ) %>%
     dplyr::select(stkcd, date = execudt, status_code = after_status)
 
   # get full history of status of spt stocks
@@ -1940,27 +1943,28 @@ get_spt_stocks.gta_db <- function(stock_db) {
     dplyr::arrange(stkcd, date)
 
   # translate status_code into status_name
-  #A:正常上市
-  #B:ST
-  #D:*ST
-  #C:PT
-  #S:代表暂停上市
-  #T:代表退市整理期
-  #X:代表终止上市
-  trade_status <- c("A" = "list",
-                    "B" = "st",
-                    "D" = "*st",
-                    "C" = "pt",
-                    "S" = "suspend",
-                    "T" = "pre_delist",
-                    "X" = "delist")
+  # A:正常上市
+  # B:ST
+  # D:*ST
+  # C:PT
+  # S:代表暂停上市
+  # T:代表退市整理期
+  # X:代表终止上市
+  trade_status <- c(
+    "A" = "list",
+    "B" = "st",
+    "D" = "*st",
+    "C" = "pt",
+    "S" = "suspend",
+    "T" = "pre_delist",
+    "X" = "delist"
+  )
 
   # add status_names fields crossponding to status_code
   ds_spt_stocks_status <- ds_spt_stocks_status %>%
     dplyr::mutate(trade_status = trade_status[status_code])
 
   return(ds_spt_stocks_status)
-
 }
 # Method definition for s4 generic
 #' @describeIn get_spt_stocks  get stock info of special treatment from
@@ -2077,12 +2081,16 @@ dir_path_db.gta_db <- function(stock_db,
   if (!is.null(dir_path)) {
     if (force) {
       # return path whether it exist or not.
-      dir_path <- normalizePath(dir_path, winslash = "/",
-                                mustWork = FALSE)
+      dir_path <- normalizePath(dir_path,
+        winslash = "/",
+        mustWork = FALSE
+      )
     } else {
       # check whether path exist and return path
-      dir_path <- normalizePath(dir_path, winslash = "/",
-                                mustWork = TRUE)
+      dir_path <- normalizePath(dir_path,
+        winslash = "/",
+        mustWork = TRUE
+      )
     }
   }
 

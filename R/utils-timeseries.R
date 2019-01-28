@@ -94,14 +94,14 @@ ts_asfreq <- function(ts_dataset,
 #' }
 #' see details for more info.
 #'
-#' @param trim             A logical value. By default TRUE, the first missing observation in the return series
-#' will be removed.
-#' @param ...              Params passed to other methods
+#' @param trim    A logic flag of whether to retmove the first missing observation in
+#'   the return series. Default TRUE,
+#' @param ...     Params to other methods.
 #' @param date_index_field Name of date index field of ts_df for resample,
-#' default 'date', Column must be date-like.
-#' Only be used for tibble dataset.
+#'   default 'date', Column must be date-like.
+#'   Only be used for tibble dataset.
 #' @param key_fields    A character vector of key fields, which identify unique
-#' observation in each date. Only be used for tibble dataset.
+#'   observation in each date. Only be used for tibble dataset.
 
 #'
 #' @return            A lagged timeseres
@@ -674,12 +674,12 @@ reindex_by_regroup.tbl_df <- function(ts_df,
   # aggregating number fields by agg_fun for each group
   ts_result_numbers <- ts_new_df %>%
     dplyr::group_by(group_index) %>%
-    dplyr::summarise_if(~inherits(., "numeric"), agg_fun, ...)
+    dplyr::summarise_if(~ inherits(., "numeric"), agg_fun, ...)
 
   # aggregaing non-number fields by using value of first observatio of each group
   ts_result_non_numbers <- ts_new_df %>%
     dplyr::group_by(group_index) %>%
-    dplyr::summarise_if(~!inherits(., "numeric"), dplyr::first)
+    dplyr::summarise_if(~ !inherits(., "numeric"), dplyr::first)
 
   # combine non_number and number fields
   ts_result <- ts_result_non_numbers %>%
@@ -864,5 +864,3 @@ fix_key_field <- function(ts_dataset, key_fields) {
 
   return(fix_df)
 }
-
-

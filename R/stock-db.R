@@ -17,7 +17,7 @@ setRefClass("stock_db",
 #' factory for creating for subclass object of stock_db class
 #'
 #' @param stock_db_class   Specific creator of stock database class,
-#' e.g. gta_db
+#'   e.g. gta_db
 #' @param ... Addition params used by specific class of stock database
 #'      (e.g. a dsn string "GTA_SQLData").
 #'
@@ -74,13 +74,13 @@ NULL
 #' open_stock_db(stock_db)
 #' close_stock_db(stock_db)
 #' }
-
-# S3 generic definition
-# open_stock_db <- function(stock_db, ...) {
-#   UseMethod("open_stock_db")
-# }
-
-# S4 generic definition
+#' 
+#' # S3 generic definition
+#' # open_stock_db <- function(stock_db, ...) {
+#' #   UseMethod("open_stock_db")
+#' # }
+#' 
+#' # S4 generic definition
 setGeneric(
   name = "open_stock_db",
   signature = c("stock_db"),
@@ -159,7 +159,7 @@ setGeneric(
 #' open_stock_db(stock_db)
 #' init_stock_db(stock_db)
 #' }
-#'
+#' 
 #' @export
 
 # S3 generic definition
@@ -194,7 +194,7 @@ setGeneric(
 #' init_stock_db(stock_db)
 #' list_stock_tables(stock_db)
 #' }
-#'
+#' 
 #' @export
 
 # S3 generic definition
@@ -243,7 +243,7 @@ setGeneric(
 #' @param stock_db      A stock database object to operate.
 #' @param table_name    Name of target table.
 #' @param stock_cd_list A character vector of stock cd, default value of NULL means.
-#'     all stock data will be returned.
+#'   all stock data will be returned.
 #'
 #' @family stock_db generics
 #'
@@ -252,18 +252,19 @@ setGeneric(
 #'
 #' @examples
 #' ds_trd_dalyr.df <- get_stock_dataset(stock_db,
-#'                             table_name = "TRD_Dalyr_日个股回报率",
-#'                             stock_cd_list = c("600066", "000550"))
-
-# S3 generic definition
-# get_stock_dataset <- function(stock_db,
-#                               table_name,
-#                               stock_cd_list = NULL,
-#                               ...) {
-#   UseMethod("get_stock_dataset")
-# }
-
-# S4 generic definition
+#'   table_name = "TRD_Dalyr_日个股回报率",
+#'   stock_cd_list = c("600066", "000550")
+#' )
+#' 
+#' # S3 generic definition
+#' # get_stock_dataset <- function(stock_db,
+#' #                               table_name,
+#' #                               stock_cd_list = NULL,
+#' #                               ...) {
+#' #   UseMethod("get_stock_dataset")
+#' # }
+#' 
+#' # S4 generic definition
 setGeneric(
   name = "get_stock_dataset",
   signature = c("stock_db"),
@@ -342,11 +343,11 @@ setGeneric(
 #'
 #' @param stock_db    A stock database object to operate.
 #' @param stock_cd_list A list of stock cd, default value of NULL means
-#' all stock data will return.
+#'   all stock data will return.
 #' @param period_type Date period for time series, e.g. "day", "month",
-#' "year", by default "day".
+#'   "year", by default "day".
 #' @param period_date Choose start/end date of period as the date for
-#' observation
+#'   observation
 #' @param output_type Format of output result, e.g "timeSeries", "tibble".
 #'
 #' @family stock_db generics
@@ -384,9 +385,9 @@ setGeneric(
 #'
 #' @param stock_db    A stock database object to operate.
 #' @param period_type Date period for time series, e.g. "day", "month",
-#' "year", by default value is  "day".
+#'   "year", by default value is  "day".
 #' @param period_date Choose start/end date of period as the date for
-#' observation
+#'   observation
 #' @param output_type Format of output result, e.g "timeSeries", "tibble".
 #'
 #' @family stock_db generics
@@ -425,20 +426,20 @@ setGeneric(
 #' @param stock_db    A stock database object to operate.
 #'
 #' @param stock_cd_list A character vector of stock cd, default value of NULL means.
-#'     all stock data will be returned.
+#'   all stock data will be returned.
 #'
 #' @param statement   A string of statement type, i.e. "blance_sheet",
-#' "income", "cashflow_direct","cashflow_indrect",
-#' "income_ttm", "cashflow_direct_ttm", "cashflow_indrect_ttm".
+#'   "income", "cashflow_direct","cashflow_indrect",
+#'   "income_ttm", "cashflow_direct_ttm", "cashflow_indrect_ttm".
 #'
 #'  @param consolidated A logic inidcate report is consolidated or not.
-#'   Default TRUE means consolidated report, FALSE means parenet company
-#'   report.
+#'    Default TRUE means consolidated report, FALSE means parenet company
+#'    report.
 #'
 #' @param period_type Date period for time series, e.g. "quarter",
-#' "year", by default value is  "quarter".
+#'   "year", by default value is  "quarter".
 #' @param period_date Choose start/end date of period as the date for
-#' observation
+#'   observation
 #'
 #' @family stock_db generics
 #'
@@ -496,10 +497,10 @@ setGeneric(
 #'
 #' @param stock_db            A stock database object to operate.
 #' @param indicator_source    A name of table or file(with extension)
-#'  in which indicators are stored. For file, formats of rds,csv are supported.
+#'   in which indicators are stored. For file, formats of rds,csv are supported.
 #'
 #' @param indicator_codes      A vector of inicator code. Default NULL return
-#'  all indicators in the source.
+#'   all indicators in the source.
 #' @param ouput_format        Output format for data frame, i.e "long" and "wide":
 #'   \itemize{
 #'       \item in long format: code of indicator is stored in "ind_code",
@@ -540,7 +541,7 @@ setGeneric(
 #'
 #' @param stock_db            A stock database object to operate.
 #' @param indicator_source    A name of table or file(with extension)
-#'  in which indicators are stored. For file, formats of rds,csv are supported.
+#'   in which indicators are stored. For file, formats of rds,csv are supported.
 #' @param ts_indicators       A dataframe of indicator timeseries
 #'
 #' @family stock_db generics
@@ -633,9 +634,9 @@ setGeneric(
 #'
 #' @param stock_db         A stock database object to operate.
 #' @param factor_codes     A character vector of factor groups. Default NULL return
-#'  all factors.
+#'   all factors.
 #' @param factor_groups    A character vector of factor groups. Default NULL return
-#'  all factors.
+#'   all factors.
 #'
 #' @family stock_db generics
 #'
@@ -667,7 +668,7 @@ setGeneric(
 #' @family stock_db generics
 #'
 #' @return A dataframe of industry timeseries of stocks if succeed,
-#'  otherwise NULL.
+#'   otherwise NULL.
 #' @export
 #'
 
@@ -716,7 +717,7 @@ setGeneric(
 #'
 #' @param stock_db     A stock database object to operate.
 #' @param period       Date period of time series, e.g. "day", "month",
-#'  "quarter", "year", default is "day".
+#'   "quarter", "year", default is "day".
 #'
 #' @family stock_db generics
 #'
@@ -759,12 +760,12 @@ setGeneric(
 #'       }
 #'
 #' @param force            Whether return result if dir dosen't existed.
-#'  Default TRUE, return result if dir doesn't exist.
+#'   Default TRUE, return result if dir doesn't exist.
 #'
 #' @family stock_db generics
 #'
 #' @return a full path of dir if succeed, otherwise NULL.
-#'  If the path of dir dosen't exist and force = FALSE, it will raise a error.
+#'   If the path of dir dosen't exist and force = FALSE, it will raise a error.
 #' @export
 #'
 
@@ -853,10 +854,10 @@ get_assets_return <- function(benchmark_return, stocks_return) {
 #' @param ts_stocks_return   A timeseries of stocks_return
 #' @param ts_riskfree_rate   A timeseries of riskfree_rate
 #' @param period             A character of period, e.g. "day", "month",
-#'  "quarter", "year". Default "day".
+#'   "quarter", "year". Default "day".
 #' @param period_date        A character of period_date format, e.g. "start",
-#'  "end", "start" format date as start of the period, "end" format date as end
-#'  of period. Default "start".
+#'   "end", "start" format date as start of the period, "end" format date as end
+#'   of period. Default "start".
 #'
 #'
 #' @return A timeseries of excess return of stocks.
@@ -881,8 +882,9 @@ stocks_excess_return <- function(ts_stocks_return,
   period_date <- match.arg(period_date)
   if (is_periodic_dates(ts_stocks_return$date, freq_rule = period)) {
     ts_stocks_return$date <- as_period_date(ts_stocks_return$date,
-                                            period = period,
-                                            period_date = period_date)
+      period = period,
+      period_date = period_date
+    )
   } else {
     msg <- sprintf(
       "The period of date of %s isn't %s",
@@ -894,8 +896,9 @@ stocks_excess_return <- function(ts_stocks_return,
 
   if (is_periodic_dates(ts_riskfree_rate$date, freq_rule = period)) {
     ts_riskfree_rate$date <- as_period_date(ts_riskfree_rate$date,
-                                            period = period,
-                                            period_date = period_date)
+      period = period,
+      period_date = period_date
+    )
   } else {
     msg <- sprintf(
       "The period of date of %s isn't %s",
@@ -918,7 +921,6 @@ stocks_excess_return <- function(ts_stocks_return,
     dplyr::mutate(excess_return = return - riskfree_return)
 
   return(ts_stocks_excess_return)
-
 }
 
 # Get a timeseries of stock data for specified stock from table datasets

@@ -20,11 +20,11 @@
 #'
 #' @export
 model_build_fundamental <- function(ds_build,
-                              regress_method = c("cross_section", "pooling"),
-                              regress_fun,
-                              ...,
-                              output_type = c("summary", "raw"),
-                              date_field = "date") {
+                                    regress_method = c("cross_section", "pooling"),
+                                    regress_fun,
+                                    ...,
+                                    output_type = c("summary", "raw"),
+                                    date_field = "date") {
   # Validate params
   stopifnot(!is.null(ds_build), inherits(ds_build_model, "data.frame"))
   ds_build_data <- tibble::as.tibble(ds_build)
@@ -35,14 +35,13 @@ model_build_fundamental <- function(ds_build,
   # Nest test data by group of factor_name and date
   regress_method <- match.arg(regress_method)
   if (regress_method == "cross_section") {
-    #cross section: group data date_field(cross section setting)
+    # cross section: group data date_field(cross section setting)
     ds_build_groupdata <- ds_build_data %>%
       dplyr::group_by(date_field) %>%
       tidyr::nest()
   } else {
     # pooling: group data by factor, no crossetion
     ds_build_groupdata <- ds_build_data
-
   }
 
   # Conduct factors regression

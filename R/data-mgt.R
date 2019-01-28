@@ -13,7 +13,7 @@
 #' @family data managment
 #'
 #' @return A dataframe of info about importing raw data if succeed,
-#' otherwise NULL.
+#'   otherwise NULL.
 #'
 #' @export
 # S3 generic definition
@@ -78,10 +78,10 @@ setGeneric(
 #'   only update on these tables with recording failure in log file.
 #'   By default NULL.
 #' @param log_file_prefix  A character of log file prefix to name log file.
-#'    Log file is named as format of "log_file_prefix_XXXX_(current).csv"
-#'  Default is "update_db_log".
+#'   Log file is named as format of "log_file_prefix_XXXX_(current).csv"
+#'   Default is "update_db_log".
 #' @param log_dir Path to save updating log file. NULL means to use "./" as
-#'  log dir. Default "./log".
+#'   log dir. Default "./log".
 #'
 #'
 #' @family data managment
@@ -200,10 +200,10 @@ setGeneric(
 #'   only process on these input_files with recording failure in log file.
 #'   By default NULL.
 #' @param log_file_prefix  A character of log file prefix to name log file.
-#'    Log file is named as format of "log_file_prefix_XXXX_(current).csv"
-#'  Default is "update_db_log".
+#'   Log file is named as format of "log_file_prefix_XXXX_(current).csv"
+#'   Default is "update_db_log".
 #' @param log_dir Path to save process log file. NULL means to use "./"
-#'  as log dir. Default "./log".
+#'   as log dir. Default "./log".
 #'
 #'
 #' @family data managment
@@ -221,11 +221,11 @@ setGeneric(
   name = "process_files",
   signature = c("stock_db"),
   def = process_files <- function(stock_db,
-                                  data_source = get_datasource(stock_db),
-                                  retry_log = NULL,
-                                  log_file_prefix = "process_files_log",
-                                  log_dir = "./log",
-                                  ...) {
+                                    data_source = get_datasource(stock_db),
+                                    retry_log = NULL,
+                                    log_file_prefix = "process_files_log",
+                                    log_dir = "./log",
+                                    ...) {
     standardGeneric("process_files")
   }
 )
@@ -240,13 +240,13 @@ setGeneric(
 #' @param input_file  A name or a path of input data file.
 #' @param input_type  A charater of input file format, e.g. "txt", "csv".
 #' @param input_dir   A path of working dir of input file, if NULL, use dir of
-#' input file as working dir, default NULL.
+#'   input file as working dir, default NULL.
 #' @param start_index A integer of start index of first line of actual records
-#'  in data file, by default 2L, which means first line is header and actual
-#'  data starts from second lines.
-#' @param ignore_problems A logical to determine whether to ignore problems
-#'  when covert data, if TRUE, continue to import data but log problems into
-#'  log file, otherwise abort reading process.  By default TRUE.
+#'   in data file, by default 2L, which means first line is header and actual
+#'   data starts from second lines.
+#' @param ignore_problems A logic flag to determine whether to ignore problems
+#'   when covert data, if TRUE, continue to import data but log problems into
+#'   log file, otherwise abort reading process.  By default TRUE.
 #' @param log_dir   Path of log dir for saving problem log file,
 #'   by default"./log", if the log path doesn't exsited, it  will be created.
 #'
@@ -392,7 +392,7 @@ read_import_file <- function(input_file,
 #' @param output_file  A name or a path of input data file.
 #' @param output_type  A character of output file format, e.g. "txt", "csv".
 #' @param output_dir A path of working dir of output file, if NULL, use dir
-#'  of output file as working dir, by default NULL,
+#'   of output file as working dir, by default NULL,
 #'
 #' @family data managment
 #'
@@ -412,8 +412,10 @@ write_import_file <- function(ds_output,
   if (!is.null(output_dir)) {
     output_file_path <- paste0(output_dir, "/", basename(output_file))
   } else {
-    output_file_path <- normalizePath(output_file, winslash = "/",
-                                      mustWork = FALSE)
+    output_file_path <- normalizePath(output_file,
+      winslash = "/",
+      mustWork = FALSE
+    )
   }
 
   # get data file name
@@ -433,9 +435,9 @@ write_import_file <- function(ds_output,
       file_ext
     )
     file.copy(output_file_path,
-              to = backup_file_path,
-              copy.date = TRUE,
-              overwrite = TRUE
+      to = backup_file_path,
+      copy.date = TRUE,
+      overwrite = TRUE
     )
   }
 
@@ -482,16 +484,16 @@ write_import_file <- function(ds_output,
 #'
 #' @export
 convert_import_file <- function(input_file,
-                         input_type = c("csv", "txt"),
-                         input_dir = NULL,
-                         start_index = 2L,
-                         ignore_problems = TRUE,
-                         log_dir = "./log",
-                         process_fun = NULL,
-                         ...,
-                         output_file = input_file,
-                         output_type = input_type,
-                         output_dir = input_dir) {
+                                input_type = c("csv", "txt"),
+                                input_dir = NULL,
+                                start_index = 2L,
+                                ignore_problems = TRUE,
+                                log_dir = "./log",
+                                process_fun = NULL,
+                                ...,
+                                output_file = input_file,
+                                output_type = input_type,
+                                output_dir = input_dir) {
 
   # validate params
   if (!is.null(process_fun)) {
@@ -541,9 +543,9 @@ convert_import_file <- function(input_file,
   if (success) {
     result <- tryCatch({
       write_import_file(ds_processed_data,
-                        output_file = output_file,
-                        output_type = output_type,
-                        output_dir = output_dir
+        output_file = output_file,
+        output_type = output_type,
+        output_dir = output_dir
       )
     }, error = function(e) e)
     if (inherits(result, "error")) {
@@ -553,21 +555,23 @@ convert_import_file <- function(input_file,
   }
 
   if (success) {
-    msg <- sprintf("\nConvert %s to %s successfully",
-                   input_file,
-                   output_file
-                   )
+    msg <- sprintf(
+      "\nConvert %s to %s successfully",
+      input_file,
+      output_file
+    )
     rlang::inform(msg)
   } else {
-    msg <- sprintf("\nFail to convert %s to %s, error: %s",
-                   input_file,
-                   output_file,
-                   error_msg)
+    msg <- sprintf(
+      "\nFail to convert %s to %s, error: %s",
+      input_file,
+      output_file,
+      error_msg
+    )
     rlang::warn(msg)
   }
 
   return(invisible(success))
-
 }
 
 
@@ -578,7 +582,7 @@ convert_import_file <- function(input_file,
 #'
 #' @param ds_financial_report   A data.frame of financial report to convert.
 #' @param date_index_field  A character name of date index field of dataframe of
-#'  financial report, default 'Accper'.
+#'   financial report, default 'Accper'.
 #' @param key_fields    A character vector of key fields, which identify unique
 #'   observation in each date, defaul c("Stkcd", "Typrep").
 #' @param parallel   A logic to deterimine whether to use parallel processing.
@@ -587,7 +591,7 @@ convert_import_file <- function(input_file,
 #' @family data managment
 #'
 #' @return A dataframe of finacial report of TTM format if succeed,
-#'  otherwise NULL.
+#'   otherwise NULL.
 #'
 #' @export
 ttm_financial_report <- function(ds_financial_report,
@@ -619,19 +623,22 @@ ttm_financial_report <- function(ds_financial_report,
       # value_fields include numeric fields, na_fields, but exclude
       # key_fields and date_index_field
       pattern_retain_fields <- stringr::str_c(
-                               stringr::str_c(key_fields, collapse = "|"),
-                                              date_index_field, sep = "|")
+        stringr::str_c(key_fields, collapse = "|"),
+        date_index_field,
+        sep = "|"
+      )
       pattern_non_retain_fields <- sprintf("[^%s]", pattern_retain_fields)
 
       numeric_fields <- expect_type_fields(ds_financial_report,
         expect_type = "numeric"
       )
       na_fields <- expect_type_fields(ds_financial_report,
-                                      expect_type = "NA"
+        expect_type = "NA"
       )
       value_fields <- c(numeric_fields, na_fields)
       value_fields <- stringr::str_subset(value_fields,
-                                          pattern = pattern_non_retain_fields)
+        pattern = pattern_non_retain_fields
+      )
 
       ds_origin_value <- ds_financial_report %>%
         dplyr::select(!!value_fields)

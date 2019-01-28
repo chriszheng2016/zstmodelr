@@ -27,7 +27,6 @@ create_periodic_ts <- function(start_date,
     if (has_nas) {
       x[(1:length(x)) %% 2 == 1] <- NA
     }
-
   } else {
     # non-accumulated data with no-increament
     x <- rep(1.0, length(date))
@@ -68,7 +67,7 @@ test_that("rollify_series, with various arguments", {
 
   # >>rollify_series on two series ----
   result_series <- rollify_series(ts_month,
-    fun = purrr::as_mapper(~(max(.x$x + .x$y)))
+    fun = purrr::as_mapper(~ (max(.x$x + .x$y)))
   )
   expect_equal(length(result_series), NROW(ts_month))
   expect_equal(
@@ -139,7 +138,7 @@ test_that("trail_periodic_series, with various arguments", {
   ds_periodic_accumlated_ts <- ds_periodic_accumlated_ts %>%
     dplyr::mutate(ts = purrr::map(
       period,
-      ~create_periodic_ts(start_date,
+      ~ create_periodic_ts(start_date,
         end_date,
         accumulated = TRUE,
         period = .x
@@ -171,13 +170,13 @@ test_that("trail_periodic_series, with various arguments", {
 
     # test on ts dataset without NAs
     ts_month <- create_periodic_ts(start_date, end_date,
-                                   accumulated = accumulated,
-                                   period = "month",
-                                   has_nas = FALSE
+      accumulated = accumulated,
+      period = "month",
+      has_nas = FALSE
     )
     ts_trail <- trail_periodic_series(ts_month$date, ts_month[, c("x", "y")],
-                                      period = "month",
-                                      accumulated = accumulated
+      period = "month",
+      accumulated = accumulated
     )
     expect_equivalent(colMeans(ts_trail, na.rm = TRUE), c(12, 24))
     expect_equivalent(sum(is.na(ts_trail$x)), 12 - 1)
@@ -185,18 +184,17 @@ test_that("trail_periodic_series, with various arguments", {
 
     # test on ts dataset with some NAs
     ts_month <- create_periodic_ts(start_date, end_date,
-                                   accumulated = accumulated,
-                                   period = "month",
-                                   has_nas = TRUE
+      accumulated = accumulated,
+      period = "month",
+      has_nas = TRUE
     )
     ts_trail <- trail_periodic_series(ts_month$date, ts_month[, c("x", "y")],
-                                      period = "month",
-                                      accumulated = accumulated
+      period = "month",
+      accumulated = accumulated
     )
     expect_equivalent(colMeans(ts_trail, na.rm = TRUE), c(12, 24))
     expect_equivalent(sum(is.na(ts_trail$x)), 12 - 1)
     expect_equivalent(sum(is.na(ts_trail$y)), 12 - 1)
-
   }
 
 

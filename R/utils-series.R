@@ -6,13 +6,13 @@
 #'
 #' @param data_series  A dataframe or matrix of numeric series to trail.#'
 #' @param fun          A function to apply on sereis data.
-#' @param ...          params passed to fun.
+#' @param ...          Params passed to fun.
 #' @param window       A integer of periods in rolling window which must be
-#'  in range of [1L, length of data_series], default 1L.
-#' @param unlist       A logical to deterimine whether unlist result or not.
-#'  Default TRUE means unlist result into a vector of numeric. The argument
-#'  don't work if result can't be convert into a atomic vector, e.g., a list of
-#'  object or a list of list, etc.
+#'   in range of [1L, length of data_series], default 1L.
+#' @param unlist       A logical flag to deterimine whether unlist result or not.
+#'   Default TRUE means unlist result into a vector of numeric. The argument
+#'   don't work if result can't be convert into a atomic vector, e.g., a list of
+#'   object or a list of list, etc.
 #'
 #' @param na_value     A NA value to fill non-avaliable data in results,
 #'   default NA.
@@ -21,7 +21,8 @@
 #' @family utils_series
 #'
 #' @return A vector or list of result with same length of original series
-#'  if succeed, otherwise a vector of NAs with same length of orginal series.
+#'   if succeed, otherwise a vector of NAs with same length of orginal series.
+#' @noRd
 rollify_series <- function(data_series, fun, ..., window = 1L,
                            unlist = TRUE, na_value = NA) {
 
@@ -61,7 +62,7 @@ rollify_series <- function(data_series, fun, ..., window = 1L,
 
   # unlist result if request, except for atomic scalar
   if (unlist) {
-    is_scalar_atomic <- purrr::map_lgl(output, ~(rlang::is_scalar_atomic(.x)))
+    is_scalar_atomic <- purrr::map_lgl(output, ~ (rlang::is_scalar_atomic(.x)))
     if (all(is_scalar_atomic)) {
       output <- unlist(output)
     } else {
@@ -81,13 +82,13 @@ rollify_series <- function(data_series, fun, ..., window = 1L,
 #' @param dates         A vector of data.
 #' @param datas_series  A dataframe or matrix of numeric series to trail.
 #' @param period        A period string of dates, i.e., "day", "month",
-#'  "quarter". default day.
-#' @param accumulated   A logical to spcified data sereis is accumluated or not.
-#' @param trailling_month     A integer of months of data to trail. Default is 12,
-#'  which means 12 months, i.e., TTT(Trail Twelve Month).
-#' @param agg_fun       A function to aggrate data sereis in trailling
-#'  month.
-#' @param ...    Params pass to agg_fun.
+#'   "quarter". Default day.
+#' @param accumulated   A logic flag of whether spcified data sereis is
+#'   accumluated or not.
+#' @param trailling_month  A integer of months of data to trail. Default is 12,
+#'   which means 12 months, i.e., TTT(Trail Twelve Month).
+#' @param agg_fun       A function to aggrate data sereis in trailling month.
+#' @param ...    Params to agg_fun.
 #'
 #'
 #'
@@ -96,7 +97,7 @@ rollify_series <- function(data_series, fun, ..., window = 1L,
 #'
 #' @return A dataframe of trailed data if succeed, otherwise a dataframe with
 #'  zero length.
-
+#' @noRd
 trail_periodic_series <- function(dates, data_series,
                                   period = c("day", "month", "quarter"),
                                   accumulated = TRUE,
@@ -160,7 +161,8 @@ trail_periodic_series <- function(dates, data_series,
       # add year field to indicate period
       ds_period <- ds_origin %>%
         dplyr::mutate(
-          year = lubridate::year(date))
+          year = lubridate::year(date)
+        )
 
       # fill NAs with value before NAs
       ds_period <- ds_period %>%
@@ -180,7 +182,6 @@ trail_periodic_series <- function(dates, data_series,
       ds_period <- ds_period %>%
         dplyr::ungroup() %>%
         dplyr::select(-date, -year)
-
     } else {
 
       # original data is not accumated(already contain period data)
@@ -192,7 +193,6 @@ trail_periodic_series <- function(dates, data_series,
       # replace NA in series with 0
       ds_period <- ds_period %>%
         dplyr::mutate_all(.funs = tidyr::replace_na, replace = 0)
-
     }
 
     # trail data from period data

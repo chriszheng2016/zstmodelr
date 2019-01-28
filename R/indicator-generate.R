@@ -15,12 +15,12 @@
 #'
 #' @param stock_db  A stock database object to operate.
 #' @param ds_indicator_defs  A dataframe of indicator definintion to generate.
-#' @param validate_def A logical determine whether to validate indicator
+#' @param validate_def A logic flag to determine whether to validate indicator
 #'   definition or not.Default FALSE, means to produce indicators on full
 #'   dataset, TRUE means to validate definintion on small datasets.
 #' @param validate_stkcds A character vector of stock codes used for validating
 #'   indicator definition.
-#' @param parallel   A logic to deterimine whether to use parallel processing.
+#' @param parallel   A logic flag to deterimine whether to use parallel processing.
 #'   Default TRUE means to use parallel processing.
 #' @param log_file_prefix  A character of log file prefix to name log file. Log
 #'   file is named as format of "log_file_prefix(current).csv" Default is
@@ -34,13 +34,15 @@
 #'
 #' @export
 generate_indicators <- function(stock_db,
-                               ds_indicator_defs,
-                               validate_def = FALSE,
-                               validate_stkcds = c("600031", "000157",
-                                                   "600066", "000550"),
-                               parallel = TRUE,
-                               log_file_prefix = "generate_indicator_log",
-                               log_dir = "./log") {
+                                ds_indicator_defs,
+                                validate_def = FALSE,
+                                validate_stkcds = c(
+                                  "600031", "000157",
+                                  "600066", "000550"
+                                ),
+                                parallel = TRUE,
+                                log_file_prefix = "generate_indicator_log",
+                                log_dir = "./log") {
 
   # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "stock_db"))
@@ -140,7 +142,7 @@ generate_indicators <- function(stock_db,
         # Notice: indcd must use stkcd as key_fields
         if (success) {
           if (!("indcd" %in% names(ts_indicator)) ||
-              any(is.na(ts_indicator$indcd)) ) {
+            any(is.na(ts_indicator$indcd))) {
             # add indcd attribute if no indcd or indcd is not completed
             ts_indicator <- modify_indicator(
               ts_indicator = ts_indicator,
@@ -211,7 +213,6 @@ generate_indicators <- function(stock_db,
           rlang::warn(msg)
         }
       } else {
-
         msg <- sprintf(
           "Cann't to generate indicator: %s(%s), because ind_def_fun is NULL.\n",
           indicator_def$ind_code,
@@ -268,7 +269,7 @@ delete_indicators <- function(stock_db,
   dir_indicators <- dir_path_db(stock_db, "DIR_DB_DATA_INDICATOR")
   path_target_files <- paste0(dir_indicators, "/", ds_indicator_defs$ind_source)
   quiet_file_remove <- purrr::possibly(file.remove, otherwise = FALSE)
-  purrr::walk(path_target_files, ~quiet_file_remove(.x))
+  purrr::walk(path_target_files, ~ quiet_file_remove(.x))
 
   return(invisible(NULL))
 }
@@ -308,7 +309,7 @@ backup_indicators <- function(stock_db,
   # backup indicators files into indicator dir
   path_source_files <- paste0(dir_indicators, "/", ds_indicator_defs$ind_source)
   quiet_file_copy <- purrr::possibly(file.copy, otherwise = FALSE)
-  purrr::walk(path_source_files, ~quiet_file_copy(.x, to = backup_dir_path))
+  purrr::walk(path_source_files, ~ quiet_file_copy(.x, to = backup_dir_path))
 
   return(backup_dir_path)
 }

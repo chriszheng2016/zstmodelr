@@ -5,14 +5,15 @@
 #'
 #'
 #' @name utils_expr
+#' @noRd
 NULL
 
 # Create a expr for evaluation from expr, list of exprs, or strings
 #' @param expr  A expr or list of exprs or string to parse as expr.
 #' @describeIn utils_expr  create a expr for evaluation from expr,
-#' list of exprs, or strings.
+#' list of exprs, strings.
+#' @noRd
 create_expr <- function(expr) {
-
   expr <- rlang::enexpr(expr)
 
   # covert exprs to support mutli-types of exprs
@@ -45,28 +46,29 @@ create_expr <- function(expr) {
 }
 
 # Find symbols in expr by matching pattern.
-#' @param pattern  a character of regular rule for matching.
-#' @describeIn utils_expr  Find symbols in expr by matching pattern.
+#' @param pattern  A character of regular rule for matching.
+#' @describeIn utils_expr  find symbols in expr by matching pattern.
+#' @noRd
 find_syms <- function(expr, pattern = NULL, ...) {
-
   expr <- rlang::enexpr(expr)
 
   # find syms by matching .preidcate
   result <- switch_expr(expr,
-              constant = {
-                character()
-              },
-              symbol = {
-                rlang::as_string(expr)
-              },
-              call = {
+    constant = {
+      character()
+    },
+    symbol = {
+      rlang::as_string(expr)
+    },
+    call = {
 
-                # use recursive to find sysmbs in in call expr
-                result_list <- purrr::map(as.list(expr),
-                                          find_syms, pattern, ...)
-                purrr::flatten_chr(result_list)
-
-              }
+      # use recursive to find sysmbs in in call expr
+      result_list <- purrr::map(
+        as.list(expr),
+        find_syms, pattern, ...
+      )
+      purrr::flatten_chr(result_list)
+    }
   )
 
   # subset result with pattern
@@ -81,10 +83,10 @@ find_syms <- function(expr, pattern = NULL, ...) {
   return(result)
 }
 
-# get type of expr
+# Get type of expr
 expr_type <- function(x) {
   if (rlang::is_syntactic_literal(x)
-      | rlang::is_vector(x)) {
+  | rlang::is_vector(x)) {
     "constant"
   } else if (is.symbol(x)) {
     "symbol"
@@ -97,7 +99,7 @@ expr_type <- function(x) {
   }
 }
 
-# template for processing different type of expr
+# Template for processing different type of expr
 switch_expr <- function(x, ...) {
   switch(expr_type(x),
     ...,

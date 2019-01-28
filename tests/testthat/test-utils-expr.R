@@ -20,7 +20,7 @@ test_that("create_expr, with various arguments", {
 
   # expr string
   expr_string <- rlang::expr_text(expect_expr)
-  expr_string <- stringr::str_remove_all(expr_string, pattern =  "[\\{\\}]")
+  expr_string <- stringr::str_remove_all(expr_string, pattern = "[\\{\\}]")
 
   # create_expr on expr ====
   actual_expr <- create_expr(!!expect_expr)
@@ -39,11 +39,9 @@ test_that("create_expr, with various arguments", {
   # create_expr on NSE
   actual_expr <- create_expr(a <- b + 1)
   expect_true(rlang::is_call(actual_expr))
-
 })
 
 test_that("find_syms, with various arguments", {
-
   test_expr <- rlang::expr({
     a <- 1
     b <- 2
@@ -65,7 +63,7 @@ test_that("find_syms, with various arguments", {
   # find_syms in expr obj with patern===
   expect_syms <- c("a", "b", "c")
   actual_syms <- find_syms(!!test_expr,
-                           pattern = "[^\\{\\+\\-\\*\\/\\(\\^\\<-]")
+    pattern = "[^\\{\\+\\-\\*\\/\\(\\^\\<-]"
+  )
   expect_equal(expect_syms, actual_syms)
-
 })

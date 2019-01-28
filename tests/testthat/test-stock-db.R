@@ -825,7 +825,6 @@ test_that("fetch_stock_field_dataset, with various arguments", {
 })
 
 test_that("stocks_excess_return, with various arguments", {
-
   stkcds <- c("600066", "000550")
 
   # stocks_excess_return with default arguments ====
@@ -910,15 +909,15 @@ test_that("stocks_excess_return, with various arguments", {
 
   # >> argument: period_date ----
   ts_stock_return <- get_stock_return(stock_db,
-                                      stock_cd_list = stkcds,
-                                      period_type = "month",
-                                      period_date = "end",
-                                      output_type = "tibble"
+    stock_cd_list = stkcds,
+    period_type = "month",
+    period_date = "end",
+    output_type = "tibble"
   )
 
   # get riskfree rate
   ts_riskfree_rate <- get_riskfree_rate(stock_db,
-                                        period = "month"
+    period = "month"
   )
 
   # compute excess return of stocks
@@ -965,9 +964,7 @@ test_that("stocks_excess_return, with various arguments", {
   ))))
 
   expect_true(is_periodic_dates(ts_stock_excess_return$date, freq_rule = "month"))
-  expect_true(all(lubridate::day(ts_stock_excess_return$date +1 ) == 1))
-
-
+  expect_true(all(lubridate::day(ts_stock_excess_return$date + 1) == 1))
 })
 
 # clear up testing conext

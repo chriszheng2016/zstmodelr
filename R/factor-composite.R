@@ -17,8 +17,8 @@
 #' @return            a dataset of new factor.
 #' @export
 composite_factor <- function(ds_factors,
-                                   aggregate_formula,
-                                   drop = TRUE) {
+                             aggregate_formula,
+                             drop = TRUE) {
 
   # Validate params
   assertive::assert_is_not_null(ds_factors)
@@ -28,7 +28,8 @@ composite_factor <- function(ds_factors,
   aggregate_formula <- rlang::enquo(aggregate_formula)
   formula_string <- rlang::quo_text(aggregate_formula)
   deparse_formula <- stringr::str_split(formula_string,
-                                        pattern = "\\s*~\\s*",n = 2)[[1]]
+    pattern = "\\s*~\\s*", n = 2
+  )[[1]]
   if (length(deparse_formula) == 2) {
     factor_var <- rlang::parse_expr(deparse_formula[1])
     factor_formula <- rlang::parse_expr(deparse_formula[2])
@@ -37,20 +38,21 @@ composite_factor <- function(ds_factors,
     factor_formula <- rlang::parse_expr(deparse_formula[1])
   }
 
-  #Make sure compute factors are valid fields in ds_fators
-  compute_factors = all.vars(factor_formula)
+  # Make sure compute factors are valid fields in ds_fators
+  compute_factors <- all.vars(factor_formula)
   is_valid_formula_factor <- compute_factors %in% names(ds_factors)
   if (!all(is_valid_formula_factor)) {
-    msg <- sprintf("factors(%s): not vaild factor field of factors dataset",
-                   stringr::str_c(compute_factors[!is_valid_formula_factor], collapse = ","))
+    msg <- sprintf(
+      "factors(%s): not vaild factor field of factors dataset",
+      stringr::str_c(compute_factors[!is_valid_formula_factor], collapse = ",")
+    )
     stop(msg)
   }
 
   ds_result_factors <- ds_factors %>%
-       dplyr::mutate( !!factor_var := !!factor_formula)
+    dplyr::mutate(!!factor_var := !!factor_formula)
 
   if (drop) {
-
     origin_fields <- names(ds_result_factors)
     output_fields <- origin_fields[!(origin_fields %in% compute_factors)]
 
@@ -59,7 +61,6 @@ composite_factor <- function(ds_factors,
   }
 
   return(ds_result_factors)
-
 }
 
 #' Build aggregating formula of composite factor
@@ -79,28 +80,29 @@ composite_factor <- function(ds_factors,
 #' @export
 weight_formula <- function(factors_weight,
                            new_factor_name = "composite_factor") {
-
   assertive::assert_is_not_null(factors_weight)
   assertive::assert_is_not_null(new_factor_name)
   assertive::assert_is_character(new_factor_name)
 
 
   weight_formula_string <- stringr::str_c(factors_weight$factor_name,
-                                  round(factors_weight$factor_weight, 3),
-                                  sep = "*",
-                                  collapse = "+")
+    round(factors_weight$factor_weight, 3),
+    sep = "*",
+    collapse = "+"
+  )
 
   if (!is.null(new_factor_name) && (!length(new_factor_name) == 0)) {
-    weight_formula_string <- stringr::str_c(new_factor_name ,
-                                            " ~ " ,
-                                            weight_formula_string)
+    weight_formula_string <- stringr::str_c(
+      new_factor_name,
+      " ~ ",
+      weight_formula_string
+    )
   }
 
   weight_formula <- rlang::parse_expr(weight_formula_string)
   weight_formula <- as.formula(weight_formula)
 
   return(weight_formula)
-
 }
 
 
@@ -121,32 +123,30 @@ factors_weight_equal <- function(factors_list) {
   assertive::assert_is_not_null(factors_list)
   assertive::assert_is_vector(factors_list)
 
-  factor_weight_list <- rep(1/length(factors_list), length(factors_list))
+  factor_weight_list <- rep(1 / length(factors_list), length(factors_list))
 
-  factors_weight <- list(factor_name = factors_list,
-                         factor_weight = factor_weight_list)
+  factors_weight <- list(
+    factor_name = factors_list,
+    factor_weight = factor_weight_list
+  )
 
   return(factors_weight)
-
 }
 
 # compute factor weights by PCA method
 factors_weight_pca <- function(ds_factors_return) {
 
   # Validate params
-
 }
 
 # compute factor weights by historical returns method
 factors_weight_return <- function(ds_factors_return) {
 
   # Validate params
-
 }
 
 # compute factor weights by histocial ICs method
 factors_weight_IC <- function(ds_factors_IC) {
 
   # Validate params
-
 }

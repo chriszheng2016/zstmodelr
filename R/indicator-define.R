@@ -12,7 +12,7 @@
 #' @family indicator define functions
 #'
 #' @return A dataframe of definitions of customized indicators if succeed,
-#' otherwise NULL.
+#'   otherwise NULL.
 #'
 #' @export
 # S3 generic definition
@@ -35,12 +35,12 @@ setGeneric(
 #'
 #' @param stock_db         A stock database object to operate.
 #' @param indicator_defs   A dataframe of indicator definitions, which require
-#'  vars to compute indicators.
+#'   vars to compute indicators.
 #'
 #' @family indicator define functions
 #'
 #' @return A dataframe of input vars for computing customized indicators
-#' if succeed, otherwise NULL.
+#'   if succeed, otherwise NULL.
 #'
 #' @export
 # S3 generic definition
@@ -92,7 +92,7 @@ setGeneric(
 #' @family indicator define functions
 #'
 #' @return A function of attribute definition of industry code if succeed,
-#'  otherwise NULL.
+#'   otherwise NULL.
 #'
 #' @export
 # S3 generic definition
@@ -118,7 +118,7 @@ setGeneric(
 #' @family indicator define functions
 #'
 #' @return A function of attribute definition of trading status if succeed,
-#'  otherwise NULL.
+#'   otherwise NULL.
 #'
 #' @export
 # S3 generic definition
@@ -147,18 +147,18 @@ setGeneric(
 #' @param indicator_code   A character for indicator code.
 #' @param indicator_expr   A expr as a formula to compute indicator.
 #' @param rolly_window   A numeric as rolly computing window, default 0 means
-#'  no rollying.
+#'   no rollying.
 #' @param period   A periodicity of indicator, e.g. "day", "month",
 #'    "quarter", "year".
 #' @param fillna_method   A method to fill NA , e.g. "ffill", "bfill", "nfill".
-#'  Default "ffill" means to use value before NAs to fill NAs; "bfill" means
-#'  to use data behind NAs to fill NAs; "nfill" means to don't fill NAs.
+#'   Default "ffill" means to use value before NAs to fill NAs; "bfill" means
+#'   to use data behind NAs to fill NAs; "nfill" means to don't fill NAs.
 #'
 #'
 #' @family indicator define functions
 #'
 #' @return A function of indicator definition to compute indicator if succeed,
-#' otherwise NULL.
+#'   otherwise NULL.
 #'
 #' @export
 create_indicator_def_fun <- function(indicator_code,
@@ -233,8 +233,10 @@ create_indicator_def_fun <- function(indicator_code,
 
     # re-group vars by period
     ds_vars_by_period <- ds_vars %>%
-      dplyr::select(!!date_index_field, !!key_fields,
-                    period, ind_code, ind_value) %>%
+      dplyr::select(
+        !!date_index_field, !!key_fields,
+        period, ind_code, ind_value
+      ) %>%
       tidyr::spread(key = "ind_code", value = "ind_value") %>%
       dplyr::group_by(period) %>%
       tidyr::nest()
@@ -444,7 +446,7 @@ create_attribute_def_fun <- function(attr_name,
 #' @family indicator define functions
 #'
 #' @return A dataframe of definitions of prioritized indicators.
-#'  Raise error if anything goes wrong.
+#'   Raise error if anything goes wrong.
 #' @export
 prioritize_indicator_defs <- function(ds_indicator_defs) {
 
@@ -597,7 +599,7 @@ prioritize_indicator_defs <- function(ds_indicator_defs) {
 #' @family indicator define functions
 #'
 #' @return A dataframe of definitions of related indicators.
-#'  Raise error if anything goes wrong.
+#'   Raise error if anything goes wrong.
 #' @export
 related_indicator_defs <- function(ds_indicator_defs,
                                    indicator_codes) {
@@ -638,15 +640,14 @@ related_indicator_defs <- function(ds_indicator_defs,
 
         # find related indicators of dependent indicators of current indicator
         related_indicators_list <- purrr::map(depend_indicators_def_trees$ind_code,
-                                             .find_related_indcators,
-                                             ind_defs_trees = ind_defs_trees
+          .find_related_indcators,
+          ind_defs_trees = ind_defs_trees
         )
 
         related_indicators <- purrr::flatten_chr(related_indicators_list)
 
         # combine current_indicator and its related indicators
         related_indicators <- c(ind_code, related_indicators)
-
       }
     } else {
       # find zero or more than one ind_code in ind_defs_trees
@@ -673,9 +674,10 @@ related_indicator_defs <- function(ds_indicator_defs,
   # check specifed indicators existed in defs
   indicator_exsited <- indicator_codes %in% ds_indicator_defs$ind_code
   if (any(!indicator_exsited)) {
-    msg <- sprintf("There is no indicator definition for %s.",
-                   paste0(indicator_codes[!indicator_exsited], collapse = ",")
-                   )
+    msg <- sprintf(
+      "There is no indicator definition for %s.",
+      paste0(indicator_codes[!indicator_exsited], collapse = ",")
+    )
     rlang::abort(msg)
   }
 
@@ -687,17 +689,16 @@ related_indicator_defs <- function(ds_indicator_defs,
 
   # go through all indicators to find out all related indicators
   all_related_ind_codes <- NULL
-  for (ind_code in  indicator_codes) {
+  for (ind_code in indicator_codes) {
     related_ind_codes <- .find_related_indcators(ind_code, ind_defs_trees)
     all_related_ind_codes <- unique(c(all_related_ind_codes, related_ind_codes))
   }
 
   # filter ind_defs by related indicators
   all_related_indicator_defs <- ds_indicator_defs %>%
-    dplyr::filter( ind_code %in% all_related_ind_codes)
+    dplyr::filter(ind_code %in% all_related_ind_codes)
 
   return(all_related_indicator_defs)
-
 }
 
 

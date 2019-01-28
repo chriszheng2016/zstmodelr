@@ -126,10 +126,13 @@ parse_indicator_vars.gta_db <- function(stock_db, indicator_expr) {
     indicator_vars_names <- all_indictors_names[indicator_vars]
     non_indicator_vars <- syms[!syms_are_indicators]
 
-    msg <- sprintf("\nIndicator vars in parsed expr: %s;\nNon_indicator vars in parsed expr: %s.",
-                   paste0(indicator_vars, "(",indicator_vars_names, ")",
-                          collapse = ","),
-                   paste0(non_indicator_vars, collapse = ","))
+    msg <- sprintf(
+      "\nIndicator vars in parsed expr: %s;\nNon_indicator vars in parsed expr: %s.",
+      paste0(indicator_vars, "(", indicator_vars_names, ")",
+        collapse = ","
+      ),
+      paste0(non_indicator_vars, collapse = ",")
+    )
     rlang::inform(msg)
   }
 
@@ -238,7 +241,13 @@ setMethod(
 
 # Non-generic internal functions for gta_db operation -----------------------
 
-# Build indicator defs from customeized indicator info
+#' Build indicator defs from customeized indicator info
+#'
+#' @param stock_db         A stock database object to operate.
+#' @param customized_indictors_info A dataframe of customized indicator info.
+#'
+#' @return A dataframe of inicator defs.
+#' @noRd
 build_indicator_defs.gta_db <- function(stock_db, customized_indictors_info) {
 
   # validate params
@@ -259,8 +268,10 @@ build_indicator_defs.gta_db <- function(stock_db, customized_indictors_info) {
   for (i in seq_len(NROW(indicator_defs))) {
 
     # Print debug msg
-    msg <- sprintf("\nCreate indicator definition for %s:",
-                   indicator_defs$ind_code[i])
+    msg <- sprintf(
+      "\nCreate indicator definition for %s:",
+      indicator_defs$ind_code[i]
+    )
     rlang::inform(msg)
 
     # convert ind_keys
@@ -310,7 +321,17 @@ build_indicator_defs.gta_db <- function(stock_db, customized_indictors_info) {
   return(indicator_defs)
 }
 
-# Compute attr values for stocks at various dates
+#' Compute attr values for stocks at various dates
+#'
+#' @param dates  A vector of dates to compute.
+#' @param stkcds A vector of stkcds to compute.
+#' @param find_stock_attr_fun A function to find value of stock attribute in
+#'   `ds_attr_source`.
+#' @param ds_attr_source A dataframe of attribute data.
+#' @param ...  Other param to `find_stock_attr_fun`.
+#'
+#' @return A vector of attribute values with same length of `dates`/`stkcds`.`
+#' @noRd
 compute_attr_value.gta_db <- function(dates,
                                       stkcds,
                                       find_stock_attr_fun,
@@ -337,7 +358,14 @@ compute_attr_value.gta_db <- function(dates,
   return(attr_values)
 }
 
-# Find indcd for a stock at specified date
+#' Find industry code for a stock at specified date in target dataset
+#'
+#' @param date   A date to search for.
+#' @param stkcd  A stkcd to search for.
+#' @param ds_stock_industry A dataframe of stock industry info to search in.
+#'
+#' @return A industry code of matched date/stkcd if successed, otherwise NA.
+#' @noRd
 find_stock_indcd.gta_db <- function(date, stkcd, ds_stock_industry) {
 
   # validate params
@@ -358,7 +386,14 @@ find_stock_indcd.gta_db <- function(date, stkcd, ds_stock_industry) {
   return(indcd)
 }
 
-# Find trading status for a stock at specified date
+#' Find trading status for a stock at specified date in target dataset.
+#'
+#' @param date   A date to search for.
+#' @param stkcd  A stkcd to search for.
+#' @param ds_stock_industry A dataframe of stock special trade info to search in.
+#'
+#' @return A list ststaus code of matched date/stkcd if successed, otherwise NA.
+#' @noRd
 find_stock_trdstat.gta_db <- function(date, stkcd, ds_spt_stocks) {
 
   # validate params

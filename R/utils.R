@@ -10,7 +10,6 @@ magrittr::`%>%`
 # Convert normal return into cumulated return
 #' @export
 cumulated_return <- function(normal_return, method = c("compound", "simple")) {
-
   stopifnot(timeSeries::is.timeSeries(normal_return))
 
   return_nona <- na.omit(normal_return, method = "z")
@@ -22,7 +21,6 @@ cumulated_return <- function(normal_return, method = c("compound", "simple")) {
 # Convert simple return into compound return
 #' @export
 simple2compound_return <- function(simple_return) {
-
   stopifnot(timeSeries::is.timeSeries(simple_return))
 
   # convert into compound return
@@ -38,7 +36,6 @@ simple2compound_return <- function(simple_return) {
 # Convert simple return into compound return
 #' @export
 compound2simple_return <- function(compund_return) {
-
   stopifnot(timeSeries::is.timeSeries(compund_return))
 
   # convert into compound return
@@ -49,7 +46,4 @@ compound2simple_return <- function(compund_return) {
   return_result[is.na(compund_return)] <- NA
 
   return(return_result)
-
 }
-
-

@@ -28,8 +28,9 @@ test_that("save_log, with various arguments", {
   log_file_prefix <- "test_log_info"
   log_dir <- "./log"
   actual_log_file_path <- save_log(ds_test_log_info,
-                                   log_file_prefix,
-                                   log_dir = log_dir)
+    log_file_prefix,
+    log_dir = log_dir
+  )
   expect_log_file_path <- sprintf(
     "%s/%s(current).csv",
     log_dir,
@@ -64,5 +65,4 @@ test_that("read_log, with various arguments", {
   log_dir <- "./log"
   test_log_info <- read_log(log_file_name, log_dir)
   expect_null(test_log_info)
-
 })

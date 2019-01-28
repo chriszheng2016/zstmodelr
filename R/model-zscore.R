@@ -25,8 +25,8 @@
 factors_zscore <- function(ds_factors,
                            aggregate_formula = NULL,
                            group_by = NULL,
-                           clean_extremes_method = c("sigma","mad"),
-                           standard_method = c("normal","rank"), ...) {
+                           clean_extremes_method = c("sigma", "mad"),
+                           standard_method = c("normal", "rank"), ...) {
 
   # Validate params
   stopifnot(!is.null(ds_factors))
@@ -37,20 +37,21 @@ factors_zscore <- function(ds_factors,
   # get compute factors list
   aggregate_formula <- rlang::enquo(aggregate_formula)
   origin_fields <- colnames(ds_factors)
-  is_numeric_class_field <- purrr::map_lgl(ds_factors, ~inherits(., "numeric"))
+  is_numeric_class_field <- purrr::map_lgl(ds_factors, ~ inherits(., "numeric"))
   if (!rlang::quo_is_null(aggregate_formula)) {
 
     # use factors in aggregate_formula as computing factors
-    compute_factors = all.vars(aggregate_formula)
+    compute_factors <- all.vars(aggregate_formula)
 
-    #Make sure compute factors are valid fields in ds_fators
+    # Make sure compute factors are valid fields in ds_fators
     is_valid_formula_factor <- compute_factors %in% origin_fields[is_numeric_class_field]
     if (!all(is_valid_formula_factor)) {
-      msg <- sprintf("factors(%s): not vaild factor field of factors dataset",
-                     stringr::str_c(compute_factors[!is_valid_formula_factor], collapse = ","))
+      msg <- sprintf(
+        "factors(%s): not vaild factor field of factors dataset",
+        stringr::str_c(compute_factors[!is_valid_formula_factor], collapse = ",")
+      )
       stop(msg)
     }
-
   } else {
     # use all fields of numeric class as computing factors if no aggregate_formula is provided
     compute_factors <- origin_fields[is_numeric_class_field]
@@ -60,20 +61,21 @@ factors_zscore <- function(ds_factors,
 
   # Compute z-score of each factors by normalization
   zscore_result <- ds_factors %>%
-    normalize_factors(factors_list = compute_factors,
-                         group_by = group_by,
-                         clean_extremes_method,
-                         standard_method,...)
+    normalize_factors(
+      factors_list = compute_factors,
+      group_by = group_by,
+      clean_extremes_method,
+      standard_method, ...
+    )
 
 
   # Compute a stock's aggregate z-scores if need
   if (!rlang::quo_is_null(aggregate_formula)) {
     zscore_result <- zscore_result %>%
-    dplyr::mutate(stk_score = !!aggregate_formula)
+      dplyr::mutate(stk_score = !!aggregate_formula)
   }
 
   return(zscore_result)
-
 }
 
 #' Filter stocks by facotrs z-score
@@ -90,7 +92,7 @@ factors_zscore <- function(ds_factors,
 #' @export
 zscore_filter_stocks <- function(ds_zscores,
                                  ranking_field = "stk_score",
-                                 ranking_number  = 5) {
+                                 ranking_number = 5) {
 
   # Validate params
   stopifnot(!is.null(ds_zscores))
@@ -100,23 +102,17 @@ zscore_filter_stocks <- function(ds_zscores,
   # Filter stocks by ranking field and number
   ranking_field <- rlang::parse_quosure(ranking_field)
   filter_stocks <- ds_zscores %>%
-    dplyr::top_n( ranking_number, !!ranking_field)
+    dplyr::top_n(ranking_number, !!ranking_field)
 
   # Build result stocks
 
-  if (is.null(dplyr::groups(filter_stocks)))
-  {
+  if (is.null(dplyr::groups(filter_stocks))) {
     result_stocks <- filter_stocks %>%
-      dplyr::arrange( desc(!!ranking_field) )
+      dplyr::arrange(desc(!!ranking_field))
   } else {
     result_stocks <- filter_stocks %>%
-      dplyr::arrange( desc(!!ranking_field),.by_group = TRUE )
+      dplyr::arrange(desc(!!ranking_field), .by_group = TRUE)
   }
 
   return(result_stocks)
 }
-
-
-
-
-

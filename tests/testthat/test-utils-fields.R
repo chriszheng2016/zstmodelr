@@ -37,10 +37,10 @@ test_that("is_type_field, with various arguments", {
   for (i in seq_along(expect_type_fields)) {
     expect_field_type <- expect_type_fields[i]
     expect_type_true <- is_type_field(ds_various_type,
-                                   expect_type = expect_field_type)
+      expect_type = expect_field_type
+    )
     expect_fields <- expect_type_fields[expect_type_true]
     expect_true(expect_field_type %in% expect_fields)
-
   }
   # numeric fields should include numeric, integer and double
   expect_type_true <- is_type_field(
@@ -64,8 +64,8 @@ test_that("is_type_field, with various arguments", {
   for (i in seq_along(expect_field_types)) {
     expect_field_type <- expect_field_types[i]
     expect_type_true <- is_type_field(ds_various_type,
-                                        expect_type = expect_field_type,
-                                        negate = TRUE
+      expect_type = expect_field_type,
+      negate = TRUE
     )
     expect_fields <- expect_type_fields[expect_type_true]
     expect_true(!(expect_field_type %in% expect_fields))
@@ -73,8 +73,8 @@ test_that("is_type_field, with various arguments", {
 
   # non-numeric fields shouldn't include numeric, integer and double
   expect_type_true <- is_type_field(ds_various_type,
-                                      "numeric",
-                                      negate = TRUE
+    "numeric",
+    negate = TRUE
   )
   expect_fields <- expect_type_fields[expect_type_true]
   expect_true(all(!(expect_fields %in% c("numeric", "integer", "double"))))
@@ -92,13 +92,12 @@ test_that("is_type_field, with various arguments", {
 
   # is_type_field on predicate_fun ====
   expect_type_true <- is_type_field(ds_various_type,
-                                    expect_type = expect_field_type,
-                                    predicate_fun = inherits,
-                                    what = "Date"
+    expect_type = expect_field_type,
+    predicate_fun = inherits,
+    what = "Date"
   )
   expect_fields <- expect_type_fields[expect_type_true]
   expect_true(expect_fields == "date")
-
 })
 
 test_that("expect_type_fields, with various arguments", {

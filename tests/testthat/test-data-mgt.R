@@ -508,12 +508,12 @@ test_that("ttm_financial_report, with various arguments", {
     # check field names
     expect_non_value_fields <- c("Stkcd", "Typrep", "Accper")
     expect_value_fields <- stringr::str_subset(names(origin_report),
-                                               pattern = sprintf(
-                                                 "[^%s]",
-                                                 stringr::str_c(expect_non_value_fields,
-                                                                collapse = "|"
-                                                 )
-                                               )
+      pattern = sprintf(
+        "[^%s]",
+        stringr::str_c(expect_non_value_fields,
+          collapse = "|"
+        )
+      )
     )
     expect_value_fields <- paste0(expect_value_fields, "_", "ttm")
     expect_fields <- c(expect_non_value_fields, expect_value_fields)
@@ -522,10 +522,9 @@ test_that("ttm_financial_report, with various arguments", {
 
     # check period of date
     expect_true(is_periodic_dates(ttm_report[["Accper"]],
-                                  freq_rule = "quarter",
-                                  regular = FALSE
+      freq_rule = "quarter",
+      regular = FALSE
     ))
-
   }
 })
 
@@ -555,15 +554,15 @@ test_that("process_files, with various arguments", {
       process = "TTM",
       process_source = "test_ttm_FS_Comins.csv"
     ) %>%
-  tibble::add_row(
-    target_table = "FS_Comins_ttm02",
-    input_file = "test_ttm_FS_Comins_ttm02.csv",
-    input_type = "csv",
-    input_dir = "./output/",
-    start_index = 2L,
-    process = "TTM",
-    process_source = "test_ttm_FS_Comins.csv"
-  )
+    tibble::add_row(
+      target_table = "FS_Comins_ttm02",
+      input_file = "test_ttm_FS_Comins_ttm02.csv",
+      input_type = "csv",
+      input_dir = "./output/",
+      start_index = 2L,
+      process = "TTM",
+      process_source = "test_ttm_FS_Comins.csv"
+    )
 
   # process_files with default arguments ====
   expect_message(
@@ -600,10 +599,14 @@ test_that("process_files, with various arguments", {
   # >> argument: retry, one failure ----
   # build log file with error for retry dynamically
   ds_log_error <- tibble::tibble(
-    input_file = c("test_ttm_FS_Comins_ttm01.csv",
-                    "test_ttm_FS_Comins_ttm02.csv"),
-    source_file = c("test_ttm_FS_Comins.csv",
-                    "test_ttm_FS_Comins.csv"),
+    input_file = c(
+      "test_ttm_FS_Comins_ttm01.csv",
+      "test_ttm_FS_Comins_ttm02.csv"
+    ),
+    source_file = c(
+      "test_ttm_FS_Comins.csv",
+      "test_ttm_FS_Comins.csv"
+    ),
     success = c(TRUE, FALSE)
   )
 
@@ -613,18 +616,18 @@ test_that("process_files, with various arguments", {
   )
 
   log_file_error_path <- save_log(ds_log_error,
-                                  log_file_prefix = log_file_error_prefix,
-                                  log_dir = log_dir
+    log_file_prefix = log_file_error_prefix,
+    log_dir = log_dir
   )
 
   # use log file with errors to process files
   # If some input_file logged with error in log file, we should process them again.
   expect_message(
     process_files(stock_db,
-              data_source = data_source,
-              retry_log = basename(log_file_error_path),
-              log_file_prefix = log_file_prefix,
-              log_dir = log_dir
+      data_source = data_source,
+      retry_log = basename(log_file_error_path),
+      log_file_prefix = log_file_prefix,
+      log_dir = log_dir
     ),
     regexp = "test_ttm_FS_Comins_ttm02.csv"
   )
@@ -667,8 +670,8 @@ test_that("process_files, with various arguments", {
   )
 
   log_file_error_path <- save_log(ds_log_error,
-                                  log_file_prefix = log_file_error_prefix,
-                                  log_dir = log_dir
+    log_file_prefix = log_file_error_prefix,
+    log_dir = log_dir
   )
 
   # use log file with errrs to process files
@@ -676,10 +679,10 @@ test_that("process_files, with various arguments", {
   # we should process these input_file in data_source
   expect_message(
     process_files(stock_db,
-              data_source = data_source,
-              retry_log = basename(log_file_error_path),
-              log_file_prefix = log_file_prefix,
-              log_dir = log_dir
+      data_source = data_source,
+      retry_log = basename(log_file_error_path),
+      log_file_prefix = log_file_prefix,
+      log_dir = log_dir
     ),
     regexp = "test_ttm_FS_Comins_ttm02.csv ..."
   )
@@ -717,10 +720,10 @@ test_that("process_files, with various arguments", {
 
   expect_warning(
     process_files(stock_db,
-              data_source = data_source,
-              retry_log = basename(log_file_error_path),
-              log_file_prefix = log_file_prefix,
-              log_dir = log_dir
+      data_source = data_source,
+      retry_log = basename(log_file_error_path),
+      log_file_prefix = log_file_prefix,
+      log_dir = log_dir
     ),
     regexp = "Since there is no a retry log|all input files will be updated"
   )
@@ -746,7 +749,6 @@ test_that("process_files, with various arguments", {
   expect_true(file.exists(log_file_path))
   log_info <- read_log(basename(log_file_path), log_dir = log_dir)
   expect_true(all(data_source_ttm$input_file %in% log_info$input_file))
-
 })
 
 # clear up testing conext

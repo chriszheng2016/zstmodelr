@@ -87,7 +87,6 @@ test_that("is_periodic_dates, with various arguments", {
   expect_true(is_periodic_dates(irregular_yearly_dates,
     freq_rule = "year", regular = FALSE
   ))
-
 })
 
 test_that("guess_dates_period, with various arguments", {
@@ -119,7 +118,6 @@ test_that("guess_dates_period, with various arguments", {
   expect_true(guess_dates_period(irregular_monthly_dates, regular = FALSE) == "month")
   expect_true(guess_dates_period(irregular_quarterly_dates, regular = FALSE) == "quarter")
   expect_true(guess_dates_period(irregular_yearly_dates, regular = FALSE) == "year")
-
 })
 
 test_that("as_period_date, with various arguments", {
@@ -131,17 +129,20 @@ test_that("as_period_date, with various arguments", {
   # as_period_date on various arguments  ====
   # >> argument: period ----
   period_list <- c("day", "month", "quarter", "year")
-  dates_list <- list(regular_daily_dates,
-                     regular_monthly_dates,
-                     regular_quarterly_dates,
-                     regular_yearly_dates)
+  dates_list <- list(
+    regular_daily_dates,
+    regular_monthly_dates,
+    regular_quarterly_dates,
+    regular_yearly_dates
+  )
 
   for (i in seq_len(length(period_list))) {
     period <- period_list[i]
     dates_series <- dates_list[[i]]
     period_dates <- as_period_date(dates_series,
-                                   period = period,
-                                   period_date = "start")
+      period = period,
+      period_date = "start"
+    )
 
     expect_true(is_periodic_dates(period_dates, freq_rule = period))
   }
@@ -149,15 +150,16 @@ test_that("as_period_date, with various arguments", {
 
   # >> argument: period_date ----
   period_dates <- as_period_date(regular_monthly_dates,
-                                 period = "month",
-                                 period_date = "start")
+    period = "month",
+    period_date = "start"
+  )
   expect_true(is_periodic_dates(period_dates, freq_rule = "month"))
   expect_true(all(lubridate::day(period_dates) == 1))
 
   period_dates <- as_period_date(regular_monthly_dates,
-                                 period = "month",
-                                 period_date = "end")
+    period = "month",
+    period_date = "end"
+  )
   expect_true(is_periodic_dates(period_dates, freq_rule = "month"))
   expect_true(all(lubridate::day(period_dates + 1) == 1))
-
 })

@@ -44,25 +44,25 @@ fetch_table_dataset.default <- function(stock_db, table_list) {
 
 # Default function to get stock return timeseries from stock_db
 get_stock_return.default <- function(stock_db, stock_cd_list = NULL,
-                             period_type = c("daily", "weekly", "monthly", "annual"),
-                             return_type = c("simple", "compound"),
-                             use_stock_name = TRUE,
-                             cumulated = FALSE) {
+                                     period_type = c("daily", "weekly", "monthly", "annual"),
+                                     return_type = c("simple", "compound"),
+                                     use_stock_name = TRUE,
+                                     cumulated = FALSE) {
   stopifnot(!is.null(stock_db))
   stop("Unknow class")
 }
 
 # Default function to get market return timesereis from stock_db
 get_market_return.default <- function(stock_db,
-                              period_type = c("daily", "weekly", "monthly", "annual"),
-                              return_type = c("simple", "compound"),
-                              cumulated = FALSE) {
+                                      period_type = c("daily", "weekly", "monthly", "annual"),
+                                      return_type = c("simple", "compound"),
+                                      cumulated = FALSE) {
   stopifnot(!is.null(stock_db))
   stop("Unknow class")
 }
 
 # Default funcation to get factor indicator timeseries for stock_db
-get_factor_indicator.default <- function(stock_db, factor){
+get_factor_indicator.default <- function(stock_db, factor) {
   stopifnot(!is.null(stock_db))
   stop("Unknow class")
 }
@@ -73,7 +73,7 @@ code2name.default <- function(x, code, ...) {
   stop("Unknow class")
 }
 
-#Default funcation to translate name to code
+# Default funcation to translate name to code
 name2code.default <- function(x, name, ...) {
   stopifnot(!is.null(stock_db))
   stop("Unknow class")

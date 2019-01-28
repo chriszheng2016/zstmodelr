@@ -57,7 +57,7 @@ test_that("GrowthRate", {
   # GrowthRate with default arguments ====
   expect_growth <- 0.5
   x <- 1:series_length
-  x <- purrr::accumulate(x, ~.x * (1 + expect_growth))
+  x <- purrr::accumulate(x, ~ .x * (1 + expect_growth))
 
   actual_growth <- GrowthRate(x)
   expect_equal(mean(actual_growth, na.rm = TRUE), expect_growth)

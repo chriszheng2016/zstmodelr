@@ -333,7 +333,6 @@ import_table.gta_db <- function(stock_db,
       msg <- sprintf("Fail to import %s, error: %s.", input_file, error_msg)
       rlang::warn(msg)
     }
-
   }
 
   return(invisible(success))
@@ -401,9 +400,11 @@ process_files.gta_db <- function(stock_db,
   )
   log_file_path <- NULL
   ds_log <- data_source_process %>%
-    dplyr::select(input_file = input_file,
-                  source_file = process_source,
-                  process) %>%
+    dplyr::select(
+      input_file = input_file,
+      source_file = process_source,
+      process
+    ) %>%
     dplyr::mutate(success = FALSE)
 
   # collect failed tables from log file
@@ -518,7 +519,6 @@ process_files.gta_db <- function(stock_db,
   }
 
   return(invisible(NULL))
-
 }
 
 # Method definition for s4 generic
