@@ -6,3 +6,5 @@ inst/doc
 .RDataTmp
 profile_files
 profile.html
+.vs
+zstmodelr.rxproj
