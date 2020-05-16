@@ -3,3 +3,6 @@
 ^data-raw$
 ^README\.Rmd$
 ^README-.*\.png$
+^research$
+^.*\.rxproj$
+^\.vs$
