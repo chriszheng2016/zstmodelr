@@ -58,12 +58,12 @@ factor_test_uniregress <- function(ds_test,
                                    date_field = "date") {
   # Validate params
   stopifnot(!is.null(ds_test), inherits(ds_test, "data.frame"))
-  ds_test_data <- tibble::as.tibble(ds_test)
+  ds_test_data <- tibble::as_tibble(ds_test)
 
   stopifnot(!is.null(regress_fun), inherits(regress_fun, "function"))
 
-  factor_field <- rlang::parse_quosure(factor_field)
-  date_field <- rlang::parse_quosure(date_field)
+  factor_field <- rlang::parse_quo(factor_field, env = rlang::caller_env())
+  date_field <- rlang::parse_quo(date_field, env = rlang::caller_env())
 
   # Nest test data by group of factor_name and date
   #cross section: group data by factor and date_field(cross section setting)
@@ -86,8 +86,9 @@ factor_test_uniregress <- function(ds_test,
 
   # Raw factor return data to process
   ds_factor_returns_raw <- ds_test_result %>%
-    tidyr::unnest(tidy, .drop = TRUE) %>%
+    tidyr::unnest(tidy) %>%
     dplyr::filter(term != "(Intercept)")
+
 
   # Distribution summary of factor return series
   result_factor_return_distrbution <- ds_factor_returns_raw %>%
@@ -130,7 +131,8 @@ factor_test_uniregress <- function(ds_test,
   # Build factor return series
   ds_factor_returns <- ds_factor_returns_raw %>%
     dplyr::select(!!factor_field, !!date_field, return = estimate) %>%
-    tidyr::spread(key = !!factor_field, value = return) %>%
+    # tidyr::spread(key = !!factor_field, value = return) %>%
+    tidyr::pivot_wider(names_from = !!factor_field, values_from = return) %>%
     dplyr::arrange(!!date_field)
 
 
@@ -194,10 +196,10 @@ factor_test_IC <- function(ds_test,
 
   # Validate params
   stopifnot(!is.null(ds_test), inherits(ds_test, "data.frame"))
-  ds_test_data <- tibble::as.tibble(ds_test)
+  ds_test_data <- tibble::as_tibble(ds_test)
 
-  factor_field <- rlang::parse_quosure(factor_field)
-  date_field <- rlang::parse_quosure(date_field)
+  factor_field <- rlang::parse_quo(factor_field, env = rlang::caller_env())
+  date_field <- rlang::parse_quo(date_field, env = rlang::caller_env())
 
   # Nest test data by group of factor_name and date as cross section data
   ds_test_groupdata <- ds_test_data %>%
@@ -215,7 +217,7 @@ factor_test_IC <- function(ds_test,
 
   # Raw factor ICs data to process
   ds_factor_ICs_raw <- ds_test_result %>%
-    tidyr::unnest(glance, .drop = TRUE)
+    tidyr::unnest(glance)
 
   # Distribution summary of factor ICs series
   result_factor_ICs_distrbution <- ds_factor_ICs_raw %>%
@@ -257,7 +259,8 @@ factor_test_IC <- function(ds_test,
   # Build factor IC series
   ds_factor_ICs <- ds_factor_ICs_raw %>%
     dplyr::select(!!factor_field,!!date_field, IC = estimate) %>%
-    tidyr::spread(key = !!factor_field, value = IC) %>%
+    # tidyr::spread(key = !!factor_field, value = IC) %>%
+    tidyr::pivot_wider(names_from = !!factor_field, values_from = IC) %>%
     dplyr::arrange(!!date_field)
 
 
@@ -373,11 +376,11 @@ factor_test_sort_portfolios <- function(ds_test,
 
   # Validate params
   stopifnot(!is.null(ds_test), inherits(ds_test, "data.frame"))
-  ds_test_data <- tibble::as.tibble(ds_test)
+  ds_test_data <- tibble::as_tibble(ds_test)
 
-  factor_field <- rlang::parse_quosure(factor_field)
-  date_field <- rlang::parse_quosure(date_field)
-  return_field <- rlang::parse_quosure(return_field)
+  factor_field <- rlang::parse_quo(factor_field, env = rlang::caller_env())
+  date_field <- rlang::parse_quo(date_field, env = rlang::caller_env())
+  return_field <- rlang::parse_quo(return_field, env = rlang::caller_env())
 
   # Nest test data by group of factor_name and date as cross section data
   ds_test_groupdata <- ds_test_data %>%
@@ -387,17 +390,19 @@ factor_test_sort_portfolios <- function(ds_test,
   # Compute return for sort portfolios
   ds_test_result <- ds_test_groupdata %>%
     dplyr::mutate(
-      sort_portpolios = purrr::map(data,
+      sort_portfolios = purrr::map(data,
             purrr::possibly(sort_portfolios_fun, otherwise = NULL, quiet = TRUE),
                                    ...),
-      sort_portpolio_return = purrr::map2(.x = data,.y = sort_portpolios,
+      sort_portfolio_return = purrr::map2(.x = data,.y = sort_portfolios,
                                         .compute_crosssection_portfolios_return)
     )
 
   # Expand sort portfolios returns
   ds_portfolios_return_raw <- ds_test_result %>%
-    tidyr::unnest(sort_portpolio_return,.drop = TRUE) %>%
-    tidyr::spread(key = portfolio_group, value = return)
+    dplyr::select(-c(data, sort_portfolios)) %>%
+    tidyr::unnest(sort_portfolio_return) %>%
+    # tidyr::spread(key = portfolio_group, value = return)
+    tidyr::pivot_wider(names_from = portfolio_group, values_from = return)
 
 
   # Build zero-portfolio to complete portfolios return dataset
@@ -409,10 +414,13 @@ factor_test_sort_portfolios <- function(ds_test,
   # Build Result of portfolios return summary
   result_portfolios_summary <- ds_portfolios_return %>%
     dplyr::group_by(!!factor_field) %>%
-    tidyr::nest(.key = "portpolios_return") %>%
-    dplyr::mutate(portpolios_return_summary = purrr::map(portpolios_return,
+    tidyr::nest() %>%
+    dplyr::rename(portfolios_return = data) %>%
+    dplyr::mutate(portfolios_return_summary = purrr::map(portfolios_return,
                                             .summarize_portfolios_return)) %>%
-    tidyr::unnest(portpolios_return_summary, .drop = TRUE)
+    dplyr::select(-c(portfolios_return)) %>%
+    tidyr::unnest(portfolios_return_summary)
+
 
   # Build Result of summary
 
@@ -463,7 +471,9 @@ factor_test_sort_portfolios <- function(ds_test,
   # Build factor returns datasets from group_zero portfolio
   ds_factor_returns <- ds_portfolios_return %>%
     dplyr::select(!!factor_field, !!date_field, return = group_zero) %>%
-    tidyr::spread(key = !!factor_field, value = return)
+    # tidyr::spread(key = !!factor_field, value = return)
+    tidyr::pivot_wider(names_from = !!factor_field, values_from = return)
+
 
 
   # Build factor test object with results info

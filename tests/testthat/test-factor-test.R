@@ -147,16 +147,16 @@ test_that("factor_test_sort_portfolios, with general arguments", {
   #   }
   # )
 
-  suppressWarnings(
-    result_sort_portfolios <- factor_test_sort_portfolios(ds_test_sort_portfolios,
-                                    sort_portfolios_fun = model_sort_portfolios,
-                                    ngroup = 5,
-                                    output_type = "summary",
-                                    factor_field = "factor_name",
-                                    date_field = "date",
-                                    stkcd_field = "stkcd",
-                                    return_field = "return")
-  )
+
+  result_sort_portfolios <- factor_test_sort_portfolios(ds_test_sort_portfolios,
+                                  sort_portfolios_fun = model_sort_portfolios,
+                                  ngroup = 5,
+                                  output_type = "summary",
+                                  factor_field = "factor_name",
+                                  date_field = "date",
+                                  stkcd_field = "stkcd",
+                                  return_field = "return")
+
 
   # Validate results
   expect_is(result_sort_portfolios, "factor_test_sort_portfolios")
