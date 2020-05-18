@@ -223,7 +223,7 @@ create_indicator <- function(ts_def_vars,
     ds_keys <- ds_keys[!duplicated(ds_keys), ]
     ds_keys_fixed <- ds_keys %>%
       dplyr::mutate(data = list(ds_keys_are_na)) %>%
-      tidyr::unnest()
+      tidyr::unnest(cols = c(data))
 
     # rebuild def vars
     ts_def_vars <- ds_keys_are_ok %>%
