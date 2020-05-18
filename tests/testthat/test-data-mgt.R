@@ -64,13 +64,16 @@ test_that("import_table, with various arguments", {
 
   # Import txt data into table
   # Notice: real data start from line 4, so need skip 3 lines
-  success <- import_table(stock_db,
-    input_file = input_file,
-    input_type = "txt",
-    start_index = 4L,
-    target_table = target_table,
-    ignore_problems = TRUE,
-    log_dir = log_dir
+  # Suppress Warnings from read_import_file
+  suppressWarnings(
+    success <- import_table(stock_db,
+                            input_file = input_file,
+                            input_type = "txt",
+                            start_index = 4L,
+                            target_table = target_table,
+                            ignore_problems = TRUE,
+                            log_dir = log_dir
+    )
   )
 
   # Check return result
@@ -102,13 +105,15 @@ test_that("import_table, with various arguments", {
   )
 
   expect_error(
-    import_table(stock_db,
-      input_file = input_file,
-      input_type = "txt",
-      start_index = 4L,
-      target_table = target_table,
-      ignore_problems = FALSE,
-      log_dir = log_dir
+    suppressWarnings(
+      import_table(stock_db,
+        input_file = input_file,
+        input_type = "txt",
+        start_index = 4L,
+        target_table = target_table,
+        ignore_problems = FALSE,
+        log_dir = log_dir
+      )
     ),
     regexp = "Converting problems"
   )
@@ -143,8 +148,10 @@ test_that("update_db, with various arguments", {
 
   # update_db with default arguments ====
   expect_message(
-    update_db(stock_db,
-      data_source = data_source
+    suppressWarnings(
+      update_db(stock_db,
+        data_source = data_source
+      )
     ),
     regexp = "Import data into test_table01|test_table02 ..."
   )
@@ -183,11 +190,13 @@ test_that("update_db, with various arguments", {
   # use log file with errors to update db
   # If some table logged with error in log file, we should update them again.
   expect_message(
-    update_db(stock_db,
-      data_source = data_source,
-      retry_log = basename(log_file_error_path),
-      log_file_prefix = log_file_prefix,
-      log_dir = log_dir
+    suppressWarnings(
+      update_db(stock_db,
+                data_source = data_source,
+                retry_log = basename(log_file_error_path),
+                log_file_prefix = log_file_prefix,
+                log_dir = log_dir
+      )
     ),
     regexp = "Import data into test_table02 ..."
   )
@@ -230,11 +239,13 @@ test_that("update_db, with various arguments", {
   # If some tables of data_source haven't any log info in log file,
   # we should update these file in data_source
   expect_message(
-    update_db(stock_db,
-      data_source = data_source,
-      retry_log = basename(log_file_error_path),
-      log_file_prefix = log_file_prefix,
-      log_dir = log_dir
+    suppressWarnings(
+      update_db(stock_db,
+                data_source = data_source,
+                retry_log = basename(log_file_error_path),
+                log_file_prefix = log_file_prefix,
+                log_dir = log_dir
+      )
     ),
     regexp = "Import data into test_table02 ..."
   )
@@ -320,12 +331,15 @@ test_that("read_import_file, with various arguments", {
 
   # Import txt data into table
   # Notice: real data start from line 4, so need skip 3 lines
-  ds_raw_data <- read_import_file(
-    input_file = input_file,
-    input_type = "txt",
-    start_index = 4L,
-    ignore_problems = TRUE,
-    log_dir = log_dir
+  expect_warning(
+    ds_raw_data <- read_import_file(
+      input_file = input_file,
+      input_type = "txt",
+      start_index = 4L,
+      ignore_problems = TRUE,
+      log_dir = log_dir
+    ),
+    regexp = "Converting problems"
   )
 
   # Check problems files
@@ -343,12 +357,14 @@ test_that("read_import_file, with various arguments", {
   log_dir <- "./log"
 
   expect_error(
-    read_import_file(
-      input_file = input_file,
-      input_type = "txt",
-      start_index = 4L,
-      ignore_problems = FALSE,
-      log_dir = log_dir
+    suppressWarnings(
+      read_import_file(
+        input_file = input_file,
+        input_type = "txt",
+        start_index = 4L,
+        ignore_problems = FALSE,
+        log_dir = log_dir
+      )
     ),
     regexp = "Converting problems"
   )
