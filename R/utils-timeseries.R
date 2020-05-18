@@ -153,7 +153,7 @@ ts_resample.tbl_df <- function(ts_dataset,
 
     # validate params
     stopifnot(!is.null(ts_dataset), inherits(ts_dataset, "data.frame"))
-    ts_df <- tibble::as.tibble(ts_dataset)
+    ts_df <- tibble::as_tibble(ts_dataset)
 
     success <- TRUE
     new_timeseries <- NULL
@@ -239,7 +239,7 @@ ts_resample.tbl_df <- function(ts_dataset,
     )
   }
 
-  result_ts <- tibble::as.tibble(result_ts)
+  result_ts <- tibble::as_tibble(result_ts)
 
   return(result_ts)
 }
@@ -276,7 +276,7 @@ ts_asfreq.tbl_df <- function(ts_dataset,
 
     # validate params
     stopifnot(!is.null(ts_dataset), inherits(ts_dataset, "data.frame"))
-    ts_df <- tibble::as.tibble(ts_dataset)
+    ts_df <- tibble::as_tibble(ts_dataset)
 
     success <- TRUE
     new_timeseries <- NULL
@@ -345,7 +345,7 @@ ts_asfreq.tbl_df <- function(ts_dataset,
     )
   }
 
-  result_ts <- tibble::as.tibble(result_ts)
+  result_ts <- tibble::as_tibble(result_ts)
 
   return(result_ts)
 }
@@ -375,7 +375,7 @@ ts_lag.tbl_df <- function(ts_dataset,
     # validate params
     stopifnot(!is.null(ts_dataset), inherits(ts_dataset, "data.frame"))
 
-    ts_df <- tibble::as.tibble(ts_dataset)
+    ts_df <- tibble::as_tibble(ts_dataset)
     origin_group_vars <- dplyr::group_vars(ts_df)
 
     # Shift data at current timeline
@@ -461,7 +461,7 @@ ts_lag.tbl_df <- function(ts_dataset,
     )
   }
 
-  result_ts <- tibble::as.tibble(result_ts)
+  result_ts <- tibble::as_tibble(result_ts)
 
   return(result_ts)
 }
@@ -625,7 +625,7 @@ reindex_by_replace.tbl_df <- function(ts_df,
   stopifnot(!is.null(new_date_index), lubridate::is.Date(new_date_index))
 
   # blend new index with timeseries
-  new_date_index.tib <- tibble::as.tibble(new_date_index)
+  new_date_index.tib <- tibble::as_tibble(new_date_index)
   colnames(new_date_index.tib) <- date_index_field
   ts_new_df <- new_date_index.tib %>%
     dplyr::full_join(ts_df, by = date_index_field)
@@ -842,7 +842,7 @@ refreq_dateindex <- function(date_index,
 fix_key_field <- function(ts_dataset, key_fields) {
   # Validate params
   stopifnot(!is.null(ts_dataset), inherits(ts_dataset, "data.frame"))
-  ts_df <- tibble::as.tibble(ts_dataset)
+  ts_df <- tibble::as_tibble(ts_dataset)
 
   # check key filed is valid field of dataset
   stopifnot(!is.null(key_fields), is.character(key_fields))
