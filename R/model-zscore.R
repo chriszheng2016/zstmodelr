@@ -98,7 +98,7 @@ zscore_filter_stocks <- function(ds_zscores,
   stopifnot(!is.null(ranking_number), ranking_number != 0)
 
   # Filter stocks by ranking field and number
-  ranking_field <- rlang::parse_quosure(ranking_field)
+  ranking_field <- rlang::parse_quo(ranking_field, env = rlang::caller_env())
   filter_stocks <- ds_zscores %>%
     dplyr::top_n( ranking_number, !!ranking_field)
 

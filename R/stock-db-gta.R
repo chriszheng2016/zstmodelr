@@ -659,7 +659,7 @@ get_stock_return.gta_db <- function(stock_db, stock_cd_list = NULL,
   ds_return <- get_stock_dataset.gta_db(stock_db, table_name, stock_cd_list)
   if (!is.null(ds_return)) {
     ds_return <- ds_return %>%
-      tibble::as.tibble() %>%
+      tibble::as_tibble() %>%
       dplyr::select(
         date = !!field_date, stkcd = !!field_stkcd,
         return = !!field_return
@@ -806,7 +806,7 @@ get_market_return.gta_db <- function(stock_db,
   ds_return <- get_table_dataset.gta_db(stock_db, table_name)
   if (!is.null(ds_return)) {
     ds_return <- ds_return %>%
-      tibble::as.tibble() %>%
+      tibble::as_tibble() %>%
       dplyr::filter(!!field_markettype == 21) %>%
       dplyr::select(date = !!field_date, market_index = !!field_return)
 
@@ -950,7 +950,7 @@ get_finacial_report.gta_db <- function(stock_db,
   )
   if (!is.null(ds_report_raw)) {
     ds_report <- ds_report_raw %>%
-      tibble::as.tibble()
+      tibble::as_tibble()
   } else {
     success <- FALSE
   }
@@ -1201,7 +1201,7 @@ get_indicators_from_source.gta_db <- function(stock_db,
   # transform indicators data
   ds_indicators <- NULL
   if (!is.null(ds_indicators_raw)) {
-    ds_indicators <- tibble::as.tibble(ds_indicators_raw)
+    ds_indicators <- tibble::as_tibble(ds_indicators_raw)
     ds_field_names <- names(ds_indicators)
     output_fields <- NULL
     output_indicators <- NULL

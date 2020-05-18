@@ -685,7 +685,8 @@ reindex_by_regroup.tbl_df <- function(ts_df,
   # combine non_number and number fields
   ts_result <- ts_result_non_numbers %>%
     dplyr::left_join(ts_result_numbers, by = "group_index") %>%
-    dplyr::select(-!!rlang::parse_quosure(date_index_field)) %>%
+    dplyr::select(-!!rlang::parse_quo(date_index_field,
+                                      env = rlang::caller_env())) %>%
     dplyr::select(!!date_index_field := group_index, dplyr::everything())
 
   return(ts_result)

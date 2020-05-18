@@ -27,7 +27,7 @@ model_build_fundamental <- function(ds_build,
                               date_field = "date") {
   # Validate params
   stopifnot(!is.null(ds_build), inherits(ds_build_model, "data.frame"))
-  ds_build_data <- tibble::as.tibble(ds_build)
+  ds_build_data <- tibble::as_tibble(ds_build)
 
   stopifnot(!is.null(regress_fun), inherits(regress_fun, "function"))
 

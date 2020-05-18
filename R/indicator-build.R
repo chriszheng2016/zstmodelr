@@ -80,7 +80,7 @@ compute_indicator <- function(ts_compute_vars,
   assertive::assert_all_are_true(NROW(ts_compute_vars) > 0)
 
   # pre-process ts_input_vars
-  ts_compute_vars <- tibble::as.tibble(ts_compute_vars)
+  ts_compute_vars <- tibble::as_tibble(ts_compute_vars)
   arrange_expr <- rlang::parse_exprs(c(key_fields, date_index_field))
   ts_compute_vars <- ts_compute_vars %>%
     dplyr::arrange(!!!arrange_expr)
@@ -115,7 +115,7 @@ compute_indicator <- function(ts_compute_vars,
   }
 
   if (!is.null(ds_indicator)) {
-    ds_indicator <- tibble::as.tibble(ds_indicator)
+    ds_indicator <- tibble::as_tibble(ds_indicator)
   }
 
   return(ds_indicator)
