@@ -3,6 +3,8 @@
 ^data-raw$
 ^README\.Rmd$
 ^README-.*\.png$
+profile_files
+profile.html
 ^research$
 ^.*\.rxproj$
 ^\.vs$
