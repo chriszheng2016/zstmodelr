@@ -245,15 +245,13 @@ build_indicator_defs.gta_db <- function(stock_db, customized_indictors_info) {
       ind_vars = list(NULL)
     )
 
+  # convert ind_keys
+  ind_keys <- stringr::str_split(indicator_defs$ind_keys, pattern = ",")
+  ind_keys <- purrr::map(ind_keys, stringr::str_trim)
+  indicator_defs$ind_keys <- ind_keys
+
   # create indicator_def
   for (i in seq_len(NROW(indicator_defs))) {
-
-    # convert ind_keys
-    ind_keys <- stringr::str_split(indicator_defs$ind_keys,
-      pattern = ","
-    )
-    ind_keys <- purrr::map(ind_keys, stringr::str_trim)
-    indicator_defs$ind_keys <- ind_keys
 
     # create indicator_def for each cutomized indicator
     indicator_def <- indicator_defs[i, ]
