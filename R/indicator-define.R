@@ -556,7 +556,8 @@ prioritize_indicator_defs <- function(ds_indicator_defs) {
     dplyr::filter(!is.na(priority)) %>%
     dplyr::arrange(priority) %>%
     dplyr::group_by(priority) %>%
-    tidyr::nest(.key = "ds_indicator_defs")
+    tidyr::nest() %>%
+    dplyr::rename(ds_indicator_defs = data)
 
   return(ds_indicator_defs_priority)
 
