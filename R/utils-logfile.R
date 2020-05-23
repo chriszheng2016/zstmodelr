@@ -1,4 +1,6 @@
-#' Utils functions of log file
+# Utility functions - logfile
+
+#' Utility functions of log file
 #'
 #' Utility functions to handle log file, which contains log info of operating
 #' in stock database.

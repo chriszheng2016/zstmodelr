@@ -1,3 +1,4 @@
+# Utility functions - series
 
 #' Roll to apply a function on data series to output a series
 #'
@@ -79,11 +80,11 @@ rollify_series <- function(data_series, fun, ..., window = 1L,
 #'  apply aggregating function in specified months windows.
 #'
 #' @param dates         A vector of data.
-#' @param datas_series  A dataframe or matrix of numeric series to trail.
+#' @param data_series  A dataframe or matrix of numeric series to trail.
 #' @param period        A period string of dates, i.e., "day", "month",
 #'  "quarter". default day.
 #' @param accumulated   A logical to spcified data sereis is accumluated or not.
-#' @param trailling_month     A integer of months of data to trail. Default is 12,
+#' @param trailing_month     A integer of months of data to trail. Default is 12,
 #'  which means 12 months, i.e., TTT(Trail Twelve Month).
 #' @param agg_fun       A function to aggrate data sereis in trailling
 #'  month.
@@ -166,7 +167,7 @@ trail_periodic_series <- function(dates, data_series,
       ds_period <- ds_period %>%
         dplyr::group_by(year) %>%
         dplyr::mutate_at(
-          .vars = vars(-date, -year, -period_index),
+          .vars = dplyr::vars(-date, -year, -period_index),
           .funs = purrr::partial(.period_value,
                                  period_index = period_index)
         )

@@ -1,4 +1,6 @@
-#' Utils functions of profile
+# Utility functions - profile
+
+#' Utility functions of profile
 #'
 #' Utility functions to handle profile, which contains configration
 #' information of stock database.

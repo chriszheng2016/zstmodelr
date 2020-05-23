@@ -1,13 +1,18 @@
+# Utility functions - fields
 
-#' Check whether fields exsit in data or not.
-#' @param  data   a dataframe or matrix to check.
-#' @param  fields a character vector of field names to check.
+#' Verify existence of fields in data
+#'
+#' Verify whether some fields exsit in the data or not.
+#'
+#' @param  data   A dataframe or matrix to check.
+#' @param  fields A character vector of field names to check.
 #'
 #' @family utils_fields
-#' @return  return invisble NULL if succeed, otherwise raise error.
+#'
+#' @return  Invisble NULL if succeed, otherwise raise error.
 #'
 #' @export
-check_fields <- function(data, fields) {
+verify_fields <- function(data, fields) {
 
   # validate params
   data_sym <- rlang::ensym(data)
@@ -28,6 +33,8 @@ check_fields <- function(data, fields) {
     rlang::abort(msg)
   }
 }
+
+
 
 #' Check whether fields are specified type
 #'
@@ -125,7 +132,7 @@ is_type_field <- function(data, expect_type = c(
 #'
 #' @inheritParams is_type_field
 #'
-#' @return return a vectors of field names with specified type. If no field is
+#' @return A vectors of field names with specified type. If no field is
 #' expect type , return a character(0).
 #'
 #' @family utils_fields

@@ -1,3 +1,5 @@
+# Utility functions - dates
+
 #' Check date series is periodic or not
 #'
 #' Check whether date series is regular/irregular periodic or not.

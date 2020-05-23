@@ -1,6 +1,6 @@
 # Tests for utility functions of dates ----
 
-context("Tests for utitlity functions of dates")
+context("Tests for utility functions of dates")
 
 # prepare test datasets
 
