@@ -2,8 +2,8 @@
 
 #' Supress specific warnings
 #'
-#' Unlike \code{\link[base]{suppressMessages}} which suppresses all warnings,
-#' it can supresses spefiec warnings and outputs remain warnings.
+#' Unlike [base::suppressWarnings()] which suppresses all warnings, it can
+#' supress some specific warnings and output remain warnings.
 #'
 #' @param expr A expression to evaluate.
 #' @param warn_pattern A character pattern as a regular expression. Default NA
