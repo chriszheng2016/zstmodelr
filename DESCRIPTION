@@ -1,34 +1,33 @@
-Package: zstmodelr
 Type: Package
-Title: zstmodelr - Stock factors Models for China Stock Market Investment
+Package: zstmodelr
+Title: zstmodelr - Stock factors Models for China Stock Market
+    Investment
 Version: 0.0.0.9000
-Author: person("Chris", "Zheng", email = "chrisZheng@vip.sina.com.cn",
-                role = c("aut", "cre"))
-Maintainer: The package maintainer <chriszheng@vip.sina.com.cn>
-Description: An implementation of analystic tools of stock factors models for
-        investing China stock market.
-Depends: R (>= 3.4.2)
+Authors@R: 
+    person(given = "Chris",
+           family = "Zheng",
+           role = c("aut", "cre"),
+           email = "chriszheng@vip.sina.com.cn",
+           comment = c(ORCID = "CHRISZHENG'S-ORCID-ID"))
+Description: An implementation of analystic tools of stock
+    factors models for investing China stock market.
 License: GPL (>= 2)
-Encoding: UTF-8
-LazyData: true
-Suggests: testthat,
-    knitr,
-    rmarkdown
-VignetteBuilder: knitr
+Depends: 
+    R (>= 3.4.2)
 Imports: 
     assertive,
     broom,
     car,
     DBI,
-    DT,
     doParallel,
     dplyr,
+    DT,
     lubridate,
     magrittr,
     methods,
     odbc,
-    PerformanceAnalytics,
     parallel,
+    PerformanceAnalytics,
     plyr,
     purrr,
     readr,
@@ -43,6 +42,14 @@ Imports:
     timeSeries,
     xts,
     zoo
+Suggests: 
+    knitr,
+    rmarkdown,
+    testthat
+VignetteBuilder: 
+    knitr
+Encoding: UTF-8
+LazyData: true
 RoxygenNote: 7.1.0
 Collate: 
     'stock-db.R'
