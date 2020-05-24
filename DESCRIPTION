@@ -86,3 +86,5 @@ Collate:
     'utils-timeseries.R'
     'utils.R'
     'zstmodelr.R'
+URL: https://github.com/chriszheng2016/zstmodelr
+BugReports: https://github.com/chriszheng2016/zstmodelr/issues
