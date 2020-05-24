@@ -9,3 +9,4 @@ profile.html
 ^.*\.rxproj$
 ^\.vs$
 check
+^CODE_OF_CONDUCT\.md$
