@@ -80,6 +80,7 @@ Collate:
     'utils-expr.R'
     'utils-fields.R'
     'utils-logfile.R'
+    'utils-pipe.R'
     'utils-profile.R'
     'utils-report.R'
     'utils-series.R'

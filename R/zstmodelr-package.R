@@ -33,14 +33,11 @@ NULL
 
 
 # Import frequently-used funs from other pkgs
-#' @importFrom magrittr %>%
 #' @importFrom methods new
 #' @importFrom stats as.formula coef cor lm mad median na.omit
 #' @importFrom stats profile quantile sd shapiro.test t.test time
 #' @importFrom utils data head
 
-#' @export
-magrittr::`%>%`
 
 # Register parallel backend for parallel process
 # cores_for_process <- parallel::detectCores() - 1
