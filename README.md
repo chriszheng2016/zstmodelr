@@ -3,11 +3,16 @@
 
 # zstmodelr
 
+<!-- badges: start -->
+
+<!-- badges: end -->
+
 The goal of zstmodelr is to …
 
 ## Installation
 
-You can install zstmodelr from github with:
+You can install zstmodelr from github [GitHub](https://github.com/)
+with:
 
 ``` r
 # install.packages("devtools")
@@ -20,4 +25,5 @@ This is a basic example which shows you how to solve a common problem:
 
 ``` r
 ## basic example code
+library(zstmodelr)
 ```
