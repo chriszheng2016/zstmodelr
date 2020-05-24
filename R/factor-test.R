@@ -575,43 +575,44 @@ build_sort_portfolios <- function(stocks_list,
 # Generic Functions Implmentation for factor_test classes   ---------------------
 
 # Generic Implementation of summary for factor_test class
-#' @export
-summary.factor_test <- function(factor_test_result){
+# @export
+summary.factor_test <- function(object, ...){
 
   # Validate params
-  stopifnot(!is.null(factor_test_result), inherits(factor_test_result, "factor_test"))
+  stopifnot(!is.null(object), inherits(object, "factor_test"))
 
   # print(factor_test_result@summary)
 
-  factor_test_result@summary
+  object@summary
 }
 setMethod("summary",
           signature(object = "factor_test"),
-          function(object){ summary.factor_test(object)})
+          function(object, ...){ summary.factor_test(object, ...)})
 
 
 # Generic Implementation of plot for factor_test class
-#' @export
-plot.factor_test <- function(factor_test_result){
+# @export
+plot.factor_test <- function(x, ...){
   # validate params
-  stopifnot(!is.null(factor_test_result), inherits(factor_test_result, "factor_test"))
+  stopifnot(!is.null(x), inherits(x, "factor_test"))
 }
 setMethod("plot",
-          signature(x = "factor_test"),
-          function(x){ plot.factor_test(x)})
+          signature(x = "factor_test", y = "missing"),
+          function(x, y, ...){plot.factor_test(x, ...)}
+)
 
 # Generic Implementation of plot for factor_test_uniregress
 # Plot result for factor_test_uniregress class
-#' @export
-plot.factor_test_uniregress <- function(factor_test_result){
+# @export
+plot.factor_test_uniregress <- function(x, ...){
 
 
   # Validate params
-  stopifnot(!is.null(factor_test_result),
-            inherits(factor_test_result, "factor_test_uniregress"))
+  stopifnot(!is.null(x),
+            inherits(x, "factor_test_uniregress"))
 
   # Plot distribution of factors return
-  .plot_distribution_factors_series(factor_test_result@factor_returns,
+  .plot_distribution_factors_series(x@factor_returns,
                                     series_name = "factor return")
 
 
@@ -621,21 +622,21 @@ plot.factor_test_uniregress <- function(factor_test_result){
 }
 setMethod("plot",
           signature(x = "factor_test_uniregress", y = "missing"),
-          function(x){ plot.factor_test_uniregress(x)}
+          function(x, y, ...){ plot.factor_test_uniregress(x, ...)}
 )
 
 # Generic Implementation of plot for factor_test_uniregress
 # Plot result for factor_test_uniregress class
-#' @export
-plot.factor_test_IC <- function(factor_test_result){
+# @export
+plot.factor_test_IC <- function(x, ...){
 
 
   # Validate params
-  stopifnot(!is.null(factor_test_result),
-            inherits(factor_test_result, "factor_test_IC"))
+  stopifnot(!is.null(x),
+            inherits(x, "factor_test_IC"))
 
   # Plot Distribution of factors ICs
-  .plot_distribution_factors_series(factor_test_result@factor_ICs,
+  .plot_distribution_factors_series(x@factor_ICs,
                                     series_name = "factor IC")
 
   # Plot return summary
@@ -644,14 +645,14 @@ plot.factor_test_IC <- function(factor_test_result){
 }
 setMethod("plot",
           signature(x = "factor_test_IC", y = "missing"),
-          function(x){ plot.factor_test_IC(x)}
+          function(x, y, ...){ plot.factor_test_IC(x, ...)}
 )
 
 
 # Generic Implementation of plot for factor_test_sort_portfolios
 # Plot result for factor_test_sort_portfolios
-#' @export
-plot.factor_test_sort_portfolios <- function(factor_test_result){
+# @export
+plot.factor_test_sort_portfolios <- function(x, ...){
 
   .plot_portfolio_returns <- function(ds_portfolios_return, factor_name){
 
@@ -706,16 +707,16 @@ plot.factor_test_sort_portfolios <- function(factor_test_result){
   }
 
   # Validate params
-  stopifnot(!is.null(factor_test_result),
-            inherits(factor_test_result, "factor_test_sort_portfolios"))
+  stopifnot(!is.null(x),
+            inherits(x, "factor_test_sort_portfolios"))
 
   # Plot Distribution of factor returns
-  .plot_distribution_factors_series(factor_test_result@factor_returns,
+  .plot_distribution_factors_series(x@factor_returns,
                                     series_name = "factor return")
 
 
   # Plot return of portfolios
-  ds_portfolios_return <- factor_test_result@portfolios_return %>%
+  ds_portfolios_return <- x@portfolios_return %>%
        dplyr::group_by(factor_name) %>%
        tidyr::nest(.key = "returns")
 
@@ -729,7 +730,7 @@ plot.factor_test_sort_portfolios <- function(factor_test_result){
 }
 setMethod("plot",
           signature(x = "factor_test_sort_portfolios", y = "missing"),
-          function(x){ plot.factor_test_sort_portfolios(x)}
+          function(x, y, ...){ plot.factor_test_sort_portfolios(x, ...)}
 )
 
 # Plot distribution for factor series

@@ -81,37 +81,43 @@ compute_indicator <- function(ts_compute_vars,
 
   # pre-process ts_input_vars
   ts_compute_vars <- tibble::as_tibble(ts_compute_vars)
-  arrange_expr <- rlang::parse_exprs(c(key_fields, date_index_field))
+  arrange_expr <-
+    rlang::parse_exprs(c(key_fields, date_index_field))
   ts_compute_vars <- ts_compute_vars %>%
     dplyr::arrange(!!!arrange_expr)
 
   # Work for single/multi group dataset
   if (is.null(key_fields)) {
-
     # For single group
-    ds_indicator <- .compute_indicator_single_group(ts_compute_vars,
+    ds_indicator <- .compute_indicator_single_group(
+      ts_compute_vars,
       compute_fun = compute_fun,
       ...,
       date_index_field = date_index_field,
       key_fields = key_fields
     )
   } else {
-
     # For mutlti groups by key_fieilds
-    ds_indicator <- plyr::ddply(ts_compute_vars,
-      .variables = key_fields,
-      .fun = .compute_indicator_single_group,
-      compute_fun = compute_fun,
-      ...,
-      date_index_field = date_index_field,
-      key_fields = key_fields,
-      .parallel = parallel,
-      .progress = plyr::progress_win(title = "Computing...")
-    )
+    suppress_warnings({
+      ds_indicator <- plyr::ddply(
+        ts_compute_vars,
+        .variables = key_fields,
+        .fun = .compute_indicator_single_group,
+        compute_fun = compute_fun,
+        ...,
+        date_index_field = date_index_field,
+        key_fields = key_fields,
+        .parallel = parallel,
+        .progress = plyr::progress_win(title = "Computing...")
+      )
+    },
+    # supress warnings due to parallel process
+    warn_pattern = "<anonymous>: ...")
 
     # If there are no results, dplyr::ddply will return a data frame
     # with zero rows and columns
-    if (NROW(ds_indicator) == 0) ds_indicator <- NULL
+    if (NROW(ds_indicator) == 0)
+      ds_indicator <- NULL
   }
 
   if (!is.null(ds_indicator)) {

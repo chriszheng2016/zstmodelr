@@ -4,10 +4,11 @@
 #' Normalze factors dataset by cleaning extremes and standardation.
 #'
 #'
-#' @param ds_factors  a factors dataset.
-#' @param group_by  a character vector of fields as group data for scaling, NULL
+#' @param ds_factors  A factors dataset.
+#' @param factors_list A character vecter of factors.
+#' @param group_by  A character vector of fields as group data for scaling, NULL
 #' is default value which means no group settting.
-#' @param clean_extremes_method method of cleaning extremes befre standardization
+#' @param clean_extremes_method Method of cleaning extremes befre standardization
 #' , i.e. "sigma","mad", by default "sigma".
 #' see details: \code{\link{clean_extremes_sigma}}, \code{\link{clean_extremes_mad}}
 #' @param standard_method  method of standardizing data, i.e. "normal","rank",

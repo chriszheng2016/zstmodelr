@@ -6,17 +6,17 @@
 #'
 #'
 #'
-#' @param ds_test          a timeseries dataset with descriptors of factors for test
+#' @param ds_build         A timeseries dataset with descriptors of factors for test
 #' @param regress_method   method of partitioning data for regression, i.e.
 #' "cross_section", "pooling", by default "cross_section".
-#' @param regress_fun      a function to conduct regress.
+#' @param regress_fun      A function to conduct regress.
 #' @param ...              argments passed to regress_fun.
-#' @param output_type      type of output data, i.e."summary", "raw", if "raw",
+#' @param output_type      Type of output data, i.e."summary", "raw", if "raw",
 #' raw data will be append to output object for dignosis.
-#' @param date_field       the name of date field of ds_test, by default "date",
+#' @param date_field       Name of date field of ds_test, by default "date",
 #' Column must be date-like.
 #'
-#' @return                 a object of factor_test_uniregress class.
+#' @return                 A object of factor_test_uniregress class.
 #'
 #' @export
 model_build_fundamental <- function(ds_build,

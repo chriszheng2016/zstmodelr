@@ -37,7 +37,7 @@
   "SPT_TRDCHG" # name for SPT_Trdchg_特殊处理
 )
 
-.GTA_XXXX <- "中文字符" # not supported
+
 
 # Class definition of gta_db class -----------------------------------------
 
@@ -66,7 +66,9 @@ setRefClass("gta_db",
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' gta_db <- gta_db()
+#' }
 gta_db <- function(dsn = "GTA_SQLData") {
   stopifnot(!is.null(dsn))
 
@@ -89,8 +91,8 @@ gta_db <- function(dsn = "GTA_SQLData") {
 # Open the stock database
 # Method definition for s3 generic
 # @describeIn open_stock_db Open a database of gta_db class
-#' @export
-open_stock_db.gta_db <- function(stock_db) {
+# @export
+open_stock_db.gta_db <- function(stock_db, ...) {
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
   success <- TRUE
 
@@ -134,8 +136,8 @@ setMethod(
 # Close the stock database
 # Method definition for s3 generic
 # @describeIn close_stock_db Close a database of gta_db class
-#' @export
-close_stock_db.gta_db <- function(stock_db) {
+# @export
+close_stock_db.gta_db <- function(stock_db, ...) {
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
   success <- TRUE
 
@@ -184,8 +186,9 @@ setMethod(
 # Get profile of stock_db
 # Method definition for s3 generic
 # @describeIn get_profile get profile of a database of gta_db class
-#' @export
-get_profile.gta_db <- function(stock_db, profile_name = .GTA_PROFILE_FILE) {
+# @export
+get_profile.gta_db <- function(stock_db, profile_name = .GTA_PROFILE_FILE,
+                               ...) {
 
   # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
@@ -210,15 +213,15 @@ setMethod(
   "get_profile",
   signature(stock_db = "gta_db"),
   function(stock_db, profile_name, ...) {
-    get_profile.gta_db(stock_db, profile_name)
+    get_profile.gta_db(stock_db, profile_name, ...)
   }
 )
 
 # Init param of stock db
 # Method definition for s3 generic
 # @describeIn init_stock_db Init param of database of gta_db class
-#' @export
-init_stock_db.gta_db <- function(stock_db) {
+# @export
+init_stock_db.gta_db <- function(stock_db, ...) {
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
 
   success <- TRUE
@@ -289,8 +292,8 @@ setMethod(
 # List all tables of stck_db
 # Method definition for s3 generic
 # @describeIn list_stock_tables List names of tables in database of gta_db class
-#' @export
-list_stock_tables.gta_db <- function(stock_db) {
+# @export
+list_stock_tables.gta_db <- function(stock_db, ...) {
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
 
   if (is.null(stock_db$connection)) {
@@ -322,9 +325,9 @@ setMethod(
 # Translate name into code for field or stock
 # Method definition for s3 generic
 # @describeIn name2code Translate name into code in a database of gta_db class
-#' @export
+# @export
 name2code.gta_db <- function(stock_db, name,
-                             type = c("stock", "field", "industry")) {
+                             type = c("stock", "field", "industry"), ...) {
   stopifnot(inherits(stock_db, "gta_db"), !missing(name))
 
   target_type <- match.arg(type)
@@ -351,9 +354,9 @@ setMethod(
 # Translate code into name for field or stock
 # Method definition for s3 generic
 # @describeIn code2name Translate code into name in a database of gta_db class
-#' @export
+# @export
 code2name.gta_db <- function(stock_db, code,
-                             type = c("stock", "field", "industry")) {
+                             type = c("stock", "field", "industry"), ...) {
   stopifnot(inherits(stock_db, "gta_db"), !missing(code))
 
   target_type <- match.arg(type)
@@ -378,8 +381,8 @@ setMethod(
 # Get a dataset from a table in stock_db
 # Method definition for s3 generic
 # @describeIn get_table_dataset get a table dataset from a database of gta_db class
-#' @export
-get_table_dataset.gta_db <- function(stock_db, table_name) {
+# @export
+get_table_dataset.gta_db <- function(stock_db, table_name, ...) {
 
   # Validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
@@ -437,16 +440,19 @@ setMethod(
   "get_table_dataset",
   signature(stock_db = "gta_db"),
   function(stock_db, table_name, ...) {
-    get_table_dataset.gta_db(stock_db, table_name)
+    get_table_dataset.gta_db(stock_db, table_name, ...)
   }
 )
 
 # Get a dataset of a list of stock_cd from table in stock
 # Method definition for s3 generic
 # @describeIn get_stock_dataset get a dataset of a list of stock_cd from table
-#' in a database of gta_db class
-#' @export
-get_stock_dataset.gta_db <- function(stock_db, table_name, stock_cd_list = NULL) {
+#  in a database of gta_db class
+# @export
+get_stock_dataset.gta_db <- function(stock_db,
+                                     table_name,
+                                     stock_cd_list = NULL,
+                                     ...) {
 
   # Validate param
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
@@ -544,15 +550,15 @@ setMethod(
   "get_stock_dataset",
   signature(stock_db = "gta_db"),
   function(stock_db, table_name, stock_cd_list = NULL, ...) {
-    get_stock_dataset.gta_db(stock_db, table_name, stock_cd_list)
+    get_stock_dataset.gta_db(stock_db, table_name, stock_cd_list, ...)
   }
 )
 
 # Fetch many datasets from stock_db
 # Method definition for s3 generic
 # @describeIn fetch_table_dataset get many datasets from a database of gta_db class
-#' @export
-fetch_table_dataset.gta_db <- function(stock_db, table_list) {
+# @export
+fetch_table_dataset.gta_db <- function(stock_db, table_list, ...) {
 
   # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
@@ -598,18 +604,19 @@ setMethod(
   "fetch_table_dataset",
   signature(stock_db = "gta_db"),
   function(stock_db, table_list, ...) {
-    fetch_table_dataset.gta_db(stock_db, table_list)
+    fetch_table_dataset.gta_db(stock_db, table_list, ...)
   }
 )
 
 # Get stock return timeseries from stock_db
 # Method definition for s3 generic
 # @describeIn get_stock_return get stock return timeseries from a database of gta_db class
-#' @export
+# @export
 get_stock_return.gta_db <- function(stock_db, stock_cd_list = NULL,
                                     period_type = c("day", "month", "year"),
                                     period_date = c("start", "end"),
-                                    output_type = c("timeSeries", "tibble")) {
+                                    output_type = c("timeSeries", "tibble"),
+                                    ...) {
 
   # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
@@ -752,7 +759,8 @@ setMethod(
       stock_cd_list = stock_cd_list,
       period_type = period_type,
       period_date = period_date,
-      output_type = output_type
+      output_type = output_type,
+      ...
     )
   }
 )
@@ -760,11 +768,12 @@ setMethod(
 # Get market return timesereis from stock_db
 # Method definition for s3 generic
 # @describeIn get_market_return get market return timeseries from a database of gta_db class
-#' @export
+# @export
 get_market_return.gta_db <- function(stock_db,
                                      period_type = c("day", "month", "year"),
                                      period_date = c("start", "end"),
-                                     output_type = c("timeSeries", "tibble")) {
+                                     output_type = c("timeSeries", "tibble"),
+                                     ...) {
 
   # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
@@ -883,7 +892,8 @@ setMethod(
       stock_db = stock_db,
       period_type = period_type,
       period_date = period_date,
-      output_type = output_type
+      output_type = output_type,
+      ...
     )
   }
 )
@@ -892,7 +902,7 @@ setMethod(
 # Get financial report timesereis from stock_db
 # Method definition for s3 generic
 # @describeIn get_finacial_report get financial report timeseries from a database of gta_db class
-#' @export
+# @export
 get_finacial_report.gta_db <- function(stock_db,
                                        stock_cd_list = NULL,
                                        statement = c(
@@ -906,7 +916,8 @@ get_finacial_report.gta_db <- function(stock_db,
                                        ),
                                        consolidated = TRUE,
                                        period_type = c("quarter", "year"),
-                                       period_date = c("end", "start")) {
+                                       period_date = c("end", "start"),
+                                       ...) {
 
   # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
@@ -1063,7 +1074,8 @@ setMethod(
       statement = statement,
       consolidated = consolidated,
       period_type = period_type,
-      period_date = period_date
+      period_date = period_date,
+      ...
     )
   }
 )
@@ -1072,20 +1084,21 @@ setMethod(
 
 # Get indicators from specified data source(table/file) in stock_db
 # Method definition for s3 generic
-#'  @param data_filters   A list of filter to apply on result data. The list
-#'  consists of items which has field as its name and filter expr string as
-#'  its content, defualt is list( typrep = "typrep == 'A'",
-#'   markettype = "markettype == 21"). Only valid for gta_db.
-#' @param date_fields    A character vector of possible date field in original
-#'  data, which will be renamed as "date". default is c("date", "accper",
-#'  "trddt", "trdmnt", "trdynt","clsdt", "shrchdgt"). Only valid for gta_db.
-#' @param retain_fields  A character vector of possible fields to retain in
-#'  final dataset, default is c("stkcd", "indcd"). Only valid for gta_db.
-#' @export
+#  @param data_filters   A list of filter to apply on result data. The list
+#  consists of items which has field as its name and filter expr string as
+#  its content, defualt is list( typrep = "typrep == 'A'",
+#   markettype = "markettype == 21"). Only valid for gta_db.
+# @param date_fields    A character vector of possible date field in original
+#  data, which will be renamed as "date". default is c("date", "accper",
+#  "trddt", "trdmnt", "trdynt","clsdt", "shrchdgt"). Only valid for gta_db.
+# @param retain_fields  A character vector of possible fields to retain in
+#  final dataset, default is c("stkcd", "indcd"). Only valid for gta_db.
+# @export
 get_indicators_from_source.gta_db <- function(stock_db,
                                               indicator_source,
                                               indicator_codes = NULL,
                                               ouput_format = c("long", "wide"),
+                                              ...,
                                               data_filters = list(
                                                 typrep = "typrep == 'A'",
                                                 markettype = "markettype == 21"
@@ -1463,10 +1476,12 @@ get_indicators_from_source.gta_db <- function(stock_db,
 setMethod(
   "get_indicators_from_source",
   signature(stock_db = "gta_db"),
-  function(stock_db, indicator_source, indicator_codes, ouput_format, ...) {
+  function(stock_db, indicator_source, indicator_codes, ouput_format, ...,
+           data_filters, date_fields, retain_fields) {
     get_indicators_from_source.gta_db(
       stock_db, indicator_source,
-      indicator_codes, ouput_format, ...
+      indicator_codes, ouput_format, ...,
+      data_filters, date_fields, retain_fields
     )
   }
 )
@@ -1474,12 +1489,13 @@ setMethod(
 # Save indicators to specified data source(table/file) in stock_db
 # Method definition for s3 generic
 # @describeIn save_indicators_to_source   save indicator timeseries to
-#' specified source in a database of gta_db class
-#'
-#' @export
+#  specified source in a database of gta_db class
+#
+# @export
 save_indicators_to_source.gta_db <- function(stock_db,
                                              indicator_source,
-                                             ts_indicators) {
+                                             ts_indicators,
+                                             ...) {
 
   # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
@@ -1559,7 +1575,7 @@ setMethod(
   signature(stock_db = "gta_db"),
   function(stock_db, indicator_source, ts_indicators, ...) {
     save_indicators_to_source.gta_db(
-      stock_db, indicator_source, ts_indicators
+      stock_db, indicator_source, ts_indicators, ...
     )
   }
 )
@@ -1568,9 +1584,9 @@ setMethod(
 # Get indicators timeseries from stock_db
 # Method definition for s3 generic
 # @describeIn get_indicators get indicator timeseries from
-#'  a database of gta_db class
-#' @export
-get_indicators.gta_db <- function(stock_db, indicator_codes) {
+#  a database of gta_db class
+# @export
+get_indicators.gta_db <- function(stock_db, indicator_codes, ...) {
 
   # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
@@ -1647,16 +1663,16 @@ setMethod(
   "get_indicators",
   signature(stock_db = "gta_db"),
   function(stock_db, indicator_codes, ...) {
-    get_indicators.gta_db(stock_db, indicator_codes)
+    get_indicators.gta_db(stock_db, indicator_codes, ...)
   }
 )
 
 # Get factors timeseries from stock_db
 # Method definition for s3 generic
 # @describeIn get_factors get factor timeseries from
-#'  a database of gta_db class
-#' @export
-get_factors.gta_db <- function(stock_db, factor_codes) {
+#  a database of gta_db class
+# @export
+get_factors.gta_db <- function(stock_db, factor_codes, ...) {
 
   # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
@@ -1718,17 +1734,18 @@ setMethod(
   "get_factors",
   signature(stock_db = "gta_db"),
   function(stock_db, factor_codes, ...) {
-    get_factors.gta_db(stock_db, factor_codes)
+    get_factors.gta_db(stock_db, factor_codes, ...)
   }
 )
 
 # Get factors Info from stock_db
 # Method definition for s3 generic
 # @describeIn get_factors_info get factors info from a database of gta_db class
-#' @export
+# @export
 get_factors_info.gta_db <- function(stock_db,
                                     factor_codes = NULL,
-                                    factor_groups = NULL) {
+                                    factor_groups = NULL,
+                                    ...) {
 
   # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
@@ -1766,16 +1783,16 @@ setMethod(
   "get_factors_info",
   signature(stock_db = "gta_db"),
   function(stock_db, factor_codes, factor_groups, ...) {
-    get_factors_info.gta_db(stock_db, factor_codes, factor_groups)
+    get_factors_info.gta_db(stock_db, factor_codes, factor_groups, ...)
   }
 )
 
 # Get industry info of stocks from stock_db
 # # Method definition for s3 generic
 # @describeIn get_stock_industry  get industry info timeseries of stocks from
-#' a database of gta_db class
-#' @export
-get_stock_industry.gta_db <- function(stock_db) {
+#  a database of gta_db class
+# @export
+get_stock_industry.gta_db <- function(stock_db, ...) {
 
   # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
@@ -1810,7 +1827,7 @@ setMethod(
   "get_stock_industry",
   signature(stock_db = "gta_db"),
   function(stock_db, ...) {
-    get_stock_industry.gta_db(stock_db)
+    get_stock_industry.gta_db(stock_db, ...)
   }
 )
 
@@ -1818,9 +1835,9 @@ setMethod(
 # Get stock info of special treatment from stock_db
 # Method definition for s3 generic
 # @describeIn get_spt_stocks  get stock info of special treatment from
-#' a database of gta_db class
-#' @export
-get_spt_stocks.gta_db <- function(stock_db) {
+#  a database of gta_db class
+# @export
+get_spt_stocks.gta_db <- function(stock_db, ...) {
 
   # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
@@ -1899,7 +1916,7 @@ setMethod(
   "get_spt_stocks",
   signature(stock_db = "gta_db"),
   function(stock_db, ...) {
-    get_spt_stocks.gta_db(stock_db)
+    get_spt_stocks.gta_db(stock_db, ...)
   }
 )
 
@@ -1908,12 +1925,13 @@ setMethod(
 # Get riskfree rate from stock_db
 # Method definition for s3 generic
 # @describeIn get_riskfree_rate  get riskfree rate timeseries from a database of
-#'  gta_db class
-#' @export
-get_riskfree_rate.gta_db <- function(stock_db, period = c(
+#   gta_db class
+#  @export
+get_riskfree_rate.gta_db <- function(stock_db,
+                                     period = c(
                                        "day", "month",
-                                       "quarter", "year"
-                                     )) {
+                                       "quarter", "year"),
+                                     ...) {
 
   # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
@@ -1972,15 +1990,15 @@ setMethod(
   "get_riskfree_rate",
   signature(stock_db = "gta_db"),
   function(stock_db, period, ...) {
-    get_riskfree_rate.gta_db(stock_db, period)
+    get_riskfree_rate.gta_db(stock_db, period, ...)
   }
 )
 
 # Get Path of Data Directory from stock_db
 # Method definition for s3 generic
 # @describeIn dir_path_db get path of data directory from a database of
-#'  gta_db class
-#' @export
+#   gta_db class
+# @export
 dir_path_db.gta_db <- function(stock_db,
                                dir_id = c(
                                  "DIR_DB_DATA",
@@ -1989,7 +2007,8 @@ dir_path_db.gta_db <- function(stock_db,
                                  "DIR_DB_DATA_LOG",
                                  "DIR_DB_DATA_INDICATOR"
                                ),
-                               force = TRUE) {
+                               force = TRUE,
+                               ...) {
 
   # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
@@ -2026,7 +2045,7 @@ setMethod(
   "dir_path_db",
   signature(stock_db = "gta_db"),
   function(stock_db, dir_id, force, ...) {
-    dir_path_db.gta_db(stock_db, dir_id, force)
+    dir_path_db.gta_db(stock_db, dir_id, force, ...)
   }
 )
 

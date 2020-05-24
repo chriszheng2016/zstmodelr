@@ -7,6 +7,7 @@
 #' Generic function to get definitions of customized indicators from stock_db.
 #'
 #' @param stock_db         A stock database object to operate.
+#' @param ... Extra arguments to be passed to methods.
 #'
 #'
 #' @family indicator define functions
@@ -36,6 +37,7 @@ setGeneric(
 #' @param stock_db         A stock database object to operate.
 #' @param indicator_defs   A dataframe of indicator definitions, which require
 #'  vars to compute indicators.
+#' @param ... Extra arguments to be passed to methods.
 #'
 #' @family indicator define functions
 #'
@@ -62,6 +64,7 @@ setGeneric(
 #'
 #' @param stock_db         A stock database object to operate.
 #' @param indicator_expr   A expr of indicator to parase.
+#' @param ... Extra arguments to be passed to methods.
 #'
 #' @family indicator define functions
 #'
@@ -88,6 +91,7 @@ setGeneric(
 #'  from stock_db.
 #'
 #' @param stock_db         A stock database object to operate.
+#' @param ... Extra arguments to be passed to methods.
 #'
 #' @family indicator define functions
 #'
@@ -114,6 +118,7 @@ setGeneric(
 #'  from stock_db.
 #'
 #' @param stock_db         A stock database object to operate.
+#' @param ... Extra arguments to be passed to methods.
 #'
 #' @family indicator define functions
 #'
@@ -215,7 +220,7 @@ create_indicator_def_fun <- function(indicator_code,
     assertive::assert_is_data.frame(ds_vars)
 
     # ensure all import fields are existed
-    check_fields(ds_vars, c("ind_code", "ind_value"))
+    verify_fields(ds_vars, c("ind_code", "ind_value"))
 
 
     # re-group vars by period
@@ -271,7 +276,7 @@ create_indicator_def_fun <- function(indicator_code,
     success <- TRUE
 
     # ensure all import fields are existed
-    check_fields(ds_vars, c(date_index_field, key_fields))
+    verify_fields(ds_vars, c(date_index_field, key_fields))
 
     # process ds_vars
     ds_vars <- .process_vars(ds_vars, re_freq = period)
@@ -585,7 +590,8 @@ create_ind_defs_trees <- function(ds_indicator_defs) {
   # creaet new class
   defs_trees <- tibble::new_tibble(
     defs_trees_info,
-    subclass = "ind_defs_trees"
+    nrow = nrow(defs_trees_info),
+    class = "ind_defs_trees"
   )
 
   return(defs_trees)

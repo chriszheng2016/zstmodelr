@@ -20,7 +20,7 @@
 #'        \code{Lag}, \code{GrowthRate}, \code{Ratio},
 #'        \code{Demean}, \code{Quarter_TTM}, \code{Beta}, etc.
 #'     \item \strong{expr_funs to define dynamic indicator}:
-#'       provide dynamic time series from database.
+#'       \code{RiskFreeRate} provides dynamic time series from database.
 #'
 #'  }
 #'
@@ -29,6 +29,8 @@
 NULL
 
 # Lag a series by k periods
+#' @param x A vector or array to lag.
+#' @param k A numeric to indicate lag direction, k>0 lag behind, k<0 lag ahead.
 #' @describeIn indicator_expr_funs  lag a sereis at k period.
 #' (k>0 lag behind, k<0 lag ahead)
 Lag <- function(x, k = 1) {
@@ -48,6 +50,7 @@ Lag <- function(x, k = 1) {
 }
 
 # Growth rate of a series
+#' @param  x A numeric vector or array to compute.
 #' @describeIn indicator_expr_funs  compute growth rate of a sereis.
 GrowthRate <- function(x) {
 
@@ -62,6 +65,8 @@ GrowthRate <- function(x) {
 }
 
 # Ratio of two series
+#' @param x_numerator  A numeric as numerator of ratio.
+#' @param y_denominator A non-zero numeric as denominator of ratio.
 #' @describeIn indicator_expr_funs  compute ratio of two sereis.
 Ratio <- function(x_numerator, y_denominator) {
 
@@ -85,6 +90,7 @@ Demean <- function(x) {
 }
 
 # Make a quarterly TTM(Trial Twelve Month) series
+#' @param date A date vector or array.
 #' @describeIn indicator_expr_funs  make a quarterly TTM(Trial Twelve Month)
 #'  series.
 Quarter_TTM <- function(date, x) {
@@ -139,10 +145,12 @@ Quarter_TTM <- function(date, x) {
 }
 
 # Beta between two varable series
+#' @param y_dependent  A dependent varable.
+#' @param x_independent A independent varable.
 #' @describeIn indicator_expr_funs  compute beta between two varable series
-Beta <- function(y, x) {
-  model <- lm(y ~ x)
-  beta <- coef(model)["x"]
+Beta <- function(y_dependent, x_independent) {
+  model <- lm(y_dependent ~ x_independent)
+  beta <- coef(model)["x_independent"]
 
   return(beta)
 }
@@ -150,6 +158,11 @@ Beta <- function(y, x) {
 # Functions for defining dynamic indicator expr ----
 
 # Provide timeseries of dynamic indicator of risfree rate
+#' @param stock_db   A stock database object to operate.
+#' @param indicator_code A character code of indictor.
+#' @param period A character period of rate, e.g. "day", "month", "quarter",
+#'  "year". Default is "day"
+#'
 #' @describeIn indicator_expr_funs  provide timeseries of dynamic indicator of
 #' risfree rate.
 RiskFreeRate <- function(stock_db, indicator_code,

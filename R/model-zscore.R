@@ -82,7 +82,7 @@ factors_zscore <- function(ds_factors,
 #' The group of z-score of factors will keep in the results
 #'
 #' @param ds_zscores      a z-score datasets of factors
-#' @param rnaking_field   the name of field for ranking
+#' @param ranking_field   the name of field for ranking
 #' @param ranking_number  the number of ranking N, positive number N means top N
 #'                        negative number N means last N
 #'

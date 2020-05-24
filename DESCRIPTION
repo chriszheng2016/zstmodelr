@@ -15,21 +15,35 @@ Suggests: testthat,
     knitr,
     rmarkdown
 VignetteBuilder: knitr
-Imports: fPortfolio,
-    timeSeries,
-    PerformanceAnalytics,
-    plyr,
-    tidyverse,
-    tibbletime,
-    modelr,
+Imports: 
+    assertive,
     broom,
     car,
-    assertive,
+    DBI,
+    DT,
+    doParallel,
+    dplyr,
+    lubridate,
+    magrittr,
+    methods,
+    odbc,
+    PerformanceAnalytics,
+    parallel,
+    plyr,
+    purrr,
+    readr,
+    readxl,
+    rlang,
     shiny,
     shinydashboard,
-    DBI,
-    odbc
-RoxygenNote: 6.1.1
+    stringr,
+    tibble,
+    tidyr,
+    timeDate,
+    timeSeries,
+    xts,
+    zoo
+RoxygenNote: 7.1.0
 Collate: 
     'stock-db.R'
     'code-name-list.R'

@@ -1,5 +1,3 @@
-library(withr)
-
 # Tests for factor_test classes - factor_test_uniregress ----
 context("Tests for factor_test classes - factor_test_uniregress")
 
@@ -132,7 +130,7 @@ test_that("factor_test_sort_portfolios, with general arguments", {
   }
 
   # Conduct portfolio sorts test with summary ouput ====
-  # with_options(
+  # withr::with_options(
   # c(warn = -1),
   #   {
   #     result_sort_portfolios <- factor_test_sort_portfolios(ds_test_sort_portfolios,

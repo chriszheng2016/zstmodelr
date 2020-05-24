@@ -9,6 +9,7 @@
 #' Generic function to get data source info for importing raw data into stock_db.
 #'
 #' @param stock_db         A stock database object to operate.
+#' @param ... Extra arguments to be passed to methods.
 #'
 #' @family data managment
 #'
@@ -34,6 +35,7 @@ setGeneric(
 #' Generic function to Clear existed data in all tables in stock_db.
 #'
 #' @param stock_db         A stock database object to operate.
+#' @param ... Extra arguments to be passed to methods.
 #'
 #' @family data managment
 #'
@@ -82,7 +84,7 @@ setGeneric(
 #'  Default is "update_db_log".
 #' @param log_dir Path to save updating log file. NULL means to use "./" as
 #'  log dir. Default "./log".
-#'
+#' @param ... Extra arguments to be passed to methods.
 #'
 #' @family data managment
 #'
@@ -137,6 +139,7 @@ setGeneric(
 #'   otherwise abort importing process.  By default TRUE.
 #' @param log_dir   Path of log dir for saving problem log file,
 #'   by default"./log", if the log path doesn't exsited, it  will be created.
+#' @param ... Extra arguments to be passed to methods.
 #'
 #' @family data managment
 #'
@@ -204,7 +207,7 @@ setGeneric(
 #'  Default is "update_db_log".
 #' @param log_dir Path to save process log file. NULL means to use "./"
 #'  as log dir. Default "./log".
-#'
+#' @param ... Extra arguments to be passed to methods.
 #'
 #' @family data managment
 #'
@@ -581,6 +584,7 @@ convert_import_file <- function(input_file,
 #'  financial report, default 'Accper'.
 #' @param key_fields    A character vector of key fields, which identify unique
 #'   observation in each date, defaul c("Stkcd", "Typrep").
+#' @param field_suffix A character suffix for result fields, default is "ttm".
 #' @param parallel   A logic to deterimine whether to use parallel processing.
 #'   Default TRUE means to use parallel processing.
 #'
