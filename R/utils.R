@@ -2,12 +2,12 @@
 
 #' Supress specific warnings
 #'
-#' Just like \link{supressWarnings} which suppresses all warnings,
+#' Unlike \code{\link[base]{suppressMessages}} which suppresses all warnings,
 #' it can supresses spefiec warnings and outputs remain warnings.
 #'
 #' @param expr A expression to evaluate.
-#' @param warn_pattern A character pattern as a regular expression.
-#'  Default NA means suppressing all warnings.
+#' @param warn_pattern A character pattern as a regular expression. Default NA
+#'   means suppressing all warnings.
 #'
 #' @return The warning message as character string, invisibly.
 #'
