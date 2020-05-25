@@ -45,7 +45,8 @@ Suggests:
     knitr,
     rmarkdown,
     testthat,
-    covr
+    covr,
+    spelling
 VignetteBuilder: 
     knitr
 Encoding: UTF-8
@@ -90,3 +91,4 @@ Collate:
     'zstmodelr-package.R'
 URL: https://github.com/chriszheng2016/zstmodelr
 BugReports: https://github.com/chriszheng2016/zstmodelr/issues
+Language: en-US
