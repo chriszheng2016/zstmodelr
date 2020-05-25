@@ -5,6 +5,8 @@
 
 <!-- badges: start -->
 
+[![Codecov test
+coverage](https://codecov.io/gh/chriszheng2016/zstmodelr/branch/master/graph/badge.svg)](https://codecov.io/gh/chriszheng2016/zstmodelr?branch=master)
 <!-- badges: end -->
 
 The goal of zstmodelr is to …
