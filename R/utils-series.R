@@ -9,7 +9,7 @@
 #' @param fun          A function to apply on series data.
 #' @param ...          params passed to fun.
 #' @param window       A integer of periods in rolling window which must be
-#'  in range of [1L, length of data_series], default 1L.
+#'  in range of `[1L, length of data_series]`, default 1L.
 #' @param unlist       A logical to determine whether unlist result or not.
 #'  Default TRUE means unlist result into a vector of numeric. The argument
 #'  don't work if result can't be convert into a atomic vector, e.g., a list of

@@ -1,6 +1,6 @@
 Type: Package
 Package: zstmodelr
-Title: Stock factors Models for China Stock Market Investment
+Title: Stock Factor Models for China Stock Market Investment
 Version: 0.0.0.9000
 Authors@R: 
     person(given = "Chris",
