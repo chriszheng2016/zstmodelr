@@ -2,21 +2,25 @@
 % Please edit documentation in R/model-zscore.R
 \name{zscore_filter_stocks}
 \alias{zscore_filter_stocks}
-\title{Filter stocks by facotrs z-score}
+\title{Filter stocks by factors z-score}
 \usage{
-zscore_filter_stocks(ds_zscores, ranking_field = "stk_score",
-  ranking_number = 5)
+zscore_filter_stocks(
+  ds_zscores,
+  ranking_field = "stk_score",
+  ranking_number = 5
+)
 }
 \arguments{
 \item{ds_zscores}{a z-score datasets of factors}
 
+\item{ranking_field}{the name of field for ranking}
+
 \item{ranking_number}{the number of ranking N, positive number N means top N
 negative number N means last N}
-
-\item{rnaking_field}{the name of field for ranking}
 }
 \value{
-a datasets of filtered stocks
+\preformatted{       a datasets of filtered stocks
+}
 }
 \description{
 Filter stocks by ranking the z-score of factors.

@@ -4,7 +4,7 @@
 \alias{utils_expr}
 \alias{create_expr}
 \alias{find_syms}
-\title{Utils functions of expr}
+\title{Utility functions of expr}
 \usage{
 create_expr(expr)
 
@@ -14,9 +14,11 @@ find_syms(expr, pattern = NULL, ...)
 \item{expr}{A expr or list of exprs or string to parse as expr.}
 
 \item{pattern}{a character of regular rule for matching.}
+
+\item{...}{Extra arguments to be passed to purrr::map.}
 }
 \description{
-Utility functions to handle expr basing on rlang, which is used to facliate
+Utility functions to handle expr basing on rlang, which is used to facilitate
 defining indicator.
 }
 \section{Functions}{

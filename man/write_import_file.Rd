@@ -4,8 +4,12 @@
 \alias{write_import_file}
 \title{Write a raw file for importing to stock db}
 \usage{
-write_import_file(ds_output, output_file, output_type = c("csv", "txt"),
-  output_dir = NULL)
+write_import_file(
+  ds_output,
+  output_file,
+  output_type = c("csv", "txt"),
+  output_dir = NULL
+)
 }
 \arguments{
 \item{ds_output}{A name or a path of input data file.}
@@ -25,12 +29,14 @@ Write a dataframe as import file. If output file existed, original file will
 be backed up.
 }
 \seealso{
-Other data managment: \code{\link{clear_tables}},
-  \code{\link{convert_import_file}},
-  \code{\link{get_datasource}}, \code{\link{import_table}},
-  \code{\link{process_files}},
-  \code{\link{read_import_file}},
-  \code{\link{ttm_financial_report}},
-  \code{\link{update_db}}
+Other data management: 
+\code{\link{clear_tables}()},
+\code{\link{convert_import_file}()},
+\code{\link{get_datasource}()},
+\code{\link{import_table}()},
+\code{\link{process_files}()},
+\code{\link{read_import_file}()},
+\code{\link{ttm_financial_report}()},
+\code{\link{update_db}()}
 }
-\concept{data managment}
+\concept{data management}

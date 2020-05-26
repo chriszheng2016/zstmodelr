@@ -2,32 +2,38 @@
 % Please edit documentation in R/model_fundamental.R
 \name{model_build_fundamental}
 \alias{model_build_fundamental}
-\title{Creator of factor_test_unigress class}
+\title{Creator of factor_test_uniregress class}
 \usage{
-model_build_fundamental(ds_build, regress_method = c("cross_section",
-  "pooling"), regress_fun, ..., output_type = c("summary", "raw"),
-  date_field = "date")
+model_build_fundamental(
+  ds_build,
+  regress_method = c("cross_section", "pooling"),
+  regress_fun,
+  ...,
+  output_type = c("summary", "raw"),
+  date_field = "date"
+)
 }
 \arguments{
+\item{ds_build}{A timeseries dataset with descriptors of factors for test}
+
 \item{regress_method}{method of partitioning data for regression, i.e.
 "cross_section", "pooling", by default "cross_section".}
 
-\item{regress_fun}{a function to conduct regress.}
+\item{regress_fun}{A function to conduct regress.}
 
-\item{...}{argments passed to regress_fun.}
+\item{...}{Arguments passed to regress_fun.}
 
-\item{output_type}{type of output data, i.e."summary", "raw", if "raw",
-raw data will be append to output object for dignosis.}
+\item{output_type}{Type of output data, i.e."summary", "raw", if "raw",
+raw data will be append to output object for diagnosis.}
 
-\item{date_field}{the name of date field of ds_test, by default "date",
+\item{date_field}{Name of date field of ds_test, by default "date",
 Column must be date-like.}
-
-\item{ds_test}{a timeseries dataset with descriptors of factors for test}
 }
 \value{
-a object of factor_test_uniregress class.
+\preformatted{            A object of factor_test_uniregress class.
+}
 }
 \description{
-Conduct univarate reggression test for descriptors of factors and build object
+Conduct univariate regression test for descriptors of factors and build object
 of factor_test_uniregress class as output.
 }

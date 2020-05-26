@@ -4,9 +4,14 @@
 \alias{expect_type_fields}
 \title{Identify fields with specified type}
 \usage{
-expect_type_fields(data, expect_type = c("numeric", "integer", "double",
-  "character", "date", "factor", "list", "NA"), negate = FALSE,
-  predicate_fun = NULL, ...)
+expect_type_fields(
+  data,
+  expect_type = c("numeric", "integer", "double", "character", "date", "factor",
+    "list", "NA"),
+  negate = FALSE,
+  predicate_fun = NULL,
+  ...
+)
 }
 \arguments{
 \item{data}{A vector of date/timestamps.}
@@ -23,14 +28,15 @@ Default NULL means not to use predicate_fun for testing.}
 \item{...}{Params to predicate_fun.}
 }
 \value{
-return a vectors of field names with specified type. If no field is
+A vectors of field names with specified type. If no field is
 expect type , return a character(0).
 }
 \description{
 Get the field names of dataframe with specified type.
 }
 \seealso{
-Other utils_fields: \code{\link{check_fields}},
-  \code{\link{is_type_field}}
+Other utils_fields: 
+\code{\link{is_type_field}()},
+\code{\link{verify_fields}()}
 }
 \concept{utils_fields}

@@ -4,17 +4,24 @@
 \alias{normalize_factors}
 \title{Normalize the factors dataset}
 \usage{
-normalize_factors(ds_factors, factors_list = NULL, group_by = NULL,
+normalize_factors(
+  ds_factors,
+  factors_list = NULL,
+  group_by = NULL,
   clean_extremes_method = c("sigma", "mad"),
-  standard_method = c("normal", "rank"), ...)
+  standard_method = c("normal", "rank"),
+  ...
+)
 }
 \arguments{
-\item{ds_factors}{a factors dataset.}
+\item{ds_factors}{A factors dataset.}
 
-\item{group_by}{a character vector of fields as group data for scaling, NULL
-is default value which means no group settting.}
+\item{factors_list}{A character vector of factors.}
 
-\item{clean_extremes_method}{method of cleaning extremes befre standardization
+\item{group_by}{A character vector of fields as group data for scaling, NULL
+is default value which means no group setting.}
+
+\item{clean_extremes_method}{Method of cleaning extremes before standardization
 , i.e. "sigma","mad", by default "sigma".
 see details: \code{\link{clean_extremes_sigma}}, \code{\link{clean_extremes_mad}}}
 
@@ -25,8 +32,9 @@ see details: \code{\link{standardize_normal_scale}}, \code{\link{standardize_ran
 \item{...}{additional arguments to clean_extremes_method and standard_method.}
 }
 \value{
-a dataset of normalized factors
+\preformatted{       a dataset of normalized factors
+}
 }
 \description{
-Normalze factors dataset by cleaning extremes and standardation.
+Normalize factors dataset by cleaning extremes and standardization.
 }

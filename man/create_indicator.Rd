@@ -2,10 +2,17 @@
 % Please edit documentation in R/indicator-build.R
 \name{create_indicator}
 \alias{create_indicator}
-\title{Create indicator by definiton function and variables timeseries}
+\title{Create indicator by definition function and variables timeseries}
 \usage{
-create_indicator(ts_def_vars, ind_def_fun, ..., debug = FALSE,
-  date_index_field = c("date"), key_fields = NULL, parallel = TRUE)
+create_indicator(
+  ts_def_vars,
+  ind_def_fun,
+  ...,
+  debug = FALSE,
+  date_index_field = c("date"),
+  key_fields = NULL,
+  parallel = TRUE
+)
 }
 \arguments{
 \item{ts_def_vars}{A dataframe of variable timeseries to create indicator.}
@@ -14,17 +21,17 @@ create_indicator(ts_def_vars, ind_def_fun, ..., debug = FALSE,
 
 \item{...}{Params to ind_def_fun.}
 
-\item{debug}{A logic to deterimine whether to turn on debug in createing
-indicator. Default FAlSE means not to use debug.}
+\item{debug}{A logic to determine whether to turn on debug in creating
+indicator. Default FALSE means not to use debug.}
 
 \item{date_index_field}{Name of date index field of ts_def_vars,
 default 'date'.}
 
 \item{key_fields}{A character vector of key fields, which identify unique
-observation in each date. Default NULL means to not devide data into
+observation in each date. Default NULL means to not divide data into
 groups.}
 
-\item{parallel}{A logic to deterimine whether to use parallel processing.
+\item{parallel}{A logic to determine whether to use parallel processing.
 Default TRUE means to use parallel processing.}
 }
 \value{
@@ -69,7 +76,8 @@ Use definition function and variable timeseries to create indicator.
 
 }
 \seealso{
-Other indicator build functions: \code{\link{compute_indicator}},
-  \code{\link{modify_indicator}}
+Other indicator build functions: 
+\code{\link{compute_indicator}()},
+\code{\link{modify_indicator}()}
 }
 \concept{indicator build functions}

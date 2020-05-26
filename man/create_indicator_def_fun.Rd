@@ -4,8 +4,12 @@
 \alias{create_indicator_def_fun}
 \title{Create definition function of indicator for computing indicator}
 \usage{
-create_indicator_def_fun(indicator_code, indicator_expr,
-  rolly_window = 0, period = c("day", "month", "quarter", "year"))
+create_indicator_def_fun(
+  indicator_code,
+  indicator_expr,
+  rolly_window = 0,
+  period = c("day", "month", "quarter", "year")
+)
 }
 \arguments{
 \item{indicator_code}{A character for indicator code.}
@@ -13,7 +17,7 @@ create_indicator_def_fun(indicator_code, indicator_expr,
 \item{indicator_expr}{A expr as a formula to compute indicator.}
 
 \item{rolly_window}{A numeric as rolly computing window, default 0 means
-no rollying.}
+no rolling.}
 
 \item{period}{A periodicity of indicator, e.g. "day", "month",
 "quarter", "year".}
@@ -25,15 +29,16 @@ otherwise NULL.
 \description{
 Use indicator params to create a definition function for computing indicator.
 The definition function is used by \code{\link{create_indicator}} to compute
-indicator timesereis of stocks.
+indicator timeseries of stocks.
 }
 \seealso{
-Other indicator define functions: \code{\link{create_attribute_def_fun}},
-  \code{\link{get_indicator_defs}},
-  \code{\link{get_indicator_vars}},
-  \code{\link{ind_attr_def_indcd}},
-  \code{\link{ind_attr_def_trdstat}},
-  \code{\link{parse_indicator_vars}},
-  \code{\link{prioritize_indicator_defs}}
+Other indicator define functions: 
+\code{\link{create_attribute_def_fun}()},
+\code{\link{get_indicator_defs}()},
+\code{\link{get_indicator_vars}()},
+\code{\link{ind_attr_def_indcd}()},
+\code{\link{ind_attr_def_trdstat}()},
+\code{\link{parse_indicator_vars}()},
+\code{\link{prioritize_indicator_defs}()}
 }
 \concept{indicator define functions}

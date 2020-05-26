@@ -4,9 +4,13 @@
 \alias{ttm_financial_report}
 \title{Convert financial report to TTM format}
 \usage{
-ttm_financial_report(ds_financial_report, date_index_field = "Accper",
-  key_fields = c("Stkcd", "Typrep"), field_suffix = "ttm",
-  parallel = TRUE)
+ttm_financial_report(
+  ds_financial_report,
+  date_index_field = "Accper",
+  key_fields = c("Stkcd", "Typrep"),
+  field_suffix = "ttm",
+  parallel = TRUE
+)
 }
 \arguments{
 \item{ds_financial_report}{A data.frame of financial report to convert.}
@@ -15,25 +19,30 @@ ttm_financial_report(ds_financial_report, date_index_field = "Accper",
 financial report, default 'Accper'.}
 
 \item{key_fields}{A character vector of key fields, which identify unique
-observation in each date, defaul c("Stkcd", "Typrep").}
+observation in each date, default c("Stkcd", "Typrep").}
 
-\item{parallel}{A logic to deterimine whether to use parallel processing.
+\item{field_suffix}{A character suffix for result fields, default is "ttm".}
+
+\item{parallel}{A logic to determine whether to use parallel processing.
 Default TRUE means to use parallel processing.}
 }
 \value{
-A dataframe of finacial report of TTM format if succeed,
- otherwise NULL.
+A dataframe of financial report of TTM format if succeed,
+otherwise NULL.
 }
 \description{
 Convert financial report from normal format(quarterly accumulated format)
 to TTM format(Trail Twelve Months).
 }
 \seealso{
-Other data managment: \code{\link{clear_tables}},
-  \code{\link{convert_import_file}},
-  \code{\link{get_datasource}}, \code{\link{import_table}},
-  \code{\link{process_files}},
-  \code{\link{read_import_file}}, \code{\link{update_db}},
-  \code{\link{write_import_file}}
+Other data management: 
+\code{\link{clear_tables}()},
+\code{\link{convert_import_file}()},
+\code{\link{get_datasource}()},
+\code{\link{import_table}()},
+\code{\link{process_files}()},
+\code{\link{read_import_file}()},
+\code{\link{update_db}()},
+\code{\link{write_import_file}()}
 }
-\concept{data managment}
+\concept{data management}

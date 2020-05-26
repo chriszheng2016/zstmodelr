@@ -10,7 +10,8 @@ standardize_rank_scale(x)
 \item{x}{a vector of data.}
 }
 \value{
-a vector of standardized data
+\preformatted{ a vector of standardized data
+}
 }
 \description{
 Scale the ranked data by order

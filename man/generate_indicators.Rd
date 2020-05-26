@@ -4,20 +4,25 @@
 \alias{generate_indicators}
 \title{Generate indicators in batch mode}
 \usage{
-generate_indicators(stock_db, ds_indicator_defs, validate_def = FALSE,
-  parallel = TRUE, log_file_prefix = "generate_indicator_log",
-  log_dir = "./log")
+generate_indicators(
+  stock_db,
+  ds_indicator_defs,
+  validate_def = FALSE,
+  parallel = TRUE,
+  log_file_prefix = "generate_indicator_log",
+  log_dir = "./log"
+)
 }
 \arguments{
 \item{stock_db}{A stock database object to operate.}
 
-\item{ds_indicator_defs}{A dataframe of indicator definintion to generate.}
+\item{ds_indicator_defs}{A dataframe of indicator definition to generate.}
 
 \item{validate_def}{A logical determine whether to validate indicator
 definition or not.Default FALSE, means to produce indicators on full
-dataset, TRUE means to validate definintion on small datasets.}
+dataset, TRUE means to validate definition on small datasets.}
 
-\item{parallel}{A logic to deterimine whether to use parallel processing.
+\item{parallel}{A logic to determine whether to use parallel processing.
 Default TRUE means to use parallel processing.}
 
 \item{log_file_prefix}{A character of log file prefix to name log file. Log
@@ -36,13 +41,14 @@ Generate customized indicators of stock_db in batch, and save into files.
 \details{
 There are two methods of generating indicators:
 \itemize{
-  \item \strong{formal production}: produce final result of indicators on full dataset
-   from stock_db, which will take longer time ;
-  \item \strong{validating defintion}: produce trial results of indicators on small
-  dataset from stock_db, which will take shorter time.
-  }
+\item \strong{formal production}: produce final result of indicators on full dataset
+from stock_db, which will take longer time ;
+\item \strong{validating definition}: produce trial results of indicators on small
+dataset from stock_db, which will take shorter time.
+}
 }
 \seealso{
-Other indicator generate functions: \code{\link{delete_indicators}}
+Other indicator generate functions: 
+\code{\link{delete_indicators}()}
 }
 \concept{indicator generate functions}

@@ -4,11 +4,18 @@
 \alias{modify_indicator}
 \title{Modify indicator to add new attribute}
 \usage{
-modify_indicator(ts_indicator, modify_fun, ..., replace_exist = FALSE,
-  date_index_field = c("date"), key_fields = NULL, parallel = TRUE)
+modify_indicator(
+  ts_indicator,
+  modify_fun,
+  ...,
+  replace_exist = FALSE,
+  date_index_field = c("date"),
+  key_fields = NULL,
+  parallel = TRUE
+)
 }
 \arguments{
-\item{ts_indicator}{A dataframe of indicaotr timeseries to modify.}
+\item{ts_indicator}{A dataframe of indicator timeseries to modify.}
 
 \item{modify_fun}{A function of modify indicator.}
 
@@ -21,10 +28,10 @@ attribute fields. Default FALSE means to not replace existed field.}
 default 'date'.}
 
 \item{key_fields}{A character vector of key fields, which identify unique
-observation in each date. Default NULL means to not devide data into
+observation in each date. Default NULL means to not divide data into
 groups.}
 
-\item{parallel}{A logic to deterimine whether to use parallel processing.
+\item{parallel}{A logic to determine whether to use parallel processing.
 Default TRUE means to use parallel processing.}
 }
 \value{
@@ -32,7 +39,7 @@ A dataframe of modified indicator timeseries if succeed, otherwise NULL.
 }
 \description{
 Use modifying function to modify indicator timeseries,
- e.g. add new attribute to existed indicator timeseries.
+e.g. add new attribute to existed indicator timeseries.
 }
 \examples{
 
@@ -59,7 +66,7 @@ Use modifying function to modify indicator timeseries,
 
   # modify ts_indicator with pre-defined ind_attr_def_fun
 
-  # create defintion function of pre-defined attribute of indcd
+  # create definition function of pre-defined attribute of indcd
   new_attr_indcd <- ind_attr_def_indcd(stock_db)
 
   # modify existed ts_indicators
@@ -75,7 +82,8 @@ Use modifying function to modify indicator timeseries,
 
 }
 \seealso{
-Other indicator build functions: \code{\link{compute_indicator}},
-  \code{\link{create_indicator}}
+Other indicator build functions: 
+\code{\link{compute_indicator}()},
+\code{\link{create_indicator}()}
 }
 \concept{indicator build functions}

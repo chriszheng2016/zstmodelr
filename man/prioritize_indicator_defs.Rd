@@ -11,24 +11,25 @@ prioritize_indicator_defs(ds_indicator_defs)
 }
 \value{
 A dataframe of definitions of prioritized indicators if succeed,
- otherwise NULL.
+otherwise NULL.
 }
 \description{
-Priroriize indicators defs according prirority means that indicator defs with
-higher prority will be in front of that of lower prority.
+Prioritize indicators defs according priority means that indicator defs with
+higher priority will be in front of that of lower priority.
 }
 \details{
-By analysing dependency among indicators, indicator defs will be re-ordered
+By analyzing dependency among indicators, indicator defs will be re-ordered
 by priority(1 to n), which means 1 is highest and n is lowest. Indicator with
 higher priority should be generated before indicator with lower priority.
 }
 \seealso{
-Other indicator define functions: \code{\link{create_attribute_def_fun}},
-  \code{\link{create_indicator_def_fun}},
-  \code{\link{get_indicator_defs}},
-  \code{\link{get_indicator_vars}},
-  \code{\link{ind_attr_def_indcd}},
-  \code{\link{ind_attr_def_trdstat}},
-  \code{\link{parse_indicator_vars}}
+Other indicator define functions: 
+\code{\link{create_attribute_def_fun}()},
+\code{\link{create_indicator_def_fun}()},
+\code{\link{get_indicator_defs}()},
+\code{\link{get_indicator_vars}()},
+\code{\link{ind_attr_def_indcd}()},
+\code{\link{ind_attr_def_trdstat}()},
+\code{\link{parse_indicator_vars}()}
 }
 \concept{indicator define functions}
