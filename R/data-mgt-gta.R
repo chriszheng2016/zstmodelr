@@ -8,8 +8,8 @@
 # Method definition for s3 generic
 # @describeIn get_datasource get data source for importing raw data into
 #'   database of gta_db class
-#' @export
-get_datasource.gta_db <- function(stock_db) {
+# @export
+get_datasource.gta_db <- function(stock_db, ...) {
 
   # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
@@ -59,15 +59,15 @@ setMethod(
   "get_datasource",
   signature(stock_db = "gta_db"),
   function(stock_db, ...) {
-    get_datasource.gta_db(stock_db)
+    get_datasource.gta_db(stock_db, ...)
   }
 )
 
 # Clear data in all tables in stock database
 # Method definition for s3 generic
 # @describeIn clear_tables clear data in all tables in a database of gta_db class
-#' @export
-clear_tables.gta_db <- function(stock_db) {
+# @export
+clear_tables.gta_db <- function(stock_db, ...) {
 
   # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
@@ -99,19 +99,20 @@ setMethod(
   "clear_tables",
   signature(stock_db = "gta_db"),
   function(stock_db, ...) {
-    clear_tables.gta_db(stock_db)
+    clear_tables.gta_db(stock_db, ...)
   }
 )
 
 # Update tables in stock database
 # Method definition for s3/s4 generic
 # @describeIn update_db update tables in a database of gta_db class
-#' @export
+# @export
 update_db.gta_db <- function(stock_db,
                              data_source = get_datasource(stock_db),
                              retry_log = NULL,
                              log_file_prefix = "update_db_log",
-                             log_dir = "./log") {
+                             log_dir = "./log",
+                             ...) {
 
   # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "stock_db"))
@@ -180,7 +181,7 @@ update_db.gta_db <- function(stock_db,
       # conduct update for all tables or tables not recording successful in retry log
       if (is.null(finished_tables) || !(data_source_info$target_table %in% finished_tables)) {
         msg <- sprintf("Import data into %s ...\n", data_source_info$target_table)
-        rlang:::inform(msg)
+        rlang::inform(msg)
 
         result <- import_table(stock_db,
           input_file = data_source_info$input_file,
@@ -197,7 +198,7 @@ update_db.gta_db <- function(stock_db,
 
         if (result != TRUE) {
           msg <- sprintf("fail to update %s !!\n", data_source_info$target_table)
-          rlang:::inform(msg)
+          rlang::inform(msg)
         }
       } else {
         ds_log$success[i] <- TRUE
@@ -244,7 +245,7 @@ setMethod(
              log_file_prefix, log_dir, ...) {
     update_db.gta_db(
       stock_db, data_source, retry_log,
-      log_file_prefix, log_dir
+      log_file_prefix, log_dir, ...
     )
   }
 )
@@ -252,7 +253,7 @@ setMethod(
 # Import a raw data file into table in stock database
 # Method definition for s3 generic
 # @describeIn import_table import raw data into table in a database of gta_db class
-#' @export
+# @export
 import_table.gta_db <- function(stock_db,
                                 input_file,
                                 input_type = c("csv", "txt"),
@@ -260,7 +261,8 @@ import_table.gta_db <- function(stock_db,
                                 start_index = 2L,
                                 target_table = NULL,
                                 ignore_problems = TRUE,
-                                log_dir = "./log") {
+                                log_dir = "./log",
+                                ...) {
 
   # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
@@ -354,7 +356,7 @@ setMethod(
       stock_db, input_file, input_type,
       input_dir, start_index,
       target_table, ignore_problems,
-      log_dir
+      log_dir, ...
     )
   }
 )
@@ -362,12 +364,13 @@ setMethod(
 # Process importing files in stock database
 # Method definition for s3/s4 generic
 # @describeIn process_files process importing files in a database of gta_db class
-#' @export
+# @export
 process_files.gta_db <- function(stock_db,
                                  data_source = get_datasource(stock_db),
                                  retry_log = NULL,
                                  log_file_prefix = "update_db_log",
-                                 log_dir = "./log") {
+                                 log_dir = "./log",
+                                 ...) {
 
   # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "stock_db"))
@@ -451,7 +454,7 @@ process_files.gta_db <- function(stock_db,
           data_source_info$input_file,
           data_source_info$process
         )
-        rlang:::inform(msg)
+        rlang::inform(msg)
 
         # build process function
         process_fun <- NULL
@@ -492,7 +495,7 @@ process_files.gta_db <- function(stock_db,
             data_source_info$process
           )
 
-          rlang:::inform(msg)
+          rlang::inform(msg)
         }
       } else {
         ds_log$success[i] <- TRUE
@@ -531,7 +534,7 @@ setMethod(
              log_file_prefix, log_dir, ...) {
     process_files.gta_db(
       stock_db, data_source, retry_log,
-      log_file_prefix, log_dir
+      log_file_prefix, log_dir, ...
     )
   }
 )

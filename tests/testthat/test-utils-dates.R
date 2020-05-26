@@ -1,6 +1,6 @@
 # Tests for utility functions of dates ----
 
-context("Tests for utitlity functions of dates")
+context("Tests for utility functions of dates")
 
 # prepare test datasets
 
@@ -12,7 +12,7 @@ regular_yearly_dates <- seq(as.Date("2001/1/1"), as.Date("2018/1/1"), by = "year
 
 # irregular date series
 
-# function to convert regular dates to irregluar dates
+# function to convert regular dates to irregular dates
 dates_reg2irreg <- function(regular_dates, n_bad_dates = 5) {
   origin_idx <- 2:(length(regular_dates) - 1)
   rnd_idx <- sample(origin_idx, size = n_bad_dates)

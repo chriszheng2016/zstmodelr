@@ -4,9 +4,14 @@
 \alias{is_type_field}
 \title{Check whether fields are specified type}
 \usage{
-is_type_field(data, expect_type = c("numeric", "integer", "double",
-  "character", "date", "factor", "list", "NA"), negate = FALSE,
-  predicate_fun = NULL, ...)
+is_type_field(
+  data,
+  expect_type = c("numeric", "integer", "double", "character", "date", "factor",
+    "list", "NA"),
+  negate = FALSE,
+  predicate_fun = NULL,
+  ...
+)
 }
 \arguments{
 \item{data}{A vector of date/timestamps.}
@@ -26,13 +31,14 @@ Default NULL means not to use predicate_fun for testing.}
 return a vectors of logical with same length of names of dataframe.
 }
 \description{
-Predicate fields of dataframe are specifed type or not.
+Predicate fields of dataframe are specified type or not.
 }
 \note{
-numeric means intger or double; double don't include date.
+numeric means integer or double; double don't include date.
 }
 \seealso{
-Other utils_fields: \code{\link{check_fields}},
-  \code{\link{expect_type_fields}}
+Other utils_fields: 
+\code{\link{expect_type_fields}()},
+\code{\link{verify_fields}()}
 }
 \concept{utils_fields}

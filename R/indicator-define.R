@@ -7,6 +7,7 @@
 #' Generic function to get definitions of customized indicators from stock_db.
 #'
 #' @param stock_db         A stock database object to operate.
+#' @param ... Extra arguments to be passed to methods.
 #'
 #'
 #' @family indicator define functions
@@ -36,6 +37,7 @@ setGeneric(
 #' @param stock_db         A stock database object to operate.
 #' @param indicator_defs   A dataframe of indicator definitions, which require
 #'  vars to compute indicators.
+#' @param ... Extra arguments to be passed to methods.
 #'
 #' @family indicator define functions
 #'
@@ -61,7 +63,8 @@ setGeneric(
 #' Generic function to parse vars in indicator expr from stock_db.
 #'
 #' @param stock_db         A stock database object to operate.
-#' @param indicator_expr   A expr of indicator to parase.
+#' @param indicator_expr   A expr of indicator to parse.
+#' @param ... Extra arguments to be passed to methods.
 #'
 #' @family indicator define functions
 #'
@@ -88,6 +91,7 @@ setGeneric(
 #'  from stock_db.
 #'
 #' @param stock_db         A stock database object to operate.
+#' @param ... Extra arguments to be passed to methods.
 #'
 #' @family indicator define functions
 #'
@@ -114,6 +118,7 @@ setGeneric(
 #'  from stock_db.
 #'
 #' @param stock_db         A stock database object to operate.
+#' @param ... Extra arguments to be passed to methods.
 #'
 #' @family indicator define functions
 #'
@@ -142,12 +147,12 @@ setGeneric(
 #'
 #' Use indicator params to create a definition function for computing indicator.
 #' The definition function is used by \code{\link{create_indicator}} to compute
-#' indicator timesereis of stocks.
+#' indicator timeseries of stocks.
 #'
 #' @param indicator_code   A character for indicator code.
 #' @param indicator_expr   A expr as a formula to compute indicator.
 #' @param rolly_window   A numeric as rolly computing window, default 0 means
-#'  no rollying.
+#'  no rolling.
 #' @param period   A periodicity of indicator, e.g. "day", "month",
 #'    "quarter", "year".
 #'
@@ -215,7 +220,7 @@ create_indicator_def_fun <- function(indicator_code,
     assertive::assert_is_data.frame(ds_vars)
 
     # ensure all import fields are existed
-    check_fields(ds_vars, c("ind_code", "ind_value"))
+    verify_fields(ds_vars, c("ind_code", "ind_value"))
 
 
     # re-group vars by period
@@ -271,7 +276,7 @@ create_indicator_def_fun <- function(indicator_code,
     success <- TRUE
 
     # ensure all import fields are existed
-    check_fields(ds_vars, c(date_index_field, key_fields))
+    verify_fields(ds_vars, c(date_index_field, key_fields))
 
     # process ds_vars
     ds_vars <- .process_vars(ds_vars, re_freq = period)
@@ -356,7 +361,7 @@ create_indicator_def_fun <- function(indicator_code,
 #'
 #' Create a definition function of new attribute for modifying indicator.
 #' The definition function is used by \code{\link{modify_indicator}} to compute
-#' attribute in modifing exsited indicator timesereis of stocks.
+#' attribute in modifying existed indicator timeseries of stocks.
 #'
 #' @param attr_name   A character for attribute name.
 #' @param attr_fun   A function to generate attribute.
@@ -409,10 +414,10 @@ create_attribute_def_fun <- function(attr_name,
 
 #' Prioritize indicators defs by analyzing dependency indicators
 #'
-#' Priroriize indicators defs according prirority means that indicator defs with
-#' higher prority will be in front of that of lower prority.
+#' Prioritize indicators defs according priority means that indicator defs with
+#' higher priority will be in front of that of lower priority.
 #'
-#' By analysing dependency among indicators, indicator defs will be re-ordered
+#' By analyzing dependency among indicators, indicator defs will be re-ordered
 #' by priority(1 to n), which means 1 is highest and n is lowest. Indicator with
 #' higher priority should be generated before indicator with lower priority.
 #'
@@ -508,7 +513,7 @@ prioritize_indicator_defs <- function(ds_indicator_defs) {
   # validate params
   assertive::assert_is_data.frame(ds_indicator_defs)
 
-  # build defs_trees to parase dependency among indicators
+  # build defs_trees to parse dependency among indicators
   ind_defs_trees <- create_ind_defs_trees(ds_indicator_defs)
 
   # set priority for indicators according to dependency
@@ -556,7 +561,8 @@ prioritize_indicator_defs <- function(ds_indicator_defs) {
     dplyr::filter(!is.na(priority)) %>%
     dplyr::arrange(priority) %>%
     dplyr::group_by(priority) %>%
-    tidyr::nest(.key = "ds_indicator_defs")
+    tidyr::nest() %>%
+    dplyr::rename(ds_indicator_defs = data)
 
   return(ds_indicator_defs_priority)
 
@@ -570,7 +576,7 @@ create_ind_defs_trees <- function(ds_indicator_defs) {
   # validate params
   assertive::assert_is_data.frame(ds_indicator_defs)
 
-  # build defs_trees to parase dependency among indicators
+  # build defs_trees to parse dependency among indicators
   if (all(c("ind_code", "ind_vars") %in% names(ds_indicator_defs))) {
     defs_trees_info <- ds_indicator_defs %>%
       dplyr::select(ind_code, depend_ind_codes = ind_vars)
@@ -584,7 +590,8 @@ create_ind_defs_trees <- function(ds_indicator_defs) {
   # creaet new class
   defs_trees <- tibble::new_tibble(
     defs_trees_info,
-    subclass = "ind_defs_trees"
+    nrow = nrow(defs_trees_info),
+    class = "ind_defs_trees"
   )
 
   return(defs_trees)

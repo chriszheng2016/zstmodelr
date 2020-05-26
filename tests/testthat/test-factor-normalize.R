@@ -104,7 +104,7 @@ test_that("clean_extremes_sigma, with various arguments", {
   set.seed(1234)
   x <- rnorm(100)
 
-  # clean extremes with default argments ====
+  # clean extremes with default arguments ====
   x_2_extremes <- c(100,100, x)
   x_result <- clean_extremes_sigma(x_2_extremes)
   # extreme value(100) was identified and replace the limit value
@@ -134,7 +134,7 @@ test_that("clean_extremes_mad, with various arguments", {
   set.seed(1234)
   x <- rnorm(100)
 
-  # clean extremes with default argments ====
+  # clean extremes with default arguments ====
   x_2_extremes <- c(100,100, x)
   x_result <- clean_extremes_mad(x_2_extremes)
   # extreme value(100) was identified and replace the limit value
@@ -164,7 +164,7 @@ test_that("standardize_normal_scale, with various arguments", {
   set.seed(1234)
   x <- rnorm(100, mean = 5, sd = 5)
 
-  # standardize with default argments ====
+  # standardize with default arguments ====
   x_result <- standardize_normal_scale(x)
   expect_equal(mean(x_result), 0)
   expect_equal(sd(x_result), 1)

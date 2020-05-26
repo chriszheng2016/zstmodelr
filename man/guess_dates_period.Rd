@@ -10,18 +10,19 @@ guess_dates_period(dates_series, regular = FALSE)
 \item{dates_series}{A vector of date/timestamps.}
 
 \item{regular}{Whether to test date series as a regular periodic series
-or not. Since irregular test is looser than regluar test, irregluar test
-on regluar series will return true. Default is FALSE, which means we will
+or not. Since irregular test is looser than regular test, irregular test
+on regular series will return true. Default is FALSE, which means we will
 use looser test(irregular).}
 }
 \value{
 return "day" for daily, "month" for monthly, "quarter" for quarterly,
- "year" for yearly, "unknown" for unkown date period.
+"year" for yearly, "unknown" for unknown date period.
 }
 \description{
 Guess periodicity of date series
 }
 \seealso{
-Other utils_dates: \code{\link{is_periodic_dates}}
+Other utils_dates: 
+\code{\link{is_periodic_dates}()}
 }
 \concept{utils_dates}

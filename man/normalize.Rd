@@ -4,13 +4,17 @@
 \alias{normalize}
 \title{Normalize a vector of data}
 \usage{
-normalize(x, clean_extremes_method = c("sigma", "mad"),
-  standard_method = c("normal", "rank"), ...)
+normalize(
+  x,
+  clean_extremes_method = c("sigma", "mad"),
+  standard_method = c("normal", "rank"),
+  ...
+)
 }
 \arguments{
 \item{x}{a vector of data.}
 
-\item{clean_extremes_method}{method of cleaning extremes befre standardization
+\item{clean_extremes_method}{method of cleaning extremes before standardization
 , i.e. "sigma","mad", by default "sigma".
 see details: \code{\link{clean_extremes_sigma}}, \code{\link{clean_extremes_mad}}}
 
@@ -21,7 +25,8 @@ see details: \code{\link{standardize_normal_scale}}, \code{\link{standardize_ran
 \item{...}{additional arguments to clean_extremes_method and standard_method.}
 }
 \value{
-a vector of normalized data
+\preformatted{       a vector of normalized data
+}
 }
 \description{
 Normalize a vector of data by cleaning extremes and standardizing.

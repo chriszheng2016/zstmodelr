@@ -16,11 +16,12 @@ e.g. \code{composite_factor ~ 0.33*PE + 0.33*PB + 0.33*PS}.}
 result datasets, by default TRUE.}
 }
 \value{
-a dataset of new factor.
+\preformatted{       a dataset of new factor.
+}
 }
 \description{
-Composiste factor is built by aggregating formula coming from weight of
-similar or correlated factors, which is deterimed by varous methods, such as ....
+Composite factor is built by aggregating formula coming from weight of
+similar or correlated factors, which is determined by various methods, such as ....
 }
 \details{
 How to build composition

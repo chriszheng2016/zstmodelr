@@ -9,16 +9,17 @@ delete_indicators(stock_db, ds_indicator_defs)
 \arguments{
 \item{stock_db}{A stock database object to operate.}
 
-\item{ds_indicator_defs}{A dataframe of indicator definintion to delete.}
+\item{ds_indicator_defs}{A dataframe of indicator definition to delete.}
 }
 \value{
 NULL invisibly. Raise error if anything goes wrong.
 }
 \description{
-Delete cusotmized indicators of stock_db in batch, which clear all customized
+Delete customized indicators of stock_db in batch, which clear all customized
 built indicator files.
 }
 \seealso{
-Other indicator generate functions: \code{\link{generate_indicators}}
+Other indicator generate functions: 
+\code{\link{generate_indicators}()}
 }
 \concept{indicator generate functions}

@@ -1,6 +1,6 @@
 # Utils functions for indicator definition
 # Notice: in order to be different form normal R function, we use CamelCase
-# stlye for functions name
+# style for functions name
 
 # Functions for defining indicator expr ----
 
@@ -9,7 +9,7 @@
 #' Functions are only used in defining indicator expr.
 #'
 #' @note In order to be different form normal R function, we use CamelCase
-#'  stlye for functions name.
+#'  style for functions name.
 #'
 #' @details
 #'  In order to facilitate defining indicator expr, there are two kinds of
@@ -20,7 +20,7 @@
 #'        \code{Lag}, \code{GrowthRate}, \code{Ratio},
 #'        \code{Demean}, \code{Quarter_TTM}, \code{Beta}, etc.
 #'     \item \strong{expr_funs to define dynamic indicator}:
-#'       provide dynamic time series from database.
+#'       \code{RiskFreeRate} provides dynamic time series from database.
 #'
 #'  }
 #'
@@ -29,7 +29,9 @@
 NULL
 
 # Lag a series by k periods
-#' @describeIn indicator_expr_funs  lag a sereis at k period.
+#' @param x A vector or array to lag.
+#' @param k A numeric to indicate lag direction, k>0 lag behind, k<0 lag ahead.
+#' @describeIn indicator_expr_funs  lag a series at k period.
 #' (k>0 lag behind, k<0 lag ahead)
 Lag <- function(x, k = 1) {
 
@@ -48,7 +50,8 @@ Lag <- function(x, k = 1) {
 }
 
 # Growth rate of a series
-#' @describeIn indicator_expr_funs  compute growth rate of a sereis.
+#' @param  x A numeric vector or array to compute.
+#' @describeIn indicator_expr_funs  compute growth rate of a series.
 GrowthRate <- function(x) {
 
   # compute growth
@@ -62,7 +65,9 @@ GrowthRate <- function(x) {
 }
 
 # Ratio of two series
-#' @describeIn indicator_expr_funs  compute ratio of two sereis.
+#' @param x_numerator  A numeric as numerator of ratio.
+#' @param y_denominator A non-zero numeric as denominator of ratio.
+#' @describeIn indicator_expr_funs  compute ratio of two series.
 Ratio <- function(x_numerator, y_denominator) {
 
   # compute ratio
@@ -85,6 +90,7 @@ Demean <- function(x) {
 }
 
 # Make a quarterly TTM(Trial Twelve Month) series
+#' @param date A date vector or array.
 #' @describeIn indicator_expr_funs  make a quarterly TTM(Trial Twelve Month)
 #'  series.
 Quarter_TTM <- function(date, x) {
@@ -138,20 +144,27 @@ Quarter_TTM <- function(date, x) {
   return(trail_x)
 }
 
-# Beta between two varable series
-#' @describeIn indicator_expr_funs  compute beta between two varable series
-Beta <- function(y, x) {
-  model <- lm(y ~ x)
-  beta <- coef(model)["x"]
+# Beta between two variable series
+#' @param y_dependent  A dependent variable.
+#' @param x_independent A independent variable.
+#' @describeIn indicator_expr_funs  compute beta between two variable series
+Beta <- function(y_dependent, x_independent) {
+  model <- lm(y_dependent ~ x_independent)
+  beta <- coef(model)["x_independent"]
 
   return(beta)
 }
 
 # Functions for defining dynamic indicator expr ----
 
-# Provide timeseries of dynamic indicator of risfree rate
+# Provide timeseries of dynamic indicator of riskfree rate
+#' @param stock_db   A stock database object to operate.
+#' @param indicator_code A character code of indicator.
+#' @param period A character period of rate, e.g. "day", "month", "quarter",
+#'  "year". Default is "day"
+#'
 #' @describeIn indicator_expr_funs  provide timeseries of dynamic indicator of
-#' risfree rate.
+#' riskfree rate.
 RiskFreeRate <- function(stock_db, indicator_code,
                          period = c("day", "month", "quarter", "year")) {
 

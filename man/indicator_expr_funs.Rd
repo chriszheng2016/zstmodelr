@@ -21,48 +21,73 @@ Demean(x)
 
 Quarter_TTM(date, x)
 
-Beta(y, x)
+Beta(y_dependent, x_independent)
 
-RiskFreeRate(stock_db, indicator_code, period = c("day", "month",
-  "quarter", "year"))
+RiskFreeRate(
+  stock_db,
+  indicator_code,
+  period = c("day", "month", "quarter", "year")
+)
+}
+\arguments{
+\item{x}{A numeric vector or array to compute.}
+
+\item{k}{A numeric to indicate lag direction, k>0 lag behind, k<0 lag ahead.}
+
+\item{x_numerator}{A numeric as numerator of ratio.}
+
+\item{y_denominator}{A non-zero numeric as denominator of ratio.}
+
+\item{date}{A date vector or array.}
+
+\item{y_dependent}{A dependent variable.}
+
+\item{x_independent}{A independent variable.}
+
+\item{stock_db}{A stock database object to operate.}
+
+\item{indicator_code}{A character code of indicator.}
+
+\item{period}{A character period of rate, e.g. "day", "month", "quarter",
+"year". Default is "day"}
 }
 \description{
 Functions are only used in defining indicator expr.
 }
 \details{
 In order to facilitate defining indicator expr, there are two kinds of
- expr functions:
- \itemize{
-    \item \strong{expr_funs to define customized indicator}:
-      calling function to generate a result series, like
-       \code{Lag}, \code{GrowthRate}, \code{Ratio},
-       \code{Demean}, \code{Quarter_TTM}, \code{Beta}, etc.
-    \item \strong{expr_funs to define dynamic indicator}:
-      provide dynamic time series from database.
+expr functions:
+\itemize{
+\item \strong{expr_funs to define customized indicator}:
+calling function to generate a result series, like
+\code{Lag}, \code{GrowthRate}, \code{Ratio},
+\code{Demean}, \code{Quarter_TTM}, \code{Beta}, etc.
+\item \strong{expr_funs to define dynamic indicator}:
+\code{RiskFreeRate} provides dynamic time series from database.
 
- }
+}
 }
 \section{Functions}{
 \itemize{
-\item \code{Lag}: lag a sereis at k period.
+\item \code{Lag}: lag a series at k period.
 (k>0 lag behind, k<0 lag ahead)
 
-\item \code{GrowthRate}: compute growth rate of a sereis.
+\item \code{GrowthRate}: compute growth rate of a series.
 
-\item \code{Ratio}: compute ratio of two sereis.
+\item \code{Ratio}: compute ratio of two series.
 
 \item \code{Demean}: substract mean from a series.
 
 \item \code{Quarter_TTM}: make a quarterly TTM(Trial Twelve Month)
 series.
 
-\item \code{Beta}: compute beta between two varable series
+\item \code{Beta}: compute beta between two variable series
 
 \item \code{RiskFreeRate}: provide timeseries of dynamic indicator of
-risfree rate.
+riskfree rate.
 }}
 
 \note{
 In order to be different form normal R function, we use CamelCase
- stlye for functions name.
+style for functions name.
 }

@@ -8,14 +8,13 @@
 \alias{profile_get_datasource_files}
 \alias{profile_get_indicators}
 \alias{profile_get_customized_indicators}
-\title{Utils functions of profile}
+\title{Utility functions of profile}
 \usage{
 get_profile_path(profile_name, profile_dir = .PROFILE_DIR)
 
 profile_get_varible_setting(profile_path, variable)
 
-profile_get_factors(profile_path, factor_codes = NULL,
-  factor_groups = NULL)
+profile_get_factors(profile_path, factor_codes = NULL, factor_groups = NULL)
 
 profile_get_datasource_files(profile_path)
 
@@ -46,10 +45,10 @@ Default NULL means to fetch all indicators.}
 \value{
 \strong{get_profile_path}: A path of profile if succeed, otherwise "".
 
-\strong{others}: A dataframe of setting if succeed, othwise NULL.
+\strong{others}: A dataframe of setting if succeed, otherwise NULL.
 }
 \description{
-Utility functions to handle profile, which contains configration
+Utility functions to handle profile, which contains configuration
 information of stock database.
 }
 \section{Functions}{

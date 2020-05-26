@@ -233,7 +233,7 @@ test_that("modify_indicator", {
   expect_true(all(actual_fields %in% expect_fields))
   expect_true(all(ts_modify_indicator[attr_name] == attr_value1))
 
-  # replace exsited attribute
+  # replace existed attribute
   expect_warning(
     ts_modify_indicator <- modify_indicator(ts_modify_indicator,
                                             modify_fun = ind_attr_def_fun,

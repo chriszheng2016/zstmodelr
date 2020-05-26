@@ -7,17 +7,19 @@
 weight_formula(factors_weight, new_factor_name = "composite_factor")
 }
 \arguments{
-\item{factors_weight}{a list of factor weight with colums of factor_name and
+\item{factors_weight}{a list of factor weight with columns of factor_name and
 factor_weight.}
 
 \item{new_factor_name}{a name of composite factor, by default "composite_factor".}
 }
 \value{
-a formula of compoiste factor,
+\preformatted{       a formula of compoiste factor,
+}
+
 like \code{composite_factor ~ 0.33*PE + 0.33*PB + 0.33*PS}.
 }
 \description{
 Aggregating formula is built from weight of similar or correlated factors
-Composiste factor is built by aggregating formula coming from weight of
-similiary or correlated factors, which is deterimed by varous methods, such as ....
+Composite factor is built by aggregating formula coming from weight of
+similar or correlated factors, which is determined by various methods, such as ....
 }

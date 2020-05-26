@@ -9,16 +9,17 @@ clean_extremes_sigma(x, n_sigma = 3, extreme_value = c("limit", "NA"))
 \arguments{
 \item{x}{a vector of data.}
 
-\item{n_sigma}{numbers of sigma to identify extemes, by default 3.}
+\item{n_sigma}{numbers of sigma to identify extremes, by default 3.}
 
 \item{extreme_value}{value to replace extremes, i.e. "limit","NA",
 by default "limit".}
 }
 \value{
-a vector of data without extremes
+\preformatted{ a vector of data without extremes
+}
 }
 \description{
-Identify extremes in data vector by normal sigma method, and repalce extremes
+Identify extremes in data vector by normal sigma method, and replace extremes
 by NA or max/min limitation
 }
 \details{

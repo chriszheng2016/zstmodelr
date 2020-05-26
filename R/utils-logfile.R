@@ -1,4 +1,6 @@
-#' Utils functions of log file
+# Utility functions - logfile
+
+#' Utility functions of log file
 #'
 #' Utility functions to handle log file, which contains log info of operating
 #' in stock database.
@@ -27,7 +29,7 @@ save_log <- function(ds_log_info,
   assertive::assert_is_data.frame(ds_log_info)
   assertive::assert_is_character(log_file_prefix)
 
-  # make sure log dir exsit
+  # make sure log dir exist
   if (!is.null(log_dir)) {
     # create new log dir
     if (!file.exists(log_dir)) {
@@ -72,7 +74,7 @@ save_log <- function(ds_log_info,
 
 # Read log info from log file.
 #' @param log_file_name  A character name of log file to read.
-#' @return \strong{read_log}: A dataframe of log info if succeed, otherwsie NULL.
+#' @return \strong{read_log}: A dataframe of log info if succeed, otherwise NULL.
 #' @describeIn utils_logfile read log info from log file.
 #' @export
 read_log <- function(log_file_name,

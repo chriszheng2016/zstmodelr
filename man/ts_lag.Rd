@@ -4,31 +4,38 @@
 \alias{ts_lag}
 \alias{ts_lag.tbl_df}
 \alias{ts_lag.timeSeries}
-\title{Compute a lagged version of Timeseries}
+\title{Compute a lagged version of timeseries}
 \usage{
 ts_lag(ts_dataset, k = 1, trim = TRUE, ...)
 
-\method{ts_lag}{tbl_df}(ts_dataset, k = 1, trim = TRUE, ...,
-  date_index_field = c("date"), key_fields = NULL, parallel = TRUE)
+\method{ts_lag}{tbl_df}(
+  ts_dataset,
+  k = 1,
+  trim = TRUE,
+  ...,
+  date_index_field = c("date"),
+  key_fields = NULL,
+  parallel = TRUE
+)
 
 \method{ts_lag}{timeSeries}(ts_dataset, k = 1, trim = TRUE, ...)
 }
 \arguments{
-\item{ts_dataset}{a timeseries of tibble/timeSeries.}
+\item{ts_dataset}{a timeseries of tibble/timeseries.}
 
 \item{k}{an integer value. The number of lags (in units of observations).
 By default 1.
 \itemize{
-    \item k > 0: shfit forward, using earlier data as current data
-    \item k = 0: don't shift, keeping original data
-    \item k < 0: shift backward, using later data as current data
+\item k > 0: shift forward, using earlier data as current data
+\item k = 0: don't shift, keeping original data
+\item k < 0: shift backward, using later data as current data
 }
 see details for more info.}
 
 \item{trim}{A logical value. By default TRUE, the first missing observation in the return series
 will be removed.}
 
-\item{...}{Argments passed to other methods}
+\item{...}{Arguments passed to other methods}
 
 \item{date_index_field}{Name of date index field of ts_df for resample,
 default 'date', Column must be date-like.
@@ -37,11 +44,12 @@ Only be used for tibble dataset.}
 \item{key_fields}{A character vector of key fields, which identify unique
 observation in each date. Only be used for tibble dataset.}
 
-\item{parallel}{A logic to deterimine whether to use parallel processing.
+\item{parallel}{A logic to determine whether to use parallel processing.
 default TRUE means to use parallel processing.}
 }
 \value{
-A lagged timeseres
+\preformatted{       A lagged timeseres
+}
 }
 \description{
 Generic function to shift data of timeseries(except date) forward and backward according current
@@ -50,9 +58,9 @@ timeline
 \details{
 There are two types of lag operation:
 \itemize{
-   \item shift forward: mostly known as lag, i.e. move data to next k periods,
-which means we use ealier data as current data while keeping current timeline
-   \item shfit backward: mostly known as head, i.e. move previous k periods,
+\item shift forward: mostly known as lag, i.e. move data to next k periods,
+which means we use earlier data as current data while keeping current timeline
+\item shift backward: mostly known as head, i.e. move previous k periods,
 which means use later data as current data while keeping current timeline
 }
 }
@@ -60,6 +68,12 @@ which means use later data as current data while keeping current timeline
 \itemize{
 \item \code{tbl_df}: Compute a lagged version of timeseries for tibble dataset
 
-\item \code{timeSeries}: Compute a lagged version of timeseries for timeSeries dataset
+\item \code{timeSeries}: Compute a lagged version of timeSeries for timeSeries dataset
 }}
 
+\seealso{
+Other utils_timeseries: 
+\code{\link{ts_asfreq}()},
+\code{\link{ts_resample}()}
+}
+\concept{utils_timeseries}

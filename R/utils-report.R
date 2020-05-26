@@ -1,21 +1,23 @@
+# Utility functions - report
 
 #' Build report from template
 #'
 #' Use data rank as new data
 #'
 #'
-#' @param report_template a rmd file as report template.
-#' @param report_params   a list of report parmas, by default NULL.
-#' @param output_format   output file format i.e. "html_document","pdf",
+#' @param report_template A rmd file as report template.
+#' @param report_params   A list of report params, by default NULL.
+#' @param output_format   Output file format i.e. "html_document","pdf",
 #' by default "html_document".
 #' @param output_sn  NULL, serial number or id for output file.
-#' @param output_dir  dir to save output file, i.e. "output", if NULL,
-#' save in directory of template file, otherwise in outpout_dir
+#' @param output_dir  Dir to save output file, i.e. "output", if NULL,
+#' save in directory of template file, otherwise in output_dir.
 #' @param quiet TRUE to suppress printing of the pandoc command line.
+#' @param ... Arguments passed to rmarkdown::render.
 #'
 #' @family utils_report
 #'
-#' @return
+#' @return No return.
 #'
 #' @export
 build_report <- function(report_template ,

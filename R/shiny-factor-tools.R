@@ -1,4 +1,8 @@
-# Load factors UI
+#' Load factors UI
+#'
+#' @param id An ID string of the UI.
+#' @param factors_info  A data.frame of factors.
+#'
 #' @export
 loadFactorsUI <- function(id, factors_info) {
 
@@ -50,7 +54,12 @@ loadFactorsUI <- function(id, factors_info) {
   )
 }
 
-# Load factors Server Function
+#' Load factors Server Function
+#' @param input input from caller.
+#' @param output output to caller.
+#' @param session  Session from caller.
+#' @param factors_info  A data.frame of factors.
+#'
 #' @export
 loadFactors <- function(input, output, session, factors_info) {
 
@@ -154,7 +163,10 @@ loadFactors <- function(input, output, session, factors_info) {
   return(load_factors)
 }
 
-# Normalize factors UI
+#' Normalize factors UI
+#'
+#' @param id An ID string of the UI.
+#'
 #' @export
 normalizeFactorsUI <- function(id) {
   ns <- shiny::NS(id)
@@ -208,7 +220,13 @@ normalizeFactorsUI <- function(id) {
   )
 }
 
-# Normalize factors Server Function
+#' Normalize factors Server Function
+#'
+#' @param input input from caller.
+#' @param output output to caller.
+#' @param session  Session from caller.
+#' @param ds_factors  A data.frame of factors.
+#'
 #' @export
 normalizeFactors <- function(input, output, session, ds_factors) {
 

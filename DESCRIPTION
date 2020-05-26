@@ -1,35 +1,58 @@
-Package: zstmodelr
 Type: Package
-Title: zstmodelr - Stock factors Models for China Stock Market Investment
+Package: zstmodelr
+Title: Stock Factor Models for China Stock Market Investment
 Version: 0.0.0.9000
-Author: person("Chris", "Zheng", email = "chrisZheng@vip.sina.com.cn",
-                role = c("aut", "cre"))
-Maintainer: The package maintainer <chriszheng@vip.sina.com.cn>
-Description: An implementation of analystic tools of stock factors models for
-        investing China stock market.
-Depends: R (>= 3.4.2)
+Authors@R: 
+    person(given = "Chris",
+           family = "Zheng",
+           role = c("aut", "cre"),
+           email = "chriszheng@vip.sina.com.cn",
+           comment = c(ORCID = "CHRISZHENG'S-ORCID-ID"))
+Description: An implementation of analytical tools of stock factors models for 
+   investing China stock market.
 License: GPL (>= 2)
-Encoding: UTF-8
-LazyData: true
-Suggests: testthat,
-    knitr,
-    rmarkdown
-VignetteBuilder: knitr
-Imports: fPortfolio,
-    timeSeries,
-    PerformanceAnalytics,
-    plyr,
-    tidyverse,
-    tibbletime,
-    modelr,
+Depends: 
+    R (>= 3.4.2)
+Imports: 
+    assertive,
     broom,
     car,
-    assertive,
+    DBI,
+    doParallel,
+    dplyr,
+    DT,
+    lubridate,
+    magrittr,
+    methods,
+    odbc,
+    parallel,
+    PerformanceAnalytics,
+    plyr,
+    purrr,
+    readr,
+    readxl,
+    rlang,
     shiny,
     shinydashboard,
-    DBI,
-    odbc
-RoxygenNote: 6.1.1
+    stringr,
+    tibble,
+    tidyr,
+    timeDate,
+    timeSeries,
+    xts,
+    zoo
+Suggests: 
+    knitr,
+    rmarkdown,
+    testthat,
+    covr,
+    spelling
+VignetteBuilder: 
+    knitr
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.0
 Collate: 
     'stock-db.R'
     'code-name-list.R'
@@ -59,9 +82,13 @@ Collate:
     'utils-expr.R'
     'utils-fields.R'
     'utils-logfile.R'
+    'utils-pipe.R'
     'utils-profile.R'
     'utils-report.R'
     'utils-series.R'
     'utils-timeseries.R'
     'utils.R'
-    'zstmodelr.R'
+    'zstmodelr-package.R'
+URL: https://github.com/chriszheng2016/zstmodelr
+BugReports: https://github.com/chriszheng2016/zstmodelr/issues
+Language: en-US

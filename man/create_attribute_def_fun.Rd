@@ -20,15 +20,16 @@ otherwise NULL.
 \description{
 Create a definition function of new attribute for modifying indicator.
 The definition function is used by \code{\link{modify_indicator}} to compute
-attribute in modifing exsited indicator timesereis of stocks.
+attribute in modifying existed indicator timeseries of stocks.
 }
 \seealso{
-Other indicator define functions: \code{\link{create_indicator_def_fun}},
-  \code{\link{get_indicator_defs}},
-  \code{\link{get_indicator_vars}},
-  \code{\link{ind_attr_def_indcd}},
-  \code{\link{ind_attr_def_trdstat}},
-  \code{\link{parse_indicator_vars}},
-  \code{\link{prioritize_indicator_defs}}
+Other indicator define functions: 
+\code{\link{create_indicator_def_fun}()},
+\code{\link{get_indicator_defs}()},
+\code{\link{get_indicator_vars}()},
+\code{\link{ind_attr_def_indcd}()},
+\code{\link{ind_attr_def_trdstat}()},
+\code{\link{parse_indicator_vars}()},
+\code{\link{prioritize_indicator_defs}()}
 }
 \concept{indicator define functions}

@@ -2,8 +2,8 @@
 
 #' Build composite factor by aggregating related factors
 #'
-#' Composiste factor is built by aggregating formula coming from weight of
-#' similar or correlated factors, which is deterimed by varous methods, such as ....
+#' Composite factor is built by aggregating formula coming from weight of
+#' similar or correlated factors, which is determined by various methods, such as ....
 #'
 #' How to build composition
 #'
@@ -65,11 +65,11 @@ composite_factor <- function(ds_factors,
 #' Build aggregating formula of composite factor
 #'
 #' Aggregating formula is built from weight of similar or correlated factors
-#' Composiste factor is built by aggregating formula coming from weight of
-#' similiary or correlated factors, which is deterimed by varous methods, such as ....
+#' Composite factor is built by aggregating formula coming from weight of
+#' similar or correlated factors, which is determined by various methods, such as ....
 #'
 #'
-#' @param factors_weight  a list of factor weight with colums of factor_name and
+#' @param factors_weight  a list of factor weight with columns of factor_name and
 #' factor_weight.
 #' @param new_factor_name a name of composite factor, by default "composite_factor".
 #'
@@ -106,14 +106,14 @@ weight_formula <- function(factors_weight,
 
 #' Compute factors weight for compositing factor by equal-weight method
 #'
-#' Compute factors weight by giving each factor eqaul weight of
+#' Compute factors weight by giving each factor equal weight of
 #' \eqn{1/number of factors}. The result of factors weight could be used for
 #' \code{\link{weight_formula}} to build a formula of composite factor
 #'
 #' @param factors_list  a list of factors.
 #'
 #'
-#' @return      a list of factorS weight with colums of factor_name, factor_weight.
+#' @return      a list of factorS weight with columns of factor_name, factor_weight.
 #' @export
 factors_weight_equal <- function(factors_list) {
 

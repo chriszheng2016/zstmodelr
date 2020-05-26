@@ -1,4 +1,8 @@
 
+# Skip tests on cran due to consuming long time.
+# skip_on_cran()
+
+# Test tool functions ----
 # Build test dataset
 ds_test_timeseries <- function(from = "2015-01-01",
                                to = "2016-12-31",

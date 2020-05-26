@@ -1,6 +1,6 @@
-# Tests for utitlity functions of profile ----
+# Tests for utility functions of profile ----
 
-context("Tests for utitlity functions of profile")
+context("Tests for utility functions of profile")
 
 test_that("get_profile_path, with various arguments", {
 

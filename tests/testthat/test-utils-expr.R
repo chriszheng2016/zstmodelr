@@ -1,6 +1,6 @@
 # Tests for utility functions of expr ----
 
-context("Tests for utitlity functions of expr")
+context("Tests for utility functions of expr")
 
 test_that("create_expr, with various arguments", {
 

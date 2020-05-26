@@ -5,7 +5,7 @@ test_that("factors_zscore, with various arguments", {
   #Load test data
   ds_test_factors <- readRDS("./data/ds_test_factors.rds")
 
-  # compute zscore with default argments ====
+  # compute zscore with default arguments ====
   result_factors_zscore <- factors_zscore(ds_test_factors)
   # mean of z-score is 0
   actual_means <- result_factors_zscore %>%
@@ -78,12 +78,12 @@ test_that("factors_zscore, with various arguments", {
 
 })
 
-test_that("zscore_filter_stocks, with varous argments", {
+test_that("zscore_filter_stocks, with various arguments", {
 
   #Load test data
   ds_test_factors <- readRDS("./data/ds_test_factors.rds")
 
-  # filter stocks with default argments ====
+  # filter stocks with default arguments ====
 
   result_factors_zscore <- factors_zscore(ds_test_factors,
                                           aggregate_formula = GPM + ROCE + PE + PB + CUR + QR,
@@ -95,7 +95,7 @@ test_that("zscore_filter_stocks, with varous argments", {
   # top scores:  number=5, rank from 1 to 5
   actual_top_ranks <- top_score_stocks_list %>%
     dplyr::mutate(rank = rank(stk_score)) %>%
-    dplyr::summarise(max_rank = max(rank), min_rank = min(rank), n = n())
+    dplyr::summarise(max_rank = max(rank), min_rank = min(rank), n = dplyr::n())
   expect_equal(mean(actual_top_ranks$n), 5)
   expect_equal(mean(actual_top_ranks$max_rank), 5)
   expect_equal(mean(actual_top_ranks$min_rank), 1)

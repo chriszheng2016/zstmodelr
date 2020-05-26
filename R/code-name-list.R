@@ -44,8 +44,8 @@ code_name_list <- function(codes, names) {
 
 # Translate code into name in code_name_list
 # @describeIn code2name Translate code into name in a object of code_name_list
-#' @export
-code2name.code_name_list <- function(x, code) {
+# @export
+code2name.code_name_list <- function(x, code, ...) {
 
   stopifnot(inherits(x, "code_name_list") ,!is.null(code))
 
@@ -76,8 +76,8 @@ setMethod("code2name",
 
 # Translate name into code in code_name_list
 # @describeIn name2code Translate name into code in a object of code_name_list
-#' @export
-name2code.code_name_list <- function(x, name) {
+# @export
+name2code.code_name_list <- function(x, name, ...) {
 
   stopifnot(inherits(x, "code_name_list") ,!is.null(name), is.character(name))
 

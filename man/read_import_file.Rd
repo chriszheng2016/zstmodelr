@@ -4,14 +4,19 @@
 \alias{read_import_file}
 \title{Read a raw file for importing to stock db}
 \usage{
-read_import_file(input_file, input_type = c("csv", "txt"),
-  input_dir = NULL, start_index = 2L, ignore_problems = TRUE,
-  log_dir = "./log")
+read_import_file(
+  input_file,
+  input_type = c("csv", "txt"),
+  input_dir = NULL,
+  start_index = 2L,
+  ignore_problems = TRUE,
+  log_dir = "./log"
+)
 }
 \arguments{
 \item{input_file}{A name or a path of input data file.}
 
-\item{input_type}{A charater of input file format, e.g. "txt", "csv".}
+\item{input_type}{A character of input file format, e.g. "txt", "csv".}
 
 \item{input_dir}{A path of working dir of input file, if NULL, use dir of
 input file as working dir, default NULL.}
@@ -25,7 +30,7 @@ when covert data, if TRUE, continue to import data but log problems into
 log file, otherwise abort reading process.  By default TRUE.}
 
 \item{log_dir}{Path of log dir for saving problem log file,
-by default"./log", if the log path doesn't exsited, it  will be created.}
+by default"./log", if the log path doesn't existed, it  will be created.}
 }
 \value{
 A dataframe of raw data for importing if succeed, otherwise NULL.
@@ -34,11 +39,14 @@ A dataframe of raw data for importing if succeed, otherwise NULL.
 Read a raw file into a dataframe for processing or importing.
 }
 \seealso{
-Other data managment: \code{\link{clear_tables}},
-  \code{\link{convert_import_file}},
-  \code{\link{get_datasource}}, \code{\link{import_table}},
-  \code{\link{process_files}},
-  \code{\link{ttm_financial_report}},
-  \code{\link{update_db}}, \code{\link{write_import_file}}
+Other data management: 
+\code{\link{clear_tables}()},
+\code{\link{convert_import_file}()},
+\code{\link{get_datasource}()},
+\code{\link{import_table}()},
+\code{\link{process_files}()},
+\code{\link{ttm_financial_report}()},
+\code{\link{update_db}()},
+\code{\link{write_import_file}()}
 }
-\concept{data managment}
+\concept{data management}

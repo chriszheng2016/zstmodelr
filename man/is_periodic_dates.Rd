@@ -4,8 +4,11 @@
 \alias{is_periodic_dates}
 \title{Check date series is periodic or not}
 \usage{
-is_periodic_dates(dates_series, freq_rule = c("day", "month", "quarter",
-  "year"), regular = FALSE)
+is_periodic_dates(
+  dates_series,
+  freq_rule = c("day", "month", "quarter", "year"),
+  regular = FALSE
+)
 }
 \arguments{
 \item{dates_series}{A vector of dates/timestamps.}
@@ -14,8 +17,8 @@ is_periodic_dates(dates_series, freq_rule = c("day", "month", "quarter",
 "year", default "Day".}
 
 \item{regular}{Whether to test date series as a regular periodic series
-or not. Since irregular test is looser than regluar test, irregluar test
-on regluar series will always return true. Default is FALSE, which means we will
+or not. Since irregular test is looser than regular test, irregular test
+on regular series will always return true. Default is FALSE, which means we will
 use looser test(irregular).}
 }
 \value{
@@ -27,21 +30,22 @@ Check whether date series is regular/irregular periodic or not.
 \details{
 periodic dates includes two kinds:
 \itemize{
-   \item \strong{regular periodic series}:
-        a date/time vector is regular periodic, if the vector has not more
-    one date/time stamp on each date of peroid and dosen't miss any date of period.
-    For example, c("2018-01-01", "2018-02-01", "2018-03-01", "2018-04-01",
-    "2018-05-01", "2018-06-01") is a regular monthly periodic dates.
+\item \strong{regular periodic series}:
+a date/time vector is regular periodic, if the vector has not more
+one date/time stamp on each date of peroid and doesn't miss any date of period.
+For example, c("2018-01-01", "2018-02-01", "2018-03-01", "2018-04-01",
+"2018-05-01", "2018-06-01") is a regular monthly periodic dates.
 
-   \item \strong{irrgular periodic series}:
-       a date/time vector is regular periodic, if the vector has more one
-    date/time stamp on each date of peroid or miss some date of period.
-    For example, c("2018-01-01", "2018-02-01", "2018-04-01",
-    "2018-05-01", "2018-06-01") is is irregular monthly periodic dates,
-    which miss date of "2018-03-01" in dates of months
+\item \strong{irregular periodic series}:
+a date/time vector is regular periodic, if the vector has more one
+date/time stamp on each date of peroid or miss some date of period.
+For example, c("2018-01-01", "2018-02-01", "2018-04-01",
+"2018-05-01", "2018-06-01") is is irregular monthly periodic dates,
+which miss date of "2018-03-01" in dates of months
 }
 }
 \seealso{
-Other utils_dates: \code{\link{guess_dates_period}}
+Other utils_dates: 
+\code{\link{guess_dates_period}()}
 }
 \concept{utils_dates}

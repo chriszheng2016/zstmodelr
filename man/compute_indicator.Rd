@@ -4,8 +4,14 @@
 \alias{compute_indicator}
 \title{Compute indicator by customized function and variables timeseries}
 \usage{
-compute_indicator(ts_compute_vars, compute_fun, ...,
-  date_index_field = c("date"), key_fields = NULL, parallel = TRUE)
+compute_indicator(
+  ts_compute_vars,
+  compute_fun,
+  ...,
+  date_index_field = c("date"),
+  key_fields = NULL,
+  parallel = TRUE
+)
 }
 \arguments{
 \item{ts_compute_vars}{A dataframe of variable timeseries to compute.}
@@ -17,10 +23,10 @@ compute_indicator(ts_compute_vars, compute_fun, ...,
 \item{date_index_field}{Name of date index field of ts_vars, default 'date'.}
 
 \item{key_fields}{A character vector of key fields, which identify unique
-observation in each date. Default NULL means to not devide data into
+observation in each date. Default NULL means to not divide data into
 groups.}
 
-\item{parallel}{A logic to deterimine whether to use parallel processing.
+\item{parallel}{A logic to determine whether to use parallel processing.
 Default TRUE means to use parallel processing.}
 }
 \value{
@@ -32,7 +38,8 @@ Its is a working horse behind \code{\link{create_indicator}},
 \code{\link{modify_indicator}}.
 }
 \seealso{
-Other indicator build functions: \code{\link{create_indicator}},
-  \code{\link{modify_indicator}}
+Other indicator build functions: 
+\code{\link{create_indicator}()},
+\code{\link{modify_indicator}()}
 }
 \concept{indicator build functions}
