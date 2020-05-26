@@ -5,7 +5,7 @@ test_that("factors_zscore, with various arguments", {
   #Load test data
   ds_test_factors <- readRDS("./data/ds_test_factors.rds")
 
-  # compute zscore with default argments ====
+  # compute zscore with default arguments ====
   result_factors_zscore <- factors_zscore(ds_test_factors)
   # mean of z-score is 0
   actual_means <- result_factors_zscore %>%
@@ -78,12 +78,12 @@ test_that("factors_zscore, with various arguments", {
 
 })
 
-test_that("zscore_filter_stocks, with varous argments", {
+test_that("zscore_filter_stocks, with various arguments", {
 
   #Load test data
   ds_test_factors <- readRDS("./data/ds_test_factors.rds")
 
-  # filter stocks with default argments ====
+  # filter stocks with default arguments ====
 
   result_factors_zscore <- factors_zscore(ds_test_factors,
                                           aggregate_formula = GPM + ROCE + PE + PB + CUR + QR,

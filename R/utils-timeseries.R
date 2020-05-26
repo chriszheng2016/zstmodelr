@@ -3,18 +3,19 @@
 
 # Generic functions for timeseries operation------------------------------------
 
-#' Frequency Conversion Function of Resamping Timeseries
+#' Frequency Conversion Function of Resamping timeseries
 #'
-#' Generic function to convert timeseries to specified frequency by resamploing date index
+#' Generic function to convert timeseries to specified frequency by resampling
+#' date index
 #'
 #' Convert timeseries to specified frequency by resampling date index.
-#' Optionally provide filling method to pad/backfill missing values.
-#' Return aggregating data conformed to a new index with the specified frequency.
+#' Optionally provide filling method to pad/backfill missing values. Return
+#' aggregating data conformed to a new index with the specified frequency.
 #'
 #' resample is more appropriate if an operation, such as summarization, is
 #' necessary to represent the data at the new frequency.
 #'
-#' @param ts_dataset A timeseries of tibble or timeSeries.
+#' @param ts_dataset A timeseries of tibble or timeseries.
 #'
 #' @param freq_rule  The offset string or object representing target conversion,
 #'  e.g. "day", "month", "quarter", "year", default "Day".
@@ -22,7 +23,7 @@
 #'  "nfill", "bfill","ffill", default nafill(fill NA)
 #' @param agg_fun    Function to aggregate values of group data for new timestamp,
 #'  default setting is mean
-#' @param ...        Argments passed to agg_fun
+#' @param ...        Arguments passed to agg_fun
 #'
 #' @family utils_timeseries
 #'
@@ -49,7 +50,7 @@ ts_resample <- function(ts_dataset, freq_rule = c("day", "month", "quarter", "ye
 
 
 
-#' Frequency Conversion Function of Setting Frequncey of Timeseries
+#' Frequency Conversion Function of Setting Frequency of timeseries
 #'
 #' Generic function tp convert timeseries at specified frequency by setting new frequency of data index
 #'
@@ -59,7 +60,7 @@ ts_resample <- function(ts_dataset, freq_rule = c("day", "month", "quarter", "ye
 #'
 #' ts_asfreq is more appropriate if use original the data at the new frequency.
 #'
-#' @param ts_dataset   A timeseries of tibble/timeSeries.#
+#' @param ts_dataset   A timeseries of tibble/timeseries.#
 #' @param freq_rule    The offset string or object representing target conversion,
 #'  e.g. "day", "month", "quarter", "year", default "day".
 #' @param fillna_method  Method to fill holes in reindexed Series, e.g.
@@ -79,7 +80,7 @@ ts_asfreq <- function(ts_dataset,
   UseMethod("ts_asfreq")
 }
 
-#' Compute a lagged version of Timeseries
+#' Compute a lagged version of timeseries
 #'
 #' Generic function to shift data of timeseries(except date) forward and backward according current
 #' timeline
@@ -88,17 +89,17 @@ ts_asfreq <- function(ts_dataset,
 #' There are two types of lag operation:
 #' \itemize{
 #'    \item shift forward: mostly known as lag, i.e. move data to next k periods,
-#' which means we use ealier data as current data while keeping current timeline
-#'    \item shfit backward: mostly known as head, i.e. move previous k periods,
+#' which means we use earlier data as current data while keeping current timeline
+#'    \item shift backward: mostly known as head, i.e. move previous k periods,
 #' which means use later data as current data while keeping current timeline
 #' }
 #'
 #'
-#' @param ts_dataset       a timeseries of tibble/timeSeries.
+#' @param ts_dataset       a timeseries of tibble/timeseries.
 #' @param k                an integer value. The number of lags (in units of observations).
 #' By default 1.
 #' \itemize{
-#'     \item k > 0: shfit forward, using earlier data as current data
+#'     \item k > 0: shift forward, using earlier data as current data
 #'     \item k = 0: don't shift, keeping original data
 #'     \item k < 0: shift backward, using later data as current data
 #' }
@@ -106,7 +107,7 @@ ts_asfreq <- function(ts_dataset,
 #'
 #' @param trim             A logical value. By default TRUE, the first missing observation in the return series
 #' will be removed.
-#' @param ...              Argments passed to other methods
+#' @param ...              Arguments passed to other methods
 #' @param date_index_field Name of date index field of ts_df for resample,
 #' default 'date', Column must be date-like.
 #' Only be used for tibble dataset.
@@ -136,7 +137,7 @@ ts_lag <- function(ts_dataset,
 #'  Only be used for tibble dataset.
 #' @param key_fields    A character vector of key fields, which identify unique
 #'  observation in each date. Only be used for tibble dataset.
-#' @param parallel   A logic to deterimine whether to use parallel processing.
+#' @param parallel   A logic to determine whether to use parallel processing.
 #'  Only be used for tibble dataset.
 #' @describeIn ts_resample Resamping timeseries of tibble dataset
 #' @export
@@ -188,7 +189,7 @@ ts_resample.tbl_df <- function(ts_dataset,
     }
 
 
-    # use new date_index to reindex timesereis
+    # use new date_index to reindex timeseries
     if (need_refreq && success) {
       if (length(unique(origin_date_index)) <= length(unique(new_date_index))) {
         # upsampling with Interpolation : from low frequency to high frequency
@@ -245,7 +246,7 @@ ts_resample.tbl_df <- function(ts_dataset,
         .progress = plyr::progress_win(title = "Resampling...")
       )
     },
-    # supress warnings due to parallel process
+    # suppress warnings due to parallel process
     warn_pattern = "<anonymous>: ...")
   }
 
@@ -266,7 +267,7 @@ ts_resample.tbl_df <- function(ts_dataset,
 #'  default 'date', Column must be date-like. Only be used for tibble dataset.
 #' @param key_fields    A character vector of key fields, which identify unique
 #'  observation in each date. Only be used for tibble dataset.
-#' @param parallel   A logic to deterimine whether to use parallel processing.
+#' @param parallel   A logic to determine whether to use parallel processing.
 #'  Only be used for tibble dataset.
 #' @describeIn ts_asfreq Set new frequency for timeseries of tibble dataset
 #' @export
@@ -313,7 +314,7 @@ ts_asfreq.tbl_df <- function(ts_dataset,
     }
 
 
-    # use new date_index to reindex timesereis
+    # use new date_index to reindex timeseries
     if (need_refreq && success) {
       new_timeseries <- reindex_by_replace.tbl_df(ts_df,
         new_date_index = new_date_index,
@@ -355,7 +356,7 @@ ts_asfreq.tbl_df <- function(ts_dataset,
         .progress = plyr::progress_win(title = "Refreqencing...")
       )
     },
-    # supress warnings due to parallel process
+    # suppress warnings due to parallel process
     warn_pattern = "<anonymous>: ...")
 
   }
@@ -366,7 +367,7 @@ ts_asfreq.tbl_df <- function(ts_dataset,
 }
 
 # Compute a lagged version of timeseries for tibble
-#' @param parallel   A logic to deterimine whether to use parallel processing.
+#' @param parallel   A logic to determine whether to use parallel processing.
 #'   default TRUE means to use parallel processing.
 #'
 #' @describeIn ts_lag  Compute a lagged version of timeseries for tibble dataset
@@ -475,7 +476,7 @@ ts_lag.tbl_df <- function(ts_dataset,
         .progress = plyr::progress_win(title = "Lagging...")
       )
     },
-    # supress warnings due to parallel process
+    # suppress warnings due to parallel process
     warn_pattern = "<anonymous>: ...")
 
   }
@@ -492,8 +493,8 @@ ts_lag.tbl_df <- function(ts_dataset,
 # Generic function implemetaion by timeSeries class -------------------------
 
 
-# Convert timeseries to specified frequency by resampling for timeSeries dataset
-#' @describeIn ts_resample Resamping timeseries of timeSeries dataset
+# Convert timeSeries to specified frequency by resampling for timeSeries dataset
+#' @describeIn ts_resample Resamping timeSeries of timeSeries dataset
 #' @export
 ts_resample.timeSeries <- function(ts_dataset,
                                    freq_rule = c("day", "month", "quarter"),
@@ -526,7 +527,7 @@ ts_resample.timeSeries <- function(ts_dataset,
     }
   }
 
-  # use new date_index to reindex timesereis
+  # use new date_index to reindex timeseries
   if (need_refreq && success) {
     if (length(unique(origin_date_index)) <= length(unique(new_date_index))) {
       # upsampling with Interpolation : from low frequency to high frequency
@@ -546,8 +547,8 @@ ts_resample.timeSeries <- function(ts_dataset,
   return(new_timeseries)
 }
 
-# Convert timeseries to specified frequency by refrequencying for timeSeries dataset
-#' @describeIn ts_asfreq Set new frequency for timeseries of timeSeries dataset
+# Convert timeSeries to specified frequency by refrequencying for timeSeries dataset
+#' @describeIn ts_asfreq Set new frequency for timeSeries of timeSeries dataset
 #' @export
 ts_asfreq.timeSeries <- function(ts_dataset,
                                  freq_rule = c("day", "month", "quarter"),
@@ -579,7 +580,7 @@ ts_asfreq.timeSeries <- function(ts_dataset,
     }
   }
 
-  # use new date_index to reindex timesereis
+  # use new date_index to reindex timeseries
   if (need_refreq && success) {
     new_timeseries <- reindex_by_replace.timeSeries(ts_dataset,
       new_date_index = new_date_index,
@@ -591,8 +592,8 @@ ts_asfreq.timeSeries <- function(ts_dataset,
 }
 
 
-# Compute a lagged version of timeseries for timeSeries
-#' @describeIn ts_lag  Compute a lagged version of timeseries for timeSeries dataset
+# Compute a lagged version of timeSeries for timeSeries
+#' @describeIn ts_lag  Compute a lagged version of timeSeries for timeSeries dataset
 #' @export
 ts_lag.timeSeries <- function(ts_dataset,
                               k = 1,
@@ -612,7 +613,7 @@ ts_lag.timeSeries <- function(ts_dataset,
 
   # compute lag timeseries
   if (abs(k) < nrow(ts_dataset)) {
-    # use normal lag operation of timeSeries
+    # use normal lag operation of timeseries
     lag_ts <- timeSeries::lag(ts_dataset, k = k, trim = trim, ...)
   } else {
     # when abs(k) is larger than length of ts, produce result according trim
@@ -621,7 +622,7 @@ ts_lag.timeSeries <- function(ts_dataset,
       lag_ts <- ts_dataset
       lag_ts[, ] <- NA
     } else {
-      # return a null timeSeries because all data are NA
+      # return a null timeseries because all data are NA
       lag_ts <- ts_dataset[0, ]
     }
   }
@@ -633,7 +634,7 @@ ts_lag.timeSeries <- function(ts_dataset,
 
 # Internal tools functions --------------------------------
 
-# Reindex the timesereis by replacing with new date_index for tibble dataset
+# Reindex the timeseries by replacing with new date_index for tibble dataset
 reindex_by_replace.tbl_df <- function(ts_df,
                                       date_index_field = c("date"),
                                       new_date_index,
@@ -670,7 +671,7 @@ reindex_by_replace.tbl_df <- function(ts_df,
   return(ts_result)
 }
 
-# Reindex the timesereis by gouping into new date_index for tibble dataset
+# Reindex the timeseries by gouping into new date_index for tibble dataset
 reindex_by_regroup.tbl_df <- function(ts_df,
                                       date_index_field = c("date"),
                                       new_date_index,
@@ -711,47 +712,47 @@ reindex_by_regroup.tbl_df <- function(ts_df,
   return(ts_result)
 }
 
-# Reindex the timesereis by replacing with new date_index for timeSeries dataset
-reindex_by_replace.timeSeries <- function(ts_timeSeries,
+# Reindex the timeseries by replacing with new date_index for timeSeries dataset
+reindex_by_replace.timeSeries <- function(ts_timeseries,
                                           new_date_index,
                                           fillna_method = c("nfill", "ffill", "bfill")) {
 
   # validate params
-  stopifnot(!is.null(ts_timeSeries), inherits(ts_timeSeries, "timeSeries"))
+  stopifnot(!is.null(ts_timeseries), inherits(ts_timeseries, "timeSeries"))
   stopifnot(!is.null(new_date_index), lubridate::is.Date(new_date_index))
 
   # Expand timeseries into daily series
   fillna_method <- match.arg(fillna_method)
-  timeSeries_method <- switch(fillna_method,
+  timeseries_method <- switch(fillna_method,
     nfill = "fillNA",
     ffill = "before",
     bfill = "after"
   )
-  ts_align_daily <- timeSeries::alignDailySeries(ts_timeSeries,
-    method = timeSeries_method,
+  ts_align_daily <- timeSeries::alignDailySeries(ts_timeseries,
+    method = timeseries_method,
     include.weekends = TRUE
   )
 
-  # filter daily sereis according new_date_index
+  # filter daily series according new_date_index
   filter_index <- (lubridate::as_date(timeSeries::time(ts_align_daily))) %in% new_date_index
   ts_result <- ts_align_daily[filter_index, ]
 
   return(ts_result)
 }
 
-# Reindex the timesereis by gouping into new date_index for timeSeries dataset
-reindex_by_regroup.timeSeries <- function(ts_timeSeries,
+# Reindex the timeseries by gouping into new date_index for timeSeries dataset
+reindex_by_regroup.timeSeries <- function(ts_timeseries,
                                           new_date_index,
                                           agg_fun = mean,
                                           ...) {
   # validate params
-  stopifnot(!is.null(ts_timeSeries), inherits(ts_timeSeries, "timeSeries"))
+  stopifnot(!is.null(ts_timeseries), inherits(ts_timeseries, "timeSeries"))
   stopifnot(!is.null(new_date_index), lubridate::is.Date(new_date_index))
   stopifnot(!is.null(agg_fun))
 
 
-  # Aggregate time sereis according new_date_index
-  ts_result <- timeSeries::aggregate(ts_timeSeries,
+  # Aggregate time series according new_date_index
+  ts_result <- timeSeries::aggregate(ts_timeseries,
     by = timeDate::as.timeDate(new_date_index),
     FUN = agg_fun, ...
   )
@@ -807,7 +808,7 @@ need_refreq_dateindex <- function(date_index,
   return(need_refreq)
 }
 
-# Set new frequncey of date-like index
+# Set new Frequency of date-like index
 refreq_dateindex <- function(date_index,
                              freq_rule = c("day", "month", "quarter", "year")) {
 

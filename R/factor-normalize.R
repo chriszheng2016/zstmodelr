@@ -1,14 +1,14 @@
 
 #' Normalize the factors dataset
 #'
-#' Normalze factors dataset by cleaning extremes and standardation.
+#' Normalize factors dataset by cleaning extremes and standardization.
 #'
 #'
 #' @param ds_factors  A factors dataset.
-#' @param factors_list A character vecter of factors.
+#' @param factors_list A character vector of factors.
 #' @param group_by  A character vector of fields as group data for scaling, NULL
-#' is default value which means no group settting.
-#' @param clean_extremes_method Method of cleaning extremes befre standardization
+#' is default value which means no group setting.
+#' @param clean_extremes_method Method of cleaning extremes before standardization
 #' , i.e. "sigma","mad", by default "sigma".
 #' see details: \code{\link{clean_extremes_sigma}}, \code{\link{clean_extremes_mad}}
 #' @param standard_method  method of standardizing data, i.e. "normal","rank",
@@ -82,7 +82,7 @@ normalize_factors <- function(ds_factors,
 #'
 #'
 #' @param x  a vector of data.
-#' @param clean_extremes_method method of cleaning extremes befre standardization
+#' @param clean_extremes_method method of cleaning extremes before standardization
 #' , i.e. "sigma","mad", by default "sigma".
 #' see details: \code{\link{clean_extremes_sigma}}, \code{\link{clean_extremes_mad}}
 #' @param standard_method  method of standardizing data, i.e. "normal","rank",
@@ -132,7 +132,7 @@ normalize <- function(x, clean_extremes_method = c("sigma","mad"),
 
 #' Clean extremes by normal sigma method
 #'
-#' Identify extremes in data vector by normal sigma method, and repalce extremes
+#' Identify extremes in data vector by normal sigma method, and replace extremes
 #' by NA or max/min limitation
 #'
 #' Basing on assumption of data as normal distribution, i.e., \eqn{X~N(\mu,\sigma^2)}
@@ -145,7 +145,7 @@ normalize <- function(x, clean_extremes_method = c("sigma","mad"),
 #'
 #'
 #' @param x  a vector of data.
-#' @param n_sigma numbers of sigma to identify extemes, by default 3.
+#' @param n_sigma numbers of sigma to identify extremes, by default 3.
 #' @param extreme_value  value to replace extremes, i.e. "limit","NA",
 #' by default "limit".
 #'
@@ -185,11 +185,11 @@ clean_extremes_sigma <- function(x, n_sigma = 3, extreme_value = c("limit","NA")
 
 #' Clean extremes by MAD method
 #'
-#' Identify extremes in data vector by MAD method, and repalce extremes
+#' Identify extremes in data vector by MAD method, and replace extremes
 #' by NA or max/min limitation
 #'
 #' @param x  a vector of data.
-#' @param n_dmad numbers of dmad to identify extemes, by default 3.
+#' @param n_dmad numbers of dmad to identify extremes, by default 3.
 #' @param extreme_value  value to replace extremes, i.e. "limit","NA",
 #' by default "limit".
 #'

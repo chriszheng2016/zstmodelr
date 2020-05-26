@@ -1,9 +1,9 @@
 # Utility functions - general tools
 
-#' Supress specific warnings
+#' Suppress specific warnings
 #'
 #' Unlike [base::suppressWarnings()] which suppresses all warnings, it can
-#' supress some specific warnings and output remain warnings.
+#' suppress some specific warnings and output remain warnings.
 #'
 #' @param expr A expression to evaluate.
 #' @param warn_pattern A character pattern as a regular expression. Default NA

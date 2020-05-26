@@ -24,10 +24,10 @@ test_that("build_indicator_defs.gta_db", {
   gta_profile_name <- get_profile(stock_db)
 
   # get info of customized indicators from profile
-  customized_indictors_info <- profile_get_customized_indicators(gta_profile_name)
+  customized_indicators_info <- profile_get_customized_indicators(gta_profile_name)
 
   # build_indicator_defs.gta_db with default arguments ====
-  indicator_defs <- build_indicator_defs.gta_db(stock_db, customized_indictors_info)
+  indicator_defs <- build_indicator_defs.gta_db(stock_db, customized_indicators_info)
 
   expect_fields <- c("ind_code", "ind_type", "ind_name", "ind_category",
                      "ind_source", "ind_description", "ind_formula",

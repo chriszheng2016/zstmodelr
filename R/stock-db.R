@@ -182,7 +182,7 @@ setGeneric(
 )
 
 
-#' List all tables of stcok_db
+#' List all tables of stock_db
 #'
 #' Generic function to list all tables of stock_db.
 #'
@@ -217,7 +217,7 @@ setGeneric(
   }
 )
 
-#' Get adataset from a table in stock_db
+#' Get dataset from a table in stock_db
 #'
 #' Generic function to get one dataset from stock_db.
 #'
@@ -360,7 +360,7 @@ setGeneric(
   }
 )
 
-#' Get market return timesereis from stock_db
+#' Get market return timeseries from stock_db
 #'
 #' Generic function to get stock return timeseries from stock_db.
 #'
@@ -401,21 +401,21 @@ setGeneric(
   }
 )
 
-#' Get financial report timesereis from stock_db
+#' Get financial report timeseries from stock_db
 #'
-#' Generic function to get financial report timesereis from stock_db.
+#' Generic function to get financial report timeseries from stock_db.
 #'
 #' @param stock_db    A stock database object to operate.
 #'
 #' @param stock_cd_list A character vector of stock cd, default value of NULL means.
 #'     all stock data will be returned.
 #'
-#' @param statement   A string of statement type, i.e. "blance_sheet",
-#' "income", "cashflow_direct","cashflow_indrect",
-#' "income_ttm", "cashflow_direct_ttm", "cashflow_indrect_ttm".
+#' @param statement   A string of statement type, i.e. "balance_sheet",
+#' "income", "cashflow_direct","cashflow_indirect",
+#' "income_ttm", "cashflow_direct_ttm", "cashflow_indirect_ttm".
 #'
-#' @param consolidated A logic inidcate report is consolidated or not.
-#'   Default TRUE means consolidated report, FALSE means parenet company
+#' @param consolidated A logic indicate report is consolidated or not.
+#'   Default TRUE means consolidated report, FALSE means parent company
 #'   report.
 #'
 #' @param period_type Date period for time series, e.g. "quarter",
@@ -432,44 +432,44 @@ setGeneric(
 
 
 # S3 generic definition
-# get_finacial_report <- function(stock_db,
+# get_financial_report <- function(stock_db,
 #                               stock_cd_list = NULL,
 #                               statement = c(
-#                                 "blance_sheet",
+#                                 "balance_sheet",
 #                                 "income",
 #                                 "cashflow_direct",
-#                                 "cashflow_indrect",
+#                                 "cashflow_indirect",
 #                                 "income_ttm",
 #                                 "cashflow_direct_ttm",
-#                                 "cashflow_indrect_ttm"
+#                                 "cashflow_indirect_ttm"
 #                               ),
 #                               consolidated = TRUE,
 #                               period_type = c("quarter", "year"),
 #                               period_date = c("end","start"),
 #                               ...) {
-#   UseMethod("get_finacial_report")
+#   UseMethod("get_financial_report")
 # }
 
 # S4 generic definition
 setGeneric(
-  name = "get_finacial_report",
+  name = "get_financial_report",
   signature = c("stock_db"),
-  def = get_finacial_report <- function(stock_db,
+  def = get_financial_report <- function(stock_db,
                                         stock_cd_list = NULL,
                                         statement = c(
-                                          "blance_sheet",
+                                          "balance_sheet",
                                           "income",
                                           "cashflow_direct",
-                                          "cashflow_indrect",
+                                          "cashflow_indirect",
                                           "income_ttm",
                                           "cashflow_direct_ttm",
-                                          "cashflow_indrect_ttm"
+                                          "cashflow_indirect_ttm"
                                         ),
                                         consolidated = TRUE,
                                         period_type = c("quarter", "year"),
                                         period_date = c("end", "start"),
                                         ...) {
-    standardGeneric("get_finacial_report")
+    standardGeneric("get_financial_report")
   }
 )
 
@@ -482,7 +482,7 @@ setGeneric(
 #' @param indicator_source    A name of table or file(with extension)
 #'  in which indicators are stored. For file, formats of rds,csv are supported.
 #'
-#' @param indicator_codes      A vector of inicator code. Default NULL return
+#' @param indicator_codes      A vector of indicator code. Default NULL return
 #'  all indicators in the source.
 #' @param ouput_format        Output format for data frame, i.e "long" and "wide":
 #'   \itemize{
@@ -748,14 +748,14 @@ setGeneric(
 #'       \item DIR_DB_DATA_INDICATOR: dir of customized indicators.
 #'       }
 #'
-#' @param force            Whether return result if dir dosen't existed.
+#' @param force            Whether return result if dir doesn't existed.
 #'  Default TRUE, return result if dir doesn't exist.
 #' @param ... Extra arguments to be passed to methods.
 #'
 #' @family stock_db generics
 #'
 #' @return A full path of dir if succeed, otherwise NULL.
-#'  If the path of dir dosen't exist and force = FALSE, it will raise a error.
+#'  If the path of dir doesn't exist and force = FALSE, it will raise a error.
 #' @export
 #'
 
@@ -789,7 +789,7 @@ setGeneric(
 
 #' Get assets return from market and stocks return
 #'
-#' Get assets return timeseries by combining marekt return anad stocks return
+#' Get assets return timeseries by combining market return and stocks return
 #'
 #' @param benchmark_return   A timeseries of market index
 #' @param stocks_return      A timeseries of a group stock stocks
@@ -867,7 +867,7 @@ get_stock_field_dataset <- function(ds_source.df,
       }
     }
 
-    error_msg <- sprintf("%s dosen't exist in dataset ", error_fields)
+    error_msg <- sprintf("%s doesn't exist in dataset ", error_fields)
     stop(error_msg)
   }
 
@@ -989,8 +989,8 @@ fetch_stock_field_dataset <- function(ds_source.df,
 #'
 #' Generic function to translate code into name
 #'
-#' @param x    A object containg code/name infomation
-#' @param code A code or a vector of codes to be translated
+#' @param x    A object containing code/name information.
+#' @param code A code or a vector of codes to be translated.
 #' @param ... Extra arguments to be passed to methods.
 #'
 #' @family stock_db generics
@@ -1019,7 +1019,7 @@ setGeneric(
 #'
 #' Generic function to translate name into code
 #'
-#' @param x     A object containg code/name infomation.
+#' @param x     A object containing code/name information.
 #' @param name  A name or a vector of names to be translated.
 #' @param ... Extra arguments to be passed to methods.
 #'

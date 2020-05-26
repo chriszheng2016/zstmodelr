@@ -2,7 +2,7 @@
 
 #' Utility functions of profile
 #'
-#' Utility functions to handle profile, which contains configration
+#' Utility functions to handle profile, which contains configuration
 #' information of stock database.
 #'
 #'
@@ -40,7 +40,7 @@ get_profile_path <- function(profile_name, profile_dir = .PROFILE_DIR ) {
 # Get table name value from profile of database
 #' @param profile_path path of profile to get data from.
 #' @param variable A character of name of variable to get.
-#' @return \strong{others}: A dataframe of setting if succeed, othwise NULL.
+#' @return \strong{others}: A dataframe of setting if succeed, otherwise NULL.
 #' @describeIn utils_profile  get table name value from profile of database.
 #' @export
 profile_get_varible_setting <- function(profile_path, variable) {
@@ -116,7 +116,7 @@ profile_get_factors <- function(profile_path, factor_codes = NULL,
     indicator_is_na <- is.na(matched_factors$indicator_code)
     if (any(indicator_is_na)) {
       msg <- sprintf(
-        "factor(%s) didn't have vaild indicaotr_code, please check!!",
+        "factor(%s) didn't have vaild indicator_code, please check!!",
         matched_factors$factor_code[indicator_is_na]
       )
       stop(msg)

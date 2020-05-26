@@ -241,10 +241,10 @@ test_that("get_market_return, with various arguments", {
 })
 
 
-test_that("get_finacial_report, with various arguments", {
+test_that("get_financial_report, with various arguments", {
 
-  # get_finacial_report with default arguments ====
-  ts_report <- get_finacial_report(stock_db)
+  # get_financial_report with default arguments ====
+  ts_report <- get_financial_report(stock_db)
   expect_is(ts_report, "data.frame")
   expect_true(all(c("date",  "stkcd") %in% names(ts_report)))
   expect_true(lubridate::is.Date(ts_report$date))
@@ -254,24 +254,24 @@ test_that("get_finacial_report, with various arguments", {
 
   stock_cd_list <- c("600031", "600066")
 
-  # get_finacial_report with arguments: statement ====
+  # get_financial_report with arguments: statement ====
   ds_test_statement <- tibble::tribble(
     ~statement,      ~field_pattern,
     #-------------/------------------/
-    "blance_sheet",         "^a",
+    "balance_sheet",         "^a",
     "income",               "^b",
     "cashflow_direct",      "^c",
-    "cashflow_indrect",     "^d",
+    "cashflow_indirect",     "^d",
     "income_ttm",           "^b\\w*_ttm$",
     "cashflow_direct_ttm",  "^c\\w*_ttm$",
-    "cashflow_indrect_ttm", "^d\\w*_ttm$"
+    "cashflow_indirect_ttm", "^d\\w*_ttm$"
   )
 
   for ( i in seq_len(NROW(ds_test_statement))) {
     statement <- ds_test_statement$statement[i]
     pattern <- ds_test_statement$field_pattern[i]
 
-    ts_report <- get_finacial_report(stock_db,
+    ts_report <- get_financial_report(stock_db,
                                      stock_cd_list = stock_cd_list,
                                      statement = statement,
                                      period_type = "quarter",
@@ -283,11 +283,11 @@ test_that("get_finacial_report, with various arguments", {
     expect_true(any(stringr::str_detect(names(ts_report), pattern = pattern)))
   }
 
-  # get_finacial_report with arguments: consolidated ====
+  # get_financial_report with arguments: consolidated ====
   consolidated = TRUE
 
-  # get_finacial_report with arguments: period_type ====
-  ts_report <- get_finacial_report(stock_db,
+  # get_financial_report with arguments: period_type ====
+  ts_report <- get_financial_report(stock_db,
                                   stock_cd_list = stock_cd_list,
                                   period_type = "quarter")
   expect_is(ts_report, "data.frame")
@@ -296,7 +296,7 @@ test_that("get_finacial_report, with various arguments", {
   expect_true(is.character(ts_report$stkcd))
   expect_true(all(lubridate::month(ts_report$date) %in% c(3, 6, 9, 12)))
 
-  ts_report <- get_finacial_report(stock_db,
+  ts_report <- get_financial_report(stock_db,
                                    stock_cd_list = stock_cd_list,
                                    period_type = "year")
   expect_is(ts_report, "data.frame")
@@ -306,8 +306,8 @@ test_that("get_finacial_report, with various arguments", {
   expect_true(all(lubridate::month(ts_report$date) %in% c(12)))
 
 
-  # get_finacial_report with arguments: period_date ====
-  ts_report <- get_finacial_report(stock_db,
+  # get_financial_report with arguments: period_date ====
+  ts_report <- get_financial_report(stock_db,
                                    stock_cd_list = stock_cd_list,
                                    period_date = "start")
   expect_is(ts_report, "data.frame")
@@ -316,7 +316,7 @@ test_that("get_finacial_report, with various arguments", {
   expect_true(is.character(ts_report$stkcd))
   expect_true(all(lubridate::day(ts_report$date) %in% c(1)))
 
-  ts_report <- get_finacial_report(stock_db,
+  ts_report <- get_financial_report(stock_db,
                                    stock_cd_list = stock_cd_list,
                                    period_date = "end")
   expect_is(ts_report, "data.frame")

@@ -2,7 +2,7 @@
 # CONSTANT DEFINATION -----------------------------------------------------
 
 # profile variable defination
-# Since R devtools dosen't suport loading Chinese charaters in script file, we
+# Since R devtools doesn't suport loading Chinese characters in script file, we
 # have to use reference name of varible in profile for refering Chinese table
 # name in DB
 .GTA_PROFILE_FILE <- "gta_profile.xlsx"
@@ -765,7 +765,7 @@ setMethod(
   }
 )
 
-# Get market return timesereis from stock_db
+# Get market return timeseries from stock_db
 # Method definition for s3 generic
 # @describeIn get_market_return get market return timeseries from a database of gta_db class
 # @export
@@ -899,20 +899,20 @@ setMethod(
 )
 
 
-# Get financial report timesereis from stock_db
+# Get financial report timeseries from stock_db
 # Method definition for s3 generic
-# @describeIn get_finacial_report get financial report timeseries from a database of gta_db class
+# @describeIn get_financial_report get financial report timeseries from a database of gta_db class
 # @export
-get_finacial_report.gta_db <- function(stock_db,
+get_financial_report.gta_db <- function(stock_db,
                                        stock_cd_list = NULL,
                                        statement = c(
-                                         "blance_sheet",
+                                         "balance_sheet",
                                          "income",
                                          "cashflow_direct",
-                                         "cashflow_indrect",
+                                         "cashflow_indirect",
                                          "income_ttm",
                                          "cashflow_direct_ttm",
-                                         "cashflow_indrect_ttm"
+                                         "cashflow_indirect_ttm"
                                        ),
                                        consolidated = TRUE,
                                        period_type = c("quarter", "year"),
@@ -928,7 +928,7 @@ get_finacial_report.gta_db <- function(stock_db,
 
   statement <- match.arg(statement)
   switch(statement,
-    "blance_sheet" = {
+    "balance_sheet" = {
       table_name <- stock_db$table_list[["FS_COMBAS"]]
     },
     "income" = {
@@ -937,7 +937,7 @@ get_finacial_report.gta_db <- function(stock_db,
     "cashflow_direct" = {
       table_name <- stock_db$table_list[["FS_COMSDFD"]]
     },
-    "cashflow_indrect" = {
+    "cashflow_indirect" = {
       table_name <- stock_db$table_list[["FS_COMSCFI"]]
     },
     "income_ttm" = {
@@ -946,7 +946,7 @@ get_finacial_report.gta_db <- function(stock_db,
     "cashflow_direct_ttm" = {
       table_name <- stock_db$table_list[["FS_COMSDFD_TTM"]]
     },
-    "cashflow_indrect_ttm" = {
+    "cashflow_indirect_ttm" = {
       table_name <- stock_db$table_list[["FS_COMSCFI_TTM"]]
     }
   )
@@ -1057,10 +1057,10 @@ get_finacial_report.gta_db <- function(stock_db,
   return(ts_report)
 }
 # Method definition for s4 generic
-#' @describeIn get_finacial_report get financial report timeseries from a database of gta_db class
+#' @describeIn get_financial_report get financial report timeseries from a database of gta_db class
 #' @export
 setMethod(
-  "get_finacial_report",
+  "get_financial_report",
   signature(stock_db = "gta_db"),
   function(stock_db,
              stock_cd_list,
@@ -1069,7 +1069,7 @@ setMethod(
              period_type,
              period_date,
              ...) {
-    get_finacial_report.gta_db(
+    get_financial_report.gta_db(
       stock_db = stock_db,
       statement = statement,
       consolidated = consolidated,
@@ -1086,7 +1086,7 @@ setMethod(
 # Method definition for s3 generic
 #  @param data_filters   A list of filter to apply on result data. The list
 #  consists of items which has field as its name and filter expr string as
-#  its content, defualt is list( typrep = "typrep == 'A'",
+#  its content, default is list( typrep = "typrep == 'A'",
 #   markettype = "markettype == 21"). Only valid for gta_db.
 # @param date_fields    A character vector of possible date field in original
 #  data, which will be renamed as "date". default is c("date", "accper",
@@ -1462,7 +1462,7 @@ get_indicators_from_source.gta_db <- function(stock_db,
 # Method definition for s4 generic
 #' @param data_filters   A list of filter to apply on result data. The list
 #'  consists of items which has field as its name and filter expr string as
-#'  its content, defualt is list( typrep = "typrep == 'A'",
+#'  its content, default is list( typrep = "typrep == 'A'",
 #'  markettype = "markettype == 21"). Only valid for gta_db.
 #' @param date_fields    A character vector of possible date field in original
 #'  data, which will be renamed as "date". default is c("date", "accper",

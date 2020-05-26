@@ -19,7 +19,7 @@ test_that("build_report, with various arguments", {
   expect_true(file.exists("output/test_report_01.html"))
 
   # build_report with pdf_document argurments ====
-  # Supress deprecated warnings from ctex pkgs
+  # suppress deprecated warnings from ctex pkgs
   suppressWarnings(
     build_report(report_template = report_template,
                  report_params = list(custom_argument = "Hello ZB"),
@@ -40,7 +40,7 @@ test_that("build_report, with various arguments", {
 
   # build_report with rticles::ctex argurments ====
   report_template <- "./data/test_report_ctex.Rmd"
-  # Supress deprecated warnings from ctex pkgs
+  # suppress deprecated warnings from ctex pkgs
   suppressWarnings(
     build_report(report_template = report_template,
                  report_params = list(custom_argument = "Hello ZB"),

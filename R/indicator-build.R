@@ -10,9 +10,9 @@
 #' @param ...       Params to compute_fun.
 #' @param date_index_field  Name of date index field of ts_vars, default 'date'.
 #' @param key_fields    A character vector of key fields, which identify unique
-#'   observation in each date. Default NULL means to not devide data into
+#'   observation in each date. Default NULL means to not divide data into
 #'   groups.
-#' @param parallel   A logic to deterimine whether to use parallel processing.
+#' @param parallel   A logic to determine whether to use parallel processing.
 #'   Default TRUE means to use parallel processing.
 #'
 #'
@@ -111,7 +111,7 @@ compute_indicator <- function(ts_compute_vars,
         .progress = plyr::progress_win(title = "Computing...")
       )
     },
-    # supress warnings due to parallel process
+    # suppress warnings due to parallel process
     warn_pattern = "<anonymous>: ...")
 
     # If there are no results, dplyr::ddply will return a data frame
@@ -128,21 +128,21 @@ compute_indicator <- function(ts_compute_vars,
 }
 
 
-#' Create indicator by definiton function and variables timeseries
+#' Create indicator by definition function and variables timeseries
 #'
 #' Use definition function and variable timeseries to create indicator.
 #'
 #' @param ts_def_vars   A dataframe of variable timeseries to create indicator.
 #' @param ind_def_fun   A function of defining indicator.
 #' @param ...       Params to ind_def_fun.
-#' @param debug     A logic to deterimine whether to turn on debug in createing
-#'  indicator. Default FAlSE means not to use debug.
+#' @param debug     A logic to determine whether to turn on debug in creating
+#'  indicator. Default FALSE means not to use debug.
 #' @param date_index_field  Name of date index field of ts_def_vars,
 #'  default 'date'.
 #' @param key_fields    A character vector of key fields, which identify unique
-#'   observation in each date. Default NULL means to not devide data into
+#'   observation in each date. Default NULL means to not divide data into
 #'   groups.
-#' @param parallel   A logic to deterimine whether to use parallel processing.
+#' @param parallel   A logic to determine whether to use parallel processing.
 #'   Default TRUE means to use parallel processing.
 #'
 #'
@@ -256,7 +256,7 @@ create_indicator <- function(ts_def_vars,
 #' Use modifying function to modify indicator timeseries,
 #'  e.g. add new attribute to existed indicator timeseries.
 #'
-#' @param ts_indicator A dataframe of indicaotr timeseries to modify.
+#' @param ts_indicator A dataframe of indicator timeseries to modify.
 #' @param modify_fun   A function of modify indicator.
 #' @param ...          Params to modify_fun.
 #' @param replace_exist      A logical to determine whether to replace existed
@@ -264,9 +264,9 @@ create_indicator <- function(ts_def_vars,
 #' @param date_index_field  Name of date index field of ts_indicator,
 #'  default 'date'.
 #' @param key_fields    A character vector of key fields, which identify unique
-#'   observation in each date. Default NULL means to not devide data into
+#'   observation in each date. Default NULL means to not divide data into
 #'   groups.
-#' @param parallel   A logic to deterimine whether to use parallel processing.
+#' @param parallel   A logic to determine whether to use parallel processing.
 #'   Default TRUE means to use parallel processing.
 #'
 #'
@@ -299,7 +299,7 @@ create_indicator <- function(ts_def_vars,
 #'
 #'   # modify ts_indicator with pre-defined ind_attr_def_fun
 #'
-#'   # create defintion function of pre-defined attribute of indcd
+#'   # create definition function of pre-defined attribute of indcd
 #'   new_attr_indcd <- ind_attr_def_indcd(stock_db)
 #'
 #'   # modify existed ts_indicators
@@ -348,11 +348,11 @@ modify_indicator <- function(ts_indicator,
       date_index_field,
       key_fields
     ))]
-    attr_is_exsited <- attr_name %in% names(ts_indicator)
+    attr_is_existed <- attr_name %in% names(ts_indicator)
 
-    # repalce old attribute or add new attribute
-    if (attr_is_exsited) {
-      # replace exsited attribute
+    # replace old attribute or add new attribute
+    if (attr_is_existed) {
+      # replace existed attribute
       if (replace_exist) {
         # force replace existed attribute
 

@@ -13,7 +13,7 @@ skip_if_not(db_ready,
 )
 suppressMessages(init_stock_db(stock_db))
 
-test_that("attr_indictors", {
+test_that("attr_indicators", {
 
   # define attribute
   attr_name <- "attr_01"
@@ -24,13 +24,13 @@ test_that("attr_indictors", {
     attr_fun = attr_fun
   )
 
-  # attr_indictors on ts_indicator of wide format ====
+  # attr_indicators on ts_indicator of wide format ====
 
   # load indicators dataset to add attribute
   ts_indicators_wide <- readRDS("./data/ts_indicators_wide.rds")
 
   # add attribute
-  ts_indicators_wide_with_attr <- attr_indictors(ts_indicators_wide,
+  ts_indicators_wide_with_attr <- attr_indicators(ts_indicators_wide,
     new_attr_def = new_attr_def
   )
 
@@ -40,13 +40,13 @@ test_that("attr_indictors", {
   expect_true(all(acutal_fields %in% expect_fields))
   expect_true(all(ts_indicators_wide_with_attr$attr_01 %in% "attr_value"))
 
-  # attr_indictors on ts_indicator long format ====
+  # attr_indicators on ts_indicator long format ====
 
   # load indicators dataset to add attribute
   ts_indicators_long <- readRDS("./data/ts_indicators_long.rds")
 
   # add attribute
-  ts_indicators_long_with_attr <- attr_indictors(ts_indicators_long,
+  ts_indicators_long_with_attr <- attr_indicators(ts_indicators_long,
     new_attr_def = new_attr_def
   )
 
@@ -57,15 +57,15 @@ test_that("attr_indictors", {
   expect_true(all(ts_indicators_long_with_attr$attr_01 %in% "attr_value"))
 })
 
-test_that("attr_indictors_indcd", {
+test_that("attr_indicators_indcd", {
 
-  # attr_indictors_indcd on ts_indicator of wide format ====
+  # attr_indicators_indcd on ts_indicator of wide format ====
 
   # load indicators dataset to add attribute
   ts_indicators_wide <- readRDS("./data/ts_indicators_wide.rds")
 
   # add attribute
-  ts_indicators_wide_with_attr <- attr_indictors_indcd(stock_db,
+  ts_indicators_wide_with_attr <- attr_indicators_indcd(stock_db,
     ts_indicators = ts_indicators_wide
   )
 
@@ -74,13 +74,13 @@ test_that("attr_indictors_indcd", {
   acutal_fields <- names(ts_indicators_wide_with_attr)
   expect_true(all(acutal_fields %in% expect_fields))
 
-  # attr_indictors_indcd on ts_indicator long format ====
+  # attr_indicators_indcd on ts_indicator long format ====
 
   # load indicators dataset to add attribute
   ts_indicators_long <- readRDS("./data/ts_indicators_long.rds")
 
   # add attribute
-  ts_indicators_long_with_attr <- attr_indictors_indcd(stock_db,
+  ts_indicators_long_with_attr <- attr_indicators_indcd(stock_db,
     ts_indicators = ts_indicators_long
   )
 
@@ -90,15 +90,15 @@ test_that("attr_indictors_indcd", {
   expect_true(all(acutal_fields %in% expect_fields))
 })
 
-test_that("attr_indictors_trdstat", {
+test_that("attr_indicators_trdstat", {
 
-  # attr_indictors_trdstat on ts_indicator of wide format ====
+  # attr_indicators_trdstat on ts_indicator of wide format ====
 
   # load indicators dataset to add attribute
   ts_indicators_wide <- readRDS("./data/ts_indicators_wide.rds")
 
   # add attribute
-  ts_indicators_wide_with_attr <- attr_indictors_trdstat(stock_db,
+  ts_indicators_wide_with_attr <- attr_indicators_trdstat(stock_db,
     ts_indicators = ts_indicators_wide
   )
 
@@ -107,13 +107,13 @@ test_that("attr_indictors_trdstat", {
   acutal_fields <- names(ts_indicators_wide_with_attr)
   expect_true(all(acutal_fields %in% expect_fields))
 
-  # attr_indictors_trdstat on ts_indicator long format ====
+  # attr_indicators_trdstat on ts_indicator long format ====
 
   # load indicators dataset to add attribute
   ts_indicators_long <- readRDS("./data/ts_indicators_long.rds")
 
   # add attribute
-  ts_indicators_long_with_attr <- attr_indictors_trdstat(stock_db,
+  ts_indicators_long_with_attr <- attr_indicators_trdstat(stock_db,
     ts_indicators = ts_indicators_long
   )
 

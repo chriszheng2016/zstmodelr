@@ -65,7 +65,7 @@ exploreFactorsDistributionUI <- function(id, ds_factors) {
 
 }
 
-#' Explore factors distrubtion Server Function
+#' Explore factors distribution Server Function
 #'
 #' @param input input from caller.
 #' @param output output to caller.

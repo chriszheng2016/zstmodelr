@@ -2,14 +2,14 @@
 
 #' Verify existence of fields in data
 #'
-#' Verify whether some fields exsit in the data or not.
+#' Verify whether some fields exist in the data or not.
 #'
 #' @param  data   A dataframe or matrix to check.
 #' @param  fields A character vector of field names to check.
 #'
 #' @family utils_fields
 #'
-#' @return  Invisble NULL if succeed, otherwise raise error.
+#' @return  Invisible NULL if succeed, otherwise raise error.
 #'
 #' @export
 verify_fields <- function(data, fields) {
@@ -38,9 +38,9 @@ verify_fields <- function(data, fields) {
 
 #' Check whether fields are specified type
 #'
-#' Predicate fields of dataframe are specifed type or not.
+#' Predicate fields of dataframe are specified type or not.
 #' @note
-#'  numeric means intger or double; double don't include date.
+#'  numeric means integer or double; double don't include date.
 #'
 #'
 #' @param data     A vector of date/timestamps.
@@ -79,7 +79,7 @@ is_type_field <- function(data, expect_type = c(
     expect_type <- match.arg(expect_type)
     predicate_fun <- switch(expect_type,
       "numeric" = {
-        # numeric means an object of typeof intger or double
+        # numeric means an object of typeof integer or double
         # purrr::as_mapper(~(inherits(., what = "numeric")))
         purrr::as_mapper(~(is.numeric(.)))
       },

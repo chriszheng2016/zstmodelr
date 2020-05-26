@@ -4,7 +4,7 @@
 # Generic functions implemetation by gta_db class ------------------------
 
 
-# Get definitiona of customzied indicators from gta_db
+# Get definitiona of customized indicators from gta_db
 #  Method definition for s3 generic
 # @describeIn get_indicator_defs get indicator defs from database
 #  of gta_db class.
@@ -21,12 +21,12 @@ get_indicator_defs.gta_db <- function(stock_db, ...) {
   gta_profile_name <- get_profile(stock_db)
 
   # get info of customized indicators from profile
-  customized_indictors_info <- profile_get_customized_indicators(gta_profile_name)
+  customized_indicators_info <- profile_get_customized_indicators(gta_profile_name)
 
   # create indicator_defs
   indicator_defs <- NULL
-  if (!is.null(customized_indictors_info)) {
-    indicator_defs <- build_indicator_defs.gta_db(stock_db, customized_indictors_info)
+  if (!is.null(customized_indicators_info)) {
+    indicator_defs <- build_indicator_defs.gta_db(stock_db, customized_indicators_info)
   }
 
   return(indicator_defs)
@@ -45,9 +45,9 @@ setMethod(
 )
 
 
-# Get input vars for computing customzied indicators from gta_db
+# Get input vars for computing customized indicators from gta_db
 # Method definition for s3 generic
-# @describeIn get_indicator_vars get input vars for computing customzied
+# @describeIn get_indicator_vars get input vars for computing customized
 #  indicators from database of gta_db class.
 # @export
 get_indicator_vars.gta_db <- function(stock_db, indicator_defs, ...) {
@@ -63,14 +63,14 @@ get_indicator_vars.gta_db <- function(stock_db, indicator_defs, ...) {
   # get indicators of vars
   ds_vars <- NULL
   gta_profile_name <- get_profile(stock_db)
-  all_indictors_info <- profile_get_indicators(gta_profile_name)
-  if (!is.null(all_indictors_info)) {
+  all_indicators_info <- profile_get_indicators(gta_profile_name)
+  if (!is.null(all_indicators_info)) {
 
     # get ind_codes for vars
-    all_indictors_codes <- all_indictors_info$ind_code
+    all_indicators_codes <- all_indicators_info$ind_code
     vars_syms <- unique(purrr::reduce(indicator_defs$ind_vars, c))
-    vars_are_existed <- tolower(all_indictors_codes) %in% tolower(vars_syms)
-    vars_ind_code <- all_indictors_codes[vars_are_existed]
+    vars_are_existed <- tolower(all_indicators_codes) %in% tolower(vars_syms)
+    vars_ind_code <- all_indicators_codes[vars_are_existed]
 
     # get indicators for vars
     ds_vars <- get_indicators(stock_db,
@@ -82,7 +82,7 @@ get_indicator_vars.gta_db <- function(stock_db, indicator_defs, ...) {
 }
 
 # Method definition for s4 generic
-#' @describeIn get_indicator_vars  get input vars for computing customzied
+#' @describeIn get_indicator_vars  get input vars for computing customized
 #'  indicators from database of gta_db class.
 #' @export
 setMethod(
@@ -115,12 +115,12 @@ parse_indicator_vars.gta_db <- function(stock_db, indicator_expr, ...) {
   # get indicator_vars codes matched with symbols in expr
   indicator_vars <- NULL
   gta_profile_name <- get_profile(stock_db)
-  all_indictors_info <- profile_get_indicators(gta_profile_name)
-  if (!is.null(all_indictors_info)) {
-    all_indictors_codes <- all_indictors_info$ind_code
+  all_indicators_info <- profile_get_indicators(gta_profile_name)
+  if (!is.null(all_indicators_info)) {
+    all_indicators_codes <- all_indicators_info$ind_code
 
-    syms_in_indicators <- all_indictors_codes %in% tolower(syms)
-    indicator_vars <- all_indictors_codes[syms_in_indicators]
+    syms_in_indicators <- all_indicators_codes %in% tolower(syms)
+    indicator_vars <- all_indicators_codes[syms_in_indicators]
   }
 
   return(indicator_vars)
@@ -229,16 +229,16 @@ setMethod(
 # Non-generic internal functions for gta_db operation -----------------------
 
 # Build indicator defs from customeized indicator info
-build_indicator_defs.gta_db <- function(stock_db, customized_indictors_info) {
+build_indicator_defs.gta_db <- function(stock_db, customized_indicators_info) {
 
   # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
   if (is.null(stock_db$connection)) {
     stop("Stock db isn't connected, try to connect db again")
   }
-  assertive::assert_is_data.frame(customized_indictors_info)
+  assertive::assert_is_data.frame(customized_indicators_info)
 
-  indicator_defs <- customized_indictors_info %>%
+  indicator_defs <- customized_indicators_info %>%
     dplyr::mutate(
       ind_expr = list(NULL),
       ind_def_fun = list(NULL),
@@ -273,8 +273,8 @@ build_indicator_defs.gta_db <- function(stock_db, customized_indictors_info) {
       indicator_defs$ind_def_fun[i] <- list(indicator_def_fun)
 
       # parse vars for computing indicator
-      indicaotr_vars <- parse_indicator_vars(stock_db, indicator_expr)
-      indicator_defs$ind_vars[i] <- list(indicaotr_vars)
+      indicator_vars <- parse_indicator_vars(stock_db, indicator_expr)
+      indicator_defs$ind_vars[i] <- list(indicator_vars)
     }
   }
 

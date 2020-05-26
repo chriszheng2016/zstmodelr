@@ -1,5 +1,5 @@
 #' @details
-#' The main goals of zstmodelr is to leverage traditional finacial theory and
+#' The main goals of zstmodelr is to leverage traditional financial theory and
 #' modern ML method to build stock models for China stock market.
 #'
 #' To learn more about zstmodelr, start with the vignettes:

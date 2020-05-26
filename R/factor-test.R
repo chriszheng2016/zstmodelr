@@ -29,20 +29,20 @@ setClass("factor_test_sort_portfolios",
 
 # Creating Functions of factor_test classes -------------------------------------------
 
-#  Univarate Reggression Test
+#  univariate regression Test
 
-#' Creator of factor_test_unigress class
+#' Creator of factor_test_uniregress class
 #'
-#' Conduct univarate reggression test for descriptors of factors and build object
+#' Conduct univariate regression test for descriptors of factors and build object
 #' of factor_test_uniregress class as output.
 #'
 #'
 #'
 #' @param ds_test          A timeseries dataset with descriptors of factors for test
 #' @param regress_fun      a function to conduct regress.
-#' @param ...              Argments passed to regress_fun.
+#' @param ...              Arguments passed to regress_fun.
 #' @param output_type      Type of output data, i.e."summary", "raw", if "raw",
-#' raw data will be append to output object for dignosis.
+#' raw data will be append to output object for diagnosis.
 #' @param factor_field       Name of factor field of ds_test, by default "factor_name".
 #' @param date_field         Name of date field of ds_test, by default "date",
 #' Column must be date-like.
@@ -119,7 +119,7 @@ factor_test_uniregress <- function(ds_test,
       t.test_p = p.value
     )
 
-  # Normal distrubtion test for factor return sereis
+  # Normal distribution test for factor return series
    result_factor_return_normal.test <- ds_factor_returns_raw %>%
     dplyr::group_by(!!factor_field)  %>%
     dplyr::do(broom::tidy(shapiro.test(.$estimate))) %>%
@@ -177,9 +177,9 @@ factor_test_uniregress <- function(ds_test,
 #'
 #' @param ds_test          A timeseries dataset with descriptors of factors for test.
 #' @param IC_fun           A function to compute information coefficients.
-#' @param ...              argments passed to IC_fun.
+#' @param ...              Arguments passed to IC_fun.
 #' @param output_type      Type of output data, i.e."summary", "raw", if "raw",
-#' raw data will be append to output object for dignosis.
+#' raw data will be append to output object for diagnosis.
 #' @param factor_field       Name of factor field of ds_test, by default "factor_name".
 #' @param date_field         Name of date field of ds_test, by default "date",
 #' Column must be date-like.
@@ -247,7 +247,7 @@ factor_test_IC <- function(ds_test,
       t.test_p = p.value
     )
 
-  # Normal distrubtion test for factor IC sereis
+  # Normal distribution test for factor IC series
   result_factor_ICs_normal.test <- ds_factor_ICs_raw %>%
     dplyr::group_by(!!factor_field) %>%
     dplyr::do(broom::tidy(shapiro.test(.$estimate))) %>%
@@ -308,9 +308,9 @@ factor_test_IC <- function(ds_test,
 #' @param ds_test          A timeseries dataset with descriptors of factors for test.
 #' @param sort_portfolios_fun  A function to sort descriptors of factors to build.
 #' portfolios for test
-#' @param ...              Argments passed to sort_portfolios_fun.
+#' @param ...              Arguments passed to sort_portfolios_fun.
 #' @param output_type      Type of output data, i.e."summary", "raw", if "raw",
-#' raw data will be append to output object for dignosis.
+#' raw data will be append to output object for diagnosis.
 #' @param factor_field     Name of factor field of ds_test, by default "factor_name"
 #' @param date_field       Name of date field of ds_test, by default "date",
 #' Column must be date-like.
@@ -452,7 +452,7 @@ factor_test_sort_portfolios <- function(ds_test,
       t.test_p = p.value
     )
 
-  # Normal distrubtion test for zero-portfolio return sereis
+  # Normal distribution test for zero-portfolio return series
   result_zero_portfolio_return_normal.test <- ds_portfolios_return %>%
     dplyr::group_by(!!factor_field) %>%
     dplyr::do(broom::tidy(shapiro.test(.$group_zero))) %>%

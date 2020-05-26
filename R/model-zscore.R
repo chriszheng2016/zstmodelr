@@ -1,17 +1,17 @@
 
-#' Compute z-scores of facotrs dataset
+#' Compute z-scores of factors dataset
 #'
-#' Compute z-scores of factors by scaling all factors according the aggreate
+#' Compute z-scores of factors by scaling all factors according the aggregate
 #' formula and groups of fields.
 #'
 #'
 #' @param ds_factors  a factors dataset.
-#' @param aggregate_formula a formula to aggreate zscores of all factors,
+#' @param aggregate_formula a formula to aggregate zscores of all factors,
 #' e.g. ROCE + PB, NULL is default which means no need to compute aggregate
-#' zscore, but only compute zscore for all  numberic factor fields.
+#' zscore, but only compute zscore for all  numeric factor fields.
 #' @param group_by  a character vector of fields as group data for scaling, NULL
-#' is default value which means no group settting.
-#' @param clean_extremes_method method of cleaning extremes befre standardization
+#' is default value which means no group setting.
+#' @param clean_extremes_method method of cleaning extremes before standardization
 #' , i.e. "sigma","mad", by default "sigma".
 #' see details: \code{\link{clean_extremes_sigma}}, \code{\link{clean_extremes_mad}}
 #' @param standard_method  method of standardize data, i.e. "normal","rank",
@@ -32,7 +32,7 @@ factors_zscore <- function(ds_factors,
   stopifnot(!is.null(ds_factors))
 
   # if there is aggregate_formula, compute factors in aggregate_formula
-  # and aggreate_zscore, otherwise just compute zscore for all factors
+  # and aggregate_zscore, otherwise just compute zscore for all factors
 
   # get compute factors list
   aggregate_formula <- rlang::enquo(aggregate_formula)
@@ -76,7 +76,7 @@ factors_zscore <- function(ds_factors,
 
 }
 
-#' Filter stocks by facotrs z-score
+#' Filter stocks by factors z-score
 #'
 #' Filter stocks by ranking the z-score of factors.
 #' The group of z-score of factors will keep in the results

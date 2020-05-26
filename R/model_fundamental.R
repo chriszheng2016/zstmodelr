@@ -1,7 +1,7 @@
 #  Build fundamental factor model
-#' Creator of factor_test_unigress class
+#' Creator of factor_test_uniregress class
 #'
-#' Conduct univarate reggression test for descriptors of factors and build object
+#' Conduct univariate regression test for descriptors of factors and build object
 #' of factor_test_uniregress class as output.
 #'
 #'
@@ -10,9 +10,9 @@
 #' @param regress_method   method of partitioning data for regression, i.e.
 #' "cross_section", "pooling", by default "cross_section".
 #' @param regress_fun      A function to conduct regress.
-#' @param ...              argments passed to regress_fun.
+#' @param ...              Arguments passed to regress_fun.
 #' @param output_type      Type of output data, i.e."summary", "raw", if "raw",
-#' raw data will be append to output object for dignosis.
+#' raw data will be append to output object for diagnosis.
 #' @param date_field       Name of date field of ds_test, by default "date",
 #' Column must be date-like.
 #'
