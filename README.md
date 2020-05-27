@@ -7,6 +7,8 @@
 
 [![Codecov test
 coverage](https://codecov.io/gh/chriszheng2016/zstmodelr/branch/master/graph/badge.svg)](https://codecov.io/gh/chriszheng2016/zstmodelr?branch=master)
+[![R build
+status](https://github.com/chriszheng2016/zstmodelr/workflows/R-CMD-check/badge.svg)](https://github.com/chriszheng2016/zstmodelr/actions)
 <!-- badges: end -->
 
 The goal of zstmodelr is to …
