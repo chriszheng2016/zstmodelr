@@ -3,10 +3,10 @@ on:
     branches:
       - master
       - develop
-      - tidy-codes
   pull_request:
     branches:
       - master
+      - develop
 
 name: R-CMD-check
 
