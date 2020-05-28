@@ -97,7 +97,12 @@ compute_indicator <- function(ts_compute_vars,
       key_fields = key_fields
     )
   } else {
-    # For mutlti groups by key_fieilds
+    # For mutlti groups by key_fields
+    progress_display <- if (exists("winProgressBar")) {
+      plyr::progress_win(title = "Computing...")
+    } else {
+      plyr::progress_text()
+    }
     suppress_warnings({
       ds_indicator <- plyr::ddply(
         ts_compute_vars,
@@ -108,7 +113,7 @@ compute_indicator <- function(ts_compute_vars,
         date_index_field = date_index_field,
         key_fields = key_fields,
         .parallel = parallel,
-        .progress = plyr::progress_win(title = "Computing...")
+        .progress = progress_display
       )
     },
     # suppress warnings due to parallel process

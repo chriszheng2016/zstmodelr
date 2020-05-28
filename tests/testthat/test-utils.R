@@ -33,7 +33,7 @@ test_that("suppress_warnings, with various arguments", {
           sqrt(-1)
           warning("ooops", call. = FALSE)
         },
-        warn_pattern = "o"
+        warn_pattern = "op"
       )
     },
     regexp = "NaN"

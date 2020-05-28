@@ -231,6 +231,11 @@ ts_resample.tbl_df <- function(ts_dataset,
     )
   } else {
     # for multi groups process
+    progress_display <- if (exists("winProgressBar")) {
+      plyr::progress_win(title = "Resampling...")
+    } else {
+      plyr::progress_text()
+    }
     suppress_warnings({
       result_ts <- plyr::ddply(
         ts_dataset,
@@ -243,7 +248,7 @@ ts_resample.tbl_df <- function(ts_dataset,
         date_index_field = date_index_field,
         key_fields = key_fields,
         .parallel = parallel,
-        .progress = plyr::progress_win(title = "Resampling...")
+        .progress = progress_display
       )
     },
     # suppress warnings due to parallel process
@@ -343,6 +348,11 @@ ts_asfreq.tbl_df <- function(ts_dataset,
     )
   } else {
     # for multi groups
+    progress_display <- if (exists("winProgressBar")) {
+      plyr::progress_win(title = "Refreqencing...")
+    } else {
+      plyr::progress_text()
+    }
     suppress_warnings({
       result_ts <- plyr::ddply(
         ts_dataset,
@@ -353,7 +363,7 @@ ts_asfreq.tbl_df <- function(ts_dataset,
         date_index_field = date_index_field,
         key_fields = key_fields,
         .parallel = parallel,
-        .progress = plyr::progress_win(title = "Refreqencing...")
+        .progress = progress_display
       )
     },
     # suppress warnings due to parallel process
@@ -463,6 +473,11 @@ ts_lag.tbl_df <- function(ts_dataset,
     )
   } else {
     # for multi groups
+    progress_display <- if (exists("winProgressBar")) {
+      plyr::progress_win(title = "Lagging...")
+    } else {
+      plyr::progress_text()
+    }
     suppress_warnings({
       result_ts <- plyr::ddply(
         ts_dataset,
@@ -473,7 +488,7 @@ ts_lag.tbl_df <- function(ts_dataset,
         date_index_field = date_index_field,
         key_fields = key_fields,
         .parallel = parallel,
-        .progress = plyr::progress_win(title = "Lagging...")
+        .progress = progress_display
       )
     },
     # suppress warnings due to parallel process
