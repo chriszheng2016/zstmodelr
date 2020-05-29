@@ -40,14 +40,14 @@ Imports:
     tidyr,
     timeDate,
     timeSeries,
-    tinytex,
     xts,
     zoo
 Suggests: 
     knitr,
     testthat,
     covr,
-    spelling
+    spelling,
+    tinytex
 VignetteBuilder: 
     knitr
 Encoding: UTF-8
