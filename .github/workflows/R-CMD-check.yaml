@@ -46,8 +46,9 @@ jobs:
 
       - uses: r-lib/actions/setup-pandoc@master
 
-      - uses: r-lib/actions/setup-tinytex@v1
-      - run: tlmgr --version
+      # Disable installing tinytex since installing error in windows-latest(r-lib/actions#54)
+      # - uses: r-lib/actions/setup-tinytex@v1
+      # - run: tlmgr --version
 
       - name: Query dependencies
         run: |
