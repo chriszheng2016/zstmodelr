@@ -58,7 +58,6 @@ test_that("compute_indicator", {
 
   # return a tibble with 0 length
   expect_true(NROW(ds_indicator) == 0)
-
 })
 
 test_that("create_indicator", {
@@ -144,9 +143,9 @@ test_that("create_indicator", {
 
   # create indicator definition function
   ind_def_fun <- create_indicator_def_fun(indicator_code,
-                                  indicator_expr = indicator_expr,
-                                  rolly_window = 0,
-                                  period = period
+    indicator_expr = indicator_expr,
+    rolly_window = 0,
+    period = period
   )
 
   # load dataset of ds_vars for creating indicator
@@ -154,25 +153,24 @@ test_that("create_indicator", {
 
   # create indicators by using indicator definition
   ds_indicator <- create_indicator(ds_vars,
-                                   ind_def_fun = ind_def_fun,
-                                   debug = TRUE,
-                                   date_index_field = "date",
-                                   key_fields = "stkcd",
-                                   parallel = FALSE
+    ind_def_fun = ind_def_fun,
+    debug = TRUE,
+    date_index_field = "date",
+    key_fields = "stkcd",
+    parallel = FALSE
   )
 
   expect_is(ds_indicator, "data.frame")
-  expect_fields <- c("date", "stkcd", "indcd", "period",
-                     unique(ds_vars$ind_code),
-                     indicator_code)
+  expect_fields <- c(
+    "date", "stkcd", "indcd", "period",
+    unique(ds_vars$ind_code),
+    indicator_code
+  )
   actual_fields <- names(ds_indicator)
   expect_true(all(actual_fields %in% expect_fields))
   expect_equal(unique(ds_indicator$period), period)
   expect_true(length(unique(ds_indicator$stkcd))
-              == length(unique(ds_vars$stkcd)))
-
-
-
+  == length(unique(ds_vars$stkcd)))
 })
 
 test_that("modify_indicator", {
@@ -214,7 +212,7 @@ test_that("modify_indicator", {
   attr_value2 <- "indcd_code2"
   attr_fun <- make_attr_fun(attr_value2)
   ind_attr_def_fun <- create_attribute_def_fun(attr_name,
-                                      attr_fun = attr_fun
+    attr_fun = attr_fun
   )
 
   # don't change existed attribute
@@ -236,11 +234,11 @@ test_that("modify_indicator", {
   # replace existed attribute
   expect_warning(
     ts_modify_indicator <- modify_indicator(ts_modify_indicator,
-                                            modify_fun = ind_attr_def_fun,
-                                            replace_exist = TRUE,
-                                            date_index_field = "date",
-                                            key_fields = "stkcd",
-                                            parallel = FALSE
+      modify_fun = ind_attr_def_fun,
+      replace_exist = TRUE,
+      date_index_field = "date",
+      key_fields = "stkcd",
+      parallel = FALSE
     )
   )
 
@@ -249,5 +247,4 @@ test_that("modify_indicator", {
   actual_fields <- names(ts_modify_indicator)
   expect_true(all(actual_fields %in% expect_fields))
   expect_true(all(ts_modify_indicator[attr_name] == attr_value2))
-
 })

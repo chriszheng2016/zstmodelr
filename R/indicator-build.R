@@ -30,10 +30,10 @@ compute_indicator <- function(ts_compute_vars,
 
   # Define method to compute single group
   .compute_indicator_single_group <- function(ts_compute_vars,
-                                                compute_fun,
-                                                ...,
-                                                date_index_field = c("date"),
-                                                key_fields = NULL) {
+                                              compute_fun,
+                                              ...,
+                                              date_index_field = c("date"),
+                                              key_fields = NULL) {
 
     # validate params
     assertive::assert_is_data.frame(ts_compute_vars)
@@ -41,13 +41,16 @@ compute_indicator <- function(ts_compute_vars,
 
     # compute indicator
     ts_indicator <- NULL
-    result <- tryCatch({
-      compute_fun(ts_compute_vars,
-        date_index_field = date_index_field,
-        key_fields = key_fields,
-        ...
-      )
-    }, error = function(e) e)
+    result <- tryCatch(
+      {
+        compute_fun(ts_compute_vars,
+          date_index_field = date_index_field,
+          key_fields = key_fields,
+          ...
+        )
+      },
+      error = function(e) e
+    )
 
     if (inherits(result, "error")) {
       # inform user of failure and return NULL
@@ -103,26 +106,29 @@ compute_indicator <- function(ts_compute_vars,
     } else {
       plyr::progress_text()
     }
-    suppress_warnings({
-      ds_indicator <- plyr::ddply(
-        ts_compute_vars,
-        .variables = key_fields,
-        .fun = .compute_indicator_single_group,
-        compute_fun = compute_fun,
-        ...,
-        date_index_field = date_index_field,
-        key_fields = key_fields,
-        .parallel = parallel,
-        .progress = progress_display
-      )
-    },
-    # suppress warnings due to parallel process
-    warn_pattern = "<anonymous>: ...")
+    suppress_warnings(
+      {
+        ds_indicator <- plyr::ddply(
+          ts_compute_vars,
+          .variables = key_fields,
+          .fun = .compute_indicator_single_group,
+          compute_fun = compute_fun,
+          ...,
+          date_index_field = date_index_field,
+          key_fields = key_fields,
+          .parallel = parallel,
+          .progress = progress_display
+        )
+      },
+      # suppress warnings due to parallel process
+      warn_pattern = "<anonymous>: ..."
+    )
 
     # If there are no results, dplyr::ddply will return a data frame
     # with zero rows and columns
-    if (NROW(ds_indicator) == 0)
+    if (NROW(ds_indicator) == 0) {
       ds_indicator <- NULL
+    }
   }
 
   if (!is.null(ds_indicator)) {
@@ -159,35 +165,35 @@ compute_indicator <- function(ts_compute_vars,
 #' @examples
 #' \dontrun{
 #'
-#'   # load vars dataset for generating indicators
-#'   ds_all_vars <- get_indicator_vars(stock_db,
-#'                                  indicator_defs = ds_indicator_defs)
+#' # load vars dataset for generating indicators
+#' ds_all_vars <- get_indicator_vars(stock_db,
+#'   indicator_defs = ds_indicator_defs
+#' )
 #'
-#'   # create ind_expr
-#'   indicator_formula <- c("stock_return <- mretwd
+#' # create ind_expr
+#' indicator_formula <- c("stock_return <- mretwd
 #'                           market_return <- cmretwdtl
 #'                           model <- lm(stock_return ~ market_return)
 #'                           beta <- coef(model)['market_return']")
-#'   indicator_expr <- create_expr(!!indicator_formula)
+#' indicator_expr <- create_expr(!!indicator_formula)
 #'
-#'   # create def_fun for indicator
-#'   indicator_def_fun <- create_indicator_def_fun(
-#'       indicator_code = "m_stock_beta1",
-#'       indicator_expr = indicator_expr,
-#'       rolly_window = 12,
-#'       period = "month"
-#'       )
+#' # create def_fun for indicator
+#' indicator_def_fun <- create_indicator_def_fun(
+#'   indicator_code = "m_stock_beta1",
+#'   indicator_expr = indicator_expr,
+#'   rolly_window = 12,
+#'   period = "month"
+#' )
 #'
-#'   # create a indicator from vars dataset.
-#'   ts_indicator <- create_indicator(
-#'         ds_def_vars,
-#'         ind_def_fun = ind_def_fun,
-#'         debug = FALSE,
-#'         date_index_field = "date",
-#'         key_fields = "stkcd",
-#'         parallel = TRUE
-#'         )
-#'
+#' # create a indicator from vars dataset.
+#' ts_indicator <- create_indicator(
+#'   ds_def_vars,
+#'   ind_def_fun = ind_def_fun,
+#'   debug = FALSE,
+#'   date_index_field = "date",
+#'   key_fields = "stkcd",
+#'   parallel = TRUE
+#' )
 #' }
 #'
 create_indicator <- function(ts_def_vars,
@@ -208,7 +214,7 @@ create_indicator <- function(ts_def_vars,
 
   # get dataset of value of keys are not na
   keys_are_ok_expr <- key_fields %>%
-    purrr::map_chr(~sprintf("!is.na(%s)", .x)) %>%
+    purrr::map_chr(~ sprintf("!is.na(%s)", .x)) %>%
     paste(collapse = " || ") %>%
     rlang::parse_expr()
   ds_keys_are_ok <- ts_def_vars %>%
@@ -216,7 +222,7 @@ create_indicator <- function(ts_def_vars,
 
   # get dataset of value of keys are na
   keys_are_na_expr <- key_fields %>%
-    purrr::map_chr(~sprintf("is.na(%s)", .x)) %>%
+    purrr::map_chr(~ sprintf("is.na(%s)", .x)) %>%
     paste(collapse = " && ") %>%
     rlang::parse_expr()
   ds_keys_are_na <- ts_def_vars %>%
@@ -283,40 +289,39 @@ create_indicator <- function(ts_def_vars,
 #'
 #' \dontrun{
 #'
-#'   # modify ts_indicator with customized ind_attr_def_fun
+#' # modify ts_indicator with customized ind_attr_def_fun
 #'
-#'   # create attribute definition function of customized attribute
-#'   attr_fun <- function(date, stkcd, ...) {
-#'                  "attr_value"
-#'                }
-#'   ind_attr_def_fun <- create_attribute_def_fun(
-#'         attr_name,
-#'         attr_fun = attr_fun
-#'         )
-#'   # modify existed ts_indicators
-#'   ts_modify_indicator <- modify_indicator(ts_modify_indicator,
-#'        modify_fun = ind_attr_def_fun,
-#'        date_index_field = "date",
-#'        key_fields = "stkcd",
-#'        parallel = FALSE
-#'       )
+#' # create attribute definition function of customized attribute
+#' attr_fun <- function(date, stkcd, ...) {
+#'   "attr_value"
+#' }
+#' ind_attr_def_fun <- create_attribute_def_fun(
+#'   attr_name,
+#'   attr_fun = attr_fun
+#' )
+#' # modify existed ts_indicators
+#' ts_modify_indicator <- modify_indicator(ts_modify_indicator,
+#'   modify_fun = ind_attr_def_fun,
+#'   date_index_field = "date",
+#'   key_fields = "stkcd",
+#'   parallel = FALSE
+#' )
 #'
 #'
-#'   # modify ts_indicator with pre-defined ind_attr_def_fun
+#' # modify ts_indicator with pre-defined ind_attr_def_fun
 #'
-#'   # create definition function of pre-defined attribute of indcd
-#'   new_attr_indcd <- ind_attr_def_indcd(stock_db)
+#' # create definition function of pre-defined attribute of indcd
+#' new_attr_indcd <- ind_attr_def_indcd(stock_db)
 #'
-#'   # modify existed ts_indicators
-#'   ts_indicator <- modify_indicator(
-#'       ts_indicator = ts_indicator,
-#'       modify_fun = new_attr_indcd,
-#'       replace_exist = FALSE,
-#'       date_index_field = "date",
-#'       key_fields = "stkcd",
-#'       parallel = FALSE
-#    )
-#'
+#' # modify existed ts_indicators
+#' ts_indicator <- modify_indicator(
+#'   ts_indicator = ts_indicator,
+#'   modify_fun = new_attr_indcd,
+#'   replace_exist = FALSE,
+#'   date_index_field = "date",
+#'   key_fields = "stkcd",
+#'   parallel = FALSE
+#' )
 #' }
 #'
 #' @export

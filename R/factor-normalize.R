@@ -22,27 +22,28 @@
 normalize_factors <- function(ds_factors,
                               factors_list = NULL,
                               group_by = NULL,
-                              clean_extremes_method = c("sigma","mad"),
-                              standard_method = c("normal","rank"), ...) {
+                              clean_extremes_method = c("sigma", "mad"),
+                              standard_method = c("normal", "rank"), ...) {
 
   # Validate params
   assertive::assert_is_not_null(ds_factors)
 
   # get compute factors list
   origin_fields <- colnames(ds_factors)
-  is_numeric_class_field <- purrr::map_lgl(ds_factors, ~inherits(., "numeric"))
+  is_numeric_class_field <- purrr::map_lgl(ds_factors, ~ inherits(., "numeric"))
   if (!is.null(factors_list)) {
     # use specified factors_list as computing fields
 
-    #Make sure compute factors_list are valid fields in ds_fators
+    # Make sure compute factors_list are valid fields in ds_fators
     is_valid_indicator_field <- factors_list %in% origin_fields[is_numeric_class_field]
     if (!all(is_valid_indicator_field)) {
-      msg <- sprintf("factors(%s): not vaild field of dataset",
-                     stringr::str_c(factors_list[!is_valid_indicator_field], collapse = ","))
+      msg <- sprintf(
+        "factors(%s): not vaild field of dataset",
+        stringr::str_c(factors_list[!is_valid_indicator_field], collapse = ",")
+      )
       stop(msg)
     }
     compute_factors <- factors_list
-
   } else {
     # use all fields of numeric class as computing factors if no specifying factors
     compute_factors <- origin_fields[is_numeric_class_field]
@@ -56,21 +57,25 @@ normalize_factors <- function(ds_factors,
     # Make sure group field are valid fields in ds_fators
     is_valid_group_field <- group_by %in% origin_fields[!is_numeric_class_field]
     if (!all(is_valid_group_field)) {
-      msg <- sprintf("group fields(%s): not valid field of dataset",
-                     stringr::str_c(group_by[!is_valid_group_field], collapse = ","))
+      msg <- sprintf(
+        "group fields(%s): not valid field of dataset",
+        stringr::str_c(group_by[!is_valid_group_field], collapse = ",")
+      )
       stop(msg)
     }
 
-    ds_factors_by_group <- dplyr::group_by_at(ds_factors, group_by )
+    ds_factors_by_group <- dplyr::group_by_at(ds_factors, group_by)
   } else {
     ds_factors_by_group <- ds_factors
   }
 
   # Normalize each factors
   ds_result <- ds_factors_by_group %>%
-    dplyr::mutate_at(compute_factors, normalize,
-                     clean_extremes_method,
-                     standard_method,...) %>%
+    dplyr::mutate_at(
+      compute_factors, normalize,
+      clean_extremes_method,
+      standard_method, ...
+    ) %>%
     dplyr::select(output_fields)
 
   return(ds_result)
@@ -93,8 +98,8 @@ normalize_factors <- function(ds_factors,
 #'
 #' @return            a vector of normalized data
 #' @export
-normalize <- function(x, clean_extremes_method = c("sigma","mad"),
-                         standard_method = c("normal","rank"), ...) {
+normalize <- function(x, clean_extremes_method = c("sigma", "mad"),
+                      standard_method = c("normal", "rank"), ...) {
 
   # Validate params
   assertive::assert_is_not_null(x)
@@ -152,7 +157,7 @@ normalize <- function(x, clean_extremes_method = c("sigma","mad"),
 #'
 #' @return      a vector of data without extremes
 #' @export
-clean_extremes_sigma <- function(x, n_sigma = 3, extreme_value = c("limit","NA")){
+clean_extremes_sigma <- function(x, n_sigma = 3, extreme_value = c("limit", "NA")) {
 
   # Validate params
   assertive::assert_is_not_null(x)
@@ -161,17 +166,18 @@ clean_extremes_sigma <- function(x, n_sigma = 3, extreme_value = c("limit","NA")
   assertive::assert_all_are_positive(n_sigma)
 
   # Clean extremes
-  x_mean  <- mean(x, na.rm = TRUE)
+  x_mean <- mean(x, na.rm = TRUE)
   x_stdev <- sd(x, na.rm = TRUE)
   if ((!is.na(x_mean)) && (!is.na(x_stdev))) {
     upper_extreme_limit <- x_mean + n_sigma * x_stdev
     lower_extreme_limit <- x_mean - n_sigma * x_stdev
 
     x_result <- purrr::map_dbl(x,
-                               .f = .clean_extreme_value,
-                               upper_extreme_limit,
-                               lower_extreme_limit,
-                               extreme_value)
+      .f = .clean_extreme_value,
+      upper_extreme_limit,
+      lower_extreme_limit,
+      extreme_value
+    )
   } else {
     # Notice: mean(NA) return NA which lead wrong results
     # Notice: sd(0) return NA which lead wrong results
@@ -180,7 +186,6 @@ clean_extremes_sigma <- function(x, n_sigma = 3, extreme_value = c("limit","NA")
   }
 
   return(x_result)
-
 }
 
 #' Clean extremes by MAD method
@@ -196,7 +201,7 @@ clean_extremes_sigma <- function(x, n_sigma = 3, extreme_value = c("limit","NA")
 #'
 #' @return      a vector of data without extremes
 #' @export
-clean_extremes_mad <- function(x, n_dmad = 3, extreme_value = c("limit","NA")){
+clean_extremes_mad <- function(x, n_dmad = 3, extreme_value = c("limit", "NA")) {
 
   # Validate params
   assertive::assert_is_not_null(x)
@@ -205,18 +210,19 @@ clean_extremes_mad <- function(x, n_dmad = 3, extreme_value = c("limit","NA")){
   assertive::assert_all_are_positive(n_dmad)
 
   # Clean extremes
-  x_median  <- median(x, na.rm = TRUE)
-  x_mad     <- median(abs(x - x_median), na.rm = TRUE )
+  x_median <- median(x, na.rm = TRUE)
+  x_mad <- median(abs(x - x_median), na.rm = TRUE)
 
   if ((!is.na(x_median)) && (!is.na(x_mad))) {
     upper_extreme_limit <- x_median + n_dmad * x_mad
     lower_extreme_limit <- x_median - n_dmad * x_mad
 
     x_result <- purrr::map_dbl(x,
-                               .f = .clean_extreme_value,
-                               upper_extreme_limit,
-                               lower_extreme_limit,
-                               extreme_value)
+      .f = .clean_extreme_value,
+      upper_extreme_limit,
+      lower_extreme_limit,
+      extreme_value
+    )
   } else {
     # Notice: median(NA) return NA which lead wrong results
     # So keep original x as result
@@ -231,10 +237,9 @@ clean_extremes_mad <- function(x, n_dmad = 3, extreme_value = c("limit","NA")){
 
 # Judge the extreme by standard and clean it by specified value
 .clean_extreme_value <- function(x,
-                           upper_extreme_limit,
-                           lower_extreme_limit,
-                           extreme_value = c("limit","NA") ) {
-
+                                 upper_extreme_limit,
+                                 lower_extreme_limit,
+                                 extreme_value = c("limit", "NA")) {
   stopifnot(!is.null(x), !is.null(upper_extreme_limit), !is.null(lower_extreme_limit))
   stopifnot(!is.na(upper_extreme_limit), !is.na(lower_extreme_limit))
 
@@ -311,7 +316,4 @@ standardize_rank_scale <- function(x) {
   x_result <- scale(x_rank)
 
   return(x_result)
-
 }
-
-

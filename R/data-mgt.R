@@ -102,11 +102,11 @@ setGeneric(
   name = "update_db",
   signature = c("stock_db"),
   def = update_db <- function(stock_db,
-                                data_source = get_datasource(stock_db),
-                                retry_log = NULL,
-                                log_file_prefix = "update_db_log",
-                                log_dir = "./log",
-                                ...) {
+                              data_source = get_datasource(stock_db),
+                              retry_log = NULL,
+                              log_file_prefix = "update_db_log",
+                              log_dir = "./log",
+                              ...) {
     standardGeneric("update_db")
   }
 )
@@ -165,14 +165,14 @@ setGeneric(
   name = "import_table",
   signature = c("stock_db"),
   def = import_table <- function(stock_db,
-                                   input_file,
-                                   input_type = c("csv", "txt"),
-                                   input_dir = NULL,
-                                   start_index = 2L,
-                                   target_table = NULL,
-                                   ignore_problems = TRUE,
-                                   log_dir = "./log",
-                                   ...) {
+                                 input_file,
+                                 input_type = c("csv", "txt"),
+                                 input_dir = NULL,
+                                 start_index = 2L,
+                                 target_table = NULL,
+                                 ignore_problems = TRUE,
+                                 log_dir = "./log",
+                                 ...) {
     standardGeneric("import_table")
   }
 )
@@ -415,8 +415,10 @@ write_import_file <- function(ds_output,
   if (!is.null(output_dir)) {
     output_file_path <- paste0(output_dir, "/", basename(output_file))
   } else {
-    output_file_path <- normalizePath(output_file, winslash = "/",
-                                      mustWork = FALSE)
+    output_file_path <- normalizePath(output_file,
+      winslash = "/",
+      mustWork = FALSE
+    )
   }
 
   # get data file name
@@ -436,9 +438,9 @@ write_import_file <- function(ds_output,
       file_ext
     )
     file.copy(output_file_path,
-              to = backup_file_path,
-              copy.date = TRUE,
-              overwrite = TRUE
+      to = backup_file_path,
+      copy.date = TRUE,
+      overwrite = TRUE
     )
   }
 
@@ -485,16 +487,16 @@ write_import_file <- function(ds_output,
 #'
 #' @export
 convert_import_file <- function(input_file,
-                         input_type = c("csv", "txt"),
-                         input_dir = NULL,
-                         start_index = 2L,
-                         ignore_problems = TRUE,
-                         log_dir = "./log",
-                         process_fun = NULL,
-                         ...,
-                         output_file = input_file,
-                         output_type = input_type,
-                         output_dir = input_dir) {
+                                input_type = c("csv", "txt"),
+                                input_dir = NULL,
+                                start_index = 2L,
+                                ignore_problems = TRUE,
+                                log_dir = "./log",
+                                process_fun = NULL,
+                                ...,
+                                output_file = input_file,
+                                output_type = input_type,
+                                output_dir = input_dir) {
 
   # validate params
   if (!is.null(process_fun)) {
@@ -504,16 +506,19 @@ convert_import_file <- function(input_file,
   success <- TRUE
 
   # read original data
-  result <- tryCatch({
-    read_import_file(
-      input_file,
-      input_type = input_type,
-      input_dir = input_dir,
-      start_index = start_index,
-      ignore_problems = ignore_problems,
-      log_dir = log_dir
-    )
-  }, error = function(e) e)
+  result <- tryCatch(
+    {
+      read_import_file(
+        input_file,
+        input_type = input_type,
+        input_dir = input_dir,
+        start_index = start_index,
+        ignore_problems = ignore_problems,
+        log_dir = log_dir
+      )
+    },
+    error = function(e) e
+  )
   if (inherits(result, "error")) {
     error_msg <- conditionMessage(result)
     ds_origin_data <- NULL
@@ -525,13 +530,16 @@ convert_import_file <- function(input_file,
   # process orgiginal data
   ds_processed_data <- NULL
   if (success) {
-    result <- tryCatch({
-      if (!is.null(process_fun)) {
-        process_fun(ds_origin_data, ...)
-      } else {
-        ds_origin_data
-      }
-    }, error = function(e) e)
+    result <- tryCatch(
+      {
+        if (!is.null(process_fun)) {
+          process_fun(ds_origin_data, ...)
+        } else {
+          ds_origin_data
+        }
+      },
+      error = function(e) e
+    )
     if (inherits(result, "error")) {
       error_msg <- conditionMessage(result)
       success <- FALSE
@@ -542,13 +550,16 @@ convert_import_file <- function(input_file,
 
   # write process data
   if (success) {
-    result <- tryCatch({
-      write_import_file(ds_processed_data,
-                        output_file = output_file,
-                        output_type = output_type,
-                        output_dir = output_dir
-      )
-    }, error = function(e) e)
+    result <- tryCatch(
+      {
+        write_import_file(ds_processed_data,
+          output_file = output_file,
+          output_type = output_type,
+          output_dir = output_dir
+        )
+      },
+      error = function(e) e
+    )
     if (inherits(result, "error")) {
       error_msg <- conditionMessage(result)
       success <- FALSE
@@ -556,21 +567,23 @@ convert_import_file <- function(input_file,
   }
 
   if (success) {
-    msg <- sprintf("\nConvert %s to %s successfully",
-                   input_file,
-                   output_file
-                   )
+    msg <- sprintf(
+      "\nConvert %s to %s successfully",
+      input_file,
+      output_file
+    )
     rlang::inform(msg)
   } else {
-    msg <- sprintf("\nFail to convert %s to %s, error: %s",
-                   input_file,
-                   output_file,
-                   error_msg)
+    msg <- sprintf(
+      "\nFail to convert %s to %s, error: %s",
+      input_file,
+      output_file,
+      error_msg
+    )
     rlang::warn(msg)
   }
 
   return(invisible(success))
-
 }
 
 
@@ -602,10 +615,10 @@ ttm_financial_report <- function(ds_financial_report,
 
   # function to trial data in a group with unique value of key_fields
   .trail_fun <- function(ds_financial_report,
-                           date_index_field,
-                           key_fields,
-                           field_suffix = "ttm",
-                           ...) {
+                         date_index_field,
+                         key_fields,
+                         field_suffix = "ttm",
+                         ...) {
 
     # predicate period of dates
     origin_dates <- ds_financial_report[[date_index_field]]
@@ -623,19 +636,22 @@ ttm_financial_report <- function(ds_financial_report,
       # value_fields include numeric fields, na_fields, but exclude
       # key_fields and date_index_field
       pattern_retain_fields <- stringr::str_c(
-                               stringr::str_c(key_fields, collapse = "|"),
-                                              date_index_field, sep = "|")
+        stringr::str_c(key_fields, collapse = "|"),
+        date_index_field,
+        sep = "|"
+      )
       pattern_non_retain_fields <- sprintf("[^%s]", pattern_retain_fields)
 
       numeric_fields <- expect_type_fields(ds_financial_report,
         expect_type = "numeric"
       )
       na_fields <- expect_type_fields(ds_financial_report,
-                                      expect_type = "NA"
+        expect_type = "NA"
       )
       value_fields <- c(numeric_fields, na_fields)
       value_fields <- stringr::str_subset(value_fields,
-                                          pattern = pattern_non_retain_fields)
+        pattern = pattern_non_retain_fields
+      )
 
       ds_origin_value <- ds_financial_report %>%
         dplyr::select(!!value_fields)

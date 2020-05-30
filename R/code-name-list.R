@@ -1,4 +1,4 @@
-#'@include stock-db.R
+#' @include stock-db.R
 
 # Class definition of code_name_list class -----------------------------------
 
@@ -6,11 +6,14 @@
 
 # Class definition of code_name_list class
 setRefClass("code_name_list",
-            fields  = c( code = "ANY",
-                         name = "ANY"))
+  fields = c(
+    code = "ANY",
+    name = "ANY"
+  )
+)
 
-setClassUnion("code_name_listOrNull", c("code_name_list","NULL"))
-#setClassUnion("code_name_listOrNull", c("code_name_list"))
+setClassUnion("code_name_listOrNull", c("code_name_list", "NULL"))
+# setClassUnion("code_name_listOrNull", c("code_name_list"))
 
 
 #' Class creator of code_name_list class
@@ -24,7 +27,6 @@ setClassUnion("code_name_listOrNull", c("code_name_list","NULL"))
 #'
 #' @export
 code_name_list <- function(codes, names) {
-
   stopifnot(!is.null(codes), !is.null(names))
   stopifnot(length(codes) == length(names))
 
@@ -36,7 +38,6 @@ code_name_list <- function(codes, names) {
   code_name_list <- new("code_name_list", code = codes, name = names)
 
   return(code_name_list)
-
 }
 
 
@@ -46,8 +47,7 @@ code_name_list <- function(codes, names) {
 # @describeIn code2name Translate code into name in a object of code_name_list
 # @export
 code2name.code_name_list <- function(x, code, ...) {
-
-  stopifnot(inherits(x, "code_name_list") ,!is.null(code))
+  stopifnot(inherits(x, "code_name_list"), !is.null(code))
 
   # translate number code into charater code if stored code is character
   if (is.character(x$code) && is.numeric(code)) {
@@ -59,47 +59,40 @@ code2name.code_name_list <- function(x, code, ...) {
   }
 
   # match code into name
-  match_index = match(code, x$code)
+  match_index <- match(code, x$code)
   name <- x$name[match_index]
 
   return(name)
-
 }
 # Method definition for s4 generic
 #' @describeIn code2name Translate code into name in a object of code_name_list
 #' @export
-setMethod("code2name",
-          signature(x = "code_name_list"),
-          function(x, code, ...) {
-            code2name.code_name_list(x, code, ...)
-          })
+setMethod(
+  "code2name",
+  signature(x = "code_name_list"),
+  function(x, code, ...) {
+    code2name.code_name_list(x, code, ...)
+  }
+)
 
 # Translate name into code in code_name_list
 # @describeIn name2code Translate name into code in a object of code_name_list
 # @export
 name2code.code_name_list <- function(x, name, ...) {
+  stopifnot(inherits(x, "code_name_list"), !is.null(name), is.character(name))
 
-  stopifnot(inherits(x, "code_name_list") ,!is.null(name), is.character(name))
-
-  match_index = match(name, x$name)
+  match_index <- match(name, x$name)
   code <- x$code[match_index]
 
   return(code)
-
 }
 # Method definition for s4 generic
 #' @describeIn name2code Translate name into code in a object of code_name_list
 #' @export
-setMethod("name2code",
-          signature(x = "code_name_list"),
-          function(x, name, ...) {
-            name2code.code_name_list(x, name, ...)
-          })
-
-
-
-
-
-
-
-
+setMethod(
+  "name2code",
+  signature(x = "code_name_list"),
+  function(x, name, ...) {
+    name2code.code_name_list(x, name, ...)
+  }
+)

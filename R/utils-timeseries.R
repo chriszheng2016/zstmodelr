@@ -153,12 +153,12 @@ ts_resample.tbl_df <- function(ts_dataset,
 
   # define internal function to process single group dataset
   .ts_resample_single_df <- function(ts_dataset,
-                                       freq_rule,
-                                       fillna_method,
-                                       agg_fun,
-                                       ...,
-                                       date_index_field,
-                                       key_fields) {
+                                     freq_rule,
+                                     fillna_method,
+                                     agg_fun,
+                                     ...,
+                                     date_index_field,
+                                     key_fields) {
 
     # validate params
     stopifnot(!is.null(ts_dataset), inherits(ts_dataset, "data.frame"))
@@ -236,23 +236,25 @@ ts_resample.tbl_df <- function(ts_dataset,
     } else {
       plyr::progress_text()
     }
-    suppress_warnings({
-      result_ts <- plyr::ddply(
-        ts_dataset,
-        .variables = key_fields,
-        .fun = .ts_resample_single_df,
-        freq_rule = freq_rule,
-        fillna_method = fillna_method,
-        agg_fun = agg_fun,
-        ...,
-        date_index_field = date_index_field,
-        key_fields = key_fields,
-        .parallel = parallel,
-        .progress = progress_display
-      )
-    },
-    # suppress warnings due to parallel process
-    warn_pattern = "<anonymous>: ...")
+    suppress_warnings(
+      {
+        result_ts <- plyr::ddply(
+          ts_dataset,
+          .variables = key_fields,
+          .fun = .ts_resample_single_df,
+          freq_rule = freq_rule,
+          fillna_method = fillna_method,
+          agg_fun = agg_fun,
+          ...,
+          date_index_field = date_index_field,
+          key_fields = key_fields,
+          .parallel = parallel,
+          .progress = progress_display
+        )
+      },
+      # suppress warnings due to parallel process
+      warn_pattern = "<anonymous>: ..."
+    )
   }
 
   result_ts <- tibble::as_tibble(result_ts)
@@ -286,10 +288,10 @@ ts_asfreq.tbl_df <- function(ts_dataset,
 
   # define internal function to process single group dataset
   .ts_asfreq_single_df <- function(ts_dataset,
-                                     freq_rule,
-                                     fillna_method,
-                                     date_index_field,
-                                     key_fields) {
+                                   freq_rule,
+                                   fillna_method,
+                                   date_index_field,
+                                   key_fields) {
 
     # validate params
     stopifnot(!is.null(ts_dataset), inherits(ts_dataset, "data.frame"))
@@ -353,22 +355,23 @@ ts_asfreq.tbl_df <- function(ts_dataset,
     } else {
       plyr::progress_text()
     }
-    suppress_warnings({
-      result_ts <- plyr::ddply(
-        ts_dataset,
-        .variables = key_fields,
-        .fun = .ts_asfreq_single_df,
-        freq_rule = freq_rule,
-        fillna_method = fillna_method,
-        date_index_field = date_index_field,
-        key_fields = key_fields,
-        .parallel = parallel,
-        .progress = progress_display
-      )
-    },
-    # suppress warnings due to parallel process
-    warn_pattern = "<anonymous>: ...")
-
+    suppress_warnings(
+      {
+        result_ts <- plyr::ddply(
+          ts_dataset,
+          .variables = key_fields,
+          .fun = .ts_asfreq_single_df,
+          freq_rule = freq_rule,
+          fillna_method = fillna_method,
+          date_index_field = date_index_field,
+          key_fields = key_fields,
+          .parallel = parallel,
+          .progress = progress_display
+        )
+      },
+      # suppress warnings due to parallel process
+      warn_pattern = "<anonymous>: ..."
+    )
   }
 
   result_ts <- tibble::as_tibble(result_ts)
@@ -392,11 +395,11 @@ ts_lag.tbl_df <- function(ts_dataset,
 
   # compute lag timeseries for single group dataset
   .ts_lag_single_df <- function(ts_dataset,
-                                  k,
-                                  trim,
-                                  ...,
-                                  date_index_field,
-                                  key_fields) {
+                                k,
+                                trim,
+                                ...,
+                                date_index_field,
+                                key_fields) {
 
     # validate params
     stopifnot(!is.null(ts_dataset), inherits(ts_dataset, "data.frame"))
@@ -478,22 +481,23 @@ ts_lag.tbl_df <- function(ts_dataset,
     } else {
       plyr::progress_text()
     }
-    suppress_warnings({
-      result_ts <- plyr::ddply(
-        ts_dataset,
-        .variables = key_fields,
-        .fun = .ts_lag_single_df,
-        k = k,
-        trim = trim,
-        date_index_field = date_index_field,
-        key_fields = key_fields,
-        .parallel = parallel,
-        .progress = progress_display
-      )
-    },
-    # suppress warnings due to parallel process
-    warn_pattern = "<anonymous>: ...")
-
+    suppress_warnings(
+      {
+        result_ts <- plyr::ddply(
+          ts_dataset,
+          .variables = key_fields,
+          .fun = .ts_lag_single_df,
+          k = k,
+          trim = trim,
+          date_index_field = date_index_field,
+          key_fields = key_fields,
+          .parallel = parallel,
+          .progress = progress_display
+        )
+      },
+      # suppress warnings due to parallel process
+      warn_pattern = "<anonymous>: ..."
+    )
   }
 
   result_ts <- tibble::as_tibble(result_ts)
@@ -710,18 +714,19 @@ reindex_by_regroup.tbl_df <- function(ts_df,
   # aggregating number fields by agg_fun for each group
   ts_result_numbers <- ts_new_df %>%
     dplyr::group_by(group_index) %>%
-    dplyr::summarise_if(~inherits(., "numeric"), agg_fun, ...)
+    dplyr::summarise_if(~ inherits(., "numeric"), agg_fun, ...)
 
   # aggregaing non-number fields by using value of first observatio of each group
   ts_result_non_numbers <- ts_new_df %>%
     dplyr::group_by(group_index) %>%
-    dplyr::summarise_if(~!inherits(., "numeric"), dplyr::first)
+    dplyr::summarise_if(~ !inherits(., "numeric"), dplyr::first)
 
   # combine non_number and number fields
   ts_result <- ts_result_non_numbers %>%
     dplyr::left_join(ts_result_numbers, by = "group_index") %>%
     dplyr::select(-!!rlang::parse_quo(date_index_field,
-                                      env = rlang::caller_env())) %>%
+      env = rlang::caller_env()
+    )) %>%
     dplyr::select(!!date_index_field := group_index, dplyr::everything())
 
   return(ts_result)
@@ -901,5 +906,3 @@ fix_key_field <- function(ts_dataset, key_fields) {
 
   return(fix_df)
 }
-
-

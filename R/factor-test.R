@@ -6,25 +6,33 @@ setClassUnion("data.frameOrNull", c("data.frame", "NULL"))
 
 # Abstract class of factor testing
 setClass("factor_test",
-         slots = list(summary = "data.frame",
-                                 raw_result = "data.frameOrNull"),
-         contains = "VIRTUAL")
+  slots = list(
+    summary = "data.frame",
+    raw_result = "data.frameOrNull"
+  ),
+  contains = "VIRTUAL"
+)
 
 # Spficific classes of various factor testing
 
 setClass("factor_test_uniregress",
-         slots = list(factor_returns = "data.frame" ),
-         contains = "factor_test")
+  slots = list(factor_returns = "data.frame"),
+  contains = "factor_test"
+)
 
 setClass("factor_test_IC",
-         slots = list(factor_ICs = "data.frame" ),
-         contains = "factor_test")
+  slots = list(factor_ICs = "data.frame"),
+  contains = "factor_test"
+)
 
 setClass("factor_test_sort_portfolios",
-         slots = list(factor_returns = "data.frame",
-                      portfolios_summary = "data.frame",
-                      portfolios_return = "data.frame"),
-         contains = "factor_test")
+  slots = list(
+    factor_returns = "data.frame",
+    portfolios_summary = "data.frame",
+    portfolios_return = "data.frame"
+  ),
+  contains = "factor_test"
+)
 
 
 # Creating Functions of factor_test classes -------------------------------------------
@@ -66,17 +74,19 @@ factor_test_uniregress <- function(ds_test,
   date_field <- rlang::parse_quo(date_field, env = rlang::caller_env())
 
   # Nest test data by group of factor_name and date
-  #cross section: group data by factor and date_field(cross section setting)
+  # cross section: group data by factor and date_field(cross section setting)
   ds_test_groupdata <- ds_test_data %>%
-      dplyr::group_by(!!factor_field, !!date_field) %>%
-      tidyr::nest()
+    dplyr::group_by(!!factor_field, !!date_field) %>%
+    tidyr::nest()
 
 
   # Conduct factor regression test
   ds_test_result <- ds_test_groupdata %>%
     dplyr::mutate(
-      model = purrr::map(data, purrr::possibly(regress_fun, otherwise = NULL,
-                                               quiet = TRUE), ...),
+      model = purrr::map(data, purrr::possibly(regress_fun,
+        otherwise = NULL,
+        quiet = TRUE
+      ), ...),
       glance = purrr::map(model, broom::glance),
       tidy = purrr::map(model, broom::tidy),
       augument = purrr::map2(model, data, broom::augment)
@@ -92,7 +102,7 @@ factor_test_uniregress <- function(ds_test,
 
   # Distribution summary of factor return series
   result_factor_return_distrbution <- ds_factor_returns_raw %>%
-    dplyr::group_by(!!factor_field)  %>%
+    dplyr::group_by(!!factor_field) %>%
     dplyr::summarise(
       obs = dplyr::n(),
       nas = sum(is.na(estimate)),
@@ -105,13 +115,13 @@ factor_test_uniregress <- function(ds_test,
       kurt = PerformanceAnalytics::kurtosis(estimate, na.rm = TRUE),
       pos_pct = mean(estimate >= 0, na.rm = TRUE),
       neg_pct = mean(estimate < 0, na.rm = TRUE),
-      odds = ifelse((neg_pct != 0),pos_pct / neg_pct, NA)
+      odds = ifelse((neg_pct != 0), pos_pct / neg_pct, NA)
     )
 
 
   # t-test for estimation of mean of factor return series
   result_factor_return_t.test <- ds_factor_returns_raw %>%
-    dplyr::group_by(!!factor_field)  %>%
+    dplyr::group_by(!!factor_field) %>%
     dplyr::do(broom::tidy(t.test(.$estimate))) %>%
     dplyr::select(
       !!factor_field,
@@ -120,8 +130,8 @@ factor_test_uniregress <- function(ds_test,
     )
 
   # Normal distribution test for factor return series
-   result_factor_return_normal.test <- ds_factor_returns_raw %>%
-    dplyr::group_by(!!factor_field)  %>%
+  result_factor_return_normal.test <- ds_factor_returns_raw %>%
+    dplyr::group_by(!!factor_field) %>%
     dplyr::do(broom::tidy(shapiro.test(.$estimate))) %>%
     dplyr::select(
       !!factor_field,
@@ -139,9 +149,11 @@ factor_test_uniregress <- function(ds_test,
   # Integrate into result summary
   result_summary <- result_factor_return_distrbution %>%
     dplyr::left_join(result_factor_return_t.test,
-                     by = rlang::quo_text(factor_field)) %>%
+      by = rlang::quo_text(factor_field)
+    ) %>%
     dplyr::left_join(result_factor_return_normal.test,
-                     by = rlang::quo_text(factor_field))
+      by = rlang::quo_text(factor_field)
+    )
 
 
   # Build factor test object with results info
@@ -149,21 +161,20 @@ factor_test_uniregress <- function(ds_test,
   if (output_type == "summary") {
     # include test result summary dataset
     result_object <- new("factor_test_uniregress",
-                         summary = result_summary,
-                         factor_returns = ds_factor_returns,
-                         raw_result = NULL)
-
-
+      summary = result_summary,
+      factor_returns = ds_factor_returns,
+      raw_result = NULL
+    )
   } else {
     # include test result summary dataset and test result raw dataset
     result_object <- new("factor_test_uniregress",
-                         summary = result_summary,
-                         factor_returns = ds_factor_returns,
-                         raw_result = ds_test_result)
+      summary = result_summary,
+      factor_returns = ds_factor_returns,
+      raw_result = ds_test_result
+    )
   }
 
   return(invisible(result_object))
-
 }
 
 # Information Coefficients Test
@@ -203,14 +214,16 @@ factor_test_IC <- function(ds_test,
 
   # Nest test data by group of factor_name and date as cross section data
   ds_test_groupdata <- ds_test_data %>%
-      dplyr::group_by(!!factor_field, !!date_field) %>%
-      tidyr::nest()
+    dplyr::group_by(!!factor_field, !!date_field) %>%
+    tidyr::nest()
 
 
   # Compute IC for crossection data
   ds_test_result <- ds_test_groupdata %>%
-    dplyr::mutate(model = purrr::map(data, purrr::possibly(IC_fun, otherwise = NULL, quiet = TRUE), ...),
-                  glance = purrr::map(model, broom::glance))
+    dplyr::mutate(
+      model = purrr::map(data, purrr::possibly(IC_fun, otherwise = NULL, quiet = TRUE), ...),
+      glance = purrr::map(model, broom::glance)
+    )
 
 
   # Build Result summary dataset
@@ -221,21 +234,21 @@ factor_test_IC <- function(ds_test,
 
   # Distribution summary of factor ICs series
   result_factor_ICs_distrbution <- ds_factor_ICs_raw %>%
-     dplyr::group_by(!!factor_field) %>%
-     dplyr::summarise(
-       obs = dplyr::n(),
-       nas = sum(is.na(estimate)),
-       avg = mean(estimate, na.rm = TRUE),
-       med = median(estimate, na.rm = TRUE),
-       min = min(estimate, na.rm = TRUE),
-       max = max(estimate, na.rm = TRUE),
-       std = sd(estimate, na.rm = TRUE),
-       skew = PerformanceAnalytics::skewness(estimate, na.rm = TRUE),
-       kurt = PerformanceAnalytics::kurtosis(estimate, na.rm = TRUE),
-       pos_pct = mean(estimate >= 0, na.rm = TRUE),
-       neg_pct = mean(estimate < 0, na.rm = TRUE),
-       odds = ifelse((neg_pct != 0),pos_pct / neg_pct, NA)
-     )
+    dplyr::group_by(!!factor_field) %>%
+    dplyr::summarise(
+      obs = dplyr::n(),
+      nas = sum(is.na(estimate)),
+      avg = mean(estimate, na.rm = TRUE),
+      med = median(estimate, na.rm = TRUE),
+      min = min(estimate, na.rm = TRUE),
+      max = max(estimate, na.rm = TRUE),
+      std = sd(estimate, na.rm = TRUE),
+      skew = PerformanceAnalytics::skewness(estimate, na.rm = TRUE),
+      kurt = PerformanceAnalytics::kurtosis(estimate, na.rm = TRUE),
+      pos_pct = mean(estimate >= 0, na.rm = TRUE),
+      neg_pct = mean(estimate < 0, na.rm = TRUE),
+      odds = ifelse((neg_pct != 0), pos_pct / neg_pct, NA)
+    )
 
   # t-test for estimation of mean of factor IC series
   result_factor_ICs_t.test <- ds_factor_ICs_raw %>%
@@ -258,7 +271,7 @@ factor_test_IC <- function(ds_test,
 
   # Build factor IC series
   ds_factor_ICs <- ds_factor_ICs_raw %>%
-    dplyr::select(!!factor_field,!!date_field, IC = estimate) %>%
+    dplyr::select(!!factor_field, !!date_field, IC = estimate) %>%
     # tidyr::spread(key = !!factor_field, value = IC) %>%
     tidyr::pivot_wider(names_from = !!factor_field, values_from = IC) %>%
     dplyr::arrange(!!date_field)
@@ -267,9 +280,11 @@ factor_test_IC <- function(ds_test,
   # Integrate into result summary
   result_summary <- result_factor_ICs_distrbution %>%
     dplyr::left_join(result_factor_ICs_t.test,
-                     by = rlang::quo_text(factor_field)) %>%
+      by = rlang::quo_text(factor_field)
+    ) %>%
     dplyr::left_join(result_factor_ICs_normal.test,
-                     by = rlang::quo_text(factor_field))
+      by = rlang::quo_text(factor_field)
+    )
 
 
   # Build factor test object with results info
@@ -277,18 +292,17 @@ factor_test_IC <- function(ds_test,
   if (output_type == "summary") {
     # include test result summary dataset
     result_object <- new("factor_test_IC",
-                         summary = result_summary,
-                         factor_ICs = ds_factor_ICs,
-                         raw_result = NULL)
-
-
+      summary = result_summary,
+      factor_ICs = ds_factor_ICs,
+      raw_result = NULL
+    )
   } else {
     # include test result summary dataset and test result raw dataset
     result_object <- new("factor_test_IC",
-                         summary = result_summary,
-                         factor_ICs = ds_factor_ICs,
-                         raw_result = ds_test_result)
-
+      summary = result_summary,
+      factor_ICs = ds_factor_ICs,
+      raw_result = ds_test_result
+    )
   }
 
   return(invisible(result_object))
@@ -321,13 +335,13 @@ factor_test_IC <- function(ds_test,
 #'
 #' @export
 factor_test_sort_portfolios <- function(ds_test,
-                                      sort_portfolios_fun,
-                                      ...,
-                                      output_type = c("summary", "raw"),
-                                      factor_field = "factor_name",
-                                      date_field = "date",
-                                      stkcd_field = "stkcd",
-                                      return_field = "return") {
+                                        sort_portfolios_fun,
+                                        ...,
+                                        output_type = c("summary", "raw"),
+                                        factor_field = "factor_name",
+                                        date_field = "date",
+                                        stkcd_field = "stkcd",
+                                        return_field = "return") {
 
 
   # Method of computing croossectional return of sort portfolios
@@ -338,17 +352,15 @@ factor_test_sort_portfolios <- function(ds_test,
       dplyr::left_join(ds_crosssection, by = c("stkcd" = stkcd_field)) %>%
       dplyr::group_by(portfolio_group) %>%
       dplyr::summarise(return = sum((!!return_field) * weight, na.rm = TRUE)
-                                     / sum(weight, na.rm = TRUE))
+      / sum(weight, na.rm = TRUE))
 
     return(portfolios_return)
-
   }
 
   # Method of summuarizing sort portoflios return
   .summarize_portfolios_return <- function(ds_portfolios_return) {
-
     col_names <- colnames(ds_portfolios_return)
-    is_date_field = col_names %in% rlang::quo_text(date_field)
+    is_date_field <- col_names %in% rlang::quo_text(date_field)
     if (!any(is_date_field)) {
       stop("Can't find date colomns")
     }
@@ -356,7 +368,8 @@ factor_test_sort_portfolios <- function(ds_test,
     date_field_name <- col_names[is_date_field]
     portfilo_groups_name <- col_names[!is_date_field]
     ts_portfolios_return <- xts::xts(ds_portfolios_return[, portfilo_groups_name],
-                                     order.by = ds_portfolios_return[, date_field_name][[1]])
+      order.by = ds_portfolios_return[, date_field_name][[1]]
+    )
 
     # compute peformance indicators
     annual_returns <- PerformanceAnalytics::Return.annualized(ts_portfolios_return)
@@ -365,7 +378,7 @@ factor_test_sort_portfolios <- function(ds_test,
     max_drawdown <- PerformanceAnalytics::maxDrawdown(ts_portfolios_return)
 
 
-    #build summary table
+    # build summary table
     summary_table <- rbind(annual_returns, anuual_std, annual_sharpe, max_drawdown)
     summary_table <- as.data.frame(summary_table)
     summary_table <- tibble::rownames_to_column(summary_table, var = "indicator")
@@ -390,11 +403,15 @@ factor_test_sort_portfolios <- function(ds_test,
   # Compute return for sort portfolios
   ds_test_result <- ds_test_groupdata %>%
     dplyr::mutate(
-      sort_portfolios = purrr::map(data,
-            purrr::possibly(sort_portfolios_fun, otherwise = NULL, quiet = TRUE),
-                                   ...),
-      sort_portfolio_return = purrr::map2(.x = data,.y = sort_portfolios,
-                                        .compute_crosssection_portfolios_return)
+      sort_portfolios = purrr::map(
+        data,
+        purrr::possibly(sort_portfolios_fun, otherwise = NULL, quiet = TRUE),
+        ...
+      ),
+      sort_portfolio_return = purrr::map2(
+        .x = data, .y = sort_portfolios,
+        .compute_crosssection_portfolios_return
+      )
     )
 
   # Expand sort portfolios returns
@@ -408,7 +425,7 @@ factor_test_sort_portfolios <- function(ds_test,
   # Build zero-portfolio to complete portfolios return dataset
   # group_zero = group_hi - group_low
   ds_portfolios_return <- ds_portfolios_return_raw %>%
-   dplyr::mutate(group_zero = group_hi - group_lo)
+    dplyr::mutate(group_zero = group_hi - group_lo)
 
 
   # Build Result of portfolios return summary
@@ -416,8 +433,10 @@ factor_test_sort_portfolios <- function(ds_test,
     dplyr::group_by(!!factor_field) %>%
     tidyr::nest() %>%
     dplyr::rename(portfolios_return = data) %>%
-    dplyr::mutate(portfolios_return_summary = purrr::map(portfolios_return,
-                                            .summarize_portfolios_return)) %>%
+    dplyr::mutate(portfolios_return_summary = purrr::map(
+      portfolios_return,
+      .summarize_portfolios_return
+    )) %>%
     dplyr::select(-c(portfolios_return)) %>%
     tidyr::unnest(portfolios_return_summary)
 
@@ -439,7 +458,7 @@ factor_test_sort_portfolios <- function(ds_test,
       kurt = PerformanceAnalytics::kurtosis(group_zero, na.rm = TRUE),
       pos_pct = mean(group_zero >= 0, na.rm = TRUE),
       neg_pct = mean(group_zero < 0, na.rm = TRUE),
-      odds = ifelse((neg_pct != 0),pos_pct / neg_pct, NA)
+      odds = ifelse((neg_pct != 0), pos_pct / neg_pct, NA)
     )
 
   # t-test for estimation of mean of zero-portfolio return series
@@ -464,9 +483,11 @@ factor_test_sort_portfolios <- function(ds_test,
   # Integrate into result summary
   result_summary <- result_zero_portfolio_return_distrbution %>%
     dplyr::left_join(result_zero_portfolio_return_t.test,
-                     by = rlang::quo_text(factor_field)) %>%
+      by = rlang::quo_text(factor_field)
+    ) %>%
     dplyr::left_join(result_zero_portfolio_return_normal.test,
-                     by = rlang::quo_text(factor_field))
+      by = rlang::quo_text(factor_field)
+    )
 
   # Build factor returns datasets from group_zero portfolio
   ds_factor_returns <- ds_portfolios_return %>%
@@ -480,22 +501,22 @@ factor_test_sort_portfolios <- function(ds_test,
   output_type <- match.arg(output_type)
   if (output_type == "summary") {
     # include test result summary dataset
-     result_object <- new("factor_test_sort_portfolios",
-                          summary = result_summary,
-                          factor_returns = ds_factor_returns,
-                          portfolios_summary = result_portfolios_summary,
-                          portfolios_return = ds_portfolios_return,
-                          raw_result = NULL)
-
+    result_object <- new("factor_test_sort_portfolios",
+      summary = result_summary,
+      factor_returns = ds_factor_returns,
+      portfolios_summary = result_portfolios_summary,
+      portfolios_return = ds_portfolios_return,
+      raw_result = NULL
+    )
   } else {
     # include test result summary dataset and test result raw dataset
     result_object <- new("factor_test_sort_portfolios",
-                         summary = result_summary,
-                         portfolios_summary = result_portfolios_summary,
-                         portfolios_return = ds_portfolios_return,
-                         raw_result = ds_test_result)
-
-   }
+      summary = result_summary,
+      portfolios_summary = result_portfolios_summary,
+      portfolios_return = ds_portfolios_return,
+      raw_result = ds_test_result
+    )
+  }
 
   return(invisible(result_object))
 }
@@ -520,7 +541,7 @@ factor_test_sort_portfolios <- function(ds_test,
 build_sort_portfolios <- function(stocks_list,
                                   factor_value_list,
                                   stocks_weight_list = NULL,
-                                  ngroup = 5){
+                                  ngroup = 5) {
 
   # Validate params
   stopifnot(!is.null(stocks_list), length(stocks_list) != 0)
@@ -537,14 +558,16 @@ build_sort_portfolios <- function(stocks_list,
     }
   } else {
     # Set each weight as 1
-    stocks_weight_list = rep(1, length(stocks_list))
+    stocks_weight_list <- rep(1, length(stocks_list))
   }
 
 
   # create sort portfolios
-  sort_portfolios <- tibble::tibble( stkcd = stocks_list,
-                                     weight = stocks_weight_list,
-                                     factor_value = factor_value_list)
+  sort_portfolios <- tibble::tibble(
+    stkcd = stocks_list,
+    weight = stocks_weight_list,
+    factor_value = factor_value_list
+  )
 
 
   # Build factor groups
@@ -568,7 +591,6 @@ build_sort_portfolios <- function(stocks_list,
     dplyr::select(portfolio_group, stkcd, weight, factor_value)
 
   return(sort_portfolios)
-
 }
 
 
@@ -576,7 +598,7 @@ build_sort_portfolios <- function(stocks_list,
 
 # Generic Implementation of summary for factor_test class
 # @export
-summary.factor_test <- function(object, ...){
+summary.factor_test <- function(object, ...) {
 
   # Validate params
   stopifnot(!is.null(object), inherits(object, "factor_test"))
@@ -585,82 +607,100 @@ summary.factor_test <- function(object, ...){
 
   object@summary
 }
-setMethod("summary",
-          signature(object = "factor_test"),
-          function(object, ...){ summary.factor_test(object, ...)})
+setMethod(
+  "summary",
+  signature(object = "factor_test"),
+  function(object, ...) {
+    summary.factor_test(object, ...)
+  }
+)
 
 
 # Generic Implementation of plot for factor_test class
 # @export
-plot.factor_test <- function(x, ...){
+plot.factor_test <- function(x, ...) {
   # validate params
   stopifnot(!is.null(x), inherits(x, "factor_test"))
 }
-setMethod("plot",
-          signature(x = "factor_test", y = "missing"),
-          function(x, y, ...){plot.factor_test(x, ...)}
+setMethod(
+  "plot",
+  signature(x = "factor_test", y = "missing"),
+  function(x, y, ...) {
+    plot.factor_test(x, ...)
+  }
 )
 
 # Generic Implementation of plot for factor_test_uniregress
 # Plot result for factor_test_uniregress class
 # @export
-plot.factor_test_uniregress <- function(x, ...){
+plot.factor_test_uniregress <- function(x, ...) {
 
 
   # Validate params
-  stopifnot(!is.null(x),
-            inherits(x, "factor_test_uniregress"))
+  stopifnot(
+    !is.null(x),
+    inherits(x, "factor_test_uniregress")
+  )
 
   # Plot distribution of factors return
   .plot_distribution_factors_series(x@factor_returns,
-                                    series_name = "factor return")
+    series_name = "factor return"
+  )
 
 
   # Plot return summary
 
   invisible(return)
 }
-setMethod("plot",
-          signature(x = "factor_test_uniregress", y = "missing"),
-          function(x, y, ...){ plot.factor_test_uniregress(x, ...)}
+setMethod(
+  "plot",
+  signature(x = "factor_test_uniregress", y = "missing"),
+  function(x, y, ...) {
+    plot.factor_test_uniregress(x, ...)
+  }
 )
 
 # Generic Implementation of plot for factor_test_uniregress
 # Plot result for factor_test_uniregress class
 # @export
-plot.factor_test_IC <- function(x, ...){
+plot.factor_test_IC <- function(x, ...) {
 
 
   # Validate params
-  stopifnot(!is.null(x),
-            inherits(x, "factor_test_IC"))
+  stopifnot(
+    !is.null(x),
+    inherits(x, "factor_test_IC")
+  )
 
   # Plot Distribution of factors ICs
   .plot_distribution_factors_series(x@factor_ICs,
-                                    series_name = "factor IC")
+    series_name = "factor IC"
+  )
 
   # Plot return summary
 
   invisible(return)
 }
-setMethod("plot",
-          signature(x = "factor_test_IC", y = "missing"),
-          function(x, y, ...){ plot.factor_test_IC(x, ...)}
+setMethod(
+  "plot",
+  signature(x = "factor_test_IC", y = "missing"),
+  function(x, y, ...) {
+    plot.factor_test_IC(x, ...)
+  }
 )
 
 
 # Generic Implementation of plot for factor_test_sort_portfolios
 # Plot result for factor_test_sort_portfolios
 # @export
-plot.factor_test_sort_portfolios <- function(x, ...){
-
-  .plot_portfolio_returns <- function(ds_portfolios_return, factor_name){
+plot.factor_test_sort_portfolios <- function(x, ...) {
+  .plot_portfolio_returns <- function(ds_portfolios_return, factor_name) {
 
     # validate params
     stopifnot(!is.null(ds_portfolios_return), inherits(ds_portfolios_return, "data.frame"))
 
     col_names <- colnames(ds_portfolios_return)
-    is_date_field = purrr::map_lgl(ds_portfolios_return, lubridate::is.Date)
+    is_date_field <- purrr::map_lgl(ds_portfolios_return, lubridate::is.Date)
     if (sum(is_date_field) != 1) {
       stop("Can't find date colomns or have multiple date columns")
     }
@@ -676,7 +716,8 @@ plot.factor_test_sort_portfolios <- function(x, ...){
 
     # Convert to xts for plot
     ts_portfolios_return <- xts::xts(ds_portfolios_groups,
-                                     order.by = ds_portfolios_date[[1]])
+      order.by = ds_portfolios_date[[1]]
+    )
 
 
     # charts.PerformanceSummary(edhec[,c(1,13)])
@@ -684,77 +725,84 @@ plot.factor_test_sort_portfolios <- function(x, ...){
     # Plot performance of portfolios
 
     # Plot Performance Summary
-    title = sprintf("Perormance Summary(Factor:%s)", factor_name)
+    title <- sprintf("Perormance Summary(Factor:%s)", factor_name)
     PerformanceAnalytics::charts.PerformanceSummary(ts_portfolios_return,
-                              ylog = TRUE,
-                              method = "StdDev",
-                              main = title,
-                              colorset = PerformanceAnalytics::redfocus,
-                              legend.loc = "topleft",
-                              cex.axis = 1,
-                              cex.main = 1.2
-                              )
+      ylog = TRUE,
+      method = "StdDev",
+      main = title,
+      colorset = PerformanceAnalytics::redfocus,
+      legend.loc = "topleft",
+      cex.axis = 1,
+      cex.main = 1.2
+    )
 
     # Plot Rolling Performance
-    title = sprintf("Rolling 12-Month Performance(Factor:%s)", factor_name)
+    title <- sprintf("Rolling 12-Month Performance(Factor:%s)", factor_name)
     PerformanceAnalytics::charts.RollingPerformance(ts_portfolios_return,
-                              main = title,
-                              colorset = PerformanceAnalytics::redfocus,
-                              legend.loc = "topleft",
-                              cex.axis = 1,
-                              cex.main = 1.2)
-
+      main = title,
+      colorset = PerformanceAnalytics::redfocus,
+      legend.loc = "topleft",
+      cex.axis = 1,
+      cex.main = 1.2
+    )
   }
 
   # Validate params
-  stopifnot(!is.null(x),
-            inherits(x, "factor_test_sort_portfolios"))
+  stopifnot(
+    !is.null(x),
+    inherits(x, "factor_test_sort_portfolios")
+  )
 
   # Plot Distribution of factor returns
   .plot_distribution_factors_series(x@factor_returns,
-                                    series_name = "factor return")
+    series_name = "factor return"
+  )
 
 
   # Plot return of portfolios
   ds_portfolios_return <- x@portfolios_return %>%
-       dplyr::group_by(factor_name) %>%
-       tidyr::nest(.key = "returns")
+    dplyr::group_by(factor_name) %>%
+    tidyr::nest(.key = "returns")
 
-  purrr::map2(ds_portfolios_return$returns,
-              as.list(ds_portfolios_return$factor_name),
-              .plot_portfolio_returns)
+  purrr::map2(
+    ds_portfolios_return$returns,
+    as.list(ds_portfolios_return$factor_name),
+    .plot_portfolio_returns
+  )
 
   # Plot return summary
 
   invisible(return)
 }
-setMethod("plot",
-          signature(x = "factor_test_sort_portfolios", y = "missing"),
-          function(x, y, ...){ plot.factor_test_sort_portfolios(x, ...)}
+setMethod(
+  "plot",
+  signature(x = "factor_test_sort_portfolios", y = "missing"),
+  function(x, y, ...) {
+    plot.factor_test_sort_portfolios(x, ...)
+  }
 )
 
 # Plot distribution for factor series
 .plot_distribution_factors_series <- function(ds_factors_series,
-                                              series_name = "factor return"){
+                                              series_name = "factor return") {
 
   # Validate params
   stopifnot(!is.null(ds_factors_series), inherits(ds_factors_series, "data.frame"))
 
   col_names <- colnames(ds_factors_series)
-  is_date_field = purrr::map_lgl(ds_factors_series, lubridate::is.Date)
+  is_date_field <- purrr::map_lgl(ds_factors_series, lubridate::is.Date)
   date_field_numbers <- sum(is_date_field)
   is_ds_timeseries <- FALSE
   if (date_field_numbers == 0) {
-    is_ds_timeseries = FALSE
+    is_ds_timeseries <- FALSE
   } else if (date_field_numbers == 1) {
-    is_ds_timeseries = TRUE
+    is_ds_timeseries <- TRUE
   } else {
     stop("Too many date columns, can't determine which to use")
   }
 
   # Plot factors timeseries
   if (is_ds_timeseries) {
-
     date_field_name <- col_names[is_date_field]
     ds_series_date <- ds_factors_series %>%
       dplyr::select(date_field_name)
@@ -766,29 +814,28 @@ setMethod("plot",
 
     # Convert to xts for plot
     ts_factors_return <- xts::xts(ds_series_factors,
-                                  order.by = ds_series_date[[1]])
+      order.by = ds_series_date[[1]]
+    )
 
     # Plot Boxplot for distribution of factors series
     title <- "Distribution of Factors Return"
     title <- paste("Distribution of", series_name)
     PerformanceAnalytics::chart.Boxplot(ts_factors_return,
-                                        sort.by = "median",
-                                        main = title,
-                                        cex.axis = 1,
-                                        xlab = series_name,
-                                        cex.main = 1.2)
+      sort.by = "median",
+      main = title,
+      cex.axis = 1,
+      xlab = series_name,
+      cex.main = 1.2
+    )
 
 
     # Plot Histogram for distribtion of factors series
     plyr::l_ply(ts_factors_return,
-                PerformanceAnalytics::chart.Histogram,
-                methods = c("add.density", "add.normal", "add.rug", "add.qqplot"),
-                show.outliers = TRUE,
-                xlab = series_name,
-                .progress = plyr::progress_win(title = "Working..."))
-
-
+      PerformanceAnalytics::chart.Histogram,
+      methods = c("add.density", "add.normal", "add.rug", "add.qqplot"),
+      show.outliers = TRUE,
+      xlab = series_name,
+      .progress = plyr::progress_win(title = "Working...")
+    )
   }
-
 }
-

@@ -87,7 +87,6 @@ test_that("is_periodic_dates, with various arguments", {
   expect_true(is_periodic_dates(irregular_yearly_dates,
     freq_rule = "year", regular = FALSE
   ))
-
 })
 
 test_that("guess_dates_period, with various arguments", {
@@ -119,5 +118,4 @@ test_that("guess_dates_period, with various arguments", {
   expect_true(guess_dates_period(irregular_monthly_dates, regular = FALSE) == "month")
   expect_true(guess_dates_period(irregular_quarterly_dates, regular = FALSE) == "quarter")
   expect_true(guess_dates_period(irregular_yearly_dates, regular = FALSE) == "year")
-
 })

@@ -45,39 +45,39 @@ e.g. add new attribute to existed indicator timeseries.
 
 \dontrun{
 
-  # modify ts_indicator with customized ind_attr_def_fun
+# modify ts_indicator with customized ind_attr_def_fun
 
-  # create attribute definition function of customized attribute
-  attr_fun <- function(date, stkcd, ...) {
-                 "attr_value"
-               }
-  ind_attr_def_fun <- create_attribute_def_fun(
-        attr_name,
-        attr_fun = attr_fun
-        )
-  # modify existed ts_indicators
-  ts_modify_indicator <- modify_indicator(ts_modify_indicator,
-       modify_fun = ind_attr_def_fun,
-       date_index_field = "date",
-       key_fields = "stkcd",
-       parallel = FALSE
-      )
+# create attribute definition function of customized attribute
+attr_fun <- function(date, stkcd, ...) {
+  "attr_value"
+}
+ind_attr_def_fun <- create_attribute_def_fun(
+  attr_name,
+  attr_fun = attr_fun
+)
+# modify existed ts_indicators
+ts_modify_indicator <- modify_indicator(ts_modify_indicator,
+  modify_fun = ind_attr_def_fun,
+  date_index_field = "date",
+  key_fields = "stkcd",
+  parallel = FALSE
+)
 
 
-  # modify ts_indicator with pre-defined ind_attr_def_fun
+# modify ts_indicator with pre-defined ind_attr_def_fun
 
-  # create definition function of pre-defined attribute of indcd
-  new_attr_indcd <- ind_attr_def_indcd(stock_db)
+# create definition function of pre-defined attribute of indcd
+new_attr_indcd <- ind_attr_def_indcd(stock_db)
 
-  # modify existed ts_indicators
-  ts_indicator <- modify_indicator(
-      ts_indicator = ts_indicator,
-      modify_fun = new_attr_indcd,
-      replace_exist = FALSE,
-      date_index_field = "date",
-      key_fields = "stkcd",
-      parallel = FALSE
-
+# modify existed ts_indicators
+ts_indicator <- modify_indicator(
+  ts_indicator = ts_indicator,
+  modify_fun = new_attr_indcd,
+  replace_exist = FALSE,
+  date_index_field = "date",
+  key_fields = "stkcd",
+  parallel = FALSE
+)
 }
 
 }

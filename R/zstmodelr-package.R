@@ -20,7 +20,7 @@
 #' expect_that(a, is_less_than(10))
 #' expect_lt(a, 10)
 #' }
-
+#'
 #' @keywords internal
 "_PACKAGE"
 
@@ -43,7 +43,7 @@ cluster <- NULL
 parallel_enable <- FALSE
 
 .onLoad <- function(libname, pkgname) {
-  #Set up for parallel processing
+  # Set up for parallel processing
   if (requireNamespace("parallel", quietly = FALSE)) {
     rlang::inform("Initiate clusters for parallel process...\n")
     cluster <<- parallel::makeCluster(parallel::detectCores() - 1)
@@ -68,11 +68,11 @@ parallel_enable <- FALSE
     zstmodelr.name = "Chris Zheng",
     zstmodelr.desc.author = "Chris Zheng <first.last@example.com> [aut, cre]",
     zstmodelr.parallel = ifelse(parallel_enable, "TRUE", "FALSE")
-
   )
   toset <- !(names(op.zstmodelr) %in% names(op))
-  if (any(toset))
+  if (any(toset)) {
     options(op.zstmodelr[toset])
+  }
 
   invisible()
 }
@@ -85,5 +85,3 @@ parallel_enable <- FALSE
     parallel::stopCluster(cluster)
   }
 }
-
-

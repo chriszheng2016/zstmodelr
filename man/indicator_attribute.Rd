@@ -74,45 +74,46 @@ timeseries of stocks.
 
 \dontrun{
 
- # create a indicator from vars dataset.
-  ts_indicator <- create_indicator(ds_def_vars,
-                                 ind_def_fun = ind_def_fun,
-                                 debug = debug,
-                                 date_index_field = "date",
-                                 key_fields = key_fields,
-                                 parallel = parallel)
+# create a indicator from vars dataset.
+ts_indicator <- create_indicator(ds_def_vars,
+  ind_def_fun = ind_def_fun,
+  debug = debug,
+  date_index_field = "date",
+  key_fields = key_fields,
+  parallel = parallel
+)
 
 
- # --- add attribute directly ---
+# --- add attribute directly ---
 
- # add attribute of indcd
- ts_indicators_with_indcd <- attr_indicators_indcd(stock_db,
-                      ts_indicators = ts_indicators)
+# add attribute of indcd
+ts_indicators_with_indcd <- attr_indicators_indcd(stock_db,
+  ts_indicators = ts_indicators
+)
 
- # add attribute of trdstats
- ts_indicators_wide_with_attr <- attr_indicators_trdstat(stock_db,
-                      ts_indicators = ts_indicators)
+# add attribute of trdstats
+ts_indicators_wide_with_attr <- attr_indicators_trdstat(stock_db,
+  ts_indicators = ts_indicators
+)
 
- # --- add attribute indirectly ---
+# --- add attribute indirectly ---
 
- # create attr defs by using data from stock
- new_attr_indcd <- ind_attr_def_indcd(stock_db)
+# create attr defs by using data from stock
+new_attr_indcd <- ind_attr_def_indcd(stock_db)
 
- # use attribute def to modify multi-indicators
- for (i in seq_len(NROW(ds_ts_indicators))) {
+# use attribute def to modify multi-indicators
+for (i in seq_len(NROW(ds_ts_indicators))) {
+  ts_indicator <- ds_ts_indicators$data[[i]]
 
-    ts_indicator <- ds_ts_indicators$data[[i]]
-
-    ts_indicator <- modify_indicator(
-                     ts_indicator = ts_indicator,
-                     modify_fun = new_attr_indcd,
-                     replace_exist = FALSE,
-                     date_index_field = "date",
-                     key_fields = "stkcd",
-                     parallel = parallel
-                    )
- }
-
+  ts_indicator <- modify_indicator(
+    ts_indicator = ts_indicator,
+    modify_fun = new_attr_indcd,
+    replace_exist = FALSE,
+    date_index_field = "date",
+    key_fields = "stkcd",
+    parallel = parallel
+  )
+}
 }
 }
 \concept{indicator attribute functions}

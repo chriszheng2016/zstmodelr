@@ -246,7 +246,7 @@ test_that("get_financial_report, with various arguments", {
   # get_financial_report with default arguments ====
   ts_report <- get_financial_report(stock_db)
   expect_is(ts_report, "data.frame")
-  expect_true(all(c("date",  "stkcd") %in% names(ts_report)))
+  expect_true(all(c("date", "stkcd") %in% names(ts_report)))
   expect_true(lubridate::is.Date(ts_report$date))
   expect_true(is.character(ts_report$stkcd))
   expect_true(is_periodic_dates(ts_report$date, freq_rule = "quarter"))
@@ -256,51 +256,54 @@ test_that("get_financial_report, with various arguments", {
 
   # get_financial_report with arguments: statement ====
   ds_test_statement <- tibble::tribble(
-    ~statement,      ~field_pattern,
+    ~statement, ~field_pattern,
     #-------------/------------------/
-    "balance_sheet",         "^a",
-    "income",               "^b",
-    "cashflow_direct",      "^c",
-    "cashflow_indirect",     "^d",
-    "income_ttm",           "^b\\w*_ttm$",
-    "cashflow_direct_ttm",  "^c\\w*_ttm$",
+    "balance_sheet", "^a",
+    "income", "^b",
+    "cashflow_direct", "^c",
+    "cashflow_indirect", "^d",
+    "income_ttm", "^b\\w*_ttm$",
+    "cashflow_direct_ttm", "^c\\w*_ttm$",
     "cashflow_indirect_ttm", "^d\\w*_ttm$"
   )
 
-  for ( i in seq_len(NROW(ds_test_statement))) {
+  for (i in seq_len(NROW(ds_test_statement))) {
     statement <- ds_test_statement$statement[i]
     pattern <- ds_test_statement$field_pattern[i]
 
     ts_report <- get_financial_report(stock_db,
-                                     stock_cd_list = stock_cd_list,
-                                     statement = statement,
-                                     period_type = "quarter",
-                                     period_date = "end")
+      stock_cd_list = stock_cd_list,
+      statement = statement,
+      period_type = "quarter",
+      period_date = "end"
+    )
     expect_is(ts_report, "data.frame")
-    expect_true(all(c("date",  "stkcd") %in% names(ts_report)))
+    expect_true(all(c("date", "stkcd") %in% names(ts_report)))
     expect_true(lubridate::is.Date(ts_report$date))
     expect_true(is.character(ts_report$stkcd))
     expect_true(any(stringr::str_detect(names(ts_report), pattern = pattern)))
   }
 
   # get_financial_report with arguments: consolidated ====
-  consolidated = TRUE
+  consolidated <- TRUE
 
   # get_financial_report with arguments: period_type ====
   ts_report <- get_financial_report(stock_db,
-                                  stock_cd_list = stock_cd_list,
-                                  period_type = "quarter")
+    stock_cd_list = stock_cd_list,
+    period_type = "quarter"
+  )
   expect_is(ts_report, "data.frame")
-  expect_true(all(c("date",  "stkcd") %in% names(ts_report)))
+  expect_true(all(c("date", "stkcd") %in% names(ts_report)))
   expect_true(lubridate::is.Date(ts_report$date))
   expect_true(is.character(ts_report$stkcd))
   expect_true(all(lubridate::month(ts_report$date) %in% c(3, 6, 9, 12)))
 
   ts_report <- get_financial_report(stock_db,
-                                   stock_cd_list = stock_cd_list,
-                                   period_type = "year")
+    stock_cd_list = stock_cd_list,
+    period_type = "year"
+  )
   expect_is(ts_report, "data.frame")
-  expect_true(all(c("date",  "stkcd") %in% names(ts_report)))
+  expect_true(all(c("date", "stkcd") %in% names(ts_report)))
   expect_true(lubridate::is.Date(ts_report$date))
   expect_true(is.character(ts_report$stkcd))
   expect_true(all(lubridate::month(ts_report$date) %in% c(12)))
@@ -308,23 +311,24 @@ test_that("get_financial_report, with various arguments", {
 
   # get_financial_report with arguments: period_date ====
   ts_report <- get_financial_report(stock_db,
-                                   stock_cd_list = stock_cd_list,
-                                   period_date = "start")
+    stock_cd_list = stock_cd_list,
+    period_date = "start"
+  )
   expect_is(ts_report, "data.frame")
-  expect_true(all(c("date",  "stkcd") %in% names(ts_report)))
+  expect_true(all(c("date", "stkcd") %in% names(ts_report)))
   expect_true(lubridate::is.Date(ts_report$date))
   expect_true(is.character(ts_report$stkcd))
   expect_true(all(lubridate::day(ts_report$date) %in% c(1)))
 
   ts_report <- get_financial_report(stock_db,
-                                   stock_cd_list = stock_cd_list,
-                                   period_date = "end")
+    stock_cd_list = stock_cd_list,
+    period_date = "end"
+  )
   expect_is(ts_report, "data.frame")
-  expect_true(all(c("date",  "stkcd") %in% names(ts_report)))
+  expect_true(all(c("date", "stkcd") %in% names(ts_report)))
   expect_true(lubridate::is.Date(ts_report$date))
   expect_true(is.character(ts_report$stkcd))
-  expect_true(all(lubridate::day(ts_report$date) %in% c(28,29,30,31)))
-
+  expect_true(all(lubridate::day(ts_report$date) %in% c(28, 29, 30, 31)))
 })
 
 
@@ -386,10 +390,9 @@ test_that("save_indicators_to_source, with various arguments", {
   # save_indicators_to_source into a dynamic source ====
   indicator_source <- "{get_riskfree_rate(stock_db, period = 'month')}"
   expect_error(save_indicators_to_source(stock_db,
-                                         indicator_source = indicator_source,
-                                         ts_indicators = ts_indicators
+    indicator_source = indicator_source,
+    ts_indicators = ts_indicators
   ))
-
 })
 
 
@@ -401,7 +404,7 @@ test_that("get_indicators_from_source, with various arguments", {
   # they will be dropped
   suppressWarnings(
     ds_indicators <- get_indicators_from_source(stock_db,
-                                                indicator_source = "TRD_Year"
+      indicator_source = "TRD_Year"
     )
   )
 
@@ -558,9 +561,9 @@ test_that("get_indicators_from_source, with various arguments", {
 
 
   ds_indicators <- get_indicators_from_source(stock_db,
-                                              indicator_source = indicator_source,
-                                              indicator_codes = indicator_codes,
-                                              ouput_format = "long"
+    indicator_source = indicator_source,
+    indicator_codes = indicator_codes,
+    ouput_format = "long"
   )
   if (!is.null(ds_indicators)) {
     expect_fields <- c("date", "period", "ind_code", "ind_value")
@@ -571,9 +574,9 @@ test_that("get_indicators_from_source, with various arguments", {
 
   # output in "wide" format
   ds_indicators <- get_indicators_from_source(stock_db,
-                                              indicator_source = indicator_source,
-                                              indicator_codes = indicator_codes,
-                                              ouput_format = "wide"
+    indicator_source = indicator_source,
+    indicator_codes = indicator_codes,
+    ouput_format = "wide"
   )
   if (!is.null(ds_indicators)) {
     expect_fields <- c("date", "period", indicator_codes)
@@ -581,8 +584,6 @@ test_that("get_indicators_from_source, with various arguments", {
     expect_true(inherits(ds_indicators$date, "Date"))
     expect_true(unique(ds_indicators$period) == "month")
   }
-
-
 })
 
 
@@ -669,18 +670,18 @@ test_that("get_stock_industry, with various arguments", {
   expect_fields <- c("date", "stkcd", "indcd")
   actual_fields <- names(ds_stock_industry)
   expect_equal(actual_fields, expect_fields)
-
 })
 
 test_that("get_spt_stocks, with various arguments", {
-
-  trade_status <- c("A" = "list",
-                    "B" = "st",
-                    "D" = "*st",
-                    "C" = "pt",
-                    "S" = "suspend",
-                    "T" = "pre_delist",
-                    "X" = "delist")
+  trade_status <- c(
+    "A" = "list",
+    "B" = "st",
+    "D" = "*st",
+    "C" = "pt",
+    "S" = "suspend",
+    "T" = "pre_delist",
+    "X" = "delist"
+  )
 
   # get_spt_stocks with default arguments ====
   ds_spt_stocks <- get_spt_stocks(stock_db)
@@ -689,7 +690,6 @@ test_that("get_spt_stocks, with various arguments", {
   actual_fields <- names(ds_spt_stocks)
   expect_equal(actual_fields, expect_fields)
   expect_true(all(unique(ds_spt_stocks$trade_status) %in% trade_status))
-
 })
 
 test_that("get_riskfree_rate, with various arguments", {
