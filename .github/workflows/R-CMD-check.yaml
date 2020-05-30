@@ -112,10 +112,10 @@ jobs:
         if: runner.os != 'Windows'
         run: |
            rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "warning", check_dir = "check")
+        shell: Rscript {0}
         if: runner.os == 'Windows'
         run: |
            rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "error", check_dir = "check")
-
         shell: Rscript {0}
 
       - name: Show testthat output
