@@ -22,6 +22,7 @@ jobs:
         config:
           - {os: macOS-latest,   r: '3.6'}
           - {os: windows-latest, r: '3.6'}
+          #- {os: ubuntu-16.04,   r: '3.6',     rspm: "https://packagemanager.rstudio.com/cran/__linux__/xenial/latest"}
 
           #- {os: macOS-latest,   r: 'devel'}
           #- {os: macOS-latest,   r: 'release'}
@@ -90,9 +91,9 @@ jobs:
       - name: Check
         env:
           _R_CHECK_CRAN_INCOMING_: false
-        # don't use "--as-cran" since error in checking package installation.
+        # don't use "--as-cran" because of errors in checking package installation.
         #run: rcmdcheck::rcmdcheck(args = c("--no-manual", "--as-cran"), error_on = "warning", check_dir = "check")
-        run: rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "warning", check_dir = "check")
+        run: rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "error", check_dir = "check")
         shell: Rscript {0}
 
       - name: Show testthat output
