@@ -96,7 +96,7 @@ jobs:
 
       # Temporally install on windows to avoid check errors
       - name: Install pkg on windows temporally
-        if: runner.os != 'Windows'
+        if: runner.os == 'Windows'
         run: |
           remotes::install_local(dependencies = FALSE)
         shell: Rscript {0}
