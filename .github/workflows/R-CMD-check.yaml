@@ -106,7 +106,16 @@ jobs:
           _R_CHECK_CRAN_INCOMING_: false
         # don't use "--as-cran" because of errors in checking package installation.
         #run: rcmdcheck::rcmdcheck(args = c("--no-manual", "--as-cran"), error_on = "warning", check_dir = "check")
-        run: rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "error", check_dir = "check")
+
+        # Since chinese words in codes cause warnings on windows, check should fail on errors,|
+        # On other os, check should fail on warnings.
+        if: runner.os != 'Windows'
+        run: |
+           rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "warning", check_dir = "check")
+        if: runner.os == 'Windows'
+        run: |
+           rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "error", check_dir = "check")
+
         shell: Rscript {0}
 
       - name: Show testthat output
