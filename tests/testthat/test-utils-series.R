@@ -50,7 +50,7 @@ test_that("rollify_series, with various arguments", {
 
   # >>rollify_series on two series ----
   result_series <- rollify_series(ts_month,
-    fun = purrr::as_mapper(~(max(.x$x + .x$y)))
+    fun = purrr::as_mapper(~ (max(.x$x + .x$y)))
   )
   expect_equal(length(result_series), NROW(ts_month))
   expect_equal(
@@ -120,7 +120,7 @@ test_that("trail_periodic_series, with various arguments", {
   ds_periodic_accumlated_ts <- ds_periodic_accumlated_ts %>%
     dplyr::mutate(ts = purrr::map(
       period,
-      ~create_periodic_ts(start_date,
+      ~ create_periodic_ts(start_date,
         end_date,
         accumulated = TRUE,
         period = .x

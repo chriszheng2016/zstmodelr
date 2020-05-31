@@ -58,18 +58,18 @@ verify_fields <- function(data, fields) {
 #'
 #' @export
 is_type_field <- function(data, expect_type = c(
-                                 "numeric",
-                                 "integer",
-                                 "double",
-                                 "character",
-                                 "date",
-                                 "factor",
-                                 "list",
-                                 "NA"
-                               ),
-                               negate = FALSE,
-                               predicate_fun = NULL,
-                               ...) {
+                            "numeric",
+                            "integer",
+                            "double",
+                            "character",
+                            "date",
+                            "factor",
+                            "list",
+                            "NA"
+                          ),
+                          negate = FALSE,
+                          predicate_fun = NULL,
+                          ...) {
   # validate params
   assertive::assert_is_not_null(data)
   assertive::assert_is_logical(negate)
@@ -81,32 +81,32 @@ is_type_field <- function(data, expect_type = c(
       "numeric" = {
         # numeric means an object of typeof integer or double
         # purrr::as_mapper(~(inherits(., what = "numeric")))
-        purrr::as_mapper(~(is.numeric(.)))
+        purrr::as_mapper(~ (is.numeric(.)))
       },
       "integer" = {
-        purrr::as_mapper(~(typeof(.) == "integer"))
+        purrr::as_mapper(~ (typeof(.) == "integer"))
       },
       "double" = {
         # need to exclude Date type whose tyepof also is double
-        purrr::as_mapper(~(typeof(.) == "double" &&
+        purrr::as_mapper(~ (typeof(.) == "double" &&
           (!inherits(., what = "Date"))))
       },
       "character" = {
-        purrr::as_mapper(~(typeof(.) == "character"))
+        purrr::as_mapper(~ (typeof(.) == "character"))
       },
       "date" = {
-        purrr::as_mapper(~(inherits(., what = "Date")))
+        purrr::as_mapper(~ (inherits(., what = "Date")))
       },
       "factor" = {
-        purrr::as_mapper(~(is.factor(.)))
+        purrr::as_mapper(~ (is.factor(.)))
       },
       "list" = {
         # list means to coloum-list
-        purrr::as_mapper(~(typeof(.) == "list"))
+        purrr::as_mapper(~ (typeof(.) == "list"))
       },
       "NA" = {
         # NA means all data in a coloum are NA
-        purrr::as_mapper(~(all(is.na(.))))
+        purrr::as_mapper(~ (all(is.na(.))))
       }
     )
   } else {
@@ -157,10 +157,11 @@ expect_type_fields <- function(data, expect_type = c(
 
   # find out whether field is specified type
   are_expect_fields <- is_type_field(data,
-                                     expect_type = expect_type,
-                                     negate = negate,
-                                     predicate_fun = predicate_fun,
-                                     ...)
+    expect_type = expect_type,
+    negate = negate,
+    predicate_fun = predicate_fun,
+    ...
+  )
   all_fields <- names(data)
   expect_fields <- all_fields[are_expect_fields]
 

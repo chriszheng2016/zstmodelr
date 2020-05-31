@@ -43,35 +43,35 @@ Use definition function and variable timeseries to create indicator.
 \examples{
 \dontrun{
 
-  # load vars dataset for generating indicators
-  ds_all_vars <- get_indicator_vars(stock_db,
-                                 indicator_defs = ds_indicator_defs)
+# load vars dataset for generating indicators
+ds_all_vars <- get_indicator_vars(stock_db,
+  indicator_defs = ds_indicator_defs
+)
 
-  # create ind_expr
-  indicator_formula <- c("stock_return <- mretwd
+# create ind_expr
+indicator_formula <- c("stock_return <- mretwd
                           market_return <- cmretwdtl
                           model <- lm(stock_return ~ market_return)
                           beta <- coef(model)['market_return']")
-  indicator_expr <- create_expr(!!indicator_formula)
+indicator_expr <- create_expr(!!indicator_formula)
 
-  # create def_fun for indicator
-  indicator_def_fun <- create_indicator_def_fun(
-      indicator_code = "m_stock_beta1",
-      indicator_expr = indicator_expr,
-      rolly_window = 12,
-      period = "month"
-      )
+# create def_fun for indicator
+indicator_def_fun <- create_indicator_def_fun(
+  indicator_code = "m_stock_beta1",
+  indicator_expr = indicator_expr,
+  rolly_window = 12,
+  period = "month"
+)
 
-  # create a indicator from vars dataset.
-  ts_indicator <- create_indicator(
-        ds_def_vars,
-        ind_def_fun = ind_def_fun,
-        debug = FALSE,
-        date_index_field = "date",
-        key_fields = "stkcd",
-        parallel = TRUE
-        )
-
+# create a indicator from vars dataset.
+ts_indicator <- create_indicator(
+  ds_def_vars,
+  ind_def_fun = ind_def_fun,
+  debug = FALSE,
+  date_index_field = "date",
+  key_fields = "stkcd",
+  parallel = TRUE
+)
 }
 
 }

@@ -21,16 +21,18 @@ NULL
 #' @return \strong{get_profile_path}: A path of profile if succeed, otherwise "".
 #' @describeIn utils_profile  get full path of profile.
 #' @export
-get_profile_path <- function(profile_name, profile_dir = .PROFILE_DIR ) {
-
+get_profile_path <- function(profile_name, profile_dir = .PROFILE_DIR) {
   profile_path <- system.file(profile_dir,
-                              profile_name,
-                              package = .PACKAGE_NAME )
+    profile_name,
+    package = .PACKAGE_NAME
+  )
   if (profile_path == "") {
-    msg = sprintf("No profile(%s) exisits in %s of %s",
-                  profile_name,
-                  profile_dir,
-                  .PACKAGE_NAME)
+    msg <- sprintf(
+      "No profile(%s) exisits in %s of %s",
+      profile_name,
+      profile_dir,
+      .PACKAGE_NAME
+    )
     stop(msg)
   }
 
@@ -52,7 +54,7 @@ profile_get_varible_setting <- function(profile_path, variable) {
   varible_setting <- readxl::read_excel(profile_path, sheet = "Variable_Setting")
   if (!is.null(varible_setting)) {
     # get value for the vairable
-    setting_value <- varible_setting$var_value[varible_setting$var_name == variable ]
+    setting_value <- varible_setting$var_value[varible_setting$var_name == variable]
     if (is.null(setting_value) || length(setting_value) == 0) {
       msg <- sprintf("No value of '%s' was found in %s", variable, profile)
       warning(msg)
@@ -71,7 +73,7 @@ profile_get_varible_setting <- function(profile_path, variable) {
 #' @describeIn utils_profile  get table name value from profile of database.
 #' @export
 profile_get_factors <- function(profile_path, factor_codes = NULL,
-                                              factor_groups = NULL) {
+                                factor_groups = NULL) {
   stopifnot(!is.null(profile_path), is.character(profile_path))
 
   factor_indicator_map <- readxl::read_excel(profile_path,
@@ -112,7 +114,7 @@ profile_get_factors <- function(profile_path, factor_codes = NULL,
   # validate results
   if (!is.null(matched_factors)) {
 
-    #check whether any indicator_code is NA
+    # check whether any indicator_code is NA
     indicator_is_na <- is.na(matched_factors$indicator_code)
     if (any(indicator_is_na)) {
       msg <- sprintf(
@@ -121,7 +123,6 @@ profile_get_factors <- function(profile_path, factor_codes = NULL,
       )
       stop(msg)
     }
-
   }
 
   return(matched_factors)
@@ -152,7 +153,7 @@ profile_get_datasource_files <- function(profile_path) {
 #' @export
 profile_get_indicators <- function(profile_path, indicator_codes = NULL) {
 
-  #validate params
+  # validate params
   stopifnot(!is.null(profile_path), is.character(profile_path))
 
   # get Data source setting
@@ -181,8 +182,9 @@ profile_get_indicators <- function(profile_path, indicator_codes = NULL) {
   if (!is.null(matched_indicators_info)) {
     origin_colnames <- names(matched_indicators_info)
     new_colnames <- stringr::str_replace(origin_colnames,
-                                         pattern = "field_",
-                                         replacement = "ind_")
+      pattern = "field_",
+      replacement = "ind_"
+    )
     names(matched_indicators_info) <- new_colnames
   }
 
@@ -209,8 +211,9 @@ profile_get_customized_indicators <- function(profile_path) {
   if (!is.null(customized_indicators_info)) {
     origin_colnames <- names(customized_indicators_info)
     new_colnames <- stringr::str_replace(origin_colnames,
-                                         pattern = "field_",
-                                         replacement = "ind_")
+      pattern = "field_",
+      replacement = "ind_"
+    )
     names(customized_indicators_info) <- new_colnames
   }
 

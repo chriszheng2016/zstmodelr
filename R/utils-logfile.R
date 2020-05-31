@@ -59,9 +59,9 @@ save_log <- function(ds_log_info,
       format(last_modified_time, "%Y-%m-%d")
     )
     file.copy(log_file_path,
-              to = backup_file,
-              copy.date = TRUE,
-              overwrite = TRUE
+      to = backup_file,
+      copy.date = TRUE,
+      overwrite = TRUE
     )
   }
 
@@ -101,4 +101,3 @@ read_log <- function(log_file_name,
 
   return(ds_log_info)
 }
-

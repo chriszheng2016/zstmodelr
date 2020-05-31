@@ -2,9 +2,11 @@ on:
   push:
     branches:
       - master
+      - develop
   pull_request:
     branches:
       - master
+      - develop
 
 name: test-coverage
 
@@ -42,5 +44,5 @@ jobs:
         shell: Rscript {0}
 
       - name: Test coverage
-        run: covr::codecov()
+        run: covr::codecov(quiet = FALSE)
         shell: Rscript {0}

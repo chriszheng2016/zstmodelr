@@ -32,6 +32,7 @@ Imports:
     readr,
     readxl,
     rlang,
+    rmarkdown,
     shiny,
     shinydashboard,
     stringr,
@@ -43,10 +44,10 @@ Imports:
     zoo
 Suggests: 
     knitr,
-    rmarkdown,
     testthat,
     covr,
-    spelling
+    spelling,
+    tinytex
 VignetteBuilder: 
     knitr
 Encoding: UTF-8

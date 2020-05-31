@@ -32,6 +32,13 @@ stock_db <- stock_db(gta_db, "GTA_SQLData")
 open_stock_db(stock_db)
 close_stock_db(stock_db)
 }
+
+# S3 generic definition
+# open_stock_db <- function(stock_db, ...) {
+#   UseMethod("open_stock_db")
+# }
+
+# S4 generic definition
 }
 \seealso{
 Other stock_db generics: 

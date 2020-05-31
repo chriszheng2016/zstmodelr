@@ -32,11 +32,11 @@
 #'
 #' @export
 generate_indicators <- function(stock_db,
-                               ds_indicator_defs,
-                               validate_def = FALSE,
-                               parallel = TRUE,
-                               log_file_prefix = "generate_indicator_log",
-                               log_dir = "./log") {
+                                ds_indicator_defs,
+                                validate_def = FALSE,
+                                parallel = TRUE,
+                                log_file_prefix = "generate_indicator_log",
+                                log_dir = "./log") {
 
   # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "stock_db"))
@@ -260,7 +260,7 @@ delete_indicators <- function(stock_db,
   dir_indicators <- dir_path_db(stock_db, "DIR_DB_DATA_INDICATOR")
   path_ouput_files <- paste0(dir_indicators, "/", ds_indicator_defs$ind_source)
   quiet_file_remove <- purrr::possibly(file.remove, otherwise = FALSE)
-  purrr::walk(path_ouput_files, ~quiet_file_remove(.x))
+  purrr::walk(path_ouput_files, ~ quiet_file_remove(.x))
 
   return(invisible(NULL))
 }

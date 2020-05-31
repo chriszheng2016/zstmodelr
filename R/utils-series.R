@@ -62,7 +62,7 @@ rollify_series <- function(data_series, fun, ..., window = 1L,
 
   # unlist result if request, except for atomic scalar
   if (unlist) {
-    is_scalar_atomic <- purrr::map_lgl(output, ~(rlang::is_scalar_atomic(.x)))
+    is_scalar_atomic <- purrr::map_lgl(output, ~ (rlang::is_scalar_atomic(.x)))
     if (all(is_scalar_atomic)) {
       output <- unlist(output)
     } else {
@@ -169,13 +169,13 @@ trail_periodic_series <- function(dates, data_series,
         dplyr::mutate_at(
           .vars = dplyr::vars(-date, -year, -period_index),
           .funs = purrr::partial(.period_value,
-                                 period_index = period_index)
+            period_index = period_index
+          )
         )
 
       ds_period <- ds_period %>%
         dplyr::ungroup() %>%
         dplyr::select(-date, -year, -period_index)
-
     } else {
       # original data is not accumated
       ds_period <- ds_origin %>%

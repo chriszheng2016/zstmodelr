@@ -1,6 +1,6 @@
 
 
-model_fit <- function(){
+model_fit <- function() {
 }
 
 model_dignose <- function() {

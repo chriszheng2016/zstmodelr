@@ -40,20 +40,19 @@ customized_indicators_info <- tibble::tibble(
 test_indicator_defs <- build_indicator_defs.gta_db(stock_db, customized_indicators_info)
 
 test_that("generate_indicators", {
-
   log_file_prefix <- "generate_indicator_log"
   log_dir <- "./log"
 
   # generate_indicators with various arguments ====
   ds_indicators <- generate_indicators(stock_db,
-                                      ds_indicator_defs = test_indicator_defs,
-                                      validate_def = TRUE
+    ds_indicator_defs = test_indicator_defs,
+    validate_def = TRUE
   )
 
-  #check output file
-  dir_indicators <- dir_path_db(stock_db,"DIR_DB_DATA_INDICATOR")
-  path_ouput_files <- paste0(dir_indicators,"/",test_indicator_defs$ind_source)
-  purrr::map(path_ouput_files, ~expect_true(file.exists(.x)))
+  # check output file
+  dir_indicators <- dir_path_db(stock_db, "DIR_DB_DATA_INDICATOR")
+  path_ouput_files <- paste0(dir_indicators, "/", test_indicator_defs$ind_source)
+  purrr::map(path_ouput_files, ~ expect_true(file.exists(.x)))
 
 
   # check log file
@@ -71,17 +70,17 @@ test_that("generate_indicators", {
   log_dir <- "./log"
 
   ds_indicators <- generate_indicators(stock_db,
-                                      ds_indicator_defs = test_indicator_defs,
-                                      validate_def = TRUE,
-                                      parallel = FALSE,
-                                      log_file_prefix = log_file_prefix,
-                                      log_dir = log_dir
+    ds_indicator_defs = test_indicator_defs,
+    validate_def = TRUE,
+    parallel = FALSE,
+    log_file_prefix = log_file_prefix,
+    log_dir = log_dir
   )
 
-  #check output file
-  dir_indicators <- dir_path_db(stock_db,"DIR_DB_DATA_INDICATOR")
-  path_ouput_files <- paste0(dir_indicators,"/",test_indicator_defs$ind_source)
-  purrr::map(path_ouput_files, ~expect_true(file.exists(.x)))
+  # check output file
+  dir_indicators <- dir_path_db(stock_db, "DIR_DB_DATA_INDICATOR")
+  path_ouput_files <- paste0(dir_indicators, "/", test_indicator_defs$ind_source)
+  purrr::map(path_ouput_files, ~ expect_true(file.exists(.x)))
 
 
   # check log file
@@ -93,20 +92,19 @@ test_that("generate_indicators", {
   expect_true(file.exists(log_file_path))
   log_info <- read_log(basename(log_file_path), log_dir = log_dir)
   expect_true(all(test_indicator_defs$ind_code %in% log_info$ind_code))
-
 })
 
 test_that("delete_indicators", {
 
   ## delete_indicators with various arguments ====
   delete_indicators(stock_db,
-                   ds_indicator_defs = test_indicator_defs)
+    ds_indicator_defs = test_indicator_defs
+  )
 
-  #check output file
-  dir_indicators <- dir_path_db(stock_db,"DIR_DB_DATA_INDICATOR")
-  path_ouput_files <- paste0(dir_indicators,"/",test_indicator_defs$ind_source)
-  purrr::map(path_ouput_files, ~expect_false(file.exists(.x)))
-
+  # check output file
+  dir_indicators <- dir_path_db(stock_db, "DIR_DB_DATA_INDICATOR")
+  path_ouput_files <- paste0(dir_indicators, "/", test_indicator_defs$ind_source)
+  purrr::map(path_ouput_files, ~ expect_false(file.exists(.x)))
 })
 
 # clear up testing conext

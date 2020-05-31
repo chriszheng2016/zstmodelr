@@ -10,7 +10,7 @@ stock_db <- stock_db(gta_db, dsn)
 suppressMessages(db_ready <- open_stock_db(stock_db))
 # skip tests if test dsn is not ready
 skip_if_not(db_ready,
-            message = sprintf("DSN(%s) is not ready, skip all tests for stock_db", dsn)
+  message = sprintf("DSN(%s) is not ready, skip all tests for stock_db", dsn)
 )
 suppressMessages(init_stock_db(stock_db))
 
@@ -22,7 +22,6 @@ test_that("stock_field_list.gta_db", {
   expect_true(all(c("name", "code") %in% names(stock_field_list)))
   expect_true(is.character(stock_field_list$code))
   expect_true(is.character(stock_field_list$name))
-
 })
 
 test_that("stock_name_list.gta_db.gta_db", {
@@ -33,7 +32,6 @@ test_that("stock_name_list.gta_db.gta_db", {
   expect_true(all(c("name", "code") %in% names(stock_name_list)))
   expect_true(is.character(stock_name_list$code))
   expect_true(is.character(stock_name_list$name))
-
 })
 
 test_that("industry_name_list.gta_db", {
@@ -44,7 +42,6 @@ test_that("industry_name_list.gta_db", {
   expect_true(all(c("name", "code") %in% names(industry_name_list)))
   expect_true(is.character(industry_name_list$code))
   expect_true(is.character(industry_name_list$name))
-
 })
 
 # clear up testing conext

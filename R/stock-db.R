@@ -75,13 +75,13 @@ NULL
 #' open_stock_db(stock_db)
 #' close_stock_db(stock_db)
 #' }
-
-# S3 generic definition
-# open_stock_db <- function(stock_db, ...) {
-#   UseMethod("open_stock_db")
-# }
-
-# S4 generic definition
+#'
+#' # S3 generic definition
+#' # open_stock_db <- function(stock_db, ...) {
+#' #   UseMethod("open_stock_db")
+#' # }
+#'
+#' # S4 generic definition
 setGeneric(
   name = "open_stock_db",
   signature = c("stock_db"),
@@ -260,8 +260,9 @@ setGeneric(
 #' @examples
 #' \dontrun{
 #' ds_trd_dalyr.df <- get_stock_dataset(stock_db,
-#'                             table_name = "TRD_Dalyr_日个股回报率",
-#'                             stock_cd_list = c("600066", "000550"))
+#'   table_name = "TRD_Dalyr_鏃ヤ釜鑲″洖鎶ョ巼",
+#'   stock_cd_list = c("600066", "000550")
+#' )
 #' }
 #' @export
 
@@ -351,11 +352,11 @@ setGeneric(
   name = "get_stock_return",
   signature = c("stock_db"),
   def = get_stock_return <- function(stock_db,
-                                       stock_cd_list = NULL,
-                                       period_type = c("day", "month", "year"),
-                                       period_date = c("start", "end"),
-                                       output_type = c("timeSeries", "tibble"),
-                                       ...) {
+                                     stock_cd_list = NULL,
+                                     period_type = c("day", "month", "year"),
+                                     period_date = c("start", "end"),
+                                     output_type = c("timeSeries", "tibble"),
+                                     ...) {
     standardGeneric("get_stock_return")
   }
 )
@@ -393,10 +394,10 @@ setGeneric(
   name = "get_market_return",
   signature = c("stock_db"),
   def = get_market_return <- function(stock_db,
-                                        period_type = c("day", "month", "year"),
-                                        period_date = c("start", "end"),
-                                        output_type = c("timeSeries", "tibble"),
-                                        ...) {
+                                      period_type = c("day", "month", "year"),
+                                      period_date = c("start", "end"),
+                                      output_type = c("timeSeries", "tibble"),
+                                      ...) {
     standardGeneric("get_market_return")
   }
 )
@@ -455,20 +456,20 @@ setGeneric(
   name = "get_financial_report",
   signature = c("stock_db"),
   def = get_financial_report <- function(stock_db,
-                                        stock_cd_list = NULL,
-                                        statement = c(
-                                          "balance_sheet",
-                                          "income",
-                                          "cashflow_direct",
-                                          "cashflow_indirect",
-                                          "income_ttm",
-                                          "cashflow_direct_ttm",
-                                          "cashflow_indirect_ttm"
-                                        ),
-                                        consolidated = TRUE,
-                                        period_type = c("quarter", "year"),
-                                        period_date = c("end", "start"),
-                                        ...) {
+                                         stock_cd_list = NULL,
+                                         statement = c(
+                                           "balance_sheet",
+                                           "income",
+                                           "cashflow_direct",
+                                           "cashflow_indirect",
+                                           "income_ttm",
+                                           "cashflow_direct_ttm",
+                                           "cashflow_indirect_ttm"
+                                         ),
+                                         consolidated = TRUE,
+                                         period_type = c("quarter", "year"),
+                                         period_date = c("end", "start"),
+                                         ...) {
     standardGeneric("get_financial_report")
   }
 )
@@ -512,9 +513,9 @@ setGeneric(
   name = "get_indicators_from_source",
   signature = c("stock_db"),
   def = get_indicators_from_source <- function(stock_db, indicator_source,
-                                                 indicator_codes = NULL,
-                                                 ouput_format = c("long", "wide"),
-                                                 ...) {
+                                               indicator_codes = NULL,
+                                               ouput_format = c("long", "wide"),
+                                               ...) {
     standardGeneric("get_indicators_from_source")
   }
 )
@@ -642,7 +643,7 @@ setGeneric(
   name = "get_factors_info",
   signature = c("stock_db"),
   def = get_factors_info <- function(stock_db, factor_codes = NULL,
-                                       factor_groups = NULL, ...) {
+                                     factor_groups = NULL, ...) {
     standardGeneric("get_factors_info")
   }
 )
@@ -726,8 +727,10 @@ setGeneric(
   name = "get_riskfree_rate",
   signature = c("stock_db"),
   def = get_riskfree_rate <- function(stock_db,
-                                      period = c("day", "month",
-                                                 "quarter", "year"), ...) {
+                                      period = c(
+                                        "day", "month",
+                                        "quarter", "year"
+                                      ), ...) {
     standardGeneric("get_riskfree_rate")
   }
 )
@@ -774,12 +777,14 @@ setGeneric(
   name = "dir_path_db",
   signature = c("stock_db"),
   def = dir_path_db <- function(stock_db,
-                             dir_id = c("DIR_DB_DATA",
-                                        "DIR_DB_DATA_SOURCE",
-                                        "DIR_DB_DATA_ORIGIN",
-                                        "DIR_DB_DATA_LOG",
-                                        "DIR_DB_DATA_INDICATOR"),
-                             force = TRUE, ...) {
+                                dir_id = c(
+                                  "DIR_DB_DATA",
+                                  "DIR_DB_DATA_SOURCE",
+                                  "DIR_DB_DATA_ORIGIN",
+                                  "DIR_DB_DATA_LOG",
+                                  "DIR_DB_DATA_INDICATOR"
+                                ),
+                                force = TRUE, ...) {
     standardGeneric("dir_path_db")
   }
 )

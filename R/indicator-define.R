@@ -210,11 +210,11 @@ create_indicator_def_fun <- function(indicator_code,
 
   # define ds_var process
   .process_vars <- function(ds_vars,
-                              date_index_field = c("date"),
-                              re_freq = c(
-                                "day", "month",
-                                "quarter", "year"
-                              )) {
+                            date_index_field = c("date"),
+                            re_freq = c(
+                              "day", "month",
+                              "quarter", "year"
+                            )) {
 
     # validate params
     assertive::assert_is_data.frame(ds_vars)
@@ -266,9 +266,9 @@ create_indicator_def_fun <- function(indicator_code,
 
   # define indicator definition function
   ind_def_fun <- function(ds_vars, date_index_field = c("date"),
-                            key_fields = NULL,
-                            debug = FALSE,
-                            ....) {
+                          key_fields = NULL,
+                          debug = FALSE,
+                          ....) {
 
     # validate params
     assertive::assert_is_data.frame(ds_vars)
@@ -384,7 +384,7 @@ create_attribute_def_fun <- function(attr_name,
 
   # define new attributes definition functiion
   ind_attr_def <- function(ts_indicator, date_index_field = c("date"),
-                             key_fields = NULL, ....) {
+                           key_fields = NULL, ....) {
 
     # validate params
     assertive::assert_is_data.frame(ts_indicator)
@@ -553,7 +553,6 @@ prioritize_indicator_defs <- function(ds_indicator_defs) {
       dplyr::filter(!(ind_code %in% independ_indicators))
 
     ind_defs_trees <- as_ind_defs_trees(ind_defs_trees)
-
   }
 
   # re-order and re-group indicator defs by priority
@@ -565,7 +564,6 @@ prioritize_indicator_defs <- function(ds_indicator_defs) {
     dplyr::rename(ds_indicator_defs = data)
 
   return(ds_indicator_defs_priority)
-
 }
 
 # Internal functions for indicator define  -------------------------------
@@ -595,12 +593,10 @@ create_ind_defs_trees <- function(ds_indicator_defs) {
   )
 
   return(defs_trees)
-
 }
 
 # wrapper converter for create_ind_defs_tree
 as_ind_defs_trees <- function(x) {
-
   assertive::assert_is_data.frame(x)
 
   if (inherits(x, "ind_defs_trees")) {
@@ -610,7 +606,6 @@ as_ind_defs_trees <- function(x) {
   }
 
   return(ind_defs_trees)
-
 }
 
 # Validate indicators to ensure every indicator depends on indicators
@@ -619,8 +614,10 @@ validate_indicators <- function(ind_defs_trees) {
 
   # validate params
   assertive::assert_is_data.frame(ind_defs_trees)
-  stopifnot(!is.null(ind_defs_trees),
-            inherits(ind_defs_trees, "ind_defs_trees"))
+  stopifnot(
+    !is.null(ind_defs_trees),
+    inherits(ind_defs_trees, "ind_defs_trees")
+  )
 
   # filter out any ind_code of depend_ind_codes, which never exists
   # in ind_code of defs_trees
@@ -643,7 +640,6 @@ validate_indicators <- function(ind_defs_trees) {
   valid_defs_trees <- as_ind_defs_trees(valid_defs_trees)
 
   return(valid_defs_trees)
-
 }
 
 # Check duplicated indicators.
@@ -653,8 +649,10 @@ check_duplicated_indicators <- function(ind_defs_trees) {
 
   # validate params
   assertive::assert_is_data.frame(ind_defs_trees)
-  stopifnot(!is.null(ind_defs_trees),
-            inherits(ind_defs_trees, "ind_defs_trees"))
+  stopifnot(
+    !is.null(ind_defs_trees),
+    inherits(ind_defs_trees, "ind_defs_trees")
+  )
 
   # check duplicated indicators in defs_tree
   duplicated_ind_codes <- ind_defs_trees$ind_code[duplicated(ind_defs_trees$ind_code)]
@@ -683,8 +681,10 @@ check_loop_depdency <- function(ind_defs_trees) {
 
   # validate params
   assertive::assert_is_data.frame(ind_defs_trees)
-  stopifnot(!is.null(ind_defs_trees),
-            inherits(ind_defs_trees, "ind_defs_trees"))
+  stopifnot(
+    !is.null(ind_defs_trees),
+    inherits(ind_defs_trees, "ind_defs_trees")
+  )
 
   # if no root_indicator existed in defs_trees,
   # there must be loop dependency among trees,
@@ -708,19 +708,10 @@ check_loop_depdency <- function(ind_defs_trees) {
       "Found loop dependency among indicators in defs tree, please check!!"
     )
     rlang::abort(msg)
-
   }
 
   # fix problem of losing class of ind_defs_trees after dplyr process
   pass_defs_trees <- as_ind_defs_trees(pass_defs_trees)
 
   return(pass_defs_trees)
-
 }
-
-
-
-
-
-
-

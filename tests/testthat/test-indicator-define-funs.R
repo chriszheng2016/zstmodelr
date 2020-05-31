@@ -57,7 +57,7 @@ test_that("GrowthRate", {
   # GrowthRate with default arguments ====
   expect_growth <- 0.5
   x <- 1:series_length
-  x <- purrr::accumulate(x, ~.x * (1 + expect_growth))
+  x <- purrr::accumulate(x, ~ .x * (1 + expect_growth))
 
   actual_growth <- GrowthRate(x)
   expect_equal(mean(actual_growth, na.rm = TRUE), expect_growth)
@@ -92,9 +92,9 @@ test_that("Quarter_TTM", {
                                  period = c("day", "month", "quarter")) {
     match.arg(period)
     accumulated_periodic_data <- switch(period,
-                                        "day" = lubridate::yday,
-                                        "month" = lubridate::month,
-                                        "quarter" = lubridate::quarter
+      "day" = lubridate::yday,
+      "month" = lubridate::month,
+      "quarter" = lubridate::quarter
     )
 
     date <- seq(start_date, end_date, by = period)
@@ -117,15 +117,14 @@ test_that("Quarter_TTM", {
   start_date <- as.Date("2018/1/1")
   end_date <- as.Date("2019/12/31")
   ts_quarter_regular <- create_periodic_ts(start_date, end_date,
-                               accumulated = TRUE,
-                               period = "quarter"
+    accumulated = TRUE,
+    period = "quarter"
   )
 
   ts_trail <- Quarter_TTM(ts_quarter_regular$date, ts_quarter_regular$x)
 
   expect_equivalent(mean(ts_trail, na.rm = TRUE), 4)
   expect_equal(sum(is.na(ts_trail)), 3)
-
 })
 
 test_that("Beta", {

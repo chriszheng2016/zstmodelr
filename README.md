@@ -9,6 +9,8 @@
 coverage](https://codecov.io/gh/chriszheng2016/zstmodelr/branch/master/graph/badge.svg)](https://codecov.io/gh/chriszheng2016/zstmodelr?branch=master)
 [![R build
 status](https://github.com/chriszheng2016/zstmodelr/workflows/R-CMD-check/badge.svg)](https://github.com/chriszheng2016/zstmodelr/actions)
+![pkgdown](https://github.com/chriszheng2016/zstmodelr/workflows/pkgdown/badge.svg)
+![test-coverage](https://github.com/chriszheng2016/zstmodelr/workflows/test-coverage/badge.svg)
 <!-- badges: end -->
 
 The goal of zstmodelr is to …
@@ -30,6 +32,9 @@ This is a basic example which shows you how to solve a common problem:
 ``` r
 ## basic example code
 library(zstmodelr)
+#> Loading required namespace: parallel
+#> Initiate clusters for parallel process...
+#> Loading required namespace: doParallel
 ```
 
 ## Code of Conduct

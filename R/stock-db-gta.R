@@ -746,14 +746,14 @@ setMethod(
   "get_stock_return",
   signature(stock_db = "gta_db"),
   function(stock_db,
-             stock_cd_list = NULL,
-             period_type = c("day", "month", "year"),
-             period_date = c("start", "end"),
-             output_type = c(
-               "timeSeries",
-               "tibble"
-             ),
-             ...) {
+           stock_cd_list = NULL,
+           period_type = c("day", "month", "year"),
+           period_date = c("start", "end"),
+           output_type = c(
+             "timeSeries",
+             "tibble"
+           ),
+           ...) {
     get_stock_return.gta_db(
       stock_db = stock_db,
       stock_cd_list = stock_cd_list,
@@ -884,10 +884,10 @@ setMethod(
   "get_market_return",
   signature(stock_db = "gta_db"),
   function(stock_db,
-             period_type = c("day", "month", "year"),
-             period_date = c("start", "end"),
-             output_type = c("timeSeries", "tibble"),
-             ...) {
+           period_type = c("day", "month", "year"),
+           period_date = c("start", "end"),
+           output_type = c("timeSeries", "tibble"),
+           ...) {
     get_market_return.gta_db(
       stock_db = stock_db,
       period_type = period_type,
@@ -904,20 +904,20 @@ setMethod(
 # @describeIn get_financial_report get financial report timeseries from a database of gta_db class
 # @export
 get_financial_report.gta_db <- function(stock_db,
-                                       stock_cd_list = NULL,
-                                       statement = c(
-                                         "balance_sheet",
-                                         "income",
-                                         "cashflow_direct",
-                                         "cashflow_indirect",
-                                         "income_ttm",
-                                         "cashflow_direct_ttm",
-                                         "cashflow_indirect_ttm"
-                                       ),
-                                       consolidated = TRUE,
-                                       period_type = c("quarter", "year"),
-                                       period_date = c("end", "start"),
-                                       ...) {
+                                        stock_cd_list = NULL,
+                                        statement = c(
+                                          "balance_sheet",
+                                          "income",
+                                          "cashflow_direct",
+                                          "cashflow_indirect",
+                                          "income_ttm",
+                                          "cashflow_direct_ttm",
+                                          "cashflow_indirect_ttm"
+                                        ),
+                                        consolidated = TRUE,
+                                        period_type = c("quarter", "year"),
+                                        period_date = c("end", "start"),
+                                        ...) {
 
   # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
@@ -1063,12 +1063,12 @@ setMethod(
   "get_financial_report",
   signature(stock_db = "gta_db"),
   function(stock_db,
-             stock_cd_list,
-             statement,
-             consolidated,
-             period_type,
-             period_date,
-             ...) {
+           stock_cd_list,
+           statement,
+           consolidated,
+           period_type,
+           period_date,
+           ...) {
     get_financial_report.gta_db(
       stock_db = stock_db,
       statement = statement,
@@ -1175,28 +1175,31 @@ get_indicators_from_source.gta_db <- function(stock_db,
       path_indicator_source <- file.path(path_dir_indicator, indicator_source)
 
       # get indicators from different format of file
-      result <- tryCatch({
-        switch(file_ext,
-          "rds" = {
-            readRDS(path_indicator_source)
-          },
-          "csv" = {
-            suppressMessages(
-              readr::read_csv(path_indicator_source,
-                locale = readr::locale(encoding = "CP936")
+      result <- tryCatch(
+        {
+          switch(file_ext,
+            "rds" = {
+              readRDS(path_indicator_source)
+            },
+            "csv" = {
+              suppressMessages(
+                readr::read_csv(path_indicator_source,
+                  locale = readr::locale(encoding = "CP936")
+                )
               )
-            )
-          }, {
-            msg <- sprintf(
-              "Can't read indicator from unsupport format file(*.%s).",
-              file_ext
-            )
-            rlang::warn(msg)
-            return(NULL)
-          }
-        )
-      },
-      error = function(e) e)
+            },
+            {
+              msg <- sprintf(
+                "Can't read indicator from unsupport format file(*.%s).",
+                file_ext
+              )
+              rlang::warn(msg)
+              return(NULL)
+            }
+          )
+        },
+        error = function(e) e
+      )
       if (inherits(result, "error")) {
         msg <- sprintf(
           "Fail to read indicator from %s:\n%s",
@@ -1553,7 +1556,8 @@ save_indicators_to_source.gta_db <- function(stock_db,
         },
         "csv" = {
           readr::write_csv(ts_indicators, path = path_indicator_source)
-        }, {
+        },
+        {
           msg <- sprintf(
             "Can't save indicator into unsupport format file(*.%s).",
             file_ext
@@ -1854,7 +1858,7 @@ get_spt_stocks.gta_db <- function(stock_db, ...) {
   # get company info from database
   table_name <- stock_db$table_list[["TRD_Co"]]
   ds_company_info <- get_table_dataset(stock_db,
-                                         table_name = table_name
+    table_name = table_name
   )
 
   # build result
@@ -1871,13 +1875,14 @@ get_spt_stocks.gta_db <- function(stock_db, ...) {
     tibble::as_tibble() %>%
     dplyr::filter(stkcd %in% spt_stkcds) %>%
     dplyr::mutate(status_code = "A", date = lubridate::as_date(listdt)) %>%
-    dplyr::select(stkcd, date , status_code)
+    dplyr::select(stkcd, date, status_code)
 
   # get changed status of spt stocks after listing date
   ds_spt_stocks_changed_status <- ds_spt_stocks_raw %>%
     tidyr::separate(chgtype,
-                    into = c("before_status","after_status"),
-                    sep = 1 ) %>%
+      into = c("before_status", "after_status"),
+      sep = 1
+    ) %>%
     dplyr::select(stkcd, date = execudt, status_code = after_status)
 
   # get full history of status of spt stocks
@@ -1886,27 +1891,28 @@ get_spt_stocks.gta_db <- function(stock_db, ...) {
     dplyr::arrange(stkcd, date)
 
   # translate status_code into status_name
-  #A:正常上市
-  #B:ST
-  #D:*ST
-  #C:PT
-  #S:代表暂停上市
-  #T:代表退市整理期
-  #X:代表终止上市
-  trade_status <- c("A" = "list",
-                    "B" = "st",
-                    "D" = "*st",
-                    "C" = "pt",
-                    "S" = "suspend",
-                    "T" = "pre_delist",
-                    "X" = "delist")
+  # A:正常上市
+  # B:ST
+  # D:*ST
+  # C:PT
+  # S:代表暂停上市
+  # T:代表退市整理期
+  # X:代表终止上市
+  trade_status <- c(
+    "A" = "list",
+    "B" = "st",
+    "D" = "*st",
+    "C" = "pt",
+    "S" = "suspend",
+    "T" = "pre_delist",
+    "X" = "delist"
+  )
 
   # add status_names fields crossponding to status_code
   ds_spt_stocks_status <- ds_spt_stocks_status %>%
     dplyr::mutate(trade_status = trade_status[status_code])
 
   return(ds_spt_stocks_status)
-
 }
 # Method definition for s4 generic
 #' @describeIn get_spt_stocks  get stock info of special treatment from
@@ -1930,7 +1936,8 @@ setMethod(
 get_riskfree_rate.gta_db <- function(stock_db,
                                      period = c(
                                        "day", "month",
-                                       "quarter", "year"),
+                                       "quarter", "year"
+                                     ),
                                      ...) {
 
   # validate params
@@ -2025,12 +2032,16 @@ dir_path_db.gta_db <- function(stock_db,
   if (!is.null(dir_path)) {
     if (force) {
       # return path whether it exist or not.
-      dir_path <- normalizePath(dir_path, winslash = "/",
-                                mustWork = FALSE)
+      dir_path <- normalizePath(dir_path,
+        winslash = "/",
+        mustWork = FALSE
+      )
     } else {
       # check whether path exist and return path
-      dir_path <- normalizePath(dir_path, winslash = "/",
-                                mustWork = TRUE)
+      dir_path <- normalizePath(dir_path,
+        winslash = "/",
+        mustWork = TRUE
+      )
     }
   }
 

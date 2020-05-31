@@ -20,19 +20,19 @@
 #' @return No return.
 #'
 #' @export
-build_report <- function(report_template ,
+build_report <- function(report_template,
                          report_params = NULL,
-                         output_format = c("html_document", "pdf_document",
-                                            "word_document", "rticles::ctex"),
+                         output_format = c(
+                           "html_document", "pdf_document",
+                           "word_document", "rticles::ctex"
+                         ),
                          output_sn = NULL,
                          output_dir = "output",
                          quiet = TRUE,
-                         ...)
-{
-
+                         ...) {
   assertive::assert_all_are_non_empty_character(report_template)
 
-  working_dir = dirname(normalizePath(report_template))
+  working_dir <- dirname(normalizePath(report_template))
 
   if (is.null(output_dir)) {
     output_dir <- working_dir
@@ -40,16 +40,19 @@ build_report <- function(report_template ,
 
   output_filename_main <- stringr::str_split(basename(report_template), pattern = "\\.")[[1]][1]
 
-  output_format = match.arg(output_format)
+  output_format <- match.arg(output_format)
   outout_filename_ext <- switch(output_format,
-                                "html_document" = ".html",
-                                "pdf_document" = ".pdf",
-                                "word_document" = ".docx",
-                                "rticles::ctex" = ".pdf" )
+    "html_document" = ".html",
+    "pdf_document" = ".pdf",
+    "word_document" = ".docx",
+    "rticles::ctex" = ".pdf"
+  )
 
   output_filename <- if (!is.null(output_sn)) {
-    paste0(output_filename_main, "_",
-           as.character(output_sn), outout_filename_ext)
+    paste0(
+      output_filename_main, "_",
+      as.character(output_sn), outout_filename_ext
+    )
   } else {
     paste0(output_filename_main, outout_filename_ext)
   }
@@ -57,16 +60,17 @@ build_report <- function(report_template ,
   msg <- sprintf("generate report for %s ...\n", report_template)
   message(msg)
 
-  rmarkdown::render(input = report_template,
-                    params = report_params,
-                    output_format = output_format,
-                    output_file = output_filename,
-                    output_dir = output_dir,
-                    quiet = quiet,
-                    encoding = "UTF-8",
-                    ...)
+  rmarkdown::render(
+    input = report_template,
+    params = report_params,
+    output_format = output_format,
+    output_file = output_filename,
+    output_dir = output_dir,
+    quiet = quiet,
+    encoding = "UTF-8",
+    ...
+  )
 
   msg <- sprintf("generate %s in %s\n", output_filename, output_dir)
   message(msg)
-
 }

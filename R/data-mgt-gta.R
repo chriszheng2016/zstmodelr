@@ -242,7 +242,7 @@ setMethod(
   "update_db",
   signature(stock_db = "gta_db"),
   function(stock_db, data_source, retry_log,
-             log_file_prefix, log_dir, ...) {
+           log_file_prefix, log_dir, ...) {
     update_db.gta_db(
       stock_db, data_source, retry_log,
       log_file_prefix, log_dir, ...
@@ -299,28 +299,31 @@ import_table.gta_db <- function(stock_db,
       target_table <- object_name
     }
 
-    result <- tryCatch({
-      if (DBI::dbExistsTable(stock_db$connection, name = target_table)) {
-        # DBI::dbWithTransaction(stock_db$connection, {
-        # Clear old data in existed table
-        sql_cmd <- sprintf("truncate table %s", target_table)
-        DBI::dbExecute(stock_db$connection, sql_cmd)
+    result <- tryCatch(
+      {
+        if (DBI::dbExistsTable(stock_db$connection, name = target_table)) {
+          # DBI::dbWithTransaction(stock_db$connection, {
+          # Clear old data in existed table
+          sql_cmd <- sprintf("truncate table %s", target_table)
+          DBI::dbExecute(stock_db$connection, sql_cmd)
 
-        # Append new data into empty table
-        DBI::dbWriteTable(stock_db$connection,
-          name = target_table,
-          value = raw_data_frame,
-          append = TRUE
-        )
-        # })
-      } else {
-        # Create a new table
-        DBI::dbWriteTable(stock_db$connection,
-          name = target_table,
-          value = raw_data_frame
-        )
-      }
-    }, error = function(e) e)
+          # Append new data into empty table
+          DBI::dbWriteTable(stock_db$connection,
+            name = target_table,
+            value = raw_data_frame,
+            append = TRUE
+          )
+          # })
+        } else {
+          # Create a new table
+          DBI::dbWriteTable(stock_db$connection,
+            name = target_table,
+            value = raw_data_frame
+          )
+        }
+      },
+      error = function(e) e
+    )
     if (inherits(result, "error")) {
       error_msg <- conditionMessage(result)
       success <- FALSE
@@ -335,7 +338,6 @@ import_table.gta_db <- function(stock_db,
       msg <- sprintf("fail to import %s, error: %s", input_file, error_msg)
       rlang::warn(msg)
     }
-
   }
 
   return(invisible(success))
@@ -348,10 +350,10 @@ setMethod(
   "import_table",
   signature(stock_db = "gta_db"),
   function(stock_db, input_file, input_type,
-             input_dir, start_index,
-             target_table, ignore_problems,
-             log_dir,
-             ...) {
+           input_dir, start_index,
+           target_table, ignore_problems,
+           log_dir,
+           ...) {
     import_table.gta_db(
       stock_db, input_file, input_type,
       input_dir, start_index,
@@ -404,9 +406,11 @@ process_files.gta_db <- function(stock_db,
   )
   log_file_path <- NULL
   ds_log <- data_source_process %>%
-    dplyr::select(input_file = input_file,
-                  source_file = process_source,
-                  process) %>%
+    dplyr::select(
+      input_file = input_file,
+      source_file = process_source,
+      process
+    ) %>%
     dplyr::mutate(success = FALSE)
 
   # collect failed tables from log file
@@ -521,7 +525,6 @@ process_files.gta_db <- function(stock_db,
   }
 
   return(invisible(NULL))
-
 }
 
 # Method definition for s4 generic
@@ -531,7 +534,7 @@ setMethod(
   "process_files",
   signature(stock_db = "gta_db"),
   function(stock_db, data_source, retry_log,
-             log_file_prefix, log_dir, ...) {
+           log_file_prefix, log_dir, ...) {
     process_files.gta_db(
       stock_db, data_source, retry_log,
       log_file_prefix, log_dir, ...
