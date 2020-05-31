@@ -260,7 +260,7 @@ setGeneric(
 #' @examples
 #' \dontrun{
 #' ds_trd_dalyr.df <- get_stock_dataset(stock_db,
-#'   table_name = "TRD_Dalyr_鏃ヤ釜鑲″洖鎶ョ巼",
+#'   table_name = "TRD_Dalyr_日个股回报率",
 #'   stock_cd_list = c("600066", "000550")
 #' )
 #' }
