@@ -20,14 +20,10 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          # Test mainly on macOS for following reasons:
-          #  - unavoidable errors on windows
-          #  - test on masOS is faster than that on windows
-          #  - it is good enough for testing on various R versions.
-          - {os: macOS-latest,   r: 'devel'}
           - {os: macOS-latest,   r: 'release'}
-          - {os: macOS-latest,   r: '3.6'}
           - {os: windows-latest, r: 'release'}
+          - {os: windows-latest, r: 'oldrel'}
+          - {os: ubuntu-16.04, r: 'release', rspm: "https://packagemanager.rstudio.com/cran/__linux__/xenial/latest"}
 
 
           #- {os: macOS-latest,   r: 'devel'}
