@@ -215,45 +215,46 @@ timeseries of stocks.</p></li>
     <pre class="examples"><div class='input'>
 <span class='kw'>if</span> (<span class='fl'>FALSE</span>) {
 
- <span class='co'># create a indicator from vars dataset.</span>
-  <span class='no'>ts_indicator</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='create_indicator.html'>create_indicator</a></span>(<span class='no'>ds_def_vars</span>,
-                                 <span class='kw'>ind_def_fun</span> <span class='kw'>=</span> <span class='no'>ind_def_fun</span>,
-                                 <span class='kw'>debug</span> <span class='kw'>=</span> <span class='no'>debug</span>,
-                                 <span class='kw'>date_index_field</span> <span class='kw'>=</span> <span class='st'>"date"</span>,
-                                 <span class='kw'>key_fields</span> <span class='kw'>=</span> <span class='no'>key_fields</span>,
-                                 <span class='kw'>parallel</span> <span class='kw'>=</span> <span class='no'>parallel</span>)
+<span class='co'># create a indicator from vars dataset.</span>
+<span class='no'>ts_indicator</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='create_indicator.html'>create_indicator</a></span>(<span class='no'>ds_def_vars</span>,
+  <span class='kw'>ind_def_fun</span> <span class='kw'>=</span> <span class='no'>ind_def_fun</span>,
+  <span class='kw'>debug</span> <span class='kw'>=</span> <span class='no'>debug</span>,
+  <span class='kw'>date_index_field</span> <span class='kw'>=</span> <span class='st'>"date"</span>,
+  <span class='kw'>key_fields</span> <span class='kw'>=</span> <span class='no'>key_fields</span>,
+  <span class='kw'>parallel</span> <span class='kw'>=</span> <span class='no'>parallel</span>
+)
 
 
- <span class='co'># --- add attribute directly ---</span>
+<span class='co'># --- add attribute directly ---</span>
 
- <span class='co'># add attribute of indcd</span>
- <span class='no'>ts_indicators_with_indcd</span> <span class='kw'>&lt;-</span> <span class='fu'>attr_indicators_indcd</span>(<span class='no'>stock_db</span>,
-                      <span class='kw'>ts_indicators</span> <span class='kw'>=</span> <span class='no'>ts_indicators</span>)
+<span class='co'># add attribute of indcd</span>
+<span class='no'>ts_indicators_with_indcd</span> <span class='kw'>&lt;-</span> <span class='fu'>attr_indicators_indcd</span>(<span class='no'>stock_db</span>,
+  <span class='kw'>ts_indicators</span> <span class='kw'>=</span> <span class='no'>ts_indicators</span>
+)
 
- <span class='co'># add attribute of trdstats</span>
- <span class='no'>ts_indicators_wide_with_attr</span> <span class='kw'>&lt;-</span> <span class='fu'>attr_indicators_trdstat</span>(<span class='no'>stock_db</span>,
-                      <span class='kw'>ts_indicators</span> <span class='kw'>=</span> <span class='no'>ts_indicators</span>)
+<span class='co'># add attribute of trdstats</span>
+<span class='no'>ts_indicators_wide_with_attr</span> <span class='kw'>&lt;-</span> <span class='fu'>attr_indicators_trdstat</span>(<span class='no'>stock_db</span>,
+  <span class='kw'>ts_indicators</span> <span class='kw'>=</span> <span class='no'>ts_indicators</span>
+)
 
- <span class='co'># --- add attribute indirectly ---</span>
+<span class='co'># --- add attribute indirectly ---</span>
 
- <span class='co'># create attr defs by using data from stock</span>
- <span class='no'>new_attr_indcd</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='ind_attr_def_indcd.html'>ind_attr_def_indcd</a></span>(<span class='no'>stock_db</span>)
+<span class='co'># create attr defs by using data from stock</span>
+<span class='no'>new_attr_indcd</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='ind_attr_def_indcd.html'>ind_attr_def_indcd</a></span>(<span class='no'>stock_db</span>)
 
- <span class='co'># use attribute def to modify multi-indicators</span>
- <span class='kw'>for</span> (<span class='no'>i</span> <span class='kw'>in</span> <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq_len</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/nrow.html'>NROW</a></span>(<span class='no'>ds_ts_indicators</span>))) {
+<span class='co'># use attribute def to modify multi-indicators</span>
+<span class='kw'>for</span> (<span class='no'>i</span> <span class='kw'>in</span> <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq_len</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/nrow.html'>NROW</a></span>(<span class='no'>ds_ts_indicators</span>))) {
+  <span class='no'>ts_indicator</span> <span class='kw'>&lt;-</span> <span class='no'>ds_ts_indicators</span>$<span class='no'>data</span><span class='kw'>[[</span><span class='no'>i</span>]]
 
-    <span class='no'>ts_indicator</span> <span class='kw'>&lt;-</span> <span class='no'>ds_ts_indicators</span>$<span class='no'>data</span><span class='kw'>[[</span><span class='no'>i</span>]]
-
-    <span class='no'>ts_indicator</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='modify_indicator.html'>modify_indicator</a></span>(
-                     <span class='kw'>ts_indicator</span> <span class='kw'>=</span> <span class='no'>ts_indicator</span>,
-                     <span class='kw'>modify_fun</span> <span class='kw'>=</span> <span class='no'>new_attr_indcd</span>,
-                     <span class='kw'>replace_exist</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-                     <span class='kw'>date_index_field</span> <span class='kw'>=</span> <span class='st'>"date"</span>,
-                     <span class='kw'>key_fields</span> <span class='kw'>=</span> <span class='st'>"stkcd"</span>,
-                     <span class='kw'>parallel</span> <span class='kw'>=</span> <span class='no'>parallel</span>
-                    )
- }
-
+  <span class='no'>ts_indicator</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='modify_indicator.html'>modify_indicator</a></span>(
+    <span class='kw'>ts_indicator</span> <span class='kw'>=</span> <span class='no'>ts_indicator</span>,
+    <span class='kw'>modify_fun</span> <span class='kw'>=</span> <span class='no'>new_attr_indcd</span>,
+    <span class='kw'>replace_exist</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
+    <span class='kw'>date_index_field</span> <span class='kw'>=</span> <span class='st'>"date"</span>,
+    <span class='kw'>key_fields</span> <span class='kw'>=</span> <span class='st'>"stkcd"</span>,
+    <span class='kw'>parallel</span> <span class='kw'>=</span> <span class='no'>parallel</span>
+  )
+}
 }</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

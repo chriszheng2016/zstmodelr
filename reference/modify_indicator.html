@@ -203,7 +203,43 @@ Default TRUE means to use parallel processing.</p></td>
 <code><a href='create_indicator.html'>create_indicator</a>()</code></p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"></pre>
+    <pre class="examples"><div class='input'>
+<span class='kw'>if</span> (<span class='fl'>FALSE</span>) {
+
+<span class='co'># modify ts_indicator with customized ind_attr_def_fun</span>
+
+<span class='co'># create attribute definition function of customized attribute</span>
+<span class='no'>attr_fun</span> <span class='kw'>&lt;-</span> <span class='kw'>function</span>(<span class='no'>date</span>, <span class='no'>stkcd</span>, <span class='no'>...</span>) {
+  <span class='st'>"attr_value"</span>
+}
+<span class='no'>ind_attr_def_fun</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='create_attribute_def_fun.html'>create_attribute_def_fun</a></span>(
+  <span class='no'>attr_name</span>,
+  <span class='kw'>attr_fun</span> <span class='kw'>=</span> <span class='no'>attr_fun</span>
+)
+<span class='co'># modify existed ts_indicators</span>
+<span class='no'>ts_modify_indicator</span> <span class='kw'>&lt;-</span> <span class='fu'>modify_indicator</span>(<span class='no'>ts_modify_indicator</span>,
+  <span class='kw'>modify_fun</span> <span class='kw'>=</span> <span class='no'>ind_attr_def_fun</span>,
+  <span class='kw'>date_index_field</span> <span class='kw'>=</span> <span class='st'>"date"</span>,
+  <span class='kw'>key_fields</span> <span class='kw'>=</span> <span class='st'>"stkcd"</span>,
+  <span class='kw'>parallel</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>
+)
+
+
+<span class='co'># modify ts_indicator with pre-defined ind_attr_def_fun</span>
+
+<span class='co'># create definition function of pre-defined attribute of indcd</span>
+<span class='no'>new_attr_indcd</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='ind_attr_def_indcd.html'>ind_attr_def_indcd</a></span>(<span class='no'>stock_db</span>)
+
+<span class='co'># modify existed ts_indicators</span>
+<span class='no'>ts_indicator</span> <span class='kw'>&lt;-</span> <span class='fu'>modify_indicator</span>(
+  <span class='kw'>ts_indicator</span> <span class='kw'>=</span> <span class='no'>ts_indicator</span>,
+  <span class='kw'>modify_fun</span> <span class='kw'>=</span> <span class='no'>new_attr_indcd</span>,
+  <span class='kw'>replace_exist</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
+  <span class='kw'>date_index_field</span> <span class='kw'>=</span> <span class='st'>"date"</span>,
+  <span class='kw'>key_fields</span> <span class='kw'>=</span> <span class='st'>"stkcd"</span>,
+  <span class='kw'>parallel</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>
+)
+}</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

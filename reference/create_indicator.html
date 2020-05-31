@@ -203,35 +203,35 @@ Default TRUE means to use parallel processing.</p></td>
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='kw'>if</span> (<span class='fl'>FALSE</span>) {
 
-  <span class='co'># load vars dataset for generating indicators</span>
-  <span class='no'>ds_all_vars</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='get_indicator_vars.html'>get_indicator_vars</a></span>(<span class='no'>stock_db</span>,
-                                 <span class='kw'>indicator_defs</span> <span class='kw'>=</span> <span class='no'>ds_indicator_defs</span>)
+<span class='co'># load vars dataset for generating indicators</span>
+<span class='no'>ds_all_vars</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='get_indicator_vars.html'>get_indicator_vars</a></span>(<span class='no'>stock_db</span>,
+  <span class='kw'>indicator_defs</span> <span class='kw'>=</span> <span class='no'>ds_indicator_defs</span>
+)
 
-  <span class='co'># create ind_expr</span>
-  <span class='no'>indicator_formula</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"stock_return &lt;- mretwd
+<span class='co'># create ind_expr</span>
+<span class='no'>indicator_formula</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"stock_return &lt;- mretwd
                           market_return &lt;- cmretwdtl
                           model &lt;- lm(stock_return ~ market_return)
                           beta &lt;- coef(model)['market_return']"</span>)
-  <span class='no'>indicator_expr</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='utils_expr.html'>create_expr</a></span>(!!<span class='no'>indicator_formula</span>)
+<span class='no'>indicator_expr</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='utils_expr.html'>create_expr</a></span>(!!<span class='no'>indicator_formula</span>)
 
-  <span class='co'># create def_fun for indicator</span>
-  <span class='no'>indicator_def_fun</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='create_indicator_def_fun.html'>create_indicator_def_fun</a></span>(
-      <span class='kw'>indicator_code</span> <span class='kw'>=</span> <span class='st'>"m_stock_beta1"</span>,
-      <span class='kw'>indicator_expr</span> <span class='kw'>=</span> <span class='no'>indicator_expr</span>,
-      <span class='kw'>rolly_window</span> <span class='kw'>=</span> <span class='fl'>12</span>,
-      <span class='kw'>period</span> <span class='kw'>=</span> <span class='st'>"month"</span>
-      )
+<span class='co'># create def_fun for indicator</span>
+<span class='no'>indicator_def_fun</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='create_indicator_def_fun.html'>create_indicator_def_fun</a></span>(
+  <span class='kw'>indicator_code</span> <span class='kw'>=</span> <span class='st'>"m_stock_beta1"</span>,
+  <span class='kw'>indicator_expr</span> <span class='kw'>=</span> <span class='no'>indicator_expr</span>,
+  <span class='kw'>rolly_window</span> <span class='kw'>=</span> <span class='fl'>12</span>,
+  <span class='kw'>period</span> <span class='kw'>=</span> <span class='st'>"month"</span>
+)
 
-  <span class='co'># create a indicator from vars dataset.</span>
-  <span class='no'>ts_indicator</span> <span class='kw'>&lt;-</span> <span class='fu'>create_indicator</span>(
-        <span class='no'>ds_def_vars</span>,
-        <span class='kw'>ind_def_fun</span> <span class='kw'>=</span> <span class='no'>ind_def_fun</span>,
-        <span class='kw'>debug</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-        <span class='kw'>date_index_field</span> <span class='kw'>=</span> <span class='st'>"date"</span>,
-        <span class='kw'>key_fields</span> <span class='kw'>=</span> <span class='st'>"stkcd"</span>,
-        <span class='kw'>parallel</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>
-        )
-
+<span class='co'># create a indicator from vars dataset.</span>
+<span class='no'>ts_indicator</span> <span class='kw'>&lt;-</span> <span class='fu'>create_indicator</span>(
+  <span class='no'>ds_def_vars</span>,
+  <span class='kw'>ind_def_fun</span> <span class='kw'>=</span> <span class='no'>ind_def_fun</span>,
+  <span class='kw'>debug</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
+  <span class='kw'>date_index_field</span> <span class='kw'>=</span> <span class='st'>"date"</span>,
+  <span class='kw'>key_fields</span> <span class='kw'>=</span> <span class='st'>"stkcd"</span>,
+  <span class='kw'>parallel</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>
+)
 }</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
