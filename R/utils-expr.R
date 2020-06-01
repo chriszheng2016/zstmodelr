@@ -51,6 +51,7 @@ create_expr <- function(expr) {
 #' @param pattern  A character of regular rule for matching.
 #' @param ... Extra arguments to be passed to purrr::map.
 #' @describeIn utils_expr  Find symbols in expr by matching pattern.
+#' @noRd
 find_syms <- function(expr, pattern = NULL, ...) {
   expr <- rlang::enexpr(expr)
 

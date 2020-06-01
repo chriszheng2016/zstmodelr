@@ -11,7 +11,7 @@
 #'
 #' @return  Invisible NULL if succeed, otherwise raise error.
 #'
-#' @export
+#' @noRd
 verify_fields <- function(data, fields) {
 
   # validate params
