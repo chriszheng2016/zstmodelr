@@ -1,22 +1,22 @@
 #  Build fundamental factor model
-#' Creator of factor_test_unigress class
+#' Creator of factor_test_uniregress class
 #'
-#' Conduct univarate reggression test for descriptors of factors and build object
+#' Conduct univariate regression test for descriptors of factors and build object
 #' of factor_test_uniregress class as output.
 #'
 #'
 #'
-#' @param ds_test          a timeseries dataset with descriptors of factors for test
+#' @param ds_build         A timeseries dataset with descriptors of factors for test
 #' @param regress_method   method of partitioning data for regression, i.e.
 #' "cross_section", "pooling", by default "cross_section".
-#' @param regress_fun      a function to conduct regress.
-#' @param ...              argments passed to regress_fun.
-#' @param output_type      type of output data, i.e."summary", "raw", if "raw",
-#' raw data will be append to output object for dignosis.
-#' @param date_field       the name of date field of ds_test, by default "date",
+#' @param regress_fun      A function to conduct regress.
+#' @param ...              Arguments passed to regress_fun.
+#' @param output_type      Type of output data, i.e."summary", "raw", if "raw",
+#' raw data will be append to output object for diagnosis.
+#' @param date_field       Name of date field of ds_test, by default "date",
 #' Column must be date-like.
 #'
-#' @return                 a object of factor_test_uniregress class.
+#' @return                 A object of factor_test_uniregress class.
 #'
 #' @export
 model_build_fundamental <- function(ds_build,
@@ -27,7 +27,7 @@ model_build_fundamental <- function(ds_build,
                                     date_field = "date") {
   # Validate params
   stopifnot(!is.null(ds_build), inherits(ds_build_model, "data.frame"))
-  ds_build_data <- tibble::as.tibble(ds_build)
+  ds_build_data <- tibble::as_tibble(ds_build)
 
   stopifnot(!is.null(regress_fun), inherits(regress_fun, "function"))
 

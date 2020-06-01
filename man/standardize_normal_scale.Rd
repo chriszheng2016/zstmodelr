@@ -10,7 +10,8 @@ standardize_normal_scale(x)
 \item{x}{a vector of data.}
 }
 \value{
-a vector of standardized data
+\preformatted{ a vector of standardized data
+}
 }
 \description{
 Scale data into new vector of mean of 0 and stdev of 1

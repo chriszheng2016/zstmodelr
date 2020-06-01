@@ -4,36 +4,43 @@
 \alias{rollify_series}
 \title{Roll to apply a function on data series to output a series}
 \usage{
-rollify_series(data_series, fun, ..., window = 1L, unlist = TRUE,
-  na_value = NA)
+rollify_series(
+  data_series,
+  fun,
+  ...,
+  window = 1L,
+  unlist = TRUE,
+  na_value = NA
+)
 }
 \arguments{
-\item{data_series}{A dataframe or matrix of numeric series to trail.#'}
+\item{data_series}{A dataframe or matrix of numeric series to trail.}
 
-\item{fun}{A function to apply on sereis data.}
+\item{fun}{A function to apply on series data.}
 
 \item{...}{params passed to fun.}
 
 \item{window}{A integer of periods in rolling window which must be
-in range of [1L, length of data_series], default 1L.}
+in range of \verb{[1L, length of data_series]}, default 1L.}
 
-\item{unlist}{A logical to deterimine whether unlist result or not.
+\item{unlist}{A logical to determine whether unlist result or not.
 Default TRUE means unlist result into a vector of numeric. The argument
 don't work if result can't be convert into a atomic vector, e.g., a list of
 object or a list of list, etc.}
 
-\item{na_value}{A NA value to fill non-avaliable data in results,
+\item{na_value}{A NA value to fill non-available data in results,
 default NA.}
 }
 \value{
 A vector or list of result with same length of original series
- if succeed, otherwise a vector of NAs with same length of orginal series.
+if succeed, otherwise a vector of NAs with same length of original series.
 }
 \description{
 Apply fun on some data series in rolling window to get a result series
 with same length of original data series
 }
 \seealso{
-Other utils_series: \code{\link{trail_periodic_series}}
+Other utils_series: 
+\code{\link{trail_periodic_series}()}
 }
 \concept{utils_series}

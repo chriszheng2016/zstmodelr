@@ -1,3 +1,4 @@
+# Utility functions - report
 
 #' Build report from template
 #'
@@ -5,7 +6,7 @@
 #'
 #'
 #' @param report_template A rmd file as report template.
-#' @param report_params   A list of report parmas, by default NULL.
+#' @param report_params   A list of report params, by default NULL.
 #' @param output_format   Output file format i.e. "html_document","pdf_document",
 #'   "word_document", "rticles::ctex". Default "html_document".
 #' @param output_sn   Serial number or id for output file. Default NULL
@@ -14,10 +15,11 @@
 #'   file, otherwise in outpout_dir.
 #' @param quiet  A logic flag of whether to suppress printing of the pandoc
 #'   command line.
+#' @param ... Arguments passed to rmarkdown::render.
 #'
 #' @family utils_report
 #'
-#' @return
+#' @return No return.
 #'
 #' @export
 build_report <- function(report_template,

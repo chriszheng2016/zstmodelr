@@ -9,18 +9,18 @@
 #' \itemize{
 #'   \item \strong{formal production}: produce final result of indicators on full dataset
 #'    from stock_db, which will take longer time ;
-#'   \item \strong{validating defintion}: produce trial results of indicators on small
+#'   \item \strong{validating definition}: produce trial results of indicators on small
 #'   dataset from stock_db, which will take shorter time.
 #'   }
 #'
 #' @param stock_db  A stock database object to operate.
-#' @param ds_indicator_defs  A dataframe of indicator definintion to generate.
+#' @param ds_indicator_defs  A dataframe of indicator definition to generate.
 #' @param validate_def A logic flag to determine whether to validate indicator
 #'   definition or not.Default FALSE, means to produce indicators on full
-#'   dataset, TRUE means to validate definintion on small datasets.
+#'   dataset, TRUE means to validate definition on small datasets.
 #' @param validate_stkcds A character vector of stock codes used for validating
 #'   indicator definition.
-#' @param parallel   A logic flag to deterimine whether to use parallel processing.
+#' @param parallel   A logic to determine whether to use parallel processing.
 #'   Default TRUE means to use parallel processing.
 #' @param log_file_prefix  A character of log file prefix to name log file. Log
 #'   file is named as format of "log_file_prefix(current).csv" Default is
@@ -245,11 +245,11 @@ generate_indicators <- function(stock_db,
 
 #' Delete indicators in batch mode
 #'
-#' Delete cusotmized indicators of stock_db in batch, which clear all customized
+#' Delete customized indicators of stock_db in batch, which clear all customized
 #' built indicator files.
 #'
 #' @param stock_db  A stock database object to operate.
-#' @param ds_indicator_defs  A dataframe of indicator definintion to delete.
+#' @param ds_indicator_defs  A dataframe of indicator definition to delete.
 #'
 #' @family indicator generate functions
 #'

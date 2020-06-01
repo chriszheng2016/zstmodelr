@@ -1,13 +1,18 @@
+# Utility functions - fields
 
-#' Check whether fields exsit in data or not.
+#' Verify existence of fields in data
+#'
+#' Verify whether some fields exist in the data or not.
+#'
 #' @param  data   A dataframe or matrix to check.
 #' @param  fields A character vector of field names to check.
 #'
 #' @family utils_fields
-#' @return  return invisble NULL if succeed, otherwise raise error.
 #'
-#' @noRd
-check_fields <- function(data, fields) {
+#' @return  Invisible NULL if succeed, otherwise raise error.
+#'
+#' @export
+verify_fields <- function(data, fields) {
 
   # validate params
   data_sym <- rlang::ensym(data)
@@ -29,11 +34,13 @@ check_fields <- function(data, fields) {
   }
 }
 
+
+
 #' Check whether fields are specified type
 #'
-#' Predicate fields of dataframe are specifed type or not.
+#' Predicate fields of dataframe are specified type or not.
 #' @note
-#'  numeric means intger or double; double don't include date.
+#'  numeric means integer or double; double don't include date.
 #'
 #'
 #' @param data     A vector of date/timestamps.
@@ -73,7 +80,7 @@ is_type_field <- function(data, expect_type = c(
     expect_type <- match.arg(expect_type)
     predicate_fun <- switch(expect_type,
       "numeric" = {
-        # numeric means an object of typeof intger or double
+        # numeric means an object of typeof integer or double
         # purrr::as_mapper(~(inherits(., what = "numeric")))
         purrr::as_mapper(~ (is.numeric(.)))
       },
@@ -126,7 +133,7 @@ is_type_field <- function(data, expect_type = c(
 #'
 #' @inheritParams is_type_field
 #'
-#' @return return a vectors of field names with specified type. If no field is
+#' @return A vectors of field names with specified type. If no field is
 #'   expect type, return a character(0).
 #'
 #' @family utils_fields

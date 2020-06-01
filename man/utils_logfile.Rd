@@ -4,7 +4,7 @@
 \alias{utils_logfile}
 \alias{save_log}
 \alias{read_log}
-\title{Utils functions of log file}
+\title{Utility functions of log file}
 \usage{
 save_log(ds_log_info, log_file_prefix, log_dir = "./log")
 
@@ -24,7 +24,7 @@ Default "./".}
 \value{
 \strong{save_log}: full path of save log file.
 
-\strong{read_log}: A dataframe of log info if succeed, otherwsie NULL.
+\strong{read_log}: A dataframe of log info if succeed, otherwise NULL.
 }
 \description{
 Utility functions to handle log file, which contains log info of operating

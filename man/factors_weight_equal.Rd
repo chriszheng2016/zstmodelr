@@ -10,10 +10,11 @@ factors_weight_equal(factors_list)
 \item{factors_list}{a list of factors.}
 }
 \value{
-a list of factorS weight with colums of factor_name, factor_weight.
+\preformatted{ a list of factorS weight with columns of factor_name, factor_weight.
+}
 }
 \description{
-Compute factors weight by giving each factor eqaul weight of
+Compute factors weight by giving each factor equal weight of
 \eqn{1/number of factors}. The result of factors weight could be used for
 \code{\link{weight_formula}} to build a formula of composite factor
 }

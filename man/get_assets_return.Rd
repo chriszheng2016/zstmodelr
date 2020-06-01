@@ -15,5 +15,5 @@ get_assets_return(benchmark_return, stocks_return)
 A timeseries of assets return.
 }
 \description{
-Get assets return timeseries by combining marekt return anad stocks return
+Get assets return timeseries by combining market return and stocks return
 }

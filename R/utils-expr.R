@@ -1,6 +1,8 @@
-#' Utils functions of expr
+# Utility functions - expr
+
+#' Utility functions of expr
 #'
-#' Utility functions to handle expr basing on rlang, which is used to facliate
+#' Utility functions to handle expr basing on rlang, which is used to facilitate
 #' defining indicator.
 #'
 #'
@@ -36,7 +38,7 @@ create_expr <- function(expr) {
   } else {
     # invalid exprs
     msg <- sprintf(
-      "exprs(%s) should be expr, list of expr, or charaters",
+      "exprs(%s) should be expr, list of expr, or characters",
       as.character(expr)
     )
     rlang::abort(msg)
@@ -47,8 +49,8 @@ create_expr <- function(expr) {
 
 # Find symbols in expr by matching pattern.
 #' @param pattern  A character of regular rule for matching.
-#' @describeIn utils_expr  find symbols in expr by matching pattern.
-#' @noRd
+#' @param ... Extra arguments to be passed to purrr::map.
+#' @describeIn utils_expr  Find symbols in expr by matching pattern.
 find_syms <- function(expr, pattern = NULL, ...) {
   expr <- rlang::enexpr(expr)
 

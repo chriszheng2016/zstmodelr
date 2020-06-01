@@ -4,8 +4,12 @@
 \alias{build_sort_portfolios}
 \title{Build sort portfoilos basing on group list of stocks}
 \usage{
-build_sort_portfolios(stocks_list, factor_value_list,
-  stocks_weight_list = NULL, ngroup = 5)
+build_sort_portfolios(
+  stocks_list,
+  factor_value_list,
+  stocks_weight_list = NULL,
+  ngroup = 5
+)
 }
 \arguments{
 \item{stocks_list}{A list of stkcds of stocks.}
@@ -18,8 +22,9 @@ by default NULL.}
 \item{ngroup}{Numbers of groups to cut stocks, by default 5.}
 }
 \value{
-A tibble dataset of portfolio_group, stkcd, weight,
-                        factor_value.
+\preformatted{            A tibble dataset of portfolio_group, stkcd, weight,
+                    factor_value.
+}
 }
 \description{
 use stocks list and factor value list to build sort portfoilos by sorting

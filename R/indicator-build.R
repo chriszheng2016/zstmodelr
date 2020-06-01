@@ -10,9 +10,9 @@
 #' @param ...       Params to compute_fun.
 #' @param date_index_field  Name of date index field of ts_vars, default 'date'.
 #' @param key_fields    A character vector of key fields, which identify unique
-#'   observation in each date. Default NULL means to not devide data into
+#'   observation in each date. Default NULL means to not divide data into
 #'   groups.
-#' @param parallel   A logic to deterimine whether to use parallel processing.
+#' @param parallel   A logic to determine whether to use parallel processing.
 #'   Default TRUE means to use parallel processing.
 #'
 #'
@@ -40,14 +40,15 @@ compute_indicator <- function(ts_compute_vars,
 
     # compute indicator
     ts_indicator <- NULL
-    result <- tryCatch({
-      compute_fun(ts_compute_vars,
-        date_index_field = date_index_field,
-        key_fields = key_fields,
-        ...
-      )
-    },
-    error = function(e) e
+    result <- tryCatch(
+      {
+        compute_fun(ts_compute_vars,
+          date_index_field = date_index_field,
+          key_fields = key_fields,
+          ...
+        )
+      },
+      error = function(e) e
     )
 
     if (inherits(result, "error")) {
@@ -79,63 +80,77 @@ compute_indicator <- function(ts_compute_vars,
   assertive::assert_all_are_true(NROW(ts_compute_vars) > 0)
 
   # pre-process ts_input_vars
-  ts_compute_vars <- tibble::as.tibble(ts_compute_vars)
-  arrange_expr <- rlang::parse_exprs(c(key_fields, date_index_field))
+  ts_compute_vars <- tibble::as_tibble(ts_compute_vars)
+  arrange_expr <-
+    rlang::parse_exprs(c(key_fields, date_index_field))
   ts_compute_vars <- ts_compute_vars %>%
     dplyr::arrange(!!!arrange_expr)
 
   # Work for single/multi group dataset
   if (is.null(key_fields)) {
-    # for single group
-    ds_indicator <- .compute_indicator_single(ts_compute_vars,
+    # For single group
+    ds_indicator <- .compute_indicator_single(
+      ts_compute_vars,
       compute_fun = compute_fun,
       ...,
       date_index_field = date_index_field,
       key_fields = key_fields
     )
   } else {
-    # for mutlti groups by key_fieilds
-    suppressWarnings(
-      ds_indicator <- plyr::ddply(ts_compute_vars,
-        .variables = key_fields,
-        .fun = .compute_indicator_single,
-        compute_fun = compute_fun,
-        ...,
-        date_index_field = date_index_field,
-        key_fields = key_fields,
-        .parallel = parallel,
-        .progress = plyr::progress_none()
-      )
+    # For mutlti groups by key_fields
+    progress_display <- if (exists("winProgressBar")) {
+      plyr::progress_win(title = "Computing...")
+    } else {
+      plyr::progress_text()
+    }
+    suppress_warnings(
+      {
+        ds_indicator <- plyr::ddply(
+          ts_compute_vars,
+          .variables = key_fields,
+          .fun = .compute_indicator_single_group,
+          compute_fun = compute_fun,
+          ...,
+          date_index_field = date_index_field,
+          key_fields = key_fields,
+          .parallel = parallel,
+          .progress = progress_display
+        )
+      },
+      # suppress warnings due to parallel process
+      warn_pattern = "<anonymous>: ..."
     )
 
     # If there are no results, dplyr::ddply will return a data frame
     # with zero rows and columns
-    if (NROW(ds_indicator) == 0) ds_indicator <- NULL
+    if (NROW(ds_indicator) == 0) {
+      ds_indicator <- NULL
+    }
   }
 
   if (!is.null(ds_indicator)) {
-    ds_indicator <- tibble::as.tibble(ds_indicator)
+    ds_indicator <- tibble::as_tibble(ds_indicator)
   }
 
   return(ds_indicator)
 }
 
 
-#' Create indicator by definiton function and variables timeseries
+#' Create indicator by definition function and variables timeseries
 #'
 #' Use definition function and variable timeseries to create indicator.
 #'
 #' @param ts_def_vars   A dataframe of variable timeseries to create indicator.
 #' @param ind_def_fun   A function of defining indicator.
 #' @param ...       Params to ind_def_fun.
-#' @param debug     A logic to deterimine whether to turn on debug in createing
-#'   indicator. Default FAlSE means not to use debug.
+#' @param debug     A logic to determine whether to turn on debug in creating
+#'  indicator. Default FALSE means not to use debug.
 #' @param date_index_field  Name of date index field of ts_def_vars,
 #'   default 'date'.
 #' @param key_fields    A character vector of key fields, which identify unique
-#'   observation in each date. Default NULL means to not devide data into
+#'   observation in each date. Default NULL means to not divide data into
 #'   groups.
-#' @param parallel   A logic to deterimine whether to use parallel processing.
+#' @param parallel   A logic to determine whether to use parallel processing.
 #'   Default TRUE means to use parallel processing.
 #'
 #'
@@ -145,28 +160,27 @@ compute_indicator <- function(ts_compute_vars,
 #'
 #' @examples
 #' \dontrun{
-#' 
+#'
 #' # load vars dataset for generating indicators
 #' ds_all_vars <- get_indicator_vars(stock_db,
 #'   indicator_defs = ds_indicator_defs
 #' )
-#' 
+#'
 #' # create ind_expr
 #' indicator_formula <- c("stock_return <- mretwd
-#' market_return <- cmretwdtl
-#' model <- lm(stock_return ~ market_return)
-#' beta <- coef(model)['market_return']")
+#'                           market_return <- cmretwdtl
+#'                           model <- lm(stock_return ~ market_return)
+#'                           beta <- coef(model)['market_return']")
 #' indicator_expr <- create_expr(!!indicator_formula)
-#' 
+#'
 #' # create def_fun for indicator
 #' indicator_def_fun <- create_indicator_def_fun(
 #'   indicator_code = "m_stock_beta1",
 #'   indicator_expr = indicator_expr,
 #'   rolly_window = 12,
-#'   period = "month",
-#'   fillna_method = "ffill"
+#'   period = "month"
 #' )
-#' 
+#'
 #' # create a indicator from vars dataset.
 #' ts_indicator <- create_indicator(
 #'   ds_def_vars,
@@ -222,7 +236,7 @@ create_indicator <- function(ts_def_vars,
     ds_keys <- ds_keys[!duplicated(ds_keys), ]
     ds_keys_fixed <- ds_keys %>%
       dplyr::mutate(data = list(ds_keys_are_na)) %>%
-      tidyr::unnest()
+      tidyr::unnest(cols = c(data))
 
     # rebuild def vars
     ts_def_vars <- ds_keys_are_ok %>%
@@ -248,7 +262,7 @@ create_indicator <- function(ts_def_vars,
 #' Use modifying function to modify indicator timeseries,
 #'  e.g. add new attribute to existed indicator timeseries.
 #'
-#' @param ts_indicator A dataframe of indicaotr timeseries to modify.
+#' @param ts_indicator A dataframe of indicator timeseries to modify.
 #' @param modify_fun   A function of modify indicator.
 #' @param ...          Params to modify_fun.
 #' @param replace_exist   A logic flag to determine whether to replace existed
@@ -256,9 +270,9 @@ create_indicator <- function(ts_def_vars,
 #' @param date_index_field  Name of date index field of ts_indicator,
 #'   default 'date'.
 #' @param key_fields    A character vector of key fields, which identify unique
-#'   observation in each date. Default NULL means to not devide data into
+#'   observation in each date. Default NULL means to not divide data into
 #'   groups.
-#' @param parallel   A logic to deterimine whether to use parallel processing.
+#' @param parallel   A logic to determine whether to use parallel processing.
 #'   Default TRUE means to use parallel processing.
 #'
 #'
@@ -268,12 +282,40 @@ create_indicator <- function(ts_def_vars,
 #'
 #' @examples
 #' \dontrun{
-#' 
+#'
 #' # modify ts_indicator with customized ind_attr_def_fun
-#' 
+#'
 #' # create attribute definition function of customized attribute
 #' attr_fun <- function(date, stkcd, ...) {
 #'   "attr_value"
+#' }
+#' ind_attr_def_fun <- create_attribute_def_fun(
+#'   attr_name,
+#'   attr_fun = attr_fun
+#' )
+#' # modify existed ts_indicators
+#' ts_modify_indicator <- modify_indicator(ts_modify_indicator,
+#'   modify_fun = ind_attr_def_fun,
+#'   date_index_field = "date",
+#'   key_fields = "stkcd",
+#'   parallel = FALSE
+#' )
+#'
+#'
+#' # modify ts_indicator with pre-defined ind_attr_def_fun
+#'
+#' # create definition function of pre-defined attribute of indcd
+#' new_attr_indcd <- ind_attr_def_indcd(stock_db)
+#'
+#' # modify existed ts_indicators
+#' ts_indicator <- modify_indicator(
+#'   ts_indicator = ts_indicator,
+#'   modify_fun = new_attr_indcd,
+#'   replace_exist = FALSE,
+#'   date_index_field = "date",
+#'   key_fields = "stkcd",
+#'   parallel = FALSE
+#' )
 #' }
 #' ind_attr_def_fun <- create_attribute_def_fun(
 #'   attr_name,
@@ -337,11 +379,11 @@ modify_indicator <- function(ts_indicator,
       date_index_field,
       key_fields
     ))]
-    attr_is_exsited <- attr_name %in% names(ts_indicator)
+    attr_is_existed <- attr_name %in% names(ts_indicator)
 
-    # repalce old attribute or add new attribute
-    if (attr_is_exsited) {
-      # replace exsited attribute
+    # replace old attribute or add new attribute
+    if (attr_is_existed) {
+      # replace existed attribute
       if (replace_exist) {
         # force replace existed attribute
 

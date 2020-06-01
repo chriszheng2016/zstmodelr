@@ -3,3 +3,15 @@
 ^data-raw$
 ^README\.Rmd$
 ^README-.*\.png$
+profile_files
+profile.html
+^research$
+^.*\.rxproj$
+^\.vs$
+check
+^CODE_OF_CONDUCT\.md$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
+^codecov\.yml$
+^\.github$

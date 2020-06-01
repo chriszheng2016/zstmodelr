@@ -4,11 +4,18 @@
 \alias{modify_indicator}
 \title{Modify indicator to add new attribute}
 \usage{
-modify_indicator(ts_indicator, modify_fun, ..., replace_exist = FALSE,
-  date_index_field = c("date"), key_fields = NULL, parallel = TRUE)
+modify_indicator(
+  ts_indicator,
+  modify_fun,
+  ...,
+  replace_exist = FALSE,
+  date_index_field = c("date"),
+  key_fields = NULL,
+  parallel = TRUE
+)
 }
 \arguments{
-\item{ts_indicator}{A dataframe of indicaotr timeseries to modify.}
+\item{ts_indicator}{A dataframe of indicator timeseries to modify.}
 
 \item{modify_fun}{A function of modify indicator.}
 
@@ -21,10 +28,10 @@ attribute fields. Default FALSE means to not replace existed field.}
 default 'date'.}
 
 \item{key_fields}{A character vector of key fields, which identify unique
-observation in each date. Default NULL means to not devide data into
+observation in each date. Default NULL means to not divide data into
 groups.}
 
-\item{parallel}{A logic to deterimine whether to use parallel processing.
+\item{parallel}{A logic to determine whether to use parallel processing.
 Default TRUE means to use parallel processing.}
 }
 \value{
@@ -32,50 +39,51 @@ A dataframe of modified indicator timeseries if succeed, otherwise NULL.
 }
 \description{
 Use modifying function to modify indicator timeseries,
- e.g. add new attribute to existed indicator timeseries.
+e.g. add new attribute to existed indicator timeseries.
 }
 \examples{
 
 \dontrun{
 
-  # modify ts_indicator with customized ind_attr_def_fun
+# modify ts_indicator with customized ind_attr_def_fun
 
-  # create attribute definition function of customized attribute
-  attr_fun <- function(date, stkcd, ...) {
-                 "attr_value"
-               }
-  ind_attr_def_fun <- create_attribute_def_fun(
-        attr_name,
-        attr_fun = attr_fun
-        )
-  # modify existed ts_indicators
-  ts_modify_indicator <- modify_indicator(ts_modify_indicator,
-       modify_fun = ind_attr_def_fun,
-       date_index_field = "date",
-       key_fields = "stkcd",
-       parallel = FALSE
-      )
+# create attribute definition function of customized attribute
+attr_fun <- function(date, stkcd, ...) {
+  "attr_value"
+}
+ind_attr_def_fun <- create_attribute_def_fun(
+  attr_name,
+  attr_fun = attr_fun
+)
+# modify existed ts_indicators
+ts_modify_indicator <- modify_indicator(ts_modify_indicator,
+  modify_fun = ind_attr_def_fun,
+  date_index_field = "date",
+  key_fields = "stkcd",
+  parallel = FALSE
+)
 
 
-  # modify ts_indicator with pre-defined ind_attr_def_fun
+# modify ts_indicator with pre-defined ind_attr_def_fun
 
-  # create defintion function of pre-defined attribute of indcd
-  new_attr_indcd <- ind_attr_def_indcd(stock_db)
+# create definition function of pre-defined attribute of indcd
+new_attr_indcd <- ind_attr_def_indcd(stock_db)
 
-  # modify existed ts_indicators
-  ts_indicator <- modify_indicator(
-      ts_indicator = ts_indicator,
-      modify_fun = new_attr_indcd,
-      replace_exist = FALSE,
-      date_index_field = "date",
-      key_fields = "stkcd",
-      parallel = FALSE
-
+# modify existed ts_indicators
+ts_indicator <- modify_indicator(
+  ts_indicator = ts_indicator,
+  modify_fun = new_attr_indcd,
+  replace_exist = FALSE,
+  date_index_field = "date",
+  key_fields = "stkcd",
+  parallel = FALSE
+)
 }
 
 }
 \seealso{
-Other indicator build functions: \code{\link{compute_indicator}},
-  \code{\link{create_indicator}}
+Other indicator build functions: 
+\code{\link{compute_indicator}()},
+\code{\link{create_indicator}()}
 }
 \concept{indicator build functions}

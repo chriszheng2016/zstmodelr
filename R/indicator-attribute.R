@@ -4,19 +4,19 @@
 #'
 #' @details
 #'
-#' \code{\link{attr_indictors}} is a working horse behind
-#' \code{\link{attr_indictors_indcd}},\code{\link{attr_indictors_trdstat}},
+#' \code{\link{attr_indicators}} is a working horse behind
+#' \code{\link{attr_indicators_indcd}},\code{\link{attr_indicators_trdstat}},
 #' which is mainly used to develop customized attribute function to
 #' add attribute to indicator timeseries.
 #'
-#' \code{\link{attr_indictors_indcd}}, \code{\link{attr_indictors_trdstat}}, etc.
-#' are used to add predefined attrbute to indicator timeseries by using data from
+#' \code{\link{attr_indicators_indcd}}, \code{\link{attr_indicators_trdstat}}, etc.
+#' are used to add predefined attribute to indicator timeseries by using data from
 #' stock_db.
 #'
 #' There are two way to add attribute to timeseries of indicators of stocks:
 #' \itemize{
 #' \item \strong{add attribute directly}:
-#'  use \code{\link{attr_indictors_indcd}}, \code{\link{attr_indictors_trdstat}}
+#'  use \code{\link{attr_indicators_indcd}}, \code{\link{attr_indicators_trdstat}}
 #'  to add attribute directly. The pros is easy to use, the cons is slow since
 #'  it have to load data from stock database each calling. The method is
 #'  mainly used to add one attribute to one indicator timeseries.
@@ -25,7 +25,7 @@
 #' use \code{\link{ind_attr_def_indcd}}, \code{\link{ind_attr_def_trdstat}} and
 #' \code{\link{modify_indicator}}. The pros is that it can be faster by dividing
 #' defining attribute(load data from database once) and modifying indicators
-#' (can modify repeatly by using same attrbute definition). The cons is that it is more complex than direct method. The method is mainly
+#' (can modify repeatedly by using same attribute definition). The cons is that it is more complex than direct method. The method is mainly
 #' used to add same attribute to multi-indicators timeseries.
 #'
 #' }
@@ -33,13 +33,13 @@
 #'
 #' @family indicator attribute functions
 #'
-#' @return A dataframe of indicator timerseries with new attribute if succeed,
+#' @return A dataframe of indicator timeseries with new attribute if succeed,
 #'  otherwise NULL.
 #' @name indicator_attribute
 #' @examples
-#' 
+#'
 #' \dontrun{
-#' 
+#'
 #' # create a indicator from vars dataset.
 #' ts_indicator <- create_indicator(ds_def_vars,
 #'   ind_def_fun = ind_def_fun,
@@ -48,29 +48,29 @@
 #'   key_fields = key_fields,
 #'   parallel = parallel
 #' )
-#' 
-#' 
+#'
+#'
 #' # --- add attribute directly ---
-#' 
+#'
 #' # add attribute of indcd
-#' ts_indicators_with_indcd <- attr_indictors_indcd(stock_db,
+#' ts_indicators_with_indcd <- attr_indicators_indcd(stock_db,
 #'   ts_indicators = ts_indicators
 #' )
-#' 
+#'
 #' # add attribute of trdstats
-#' ts_indicators_wide_with_attr <- attr_indictors_trdstat(stock_db,
+#' ts_indicators_wide_with_attr <- attr_indicators_trdstat(stock_db,
 #'   ts_indicators = ts_indicators
 #' )
-#' 
+#'
 #' # --- add attribute indirectly ---
-#' 
+#'
 #' # create attr defs by using data from stock
 #' new_attr_indcd <- ind_attr_def_indcd(stock_db)
-#' 
+#'
 #' # use attribute def to modify multi-indicators
 #' for (i in seq_len(NROW(ds_ts_indicators))) {
 #'   ts_indicator <- ds_ts_indicators$data[[i]]
-#' 
+#'
 #'   ts_indicator <- modify_indicator(
 #'     ts_indicator = ts_indicator,
 #'     modify_fun = new_attr_indcd,
@@ -86,17 +86,17 @@ NULL
 
 #' Add customized attribute to indicator timeseries of stocks
 #' @param ts_indicators   A dataframe of indicator timeseries.
-#' @param new_attr_def   A function to compute attribue value for stock
+#' @param new_attr_def   A function to compute attribute value for stock
 #'   indicator.
-#' @param parallel   A logic to deterimine whether to use parallel processing.
+#' @param parallel   A logic to determine whether to use parallel processing.
 #'   Default TRUE means to use parallel processing.
 #'
 #' @describeIn indicator_attribute  add customized attribute to indicators
 #'   timeseries of stocks.
 #' @export
-attr_indictors <- function(ts_indicators,
-                           new_attr_def,
-                           parallel = TRUE) {
+attr_indicators <- function(ts_indicators,
+                            new_attr_def,
+                            parallel = TRUE) {
 
   # validate params
   assertive::assert_is_data.frame(ts_indicators)
@@ -136,9 +136,9 @@ attr_indictors <- function(ts_indicators,
 #' @describeIn indicator_attribute  add attribute of industry code to indicator
 #'   timeseries of stocks.
 #' @export
-attr_indictors_indcd <- function(stock_db,
-                                 ts_indicators,
-                                 parallel = TRUE) {
+attr_indicators_indcd <- function(stock_db,
+                                  ts_indicators,
+                                  parallel = TRUE) {
 
   # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "stock_db"))
@@ -151,7 +151,7 @@ attr_indictors_indcd <- function(stock_db,
   new_attr_indcd <- ind_attr_def_indcd(stock_db)
 
   # add indcd attribute to indicators
-  ts_indicator_with_indcd <- attr_indictors(ts_indicators,
+  ts_indicator_with_indcd <- attr_indicators(ts_indicators,
     new_attr_def = new_attr_indcd,
     parallel = parallel
   )
@@ -164,9 +164,9 @@ attr_indictors_indcd <- function(stock_db,
 #' @describeIn indicator_attribute  add attribute of trading status to indicator
 #'   timeseries of stocks.
 #' @export
-attr_indictors_trdstat <- function(stock_db,
-                                   ts_indicators,
-                                   parallel = TRUE) {
+attr_indicators_trdstat <- function(stock_db,
+                                    ts_indicators,
+                                    parallel = TRUE) {
 
   # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "stock_db"))
@@ -179,7 +179,7 @@ attr_indictors_trdstat <- function(stock_db,
   new_attr_trdstat <- ind_attr_def_trdstat(stock_db)
 
   # add trdstat attribute to indicators
-  ts_indicator_with_trdstat <- attr_indictors(ts_indicators,
+  ts_indicator_with_trdstat <- attr_indicators(ts_indicators,
     new_attr_def = new_attr_trdstat,
     parallel = parallel
   )

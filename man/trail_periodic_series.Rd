@@ -4,37 +4,44 @@
 \alias{trail_periodic_series}
 \title{Trail periodic time series}
 \usage{
-trail_periodic_series(dates, data_series, period = c("day", "month",
-  "quarter"), accumulated = TRUE, trailing_month = 12L,
-  agg_fun = sum, ...)
+trail_periodic_series(
+  dates,
+  data_series,
+  period = c("day", "month", "quarter"),
+  accumulated = TRUE,
+  trailing_month = 12L,
+  agg_fun = sum,
+  ...
+)
 }
 \arguments{
 \item{dates}{A vector of data.}
 
+\item{data_series}{A dataframe or matrix of numeric series to trail.}
+
 \item{period}{A period string of dates, i.e., "day", "month",
 "quarter". default day.}
 
-\item{accumulated}{A logical to spcified data sereis is accumluated or not.}
+\item{accumulated}{A logical to specified data series is accumulated or not.}
 
-\item{agg_fun}{A function to aggrate data sereis in trailling
+\item{trailing_month}{A integer of months of data to trail. Default is 12,
+which means 12 months, i.e., TTT(Trail Twelve Month).}
+
+\item{agg_fun}{A function to aggregate data series in trailing
 month.}
 
 \item{...}{Params pass to agg_fun.}
-
-\item{datas_series}{A dataframe or matrix of numeric series to trail.}
-
-\item{trailling_month}{A integer of months of data to trail. Default is 12,
-which means 12 months, i.e., TTT(Trail Twelve Month).}
 }
 \value{
 A dataframe of trailed data if succeed, otherwise a dataframe with
- zero length.
+zero length.
 }
 \description{
-Trailing periodic time sereis( accumaulated or not accumaulated) means to
- apply aggregating function in specified months windows.
+Trailing periodic time series( accumulated or not accumulated) means to
+apply aggregating function in specified months windows.
 }
 \seealso{
-Other utils_series: \code{\link{rollify_series}}
+Other utils_series: 
+\code{\link{rollify_series}()}
 }
 \concept{utils_series}

@@ -1,3 +1,5 @@
+# Utility functions - dates
+
 #' Check date series is periodic or not
 #'
 #' Check whether date series is regular/irregular periodic or not.
@@ -7,11 +9,11 @@
 #' \itemize{
 #'    \item \strong{regular periodic series}:
 #'         a date/time vector is regular periodic, if the vector has not more
-#'     one date/time stamp on each date of peroid and dosen't miss any date of period.
+#'     one date/time stamp on each date of peroid and doesn't miss any date of period.
 #'     For example, c("2018-01-01", "2018-02-01", "2018-03-01", "2018-04-01",
 #'     "2018-05-01", "2018-06-01") is a regular monthly periodic dates.
 #'
-#'    \item \strong{irrgular periodic series}:
+#'    \item \strong{irregular periodic series}:
 #'        a date/time vector is regular periodic, if the vector has more one
 #'     date/time stamp on each date of peroid or miss some date of period.
 #'     For example, c("2018-01-01", "2018-02-01", "2018-04-01",
@@ -20,12 +22,12 @@
 #' }
 #
 #' @param dates_series   A vector of dates/timestamps.
-#' @param freq_rule    Frequency rule of period to test,  e.g. "day", "month",
-#'  "quarter", "year", default "Day".
-#' @param regular    A logic flag of whether to test date series as a regular
-#'   periodic series or not. Since irregular test is looser than regluar test,
-#'   irregluar test on regluar series will always return true. Default FALSE
-#'   means to use looser test(irregular).
+#' @param freq_rule    Frequency rule of period to test,  e.g. "day", "month", "quarter",
+#'  "year", default "Day".
+#' @param regular    Whether to test date series as a regular periodic series
+#'  or not. Since irregular test is looser than regular test, irregular test
+#'  on regular series will always return true. Default is FALSE, which means we will
+#'  use looser test(irregular).
 #'
 #' @family utils_dates
 #' @return   return TRUE if dates is periodic, otherwise FALSE.
@@ -45,7 +47,7 @@ is_periodic_dates <- function(dates_series,
       # has not more than one date/timestamp per day.
       is_regular_fun <- timeDate::isDaily
 
-      # params for test irregluar dates
+      # params for test irregular dates
       interval_min <- 0
       interval_max <- 1
     },
@@ -55,7 +57,7 @@ is_periodic_dates <- function(dates_series,
       # has not more than one date/timestamp per day.
       is_regular_fun <- timeDate::isMonthly
 
-      # params for test irregluar dates
+      # params for test irregular dates
       interval_min <- 30 - 2
       interval_max <- 30 + 2
     },
@@ -65,7 +67,7 @@ is_periodic_dates <- function(dates_series,
       # has not more than one date/timestamp per quarter.
       is_regular_fun <- timeDate::isQuarterly
 
-      # params for test irregluar dates
+      # params for test irregular dates
       interval_min <- 30 * 3 - 2
       interval_max <- 30 * 3 + 2
     },
@@ -75,13 +77,13 @@ is_periodic_dates <- function(dates_series,
       # or missing date/time stamp per year.
       is_regular_fun <- isRegularYearly
 
-      # params for test irregluar dates
+      # params for test irregular dates
       interval_min <- 365 - 3
       interval_max <- 365 + 3
     }
   )
 
-  # check whether it is periodic dates(regluar/irregular)
+  # check whether it is periodic dates(regular/irregular)
   is_periodic <- FALSE
   if (regular) {
     # check whether it is a regular daily dates
@@ -128,13 +130,13 @@ isRegularYearly <- function(x) {
 #' @param dates_series     A vector of date/timestamps.
 #'
 #' @param regular    A logic flag of whether to test date series as a regular periodic series
-#'   or not. Since irregular test is looser than regluar test, irregluar test
-#'   on regluar series will return true. Default is FALSE, which means we will
-#'   use looser test(irregular).
+#'  or not. Since irregular test is looser than regular test, irregular test
+#'  on regular series will return true. Default is FALSE, which means we will
+#'  use looser test(irregular).
 #'
 #' @family utils_dates
 #' @return  return "day" for daily, "month" for monthly, "quarter" for quarterly,
-#'   "year" for yearly, "unknown" for unkown date period.
+#'  "year" for yearly, "unknown" for unknown date period.
 #'
 #' @noRd
 guess_dates_period <- function(dates_series, regular = FALSE) {

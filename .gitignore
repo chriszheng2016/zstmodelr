@@ -7,4 +7,6 @@ inst/doc
 profile_files
 profile.html
 .vs
-zstmodelr.rxproj
+*.rxproj
+check
+docs

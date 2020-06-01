@@ -2,23 +2,28 @@
 % Please edit documentation in R/model-zscore.R
 \name{factors_zscore}
 \alias{factors_zscore}
-\title{Compute z-scores of facotrs dataset}
+\title{Compute z-scores of factors dataset}
 \usage{
-factors_zscore(ds_factors, aggregate_formula = NULL, group_by = NULL,
+factors_zscore(
+  ds_factors,
+  aggregate_formula = NULL,
+  group_by = NULL,
   clean_extremes_method = c("sigma", "mad"),
-  standard_method = c("normal", "rank"), ...)
+  standard_method = c("normal", "rank"),
+  ...
+)
 }
 \arguments{
 \item{ds_factors}{a factors dataset.}
 
-\item{aggregate_formula}{a formula to aggreate zscores of all factors,
+\item{aggregate_formula}{a formula to aggregate zscores of all factors,
 e.g. ROCE + PB, NULL is default which means no need to compute aggregate
-zscore, but only compute zscore for all  numberic factor fields.}
+zscore, but only compute zscore for all  numeric factor fields.}
 
 \item{group_by}{a character vector of fields as group data for scaling, NULL
-is default value which means no group settting.}
+is default value which means no group setting.}
 
-\item{clean_extremes_method}{method of cleaning extremes befre standardization
+\item{clean_extremes_method}{method of cleaning extremes before standardization
 , i.e. "sigma","mad", by default "sigma".
 see details: \code{\link{clean_extremes_sigma}}, \code{\link{clean_extremes_mad}}}
 
@@ -29,9 +34,10 @@ see details: \code{\link{standardize_normal_scale}}, \code{\link{standardize_ran
 \item{...}{additional arguments to clean_extremes_method and standard_method.}
 }
 \value{
-a dataset of factors z-score
+\preformatted{       a dataset of factors z-score
+}
 }
 \description{
-Compute z-scores of factors by scaling all factors according the aggreate
+Compute z-scores of factors by scaling all factors according the aggregate
 formula and groups of fields.
 }

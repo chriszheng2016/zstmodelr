@@ -1,6 +1,6 @@
 # Tests for utility functions of series ----
 
-context("Tests for utitlity functions of series")
+context("Tests for utility functions of series")
 
 # function to create time series
 create_periodic_ts <- function(start_date,

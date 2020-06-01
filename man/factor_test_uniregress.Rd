@@ -2,21 +2,26 @@
 % Please edit documentation in R/factor-test.R
 \name{factor_test_uniregress}
 \alias{factor_test_uniregress}
-\title{Creator of factor_test_unigress class}
+\title{Creator of factor_test_uniregress class}
 \usage{
-factor_test_uniregress(ds_test, regress_fun, ...,
-  output_type = c("summary", "raw"), factor_field = "factor_name",
-  date_field = "date")
+factor_test_uniregress(
+  ds_test,
+  regress_fun,
+  ...,
+  output_type = c("summary", "raw"),
+  factor_field = "factor_name",
+  date_field = "date"
+)
 }
 \arguments{
 \item{ds_test}{A timeseries dataset with descriptors of factors for test}
 
 \item{regress_fun}{a function to conduct regress.}
 
-\item{...}{Argments passed to regress_fun.}
+\item{...}{Arguments passed to regress_fun.}
 
 \item{output_type}{Type of output data, i.e."summary", "raw", if "raw",
-raw data will be append to output object for dignosis.}
+raw data will be append to output object for diagnosis.}
 
 \item{factor_field}{Name of factor field of ds_test, by default "factor_name".}
 
@@ -24,9 +29,10 @@ raw data will be append to output object for dignosis.}
 Column must be date-like.}
 }
 \value{
-A object of factor_test_uniregress class.
+\preformatted{            A object of factor_test_uniregress class.
+}
 }
 \description{
-Conduct univarate reggression test for descriptors of factors and build object
+Conduct univariate regression test for descriptors of factors and build object
 of factor_test_uniregress class as output.
 }

@@ -37,20 +37,20 @@ setClass("factor_test_sort_portfolios",
 
 # Creating Functions of factor_test classes -------------------------------------------
 
-#  Univarate Reggression Test
+#  univariate regression Test
 
-#' Creator of factor_test_unigress class
+#' Creator of factor_test_uniregress class
 #'
-#' Conduct univarate reggression test for descriptors of factors and build object
+#' Conduct univariate regression test for descriptors of factors and build object
 #' of factor_test_uniregress class as output.
 #'
 #'
 #'
 #' @param ds_test          A timeseries dataset with descriptors of factors for test
 #' @param regress_fun      a function to conduct regress.
-#' @param ...              Argments passed to regress_fun.
+#' @param ...              Arguments passed to regress_fun.
 #' @param output_type      Type of output data, i.e."summary", "raw", if "raw",
-#' raw data will be append to output object for dignosis.
+#' raw data will be append to output object for diagnosis.
 #' @param factor_field       Name of factor field of ds_test, by default "factor_name".
 #' @param date_field         Name of date field of ds_test, by default "date",
 #' Column must be date-like.
@@ -66,12 +66,12 @@ factor_test_uniregress <- function(ds_test,
                                    date_field = "date") {
   # Validate params
   stopifnot(!is.null(ds_test), inherits(ds_test, "data.frame"))
-  ds_test_data <- tibble::as.tibble(ds_test)
+  ds_test_data <- tibble::as_tibble(ds_test)
 
   stopifnot(!is.null(regress_fun), inherits(regress_fun, "function"))
 
-  factor_field <- rlang::parse_quosure(factor_field)
-  date_field <- rlang::parse_quosure(date_field)
+  factor_field <- rlang::parse_quo(factor_field, env = rlang::caller_env())
+  date_field <- rlang::parse_quo(date_field, env = rlang::caller_env())
 
   # Nest test data by group of factor_name and date
   # cross section: group data by factor and date_field(cross section setting)
@@ -96,8 +96,9 @@ factor_test_uniregress <- function(ds_test,
 
   # Raw factor return data to process
   ds_factor_returns_raw <- ds_test_result %>%
-    tidyr::unnest(tidy, .drop = TRUE) %>%
+    tidyr::unnest(tidy) %>%
     dplyr::filter(term != "(Intercept)")
+
 
   # Distribution summary of factor return series
   result_factor_return_distrbution <- ds_factor_returns_raw %>%
@@ -128,7 +129,7 @@ factor_test_uniregress <- function(ds_test,
       t.test_p = p.value
     )
 
-  # Normal distrubtion test for factor return sereis
+  # Normal distribution test for factor return series
   result_factor_return_normal.test <- ds_factor_returns_raw %>%
     dplyr::group_by(!!factor_field) %>%
     dplyr::do(broom::tidy(shapiro.test(.$estimate))) %>%
@@ -140,7 +141,8 @@ factor_test_uniregress <- function(ds_test,
   # Build factor return series
   ds_factor_returns <- ds_factor_returns_raw %>%
     dplyr::select(!!factor_field, !!date_field, return = estimate) %>%
-    tidyr::spread(key = !!factor_field, value = return) %>%
+    # tidyr::spread(key = !!factor_field, value = return) %>%
+    tidyr::pivot_wider(names_from = !!factor_field, values_from = return) %>%
     dplyr::arrange(!!date_field)
 
 
@@ -186,9 +188,9 @@ factor_test_uniregress <- function(ds_test,
 #'
 #' @param ds_test          A timeseries dataset with descriptors of factors for test.
 #' @param IC_fun           A function to compute information coefficients.
-#' @param ...              argments passed to IC_fun.
+#' @param ...              Arguments passed to IC_fun.
 #' @param output_type      Type of output data, i.e."summary", "raw", if "raw",
-#' raw data will be append to output object for dignosis.
+#' raw data will be append to output object for diagnosis.
 #' @param factor_field       Name of factor field of ds_test, by default "factor_name".
 #' @param date_field         Name of date field of ds_test, by default "date",
 #' Column must be date-like.
@@ -205,10 +207,10 @@ factor_test_IC <- function(ds_test,
 
   # Validate params
   stopifnot(!is.null(ds_test), inherits(ds_test, "data.frame"))
-  ds_test_data <- tibble::as.tibble(ds_test)
+  ds_test_data <- tibble::as_tibble(ds_test)
 
-  factor_field <- rlang::parse_quosure(factor_field)
-  date_field <- rlang::parse_quosure(date_field)
+  factor_field <- rlang::parse_quo(factor_field, env = rlang::caller_env())
+  date_field <- rlang::parse_quo(date_field, env = rlang::caller_env())
 
   # Nest test data by group of factor_name and date as cross section data
   ds_test_groupdata <- ds_test_data %>%
@@ -228,7 +230,7 @@ factor_test_IC <- function(ds_test,
 
   # Raw factor ICs data to process
   ds_factor_ICs_raw <- ds_test_result %>%
-    tidyr::unnest(glance, .drop = TRUE)
+    tidyr::unnest(glance)
 
   # Distribution summary of factor ICs series
   result_factor_ICs_distrbution <- ds_factor_ICs_raw %>%
@@ -258,7 +260,7 @@ factor_test_IC <- function(ds_test,
       t.test_p = p.value
     )
 
-  # Normal distrubtion test for factor IC sereis
+  # Normal distribution test for factor IC series
   result_factor_ICs_normal.test <- ds_factor_ICs_raw %>%
     dplyr::group_by(!!factor_field) %>%
     dplyr::do(broom::tidy(shapiro.test(.$estimate))) %>%
@@ -270,7 +272,8 @@ factor_test_IC <- function(ds_test,
   # Build factor IC series
   ds_factor_ICs <- ds_factor_ICs_raw %>%
     dplyr::select(!!factor_field, !!date_field, IC = estimate) %>%
-    tidyr::spread(key = !!factor_field, value = IC) %>%
+    # tidyr::spread(key = !!factor_field, value = IC) %>%
+    tidyr::pivot_wider(names_from = !!factor_field, values_from = IC) %>%
     dplyr::arrange(!!date_field)
 
 
@@ -319,9 +322,9 @@ factor_test_IC <- function(ds_test,
 #' @param ds_test          A timeseries dataset with descriptors of factors for test.
 #' @param sort_portfolios_fun  A function to sort descriptors of factors to build.
 #' portfolios for test
-#' @param ...              Argments passed to sort_portfolios_fun.
+#' @param ...              Arguments passed to sort_portfolios_fun.
 #' @param output_type      Type of output data, i.e."summary", "raw", if "raw",
-#' raw data will be append to output object for dignosis.
+#' raw data will be append to output object for diagnosis.
 #' @param factor_field     Name of factor field of ds_test, by default "factor_name"
 #' @param date_field       Name of date field of ds_test, by default "date",
 #' Column must be date-like.
@@ -386,11 +389,11 @@ factor_test_sort_portfolios <- function(ds_test,
 
   # Validate params
   stopifnot(!is.null(ds_test), inherits(ds_test, "data.frame"))
-  ds_test_data <- tibble::as.tibble(ds_test)
+  ds_test_data <- tibble::as_tibble(ds_test)
 
-  factor_field <- rlang::parse_quosure(factor_field)
-  date_field <- rlang::parse_quosure(date_field)
-  return_field <- rlang::parse_quosure(return_field)
+  factor_field <- rlang::parse_quo(factor_field, env = rlang::caller_env())
+  date_field <- rlang::parse_quo(date_field, env = rlang::caller_env())
+  return_field <- rlang::parse_quo(return_field, env = rlang::caller_env())
 
   # Nest test data by group of factor_name and date as cross section data
   ds_test_groupdata <- ds_test_data %>%
@@ -400,21 +403,23 @@ factor_test_sort_portfolios <- function(ds_test,
   # Compute return for sort portfolios
   ds_test_result <- ds_test_groupdata %>%
     dplyr::mutate(
-      sort_portpolios = purrr::map(
+      sort_portfolios = purrr::map(
         data,
         purrr::possibly(sort_portfolios_fun, otherwise = NULL, quiet = TRUE),
         ...
       ),
-      sort_portpolio_return = purrr::map2(
-        .x = data, .y = sort_portpolios,
+      sort_portfolio_return = purrr::map2(
+        .x = data, .y = sort_portfolios,
         .compute_crosssection_portfolios_return
       )
     )
 
   # Expand sort portfolios returns
   ds_portfolios_return_raw <- ds_test_result %>%
-    tidyr::unnest(sort_portpolio_return, .drop = TRUE) %>%
-    tidyr::spread(key = portfolio_group, value = return)
+    dplyr::select(-c(data, sort_portfolios)) %>%
+    tidyr::unnest(sort_portfolio_return) %>%
+    # tidyr::spread(key = portfolio_group, value = return)
+    tidyr::pivot_wider(names_from = portfolio_group, values_from = return)
 
 
   # Build zero-portfolio to complete portfolios return dataset
@@ -426,12 +431,15 @@ factor_test_sort_portfolios <- function(ds_test,
   # Build Result of portfolios return summary
   result_portfolios_summary <- ds_portfolios_return %>%
     dplyr::group_by(!!factor_field) %>%
-    tidyr::nest(.key = "portpolios_return") %>%
-    dplyr::mutate(portpolios_return_summary = purrr::map(
-      portpolios_return,
+    tidyr::nest() %>%
+    dplyr::rename(portfolios_return = data) %>%
+    dplyr::mutate(portfolios_return_summary = purrr::map(
+      portfolios_return,
       .summarize_portfolios_return
     )) %>%
-    tidyr::unnest(portpolios_return_summary, .drop = TRUE)
+    dplyr::select(-c(portfolios_return)) %>%
+    tidyr::unnest(portfolios_return_summary)
+
 
   # Build Result of summary
 
@@ -463,7 +471,7 @@ factor_test_sort_portfolios <- function(ds_test,
       t.test_p = p.value
     )
 
-  # Normal distrubtion test for zero-portfolio return sereis
+  # Normal distribution test for zero-portfolio return series
   result_zero_portfolio_return_normal.test <- ds_portfolios_return %>%
     dplyr::group_by(!!factor_field) %>%
     dplyr::do(broom::tidy(shapiro.test(.$group_zero))) %>%
@@ -484,7 +492,9 @@ factor_test_sort_portfolios <- function(ds_test,
   # Build factor returns datasets from group_zero portfolio
   ds_factor_returns <- ds_portfolios_return %>%
     dplyr::select(!!factor_field, !!date_field, return = group_zero) %>%
-    tidyr::spread(key = !!factor_field, value = return)
+    # tidyr::spread(key = !!factor_field, value = return)
+    tidyr::pivot_wider(names_from = !!factor_field, values_from = return)
+
 
 
   # Build factor test object with results info
@@ -587,53 +597,53 @@ build_sort_portfolios <- function(stocks_list,
 # Generic Functions Implmentation for factor_test classes   ---------------------
 
 # Generic Implementation of summary for factor_test class
-#' @export
-summary.factor_test <- function(factor_test_result) {
+# @export
+summary.factor_test <- function(object, ...) {
 
   # Validate params
-  stopifnot(!is.null(factor_test_result), inherits(factor_test_result, "factor_test"))
+  stopifnot(!is.null(object), inherits(object, "factor_test"))
 
   # print(factor_test_result@summary)
 
-  factor_test_result@summary
+  object@summary
 }
 setMethod(
   "summary",
   signature(object = "factor_test"),
-  function(object) {
-    summary.factor_test(object)
+  function(object, ...) {
+    summary.factor_test(object, ...)
   }
 )
 
 
 # Generic Implementation of plot for factor_test class
-#' @export
-plot.factor_test <- function(factor_test_result) {
+# @export
+plot.factor_test <- function(x, ...) {
   # validate params
-  stopifnot(!is.null(factor_test_result), inherits(factor_test_result, "factor_test"))
+  stopifnot(!is.null(x), inherits(x, "factor_test"))
 }
 setMethod(
   "plot",
-  signature(x = "factor_test"),
-  function(x) {
-    plot.factor_test(x)
+  signature(x = "factor_test", y = "missing"),
+  function(x, y, ...) {
+    plot.factor_test(x, ...)
   }
 )
 
 # Generic Implementation of plot for factor_test_uniregress
 # Plot result for factor_test_uniregress class
-#' @export
-plot.factor_test_uniregress <- function(factor_test_result) {
+# @export
+plot.factor_test_uniregress <- function(x, ...) {
 
 
   # Validate params
   stopifnot(
-    !is.null(factor_test_result),
-    inherits(factor_test_result, "factor_test_uniregress")
+    !is.null(x),
+    inherits(x, "factor_test_uniregress")
   )
 
   # Plot distribution of factors return
-  .plot_distribution_factors_series(factor_test_result@factor_returns,
+  .plot_distribution_factors_series(x@factor_returns,
     series_name = "factor return"
   )
 
@@ -645,25 +655,25 @@ plot.factor_test_uniregress <- function(factor_test_result) {
 setMethod(
   "plot",
   signature(x = "factor_test_uniregress", y = "missing"),
-  function(x) {
-    plot.factor_test_uniregress(x)
+  function(x, y, ...) {
+    plot.factor_test_uniregress(x, ...)
   }
 )
 
 # Generic Implementation of plot for factor_test_uniregress
 # Plot result for factor_test_uniregress class
-#' @export
-plot.factor_test_IC <- function(factor_test_result) {
+# @export
+plot.factor_test_IC <- function(x, ...) {
 
 
   # Validate params
   stopifnot(
-    !is.null(factor_test_result),
-    inherits(factor_test_result, "factor_test_IC")
+    !is.null(x),
+    inherits(x, "factor_test_IC")
   )
 
   # Plot Distribution of factors ICs
-  .plot_distribution_factors_series(factor_test_result@factor_ICs,
+  .plot_distribution_factors_series(x@factor_ICs,
     series_name = "factor IC"
   )
 
@@ -674,16 +684,16 @@ plot.factor_test_IC <- function(factor_test_result) {
 setMethod(
   "plot",
   signature(x = "factor_test_IC", y = "missing"),
-  function(x) {
-    plot.factor_test_IC(x)
+  function(x, y, ...) {
+    plot.factor_test_IC(x, ...)
   }
 )
 
 
 # Generic Implementation of plot for factor_test_sort_portfolios
 # Plot result for factor_test_sort_portfolios
-#' @export
-plot.factor_test_sort_portfolios <- function(factor_test_result) {
+# @export
+plot.factor_test_sort_portfolios <- function(x, ...) {
   .plot_portfolio_returns <- function(ds_portfolios_return, factor_name) {
 
     # validate params
@@ -739,18 +749,18 @@ plot.factor_test_sort_portfolios <- function(factor_test_result) {
 
   # Validate params
   stopifnot(
-    !is.null(factor_test_result),
-    inherits(factor_test_result, "factor_test_sort_portfolios")
+    !is.null(x),
+    inherits(x, "factor_test_sort_portfolios")
   )
 
   # Plot Distribution of factor returns
-  .plot_distribution_factors_series(factor_test_result@factor_returns,
+  .plot_distribution_factors_series(x@factor_returns,
     series_name = "factor return"
   )
 
 
   # Plot return of portfolios
-  ds_portfolios_return <- factor_test_result@portfolios_return %>%
+  ds_portfolios_return <- x@portfolios_return %>%
     dplyr::group_by(factor_name) %>%
     tidyr::nest(.key = "returns")
 
@@ -767,8 +777,8 @@ plot.factor_test_sort_portfolios <- function(factor_test_result) {
 setMethod(
   "plot",
   signature(x = "factor_test_sort_portfolios", y = "missing"),
-  function(x) {
-    plot.factor_test_sort_portfolios(x)
+  function(x, y, ...) {
+    plot.factor_test_sort_portfolios(x, ...)
   }
 )
 

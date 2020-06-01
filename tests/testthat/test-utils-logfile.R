@@ -1,6 +1,6 @@
 # Tests for utility functions of logfile ----
 
-context("Tests for utitlity functions of logfile")
+context("Tests for utility functions of logfile")
 
 ds_test_log_info <- tibble::tribble(
   ~target_table, ~input_file, ~success,

@@ -1,5 +1,9 @@
 
-# Explore factors distribution UI
+#' Explore factors distribution UI
+#'
+#' @param id An ID string of the UI.
+#' @param ds_factors  A data.frame of factors.
+#'
 #' @export
 exploreFactorsDistributionUI <- function(id, ds_factors) {
   ns <- shiny::NS(id)
@@ -76,7 +80,13 @@ exploreFactorsDistributionUI <- function(id, ds_factors) {
   )
 }
 
-# Explore factors distrubtion Server Function
+#' Explore factors distribution Server Function
+#'
+#' @param input input from caller.
+#' @param output output to caller.
+#' @param session  Session from caller.
+#' @param ds_factors  A data.frame of factors.
+#'
 #' @export
 exploreFactorsDistribution <- function(input, output, session, ds_factors) {
   ds_transform_factors <- shiny::reactive({
@@ -231,7 +241,11 @@ exploreFactorsDistribution <- function(input, output, session, ds_factors) {
   })
 }
 
-# Explore factors correlation UI
+#' Explore factors correlation UI
+#'
+#' @param id An ID string of the UI.
+#' @param ds_factors  A data.frame of factors.
+#'
 #' @export
 exploreFactorsCorrelationUI <- function(id, ds_factors) {
   ns <- shiny::NS(id)
@@ -295,7 +309,13 @@ exploreFactorsCorrelationUI <- function(id, ds_factors) {
   )
 }
 
-# Explore factors correlation Server Function
+#' Explore factors correlation Server Function
+#'
+#' @param input input from caller.
+#' @param output output to caller.
+#' @param session  Session from caller.
+#' @param ds_factors  A data.frame of factors.
+#'
 #' @export
 exploreFactorsCorrelation <- function(input, output, session, ds_factors) {
   ds_transform_factors <- shiny::reactive({

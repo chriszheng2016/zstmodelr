@@ -1,27 +1,28 @@
+# Utility functions - series
 
 #' Roll to apply a function on data series to output a series
 #'
 #' Apply fun on some data series in rolling window to get a result series
 #' with same length of original data series
 #'
-#' @param data_series  A dataframe or matrix of numeric series to trail.#'
-#' @param fun          A function to apply on sereis data.
+#' @param data_series  A dataframe or matrix of numeric series to trail.
+#' @param fun          A function to apply on series data.
 #' @param ...          Params passed to fun.
 #' @param window       A integer of periods in rolling window which must be
-#'   in range of [1L, length of data_series], default 1L.
-#' @param unlist       A logical flag to deterimine whether unlist result or not.
-#'   Default TRUE means unlist result into a vector of numeric. The argument
-#'   don't work if result can't be convert into a atomic vector, e.g., a list of
-#'   object or a list of list, etc.
+#'  in range of `[1L, length of data_series]`, default 1L.
+#' @param unlist       A logical to determine whether unlist result or not.
+#'  Default TRUE means unlist result into a vector of numeric. The argument
+#'  don't work if result can't be convert into a atomic vector, e.g., a list of
+#'  object or a list of list, etc.
 #'
-#' @param na_value     A NA value to fill non-avaliable data in results,
+#' @param na_value     A NA value to fill non-available data in results,
 #'   default NA.
 #'
 #'
 #' @family utils_series
 #'
 #' @return A vector or list of result with same length of original series
-#'   if succeed, otherwise a vector of NAs with same length of orginal series.
+#'  if succeed, otherwise a vector of NAs with same length of original series.
 #' @noRd
 rollify_series <- function(data_series, fun, ..., window = 1L,
                            unlist = TRUE, na_value = NA) {
@@ -76,19 +77,19 @@ rollify_series <- function(data_series, fun, ..., window = 1L,
 
 #' Trail periodic time series
 #'
-#' Trailing periodic time sereis( accumaulated or not accumaulated) means to
+#' Trailing periodic time series( accumulated or not accumulated) means to
 #'  apply aggregating function in specified months windows.
 #'
 #' @param dates         A vector of data.
-#' @param datas_series  A dataframe or matrix of numeric series to trail.
+#' @param data_series  A dataframe or matrix of numeric series to trail.
 #' @param period        A period string of dates, i.e., "day", "month",
-#'   "quarter". Default day.
-#' @param accumulated   A logic flag of whether spcified data sereis is
-#'   accumluated or not.
+#'  "quarter". Default day.
+#' @param accumulated   A logic flag of whether specified data series is
+#'   accumulated or not.
 #' @param trailling_month  A integer of months of data to trail. Default is 12,
 #'   which means 12 months, i.e., TTT(Trail Twelve Month).
 #' @param agg_fun       A function to aggrate data sereis in trailling month.
-#' @param ...    Params to agg_fun.
+#' @param ...    Params pass to agg_fun.
 #'
 #'
 #'
@@ -183,7 +184,6 @@ trail_periodic_series <- function(dates, data_series,
         dplyr::ungroup() %>%
         dplyr::select(-date, -year)
     } else {
-
       # original data is not accumated(already contain period data)
 
       # use origin data as period data directly
@@ -204,7 +204,7 @@ trail_periodic_series <- function(dates, data_series,
         window = rolly_window
       )
   } else {
-    # can't trail irregluar series
+    # can't trail irregular series
     msg <- sprintf(
       "Can't trail series(%s) with irregular date(%s) by period(%s).",
       rlang::expr_text(data_series_expr),

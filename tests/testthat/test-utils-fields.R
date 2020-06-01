@@ -1,6 +1,6 @@
 # Tests for utility functions of fields ----
 
-context("Tests for utitlity functions of fields")
+context("Tests for utility functions of fields")
 
 # prepare test datasets
 rows <- 10
@@ -15,17 +15,17 @@ ds_various_type <- tibble::tibble(
   "NA" = rep(NA, rows)
 )
 
-test_that("check_fields, with various arguments", {
+test_that("verify_fields, with various arguments", {
 
-  # check_fields on existed fields ====
+  # verify_fields on existed fields ====
   for (field in names(ds_various_type)) {
-    check_fields(ds_various_type,
+    verify_fields(ds_various_type,
       fields = field
     )
   }
 
-  # check_fields on non-existed fields ====
-  expect_error(check_fields(ds_various_type,
+  # verify_fields on non-existed fields ====
+  expect_error(verify_fields(ds_various_type,
     fields = "Date"
   ))
 })

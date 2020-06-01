@@ -1,4 +1,8 @@
 
+# Skip tests on cran due to consuming long time.
+# skip_on_cran()
+
+# Test tool functions ----
 # Build test dataset
 ds_test_timeseries <- function(from = "2015-01-01",
                                to = "2016-12-31",
@@ -279,12 +283,12 @@ test_that("ts_resample, with various arguments", {
 
   # conduct one test
   .validate_resample_result <- function(ds_test_origin,
-                                          ds_test_result,
-                                          freq_rule = c("day", "month", "quarter", "year"),
-                                          fillna_method = c("nfill", "ffill", "bfill"),
-                                          agg_fun = mean,
-                                          ...,
-                                          ds_type = c("tibble", "timeSeries")) {
+                                        ds_test_result,
+                                        freq_rule = c("day", "month", "quarter", "year"),
+                                        fillna_method = c("nfill", "ffill", "bfill"),
+                                        agg_fun = mean,
+                                        ...,
+                                        ds_type = c("tibble", "timeSeries")) {
     # call test engine to work
     validate_engine_resample_refreq(
       ds_test_origin = ds_test_origin,
@@ -527,10 +531,10 @@ test_that("ts_asfreq, with various arguments", {
 
   # Conduct one test
   .validate_asfreq_result <- function(ds_test_origin,
-                                        ds_test_result,
-                                        freq_rule = c("day", "month", "quarter"),
-                                        fillna_method = c("nfill", "ffill", "bfill"),
-                                        ds_type = c("tibble", "timeSeries")) {
+                                      ds_test_result,
+                                      freq_rule = c("day", "month", "quarter"),
+                                      fillna_method = c("nfill", "ffill", "bfill"),
+                                      ds_type = c("tibble", "timeSeries")) {
 
     # call test engine to work
     validate_engine_resample_refreq(
@@ -698,9 +702,9 @@ test_that("ts_lag, with various normal arguments", {
 
   # Valiate lag results
   .validate_lag_result <- function(ds_test_origin, ds_test_result,
-                                     ds_type = c("tibble", "timeSeries"),
-                                     k = 1,
-                                     trim = TRUE) {
+                                   ds_type = c("tibble", "timeSeries"),
+                                   k = 1,
+                                   trim = TRUE) {
     ds_type <- match.arg(ds_type)
     switch(ds_type,
       "tibble" = {

@@ -52,7 +52,7 @@ get_stock_return.default <- function(stock_db, stock_cd_list = NULL,
   stop("Unknow class")
 }
 
-# Default function to get market return timesereis from stock_db
+# Default function to get market return timeseries from stock_db
 get_market_return.default <- function(stock_db,
                                       period_type = c("daily", "weekly", "monthly", "annual"),
                                       return_type = c("simple", "compound"),

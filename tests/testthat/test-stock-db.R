@@ -275,10 +275,10 @@ test_that("get_market_return, with various arguments", {
 })
 
 
-test_that("get_finacial_report, with various arguments", {
+test_that("get_financial_report, with various arguments", {
 
-  # get_finacial_report with default arguments ====
-  ts_report <- get_finacial_report(stock_db)
+  # get_financial_report with default arguments ====
+  ts_report <- get_financial_report(stock_db)
   expect_is(ts_report, "data.frame")
   expect_true(all(c("date", "stkcd") %in% names(ts_report)))
   expect_true(lubridate::is.Date(ts_report$date))
@@ -288,24 +288,24 @@ test_that("get_finacial_report, with various arguments", {
 
   stock_cd_list <- c("600031", "600066")
 
-  # get_finacial_report with arguments: statement ====
+  # get_financial_report with arguments: statement ====
   ds_test_statement <- tibble::tribble(
     ~statement, ~field_pattern,
     #-------------/------------------/
-    "blance_sheet", "^a",
+    "balance_sheet", "^a",
     "income", "^b",
     "cashflow_direct", "^c",
-    "cashflow_indrect", "^d",
+    "cashflow_indirect", "^d",
     "income_ttm", "^b\\w*_ttm$",
     "cashflow_direct_ttm", "^c\\w*_ttm$",
-    "cashflow_indrect_ttm", "^d\\w*_ttm$"
+    "cashflow_indirect_ttm", "^d\\w*_ttm$"
   )
 
   for (i in seq_len(NROW(ds_test_statement))) {
     statement <- ds_test_statement$statement[i]
     pattern <- ds_test_statement$field_pattern[i]
 
-    ts_report <- get_finacial_report(stock_db,
+    ts_report <- get_financial_report(stock_db,
       stock_cd_list = stock_cd_list,
       statement = statement,
       period_type = "quarter",
@@ -319,11 +319,11 @@ test_that("get_finacial_report, with various arguments", {
     expect_true(any(stringr::str_detect(names(ts_report), pattern = pattern)))
   }
 
-  # get_finacial_report with arguments: consolidated ====
+  # get_financial_report with arguments: consolidated ====
   consolidated <- TRUE
 
-  # get_finacial_report with arguments: period_type ====
-  ts_report <- get_finacial_report(stock_db,
+  # get_financial_report with arguments: period_type ====
+  ts_report <- get_financial_report(stock_db,
     stock_cd_list = stock_cd_list,
     period_type = "quarter"
   )
@@ -334,7 +334,7 @@ test_that("get_finacial_report, with various arguments", {
   expect_true(all(ts_report$stkcd %in% stock_cd_list))
   expect_true(all(lubridate::month(ts_report$date) %in% c(3, 6, 9, 12)))
 
-  ts_report <- get_finacial_report(stock_db,
+  ts_report <- get_financial_report(stock_db,
     stock_cd_list = stock_cd_list,
     period_type = "year"
   )
@@ -346,8 +346,8 @@ test_that("get_finacial_report, with various arguments", {
   expect_true(all(lubridate::month(ts_report$date) %in% c(12)))
 
 
-  # get_finacial_report with arguments: period_date ====
-  ts_report <- get_finacial_report(stock_db,
+  # get_financial_report with arguments: period_date ====
+  ts_report <- get_financial_report(stock_db,
     stock_cd_list = stock_cd_list,
     period_date = "start"
   )
@@ -358,7 +358,7 @@ test_that("get_finacial_report, with various arguments", {
   expect_true(all(ts_report$stkcd %in% stock_cd_list))
   expect_true(all(lubridate::day(ts_report$date) %in% c(1)))
 
-  ts_report <- get_finacial_report(stock_db,
+  ts_report <- get_financial_report(stock_db,
     stock_cd_list = stock_cd_list,
     period_date = "end"
   )
@@ -438,9 +438,15 @@ test_that("save_indicators_to_source, with various arguments", {
 test_that("get_indicators_from_source, with various arguments", {
 
   # get_indicators_from_source with default arguments ====
-  ds_indicators <- get_indicators_from_source(stock_db,
-    indicator_source = "TRD_Year"
+  # suppress uncessary warnings:
+  # attributes are not identical across measure variables;
+  # they will be dropped
+  suppressWarnings(
+    ds_indicators <- get_indicators_from_source(stock_db,
+      indicator_source = "TRD_Year"
+    )
   )
+
 
   if (!is.null(ds_indicators)) {
     expect_fields <- c("date", "period", "stkcd", "ind_code", "ind_value")
@@ -492,11 +498,18 @@ test_that("get_indicators_from_source, with various arguments", {
   # output in "long" format
   indicator_source <- "test-ind01.rds"
   indicator_codes <- c("ind01")
-  ds_indicators <- get_indicators_from_source(stock_db,
-    indicator_source = indicator_source,
-    indicator_codes = indicator_codes,
-    ouput_format = "long"
+
+  # suppress unnecessary warning:
+  # "Coerce stock cd to character of 6 digits if it were numeric"
+  suppressWarnings(
+    ds_indicators <- get_indicators_from_source(
+      stock_db,
+      indicator_source = indicator_source,
+      indicator_codes = indicator_codes,
+      ouput_format = "long"
+    )
   )
+
   if (!is.null(ds_indicators)) {
     expect_fields <- c("date", "stkcd", "period", "ind_code", "ind_value")
     expect_true(all(expect_fields %in% names(ds_indicators)))
@@ -505,11 +518,18 @@ test_that("get_indicators_from_source, with various arguments", {
   }
 
   # output in "wide" format
-  ds_indicators <- get_indicators_from_source(stock_db,
-    indicator_source = indicator_source,
-    indicator_codes = indicator_codes,
-    ouput_format = "wide"
+
+  # suppress unnecessary warning:
+  # "Coerce stock cd to character of 6 digits if it were numeric"
+  suppressWarnings(
+    ds_indicators <- get_indicators_from_source(
+      stock_db,
+      indicator_source = indicator_source,
+      indicator_codes = indicator_codes,
+      ouput_format = "wide"
+    )
   )
+
   if (!is.null(ds_indicators)) {
     expect_fields <- c("date", "stkcd", "period", indicator_codes)
     expect_true(all(expect_fields %in% names(ds_indicators)))
@@ -522,11 +542,18 @@ test_that("get_indicators_from_source, with various arguments", {
   # output in "long" format
   indicator_source <- "test-ind01.csv"
   indicator_codes <- c("ind01")
-  ds_indicators <- get_indicators_from_source(stock_db,
-    indicator_source = indicator_source,
-    indicator_codes = indicator_codes,
-    ouput_format = "long"
+
+  # suppress unnecessary warning:
+  # "Coerce stock cd to character of 6 digits if it were numeric"
+  suppressWarnings(
+    ds_indicators <- get_indicators_from_source(
+      stock_db,
+      indicator_source = indicator_source,
+      indicator_codes = indicator_codes,
+      ouput_format = "long"
+    )
   )
+
   if (!is.null(ds_indicators)) {
     expect_fields <- c("date", "stkcd", "period", "ind_code", "ind_value")
     expect_true(all(expect_fields %in% names(ds_indicators)))
@@ -535,11 +562,18 @@ test_that("get_indicators_from_source, with various arguments", {
   }
 
   # output in "wide" format
-  ds_indicators <- get_indicators_from_source(stock_db,
-    indicator_source = indicator_source,
-    indicator_codes = indicator_codes,
-    ouput_format = "wide"
+
+  # suppress unnecessary warning:
+  # "Coerce stock cd to character of 6 digits if it were numeric"
+  suppressWarnings(
+    ds_indicators <- get_indicators_from_source(
+      stock_db,
+      indicator_source = indicator_source,
+      indicator_codes = indicator_codes,
+      ouput_format = "wide"
+    )
   )
+
   if (!is.null(ds_indicators)) {
     expect_fields <- c("date", "stkcd", "period", indicator_codes)
     expect_true(all(expect_fields %in% names(ds_indicators)))
@@ -563,6 +597,7 @@ test_that("get_indicators_from_source, with various arguments", {
   # output in "long" format
   indicator_source <- "{get_riskfree_rate(stock_db, period = 'month')}"
   indicator_codes <- c("riskfree_return")
+
 
   ds_indicators <- get_indicators_from_source(stock_db,
     indicator_source = indicator_source,

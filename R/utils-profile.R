@@ -1,6 +1,8 @@
-#' Utils functions of profile
+# Utility functions - profile
+
+#' Utility functions of profile
 #'
-#' Utility functions to handle profile, which contains configration
+#' Utility functions to handle profile, which contains configuration
 #' information of stock database.
 #'
 #'
@@ -40,7 +42,7 @@ get_profile_path <- function(profile_name, profile_dir = .PROFILE_DIR) {
 # Get table name value from profile of database
 #' @param profile_path Path of profile to get data from.
 #' @param variable A character of name of variable to get.
-#' @return \strong{others}: A dataframe of setting if succeed, othwise NULL.
+#' @return \strong{others}: A dataframe of setting if succeed, otherwise NULL.
 #' @describeIn utils_profile  get table name value from profile of database.
 #' @export
 profile_get_varible_setting <- function(profile_path, variable) {
@@ -52,7 +54,7 @@ profile_get_varible_setting <- function(profile_path, variable) {
   varible_setting <- readxl::read_excel(profile_path, sheet = "Variable_Setting")
   if (!is.null(varible_setting)) {
     # get value for the vairable
-    setting_value <- varible_setting$var_value[varible_setting$var_name == variable ]
+    setting_value <- varible_setting$var_value[varible_setting$var_name == variable]
     if (is.null(setting_value) || length(setting_value) == 0) {
       msg <- sprintf("No value of '%s' was found in %s", variable, profile)
       warning(msg)

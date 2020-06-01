@@ -4,28 +4,35 @@
 \alias{build_report}
 \title{Build report from template}
 \usage{
-build_report(report_template, report_params = NULL,
-  output_format = c("html_document", "pdf_document", "word_document",
-  "rticles::ctex"), output_sn = NULL, output_dir = "output",
-  quiet = TRUE, ...)
+build_report(
+  report_template,
+  report_params = NULL,
+  output_format = c("html_document", "pdf_document", "word_document", "rticles::ctex"),
+  output_sn = NULL,
+  output_dir = "output",
+  quiet = TRUE,
+  ...
+)
 }
 \arguments{
-\item{report_template}{a rmd file as report template.}
+\item{report_template}{A rmd file as report template.}
 
-\item{report_params}{a list of report parmas, by default NULL.}
+\item{report_params}{A list of report params, by default NULL.}
 
-\item{output_format}{output file format i.e. "html_document","pdf",
+\item{output_format}{Output file format i.e. "html_document","pdf",
 by default "html_document".}
 
 \item{output_sn}{NULL, serial number or id for output file.}
 
-\item{output_dir}{dir to save output file, i.e. "output", if NULL,
-save in directory of template file, otherwise in outpout_dir}
+\item{output_dir}{Dir to save output file, i.e. "output", if NULL,
+save in directory of template file, otherwise in output_dir.}
 
 \item{quiet}{TRUE to suppress printing of the pandoc command line.}
+
+\item{...}{Arguments passed to rmarkdown::render.}
 }
 \value{
-
+No return.
 }
 \description{
 Use data rank as new data

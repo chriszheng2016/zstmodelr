@@ -2,71 +2,71 @@
 % Please edit documentation in R/indicator-attribute.R
 \name{indicator_attribute}
 \alias{indicator_attribute}
-\alias{attr_indictors}
-\alias{attr_indictors_indcd}
-\alias{attr_indictors_trdstat}
+\alias{attr_indicators}
+\alias{attr_indicators_indcd}
+\alias{attr_indicators_trdstat}
 \title{Add attribute to indicator timeseries of stocks}
 \usage{
-attr_indictors(ts_indicators, new_attr_def, parallel = TRUE)
+attr_indicators(ts_indicators, new_attr_def, parallel = TRUE)
 
-attr_indictors_indcd(stock_db, ts_indicators, parallel = TRUE)
+attr_indicators_indcd(stock_db, ts_indicators, parallel = TRUE)
 
-attr_indictors_trdstat(stock_db, ts_indicators, parallel = TRUE)
+attr_indicators_trdstat(stock_db, ts_indicators, parallel = TRUE)
 }
 \arguments{
 \item{ts_indicators}{A dataframe of indicator timeseries.}
 
-\item{new_attr_def}{A function to compute attribue value for stock
+\item{new_attr_def}{A function to compute attribute value for stock
 indicator.}
 
-\item{parallel}{A logic to deterimine whether to use parallel processing.
+\item{parallel}{A logic to determine whether to use parallel processing.
 Default TRUE means to use parallel processing.}
 
 \item{stock_db}{A stock database object to get data.}
 }
 \value{
-A dataframe of indicator timerseries with new attribute if succeed,
- otherwise NULL.
+A dataframe of indicator timeseries with new attribute if succeed,
+otherwise NULL.
 }
 \description{
 Compute attribute values of stocks and add them to indicator timeseries.
 }
 \details{
-\code{\link{attr_indictors}} is a working horse behind
-\code{\link{attr_indictors_indcd}},\code{\link{attr_indictors_trdstat}},
+\code{\link{attr_indicators}} is a working horse behind
+\code{\link{attr_indicators_indcd}},\code{\link{attr_indicators_trdstat}},
 which is mainly used to develop customized attribute function to
 add attribute to indicator timeseries.
 
-\code{\link{attr_indictors_indcd}}, \code{\link{attr_indictors_trdstat}}, etc.
-are used to add predefined attrbute to indicator timeseries by using data from
+\code{\link{attr_indicators_indcd}}, \code{\link{attr_indicators_trdstat}}, etc.
+are used to add predefined attribute to indicator timeseries by using data from
 stock_db.
 
 There are two way to add attribute to timeseries of indicators of stocks:
 \itemize{
 \item \strong{add attribute directly}:
- use \code{\link{attr_indictors_indcd}}, \code{\link{attr_indictors_trdstat}}
- to add attribute directly. The pros is easy to use, the cons is slow since
- it have to load data from stock database each calling. The method is
- mainly used to add one attribute to one indicator timeseries.
+use \code{\link{attr_indicators_indcd}}, \code{\link{attr_indicators_trdstat}}
+to add attribute directly. The pros is easy to use, the cons is slow since
+it have to load data from stock database each calling. The method is
+mainly used to add one attribute to one indicator timeseries.
 
 \item \strong{add attribute indirectly}:
 use \code{\link{ind_attr_def_indcd}}, \code{\link{ind_attr_def_trdstat}} and
 \code{\link{modify_indicator}}. The pros is that it can be faster by dividing
 defining attribute(load data from database once) and modifying indicators
-(can modify repeatly by using same attrbute definition). The cons is that it is more complex than direct method. The method is mainly
+(can modify repeatedly by using same attribute definition). The cons is that it is more complex than direct method. The method is mainly
 used to add same attribute to multi-indicators timeseries.
 
 }
 }
 \section{Functions}{
 \itemize{
-\item \code{attr_indictors}: add customized attribute to indicators
+\item \code{attr_indicators}: add customized attribute to indicators
 timeseries of stocks.
 
-\item \code{attr_indictors_indcd}: add attribute of industry code to indicator
+\item \code{attr_indicators_indcd}: add attribute of industry code to indicator
 timeseries of stocks.
 
-\item \code{attr_indictors_trdstat}: add attribute of trading status to indicator
+\item \code{attr_indicators_trdstat}: add attribute of trading status to indicator
 timeseries of stocks.
 }}
 
@@ -74,45 +74,46 @@ timeseries of stocks.
 
 \dontrun{
 
- # create a indicator from vars dataset.
-  ts_indicator <- create_indicator(ds_def_vars,
-                                 ind_def_fun = ind_def_fun,
-                                 debug = debug,
-                                 date_index_field = "date",
-                                 key_fields = key_fields,
-                                 parallel = parallel)
+# create a indicator from vars dataset.
+ts_indicator <- create_indicator(ds_def_vars,
+  ind_def_fun = ind_def_fun,
+  debug = debug,
+  date_index_field = "date",
+  key_fields = key_fields,
+  parallel = parallel
+)
 
 
- # --- add attribute directly ---
+# --- add attribute directly ---
 
- # add attribute of indcd
- ts_indicators_with_indcd <- attr_indictors_indcd(stock_db,
-                      ts_indicators = ts_indicators)
+# add attribute of indcd
+ts_indicators_with_indcd <- attr_indicators_indcd(stock_db,
+  ts_indicators = ts_indicators
+)
 
- # add attribute of trdstats
- ts_indicators_wide_with_attr <- attr_indictors_trdstat(stock_db,
-                      ts_indicators = ts_indicators)
+# add attribute of trdstats
+ts_indicators_wide_with_attr <- attr_indicators_trdstat(stock_db,
+  ts_indicators = ts_indicators
+)
 
- # --- add attribute indirectly ---
+# --- add attribute indirectly ---
 
- # create attr defs by using data from stock
- new_attr_indcd <- ind_attr_def_indcd(stock_db)
+# create attr defs by using data from stock
+new_attr_indcd <- ind_attr_def_indcd(stock_db)
 
- # use attribute def to modify multi-indicators
- for (i in seq_len(NROW(ds_ts_indicators))) {
+# use attribute def to modify multi-indicators
+for (i in seq_len(NROW(ds_ts_indicators))) {
+  ts_indicator <- ds_ts_indicators$data[[i]]
 
-    ts_indicator <- ds_ts_indicators$data[[i]]
-
-    ts_indicator <- modify_indicator(
-                     ts_indicator = ts_indicator,
-                     modify_fun = new_attr_indcd,
-                     replace_exist = FALSE,
-                     date_index_field = "date",
-                     key_fields = "stkcd",
-                     parallel = parallel
-                    )
- }
-
+  ts_indicator <- modify_indicator(
+    ts_indicator = ts_indicator,
+    modify_fun = new_attr_indcd,
+    replace_exist = FALSE,
+    date_index_field = "date",
+    key_fields = "stkcd",
+    parallel = parallel
+  )
+}
 }
 }
 \concept{indicator attribute functions}

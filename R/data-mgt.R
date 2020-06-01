@@ -9,8 +9,9 @@
 #' Generic function to get data source info for importing raw data into stock_db.
 #'
 #' @param stock_db         A stock database object to operate.
+#' @param ... Extra arguments to be passed to methods.
 #'
-#' @family data managment
+#' @family data management
 #'
 #' @return A dataframe of info about importing raw data if succeed,
 #'   otherwise NULL.
@@ -34,8 +35,9 @@ setGeneric(
 #' Generic function to Clear existed data in all tables in stock_db.
 #'
 #' @param stock_db         A stock database object to operate.
+#' @param ... Extra arguments to be passed to methods.
 #'
-#' @family data managment
+#' @family data management
 #'
 #' @return NULL invisibly. Raise error if anything goes wrong.
 #'
@@ -58,13 +60,13 @@ setGeneric(
 #'
 #' Generic function to update tables in stock database by importing new data
 #'
-#' By combining infomation from data_source and re-try log file , it update all
+#' By combining information from data_source and re-try log file , it update all
 #' tables from raw data of datasource in following steps:
 #'
 #' \enumerate{
 #'    \item Build target tables info from all tables in datasource or some
-#'    tables with recoding failure in retry log file;
-#'    \item Update target tables by importing data from datasoure;
+#'    tables with recording failure in retry log file;
+#'    \item Update target tables by importing data from datasource;
 #'    \item Save update log, etc.
 #' }
 #'
@@ -74,7 +76,7 @@ setGeneric(
 #' @param stock_db  A stock database object to operate.
 #' @param data_source  Data source info produced by get_datasource(stock_db)
 #' @param retry_log Log file for re-importing tables with recording failure
-#'   in log file. If NULL, it will upate all talbles in data_source, otherse
+#'   in log file. If NULL, it will update all tables in data_source, otherwise
 #'   only update on these tables with recording failure in log file.
 #'   By default NULL.
 #' @param log_file_prefix  A character of log file prefix to name log file.
@@ -82,9 +84,9 @@ setGeneric(
 #'   Default is "update_db_log".
 #' @param log_dir Path to save updating log file. NULL means to use "./" as
 #'   log dir. Default "./log".
+#' @param ... Extra arguments to be passed to methods.
 #'
-#'
-#' @family data managment
+#' @family data management
 #'
 #' @return NULL invisibly. Raise error if anything goes wrong.
 #'
@@ -100,11 +102,11 @@ setGeneric(
   name = "update_db",
   signature = c("stock_db"),
   def = update_db <- function(stock_db,
-                                data_source = get_datasource(stock_db),
-                                retry_log = NULL,
-                                log_file_prefix = "update_db_log",
-                                log_dir = "./log",
-                                ...) {
+                              data_source = get_datasource(stock_db),
+                              retry_log = NULL,
+                              log_file_prefix = "update_db_log",
+                              log_dir = "./log",
+                              ...) {
     standardGeneric("update_db")
   }
 )
@@ -113,7 +115,7 @@ setGeneric(
 #'
 #' Generic function to import a raw data into target table in stock database.
 #'
-#' Import porcess include two phrases:
+#' Import process include two phrases:
 #' \enumerate{
 #'    \item Convert raw data into R data type.
 #'    \item Transfer R data into table in database.
@@ -136,9 +138,10 @@ setGeneric(
 #'   if TRUE, continue to import data but log problems into log file,
 #'   otherwise abort importing process.  By default TRUE.
 #' @param log_dir   Path of log dir for saving problem log file,
-#'   by default"./log", if the log path doesn't exsited, it  will be created.
+#'   by default"./log", if the log path doesn't existed, it  will be created.
+#' @param ... Extra arguments to be passed to methods.
 #'
-#' @family data managment
+#' @family data management
 #'
 #' @return TRUE if success, else FALSE.
 #'
@@ -162,14 +165,14 @@ setGeneric(
   name = "import_table",
   signature = c("stock_db"),
   def = import_table <- function(stock_db,
-                                   input_file,
-                                   input_type = c("csv", "txt"),
-                                   input_dir = NULL,
-                                   start_index = 2L,
-                                   target_table = NULL,
-                                   ignore_problems = TRUE,
-                                   log_dir = "./log",
-                                   ...) {
+                                 input_file,
+                                 input_type = c("csv", "txt"),
+                                 input_dir = NULL,
+                                 start_index = 2L,
+                                 target_table = NULL,
+                                 ignore_problems = TRUE,
+                                 log_dir = "./log",
+                                 ...) {
     standardGeneric("import_table")
   }
 )
@@ -178,12 +181,12 @@ setGeneric(
 #'
 #' Generic function to process importing files in stock database.
 #'
-#' By combining infomation from data_source and re-try log file , it process
+#' By combining information from data_source and re-try log file , it process
 #' input_files of datasource in following steps:
 #'
 #' \enumerate{
 #'    \item Build input_files info from all input_files marked with process
-#'    in datasource or some input_files with recoding failure in retry log file;
+#'    in datasource or some input_files with recording failure in retry log file;
 #'    \item Read input_files into original dataframe, process original
 #'    dataframe by using process_fun specified by datasource, and save
 #'    processed dataframe into files;
@@ -196,7 +199,7 @@ setGeneric(
 #' @param stock_db  A stock database object to operate.
 #' @param data_source  Data source info produced by get_datasource(stock_db)
 #' @param retry_log Log file for re-processing tables with recording failure
-#'   in log file. If NULL, it will process all input_files in data_source, otherse
+#'   in log file. If NULL, it will process all input_files in data_source, otherwise
 #'   only process on these input_files with recording failure in log file.
 #'   By default NULL.
 #' @param log_file_prefix  A character of log file prefix to name log file.
@@ -204,9 +207,9 @@ setGeneric(
 #'   Default is "update_db_log".
 #' @param log_dir Path to save process log file. NULL means to use "./"
 #'   as log dir. Default "./log".
+#' @param ... Extra arguments to be passed to methods.
 #'
-#'
-#' @family data managment
+#' @family data management
 #'
 #' @return NULL invisibly. Raise error if anything goes wrong.
 #'
@@ -238,7 +241,7 @@ setGeneric(
 #' Read a raw file into a dataframe for processing or importing.
 #'
 #' @param input_file  A name or a path of input data file.
-#' @param input_type  A charater of input file format, e.g. "txt", "csv".
+#' @param input_type  A character of input file format, e.g. "txt", "csv".
 #' @param input_dir   A path of working dir of input file, if NULL, use dir of
 #'   input file as working dir, default NULL.
 #' @param start_index A integer of start index of first line of actual records
@@ -248,9 +251,9 @@ setGeneric(
 #'   when covert data, if TRUE, continue to import data but log problems into
 #'   log file, otherwise abort reading process.  By default TRUE.
 #' @param log_dir   Path of log dir for saving problem log file,
-#'   by default"./log", if the log path doesn't exsited, it  will be created.
+#'   by default"./log", if the log path doesn't existed, it  will be created.
 #'
-#' @family data managment
+#' @family data management
 #'
 #' @return A dataframe of raw data for importing if succeed, otherwise NULL.
 #'
@@ -394,7 +397,7 @@ read_import_file <- function(input_file,
 #' @param output_dir A path of working dir of output file, if NULL, use dir
 #'   of output file as working dir, by default NULL,
 #'
-#' @family data managment
+#' @family data management
 #'
 #' @return NULL invisibly. Raise error if anything goes wrong.
 #'
@@ -478,7 +481,7 @@ write_import_file <- function(ds_output,
 #'
 #' @inheritParams write_import_file
 #'
-#' @family data managment
+#' @family data management
 #'
 #' @return TRUE if success, else FALSE.
 #'
@@ -503,16 +506,19 @@ convert_import_file <- function(input_file,
   success <- TRUE
 
   # read original data
-  result <- tryCatch({
-    read_import_file(
-      input_file,
-      input_type = input_type,
-      input_dir = input_dir,
-      start_index = start_index,
-      ignore_problems = ignore_problems,
-      log_dir = log_dir
-    )
-  }, error = function(e) e)
+  result <- tryCatch(
+    {
+      read_import_file(
+        input_file,
+        input_type = input_type,
+        input_dir = input_dir,
+        start_index = start_index,
+        ignore_problems = ignore_problems,
+        log_dir = log_dir
+      )
+    },
+    error = function(e) e
+  )
   if (inherits(result, "error")) {
     error_msg <- conditionMessage(result)
     ds_origin_data <- NULL
@@ -524,13 +530,16 @@ convert_import_file <- function(input_file,
   # process orgiginal data
   ds_processed_data <- NULL
   if (success) {
-    result <- tryCatch({
-      if (!is.null(process_fun)) {
-        process_fun(ds_origin_data, ...)
-      } else {
-        ds_origin_data
-      }
-    }, error = function(e) e)
+    result <- tryCatch(
+      {
+        if (!is.null(process_fun)) {
+          process_fun(ds_origin_data, ...)
+        } else {
+          ds_origin_data
+        }
+      },
+      error = function(e) e
+    )
     if (inherits(result, "error")) {
       error_msg <- conditionMessage(result)
       success <- FALSE
@@ -541,13 +550,16 @@ convert_import_file <- function(input_file,
 
   # write process data
   if (success) {
-    result <- tryCatch({
-      write_import_file(ds_processed_data,
-        output_file = output_file,
-        output_type = output_type,
-        output_dir = output_dir
-      )
-    }, error = function(e) e)
+    result <- tryCatch(
+      {
+        write_import_file(ds_processed_data,
+          output_file = output_file,
+          output_type = output_type,
+          output_dir = output_dir
+        )
+      },
+      error = function(e) e
+    )
     if (inherits(result, "error")) {
       error_msg <- conditionMessage(result)
       success <- FALSE
@@ -584,13 +596,14 @@ convert_import_file <- function(input_file,
 #' @param date_index_field  A character name of date index field of dataframe of
 #'   financial report, default 'Accper'.
 #' @param key_fields    A character vector of key fields, which identify unique
-#'   observation in each date, defaul c("Stkcd", "Typrep").
-#' @param parallel   A logic to deterimine whether to use parallel processing.
+#'   observation in each date, default c("Stkcd", "Typrep").
+#' @param field_suffix A character suffix for result fields, default is "ttm".
+#' @param parallel   A logic to determine whether to use parallel processing.
 #'   Default TRUE means to use parallel processing.
 #'
-#' @family data managment
+#' @family data management
 #'
-#' @return A dataframe of finacial report of TTM format if succeed,
+#' @return A dataframe of financial report of TTM format if succeed,
 #'   otherwise NULL.
 #'
 #' @export
@@ -602,10 +615,10 @@ ttm_financial_report <- function(ds_financial_report,
 
   # function to trial data in a group with unique value of key_fields
   .trail_fun <- function(ds_financial_report,
-                           date_index_field,
-                           key_fields,
-                           field_suffix = "ttm",
-                           ...) {
+                         date_index_field,
+                         key_fields,
+                         field_suffix = "ttm",
+                         ...) {
 
     # predicate period of dates
     origin_dates <- ds_financial_report[[date_index_field]]

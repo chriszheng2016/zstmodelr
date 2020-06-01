@@ -16,5 +16,7 @@ an object of gta_db class
 Create a object for gta_db class
 }
 \examples{
+\dontrun{
 gta_db <- gta_db()
+}
 }

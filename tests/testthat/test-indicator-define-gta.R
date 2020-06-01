@@ -24,10 +24,10 @@ test_that("build_indicator_defs.gta_db", {
   gta_profile_name <- get_profile(stock_db)
 
   # get info of customized indicators from profile
-  customized_indictors_info <- profile_get_customized_indicators(gta_profile_name)
+  customized_indicators_info <- profile_get_customized_indicators(gta_profile_name)
 
   # build_indicator_defs.gta_db with default arguments ====
-  indicator_defs <- build_indicator_defs.gta_db(stock_db, customized_indictors_info)
+  indicator_defs <- build_indicator_defs.gta_db(stock_db, customized_indicators_info)
 
   expect_fields <- c(
     "ind_code", "ind_type", "ind_name", "ind_category",
@@ -37,6 +37,20 @@ test_that("build_indicator_defs.gta_db", {
   )
   actual_fields <- names(indicator_defs)
   expect_true(all(actual_fields %in% expect_fields))
+
+  expect_is(indicator_defs$ind_code, "character")
+  expect_is(indicator_defs$ind_type, "character")
+  expect_is(indicator_defs$ind_name, "character")
+  expect_is(indicator_defs$ind_category, "character")
+  expect_is(indicator_defs$ind_source, "character")
+  expect_is(indicator_defs$ind_description, "character")
+  expect_is(indicator_defs$ind_formula, "character")
+  expect_is(indicator_defs$ind_keys, "list")
+  expect_is(indicator_defs$rolling_window, "numeric")
+  expect_is(indicator_defs$period, "character")
+  expect_is(indicator_defs$output_format, "character")
+  expect_is(indicator_defs$is_active, "logical")
+
   expect_is(indicator_defs$ind_expr, "list")
   expect_true(rlang::is_call(indicator_defs$ind_expr[[1]]))
   expect_is(indicator_defs$ind_def_fun, "list")
