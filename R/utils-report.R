@@ -12,7 +12,7 @@
 #' @param output_sn   Serial number or id for output file. Default NULL
 #' @param output_dir  Path of dir to save output file. Default "output" means to
 #'   save file in output in current dir. If NULL save in directory of template
-#'   file, otherwise in outpout_dir.
+#'   file, otherwise in output_dir
 #' @param quiet  A logic flag of whether to suppress printing of the pandoc
 #'   command line.
 #' @param ... Arguments passed to rmarkdown::render.

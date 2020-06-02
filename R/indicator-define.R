@@ -593,8 +593,8 @@ prioritize_indicator_defs <- function(ds_indicator_defs) {
 
 #' Get related indicator_defs of specified indicators
 #'
-#' Get defs of related indicators of specified indicators by analyzing depndency
-#' among indicators
+#' Get defs of related indicators of specified indicators by analyzing
+#' dependency among indicators
 #'
 #' @param ds_indicator_defs   A dataframe of indicators definition info.
 #'
@@ -603,8 +603,8 @@ prioritize_indicator_defs <- function(ds_indicator_defs) {
 #'
 #' @family indicator define functions
 #'
-#' @return A dataframe of definitions of related indicators.
-#'   Raise error if anything goes wrong.
+#' @return A dataframe of definitions of related indicators. Raise error if
+#'   anything goes wrong.
 #' @export
 related_indicator_defs <- function(ds_indicator_defs,
                                    indicator_codes) {

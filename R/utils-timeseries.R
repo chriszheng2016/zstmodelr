@@ -102,7 +102,7 @@ ts_asfreq <- function(ts_dataset,
 #' }
 #' see details for more info.
 #'
-#' @param trim    A logic flag of whether to retmove the first missing observation in
+#' @param trim    A logic flag of whether to remove the first missing observation in
 #'   the return series. Default TRUE,
 #' @param ...              Arguments passed to other methods.
 #' @param date_index_field Name of date index field of ts_df for resample,

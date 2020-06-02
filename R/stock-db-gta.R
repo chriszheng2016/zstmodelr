@@ -324,7 +324,7 @@ setMethod(
 
 # Translate name into code for field or stock
 # Method definition for s3 generic
-# @param type  A character of covertion type, e.g, "stock", "field", "industry".
+# @param type  A character of conversion type, e.g, "stock", "field", "industry".
 #  Default "stock" means to covert stock name to stock code.
 # @describeIn name2code Translate name into code in a database of gta_db class
 # @export
@@ -343,7 +343,7 @@ name2code.gta_db <- function(stock_db, name,
 }
 # Method definition for s4 generic
 # Translate name into code for field or stock
-#' @param type  A character of covertion type, e.g, "stock", "field", "industry".
+#' @param type  A character of conversion type, e.g, "stock", "field", "industry".
 #'  Default "stock" means to covert stock name to stock code.
 #' @describeIn name2code Translate name into code in a database of gta_db class
 #' @export
@@ -357,7 +357,7 @@ setMethod(
 
 # Translate code into name for field or stock
 # Method definition for s3 generic
-# @param type  A character of covertion type, e.g, "stock", "field", "industry".
+# @param type  A character of conversion type, e.g, "stock", "field", "industry".
 #  Default "stock" means to covert stock code to stock name.
 # @describeIn code2name Translate code into name in a database of gta_db class
 # @export
@@ -375,7 +375,7 @@ code2name.gta_db <- function(stock_db, code,
   return(name)
 }
 # Method definition for s4 generic
-#' @param type  A character of covertion type, e.g, "stock", "field", "industry".
+#' @param type  A character of conversion type, e.g, "stock", "field", "industry".
 #'  Default "stock" means to covert stock code to stock name.
 #' @describeIn code2name Translate code into name in a database of gta_db class
 #' @export

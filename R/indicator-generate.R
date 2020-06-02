@@ -276,10 +276,10 @@ delete_indicators <- function(stock_db,
 
 #' Backup indicators in batch mode
 #'
-#' Backup cusotmized indicators of stock_db in batch into backup dir.
+#' Backup customized indicators of stock_db in batch into backup dir.
 #'
 #' @param stock_db  A stock database object to operate.
-#' @param ds_indicator_defs  A dataframe of indicator definintion to delete.
+#' @param ds_indicator_defs  A dataframe of indicator definition to delete.
 #'
 #' @family indicator generate functions
 #'
