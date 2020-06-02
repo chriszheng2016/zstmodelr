@@ -36,6 +36,7 @@ Other indicator define functions:
 \code{\link{get_indicator_vars}()},
 \code{\link{ind_attr_def_trdstat}()},
 \code{\link{parse_indicator_vars}()},
-\code{\link{prioritize_indicator_defs}()}
+\code{\link{prioritize_indicator_defs}()},
+\code{\link{related_indicator_defs}()}
 }
 \concept{indicator define functions}

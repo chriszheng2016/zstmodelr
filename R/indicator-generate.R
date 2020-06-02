@@ -15,9 +15,11 @@
 #'
 #' @param stock_db  A stock database object to operate.
 #' @param ds_indicator_defs  A dataframe of indicator definition to generate.
-#' @param validate_def A logical determine whether to validate indicator
+#' @param validate_def A logic flag to determine whether to validate indicator
 #'   definition or not.Default FALSE, means to produce indicators on full
 #'   dataset, TRUE means to validate definition on small datasets.
+#' @param validate_stkcds A character vector of stock codes used for validating
+#'   indicator definition.
 #' @param parallel   A logic to determine whether to use parallel processing.
 #'   Default TRUE means to use parallel processing.
 #' @param log_file_prefix  A character of log file prefix to name log file. Log
@@ -34,6 +36,10 @@
 generate_indicators <- function(stock_db,
                                 ds_indicator_defs,
                                 validate_def = FALSE,
+                                validate_stkcds = c(
+                                  "600031", "000157",
+                                  "600066", "000550"
+                                ),
                                 parallel = TRUE,
                                 log_file_prefix = "generate_indicator_log",
                                 log_dir = "./log") {
@@ -44,6 +50,9 @@ generate_indicators <- function(stock_db,
     stop("Stock db isn't connected, try to connect db again")
   }
   assertive::assert_is_data.frame(ds_indicator_defs)
+  assertive::assert_is_logical(validate_def)
+  if (validate_def) assertive::assert_is_character(validate_stkcds)
+  assertive::assert_is_logical(parallel)
   assertive::assert_is_character(log_file_prefix)
   assertive::assert_is_character(log_dir)
 
@@ -55,26 +64,18 @@ generate_indicators <- function(stock_db,
   )
   if (is.null(ds_all_vars)) success <- FALSE
 
-
   # Set validate params
   debug <- FALSE
   if (success) {
     if (validate_def) {
 
       # filter vars to small scale dataset to validate indicator definition
-      validate_stkcds <- c("600031", "000157", "600066", "000550", NA)
+      validate_stkcds <- c(validate_stkcds, NA)
       ds_all_vars <- ds_all_vars %>%
         dplyr::filter(stkcd %in% validate_stkcds)
 
       # turn on debug on create indicators
       debug <- TRUE
-
-      # change output filet as *.csv
-      # ds_indicator_defs <- ds_indicator_defs %>%
-      #   dplyr::mutate(ind_source = purrr::map_chr(
-      #     ds_indicator_defs$ind_source,
-      #     ~stringr::str_replace(.x, pattern = "\\.\\w*", replacement = ".csv")
-      #   ))
 
       msg <- sprintf(
         "\nOnly validate definition of indicators on %s, not a real production!\n",
@@ -140,11 +141,13 @@ generate_indicators <- function(stock_db,
         # add attribute of industry code(indcd)
         # Notice: indcd must use stkcd as key_fields
         if (success) {
-          if (!("indcd" %in% names(ts_indicator))) {
+          if (!("indcd" %in% names(ts_indicator)) ||
+            any(is.na(ts_indicator$indcd))) {
+            # add indcd attribute if no indcd or indcd is not completed
             ts_indicator <- modify_indicator(
               ts_indicator = ts_indicator,
               modify_fun = new_attr_indcd,
-              replace_exist = FALSE,
+              replace_exist = TRUE,
               date_index_field = "date",
               key_fields = "stkcd",
               parallel = parallel
@@ -195,7 +198,7 @@ generate_indicators <- function(stock_db,
 
         if (success) {
           msg <- sprintf(
-            "Generate indicator successfully, save in: %s(%s) in %s.\n",
+            "Generate indicator successfully, save %s(%s) in %s.\n",
             indicator_def$ind_code,
             indicator_def$ind_name,
             indicator_def$ind_source
@@ -203,12 +206,19 @@ generate_indicators <- function(stock_db,
           rlang::inform(msg)
         } else {
           msg <- sprintf(
-            "Fail to generate indicator: %s(%s), because ind_def_fun is NULL.\n",
+            "Fail to generate indicator: %s(%s).\n",
             indicator_def$ind_code,
             indicator_def$ind_name
           )
           rlang::warn(msg)
         }
+      } else {
+        msg <- sprintf(
+          "Cann't to generate indicator: %s(%s), because ind_def_fun is NULL.\n",
+          indicator_def$ind_code,
+          indicator_def$ind_name
+        )
+        rlang::warn(msg)
       }
 
       # record results
@@ -248,7 +258,6 @@ generate_indicators <- function(stock_db,
 #' @export
 delete_indicators <- function(stock_db,
                               ds_indicator_defs) {
-
   # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "stock_db"))
   if (is.null(stock_db$connection)) {
@@ -258,9 +267,52 @@ delete_indicators <- function(stock_db,
 
   # remove indicators files in indicator dir
   dir_indicators <- dir_path_db(stock_db, "DIR_DB_DATA_INDICATOR")
-  path_ouput_files <- paste0(dir_indicators, "/", ds_indicator_defs$ind_source)
+  path_target_files <- paste0(dir_indicators, "/", ds_indicator_defs$ind_source)
   quiet_file_remove <- purrr::possibly(file.remove, otherwise = FALSE)
-  purrr::walk(path_ouput_files, ~ quiet_file_remove(.x))
+  purrr::walk(path_target_files, ~ quiet_file_remove(.x))
 
   return(invisible(NULL))
+}
+
+#' Backup indicators in batch mode
+#'
+#' Backup customized indicators of stock_db in batch into backup dir.
+#'
+#' @param stock_db  A stock database object to operate.
+#' @param ds_indicator_defs  A dataframe of indicator definition to delete.
+#' @param backup_dir     A path of dir to save backup indicators. Default
+#'   "backup" is the subdirectory of indicator dir which is specified by
+#'   `dir_path_db(stock_db, "DIR_DB_DATA_INDICATOR")`
+#'
+#' @family indicator generate functions
+#'
+#' @return Path of backup dir. Raise error if anything goes wrong.
+#'
+#' @export
+backup_indicators <- function(stock_db,
+                              ds_indicator_defs,
+                              backup_dir = "backup") {
+  # validate params
+  stopifnot(!is.null(stock_db), inherits(stock_db, "stock_db"))
+  if (is.null(stock_db$connection)) {
+    stop("Stock db isn't connected, try to connect db again")
+  }
+  assertive::assert_is_data.frame(ds_indicator_defs)
+  assertive::assert_is_character(backup_dir)
+
+  dir_indicators <- dir_path_db(stock_db, "DIR_DB_DATA_INDICATOR")
+
+  # make backup dir existed
+  backup_date <- as.character(Sys.Date())
+  backup_dir_path <- file.path(dir_indicators, backup_dir, backup_date)
+  if (!dir.exists(backup_dir_path)) {
+    dir.create(backup_dir_path)
+  }
+
+  # backup indicators files into indicator dir
+  path_source_files <- paste0(dir_indicators, "/", ds_indicator_defs$ind_source)
+  quiet_file_copy <- purrr::possibly(file.copy, otherwise = FALSE)
+  purrr::walk(path_source_files, ~ quiet_file_copy(.x, to = backup_dir_path))
+
+  return(backup_dir_path)
 }

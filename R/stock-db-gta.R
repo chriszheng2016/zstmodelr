@@ -113,12 +113,12 @@ open_stock_db.gta_db <- function(stock_db, ...) {
     msg <- conditionMessage(con_stock_db)
     success <- FALSE
   } else {
-    msg <- sprintf("Connect data source of %s successfully", stock_db$dsn)
+    msg <- sprintf("Connect data source of %s successfully.", stock_db$dsn)
     stock_db$connection <- con_stock_db
     success <- TRUE
   }
 
-  message(msg)
+  rlang::inform(msg)
 
   return(invisible(success))
 }
@@ -155,17 +155,17 @@ close_stock_db.gta_db <- function(stock_db, ...) {
     if (inherits(success, "error")) {
 
       # fail to close the connect
-      msg <- sprintf("fail to close the connection of %s", stock_db$dsn)
+      msg <- sprintf("Fail to close the connection of %s.", stock_db$dsn)
       success <- FALSE
     } else {
 
       # close the connection succesfully
-      msg <- sprintf("close the connection of %s successfully", stock_db$dsn)
+      msg <- sprintf("Close the connection of %s successfully.", stock_db$dsn)
       stock_db$connection <- NULL
       success <- TRUE
     }
 
-    message(msg)
+    rlang::inform(msg)
   }
 
   return(invisible(success))
@@ -193,7 +193,7 @@ get_profile.gta_db <- function(stock_db, profile_name = .GTA_PROFILE_FILE,
   # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
   if (is.null(stock_db$connection)) {
-    stop("Stock db isn't connected, try to connect db again")
+    rlang::abort("Stock db isn't connected, try to connect db again")
   }
 
   # set default profile_name
@@ -236,10 +236,10 @@ init_stock_db.gta_db <- function(stock_db, ...) {
     table_name_value <- profile_get_varible_setting(gta_profile_name, table_name_id)
     if (is.null(table_name_value)) {
       msg <- sprintf(
-        "failed to load %s from %", table_name_id,
+        "Fail to load %s from %.", table_name_id,
         gta_profile_name
       )
-      stop(msg)
+      rlang::abort(msg)
       success <- FALSE
     } else {
       stock_db$table_list[table_name_id] <- table_name_value
@@ -250,7 +250,7 @@ init_stock_db.gta_db <- function(stock_db, ...) {
   if (success) {
     stock_db$stock_field_list <- stock_field_list.gta_db(stock_db)
     if (is.null(stock_db$stock_field_list)) {
-      warning("failed to set up field_name_list")
+      rlang::warn("Fail to set up field_name_list")
       success <- FALSE
     }
   }
@@ -259,7 +259,7 @@ init_stock_db.gta_db <- function(stock_db, ...) {
   if (success) {
     stock_db$stock_name_list <- stock_name_list.gta_db(stock_db)
     if (is.null(stock_db$stock_name_list)) {
-      warning("failed to set up stock_name_list")
+      rlang::warn("Fail to set up stock_name_list")
       success <- FALSE
     }
   }
@@ -268,7 +268,7 @@ init_stock_db.gta_db <- function(stock_db, ...) {
   if (success) {
     stock_db$industry_name_list <- industry_name_list.gta_db(stock_db)
     if (is.null(stock_db$industry_name_list)) {
-      warning("failed to set up industry_name_list")
+      rlang::warn("Fail to set up industry_name_list")
       success <- FALSE
     }
   }
@@ -297,7 +297,7 @@ list_stock_tables.gta_db <- function(stock_db, ...) {
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
 
   if (is.null(stock_db$connection)) {
-    stop("Stock db isn't connected, try to connect db again")
+    rlang::abort("Stock db isn't connected, try to connect db again")
   }
 
   # Use data-engine of RODBC
@@ -324,6 +324,8 @@ setMethod(
 
 # Translate name into code for field or stock
 # Method definition for s3 generic
+# @param type  A character of conversion type, e.g, "stock", "field", "industry".
+#  Default "stock" means to covert stock name to stock code.
 # @describeIn name2code Translate name into code in a database of gta_db class
 # @export
 name2code.gta_db <- function(stock_db, name,
@@ -341,18 +343,22 @@ name2code.gta_db <- function(stock_db, name,
 }
 # Method definition for s4 generic
 # Translate name into code for field or stock
+#' @param type  A character of conversion type, e.g, "stock", "field", "industry".
+#'  Default "stock" means to covert stock name to stock code.
 #' @describeIn name2code Translate name into code in a database of gta_db class
 #' @export
 setMethod(
   "name2code",
   signature(x = "gta_db"),
-  function(x, name, ...) {
-    name2code.gta_db(stock_db = x, name, ...)
+  function(x, name, type = c("stock", "field", "industry"), ...) {
+    name2code.gta_db(stock_db = x, name, type, ...)
   }
 )
 
 # Translate code into name for field or stock
 # Method definition for s3 generic
+# @param type  A character of conversion type, e.g, "stock", "field", "industry".
+#  Default "stock" means to covert stock code to stock name.
 # @describeIn code2name Translate code into name in a database of gta_db class
 # @export
 code2name.gta_db <- function(stock_db, code,
@@ -369,13 +375,15 @@ code2name.gta_db <- function(stock_db, code,
   return(name)
 }
 # Method definition for s4 generic
+#' @param type  A character of conversion type, e.g, "stock", "field", "industry".
+#'  Default "stock" means to covert stock code to stock name.
 #' @describeIn code2name Translate code into name in a database of gta_db class
 #' @export
 setMethod(
   "code2name",
   signature(x = "gta_db"),
-  function(x, code, ...) {
-    code2name.gta_db(stock_db = x, code, ...)
+  function(x, code, type = c("stock", "field", "industry"), ...) {
+    code2name.gta_db(stock_db = x, code, type, ...)
   }
 )
 # Get a dataset from a table in stock_db
@@ -388,11 +396,11 @@ get_table_dataset.gta_db <- function(stock_db, table_name, ...) {
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
 
   if (is.null(stock_db$connection)) {
-    stop("Stock db isn't connected, try to connect db again")
+    rlang::abort("Stock db isn't connected, try to connect db again")
   }
 
   if (missing(table_name) || !is.character(table_name)) {
-    stop("Table name must be character string")
+    rlang::abort("Table name must be character string")
   }
 
   # Get table data  from database
@@ -411,10 +419,10 @@ get_table_dataset.gta_db <- function(stock_db, table_name, ...) {
     msg <- conditionMessage(ds_result)
     ds_result <- NULL
   } else {
-    msg <- sprintf("get data from %s successfully", table_name)
+    msg <- sprintf("Get data from %s successfully.", table_name)
     colnames(ds_result) <- tolower(colnames(ds_result))
   }
-  message(msg)
+  rlang::inform(msg)
 
   # Coerce stock code to 6 digit of characters
   if (!is.null(ds_result)) {
@@ -425,7 +433,7 @@ get_table_dataset.gta_db <- function(stock_db, table_name, ...) {
         ds_result[, stkcd_names] <- stringr::str_pad(ds_result[, stkcd_names],
           width = 6, pad = "0"
         )
-        msg <- "Coerce stock cd to character of 6 digits if it were number"
+        msg <- "Coerce stock cd to character of 6 digits if it were number."
         warnings(msg)
       }
     }
@@ -458,15 +466,15 @@ get_stock_dataset.gta_db <- function(stock_db,
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
 
   if (is.null(stock_db$connection)) {
-    stop("Stock db isn't connected, try to connect db again")
+    rlang::abort("Stock db isn't connected, try to connect db again")
   }
 
   if (missing(table_name) || !is.character(table_name)) {
-    stop("Table name must be character string")
+    rlang::abort("Table name must be character string")
   }
 
   # if (missing(stock_cd_list) || !is.character(stock_cd_list) ) {
-  #    stop("stock_cd_list must be character string")
+  #    rlang::abort("stock_cd_list must be character string")
   # }
 
   # Build sql command for data query
@@ -476,7 +484,7 @@ get_stock_dataset.gta_db <- function(stock_db,
     # Coerce stock code to 6 digit of characters
     if (!is.character(stock_cd_list)) {
       stock_cd_list <- stringr::str_pad(stock_cd_list, width = 6, pad = "0")
-      msg <- "Coerce stock cd to character of 6 digits if it were numeric"
+      msg <- "Coerce stock cd to character of 6 digits if it were numeric."
       warnings(msg)
     }
 
@@ -517,12 +525,12 @@ get_stock_dataset.gta_db <- function(stock_db,
     ds_result <- NULL
   } else {
     msg <- sprintf(
-      "get stock data of(%s) from %s successfully", stock_cd_list_str,
+      "Get stock data of(%s) from %s successfully.", stock_cd_list_str,
       table_name
     )
     colnames(ds_result) <- tolower(colnames(ds_result))
   }
-  message(msg)
+  rlang::inform(msg)
 
   # Coerce stock code to 6 digit of characters
   if (!is.null(ds_result)) {
@@ -533,7 +541,7 @@ get_stock_dataset.gta_db <- function(stock_db,
         ds_result[, stkcd_names] <- stringr::str_pad(ds_result[, stkcd_names],
           width = 6, pad = "0"
         )
-        msg <- "Coerce stock cd to character of 6 digits if it were number"
+        msg <- "Coerce stock cd to character of 6 digits if it were number."
         warnings(msg)
       }
     }
@@ -564,11 +572,11 @@ fetch_table_dataset.gta_db <- function(stock_db, table_list, ...) {
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
 
   if (is.null(stock_db$connection)) {
-    stop("Stock db isn't connected, try to connect db again")
+    rlang::abort("Stock db isn't connected, try to connect db again")
   }
 
   if (missing(table_list) || length(table_list) == 0) {
-    stop("table_list must contain one table at least")
+    rlang::abort("Table_list must contain one table at least")
   }
 
   # get datasets from stock db
@@ -608,6 +616,67 @@ setMethod(
   }
 )
 
+# Get stock info from stock_db
+# Method definition for s3 generic
+# @describeIn get_stock_info get stock info from a database of gta_db class
+# @export
+get_stock_info.gta_db <- function(stock_db,
+                                  stock_cd_list = NULL, ...) {
+
+  # validate params
+  stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
+  if (is.null(stock_db$connection)) {
+    rlang::abort("Stock db isn't connected, try to connect db again")
+  }
+  if (!is.null(stock_cd_list)) assertive::assert_is_character(stock_cd_list)
+
+
+  # get riskfree rate from database
+  table_name <- stock_db$table_list[["TRD_Co"]]
+  ds_stock_info_raw <- get_table_dataset(stock_db,
+    table_name = table_name
+  )
+  ds_stock_info_raw <- tibble::as_tibble(ds_stock_info_raw)
+
+  # filter stock_info by stkcds
+  if (!is.null(stock_cd_list)) {
+    ds_stock_info_raw <- ds_stock_info_raw %>%
+      dplyr::filter(stkcd %in% stock_cd_list)
+  }
+
+  # covert marekt_type
+  market_type <- c("SH_A", "SH_B", "SZ_A", "SZ_B", "SZ_G")
+  markeytype <- c(1, 2, 4, 8, 16)
+  names(market_type) <- markeytype
+  ds_stock_info_raw <- ds_stock_info_raw %>%
+    dplyr::mutate(market_type = unname(market_type[as.character(markettype)]))
+
+  # build output datasets
+  ds_stock_info <- ds_stock_info_raw %>%
+    dplyr::select(stkcd,
+      stkname = stknme,
+      indcd = nindcd, indname = nindnme,
+      establish_date = estbdt,
+      list_date = listdt,
+      market_type
+    )
+
+  return(ds_stock_info)
+}
+# Method definition for s4 generic
+#' @describeIn get_stock_info get stock info from a database of gta_db class
+#' @export
+setMethod(
+  "get_stock_info",
+  signature(stock_db = "gta_db"),
+  function(stock_db, stock_cd_list, ...) {
+    get_stock_info.gta_db(
+      stock_db, stock_cd_list, ...
+    )
+  }
+)
+
+
 # Get stock return timeseries from stock_db
 # Method definition for s3 generic
 # @describeIn get_stock_return get stock return timeseries from a database of gta_db class
@@ -622,7 +691,7 @@ get_stock_return.gta_db <- function(stock_db, stock_cd_list = NULL,
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
 
   if (is.null(stock_db$connection)) {
-    stop("Stock db isn't connected, try to connect db again")
+    rlang::abort("Stock db isn't connected, try to connect db again")
   }
 
   success <- TRUE
@@ -658,7 +727,7 @@ get_stock_return.gta_db <- function(stock_db, stock_cd_list = NULL,
   # Coerce stock code to 6 digit of characters
   if (!is.null(stock_cd_list) && !is.character(stock_cd_list)) {
     stock_cd_list <- stringr::str_pad(stock_cd_list, width = 6, pad = "0")
-    msg <- "Coerce stock cd to character of 6 digits if it were number"
+    msg <- "Coerce stock cd to character of 6 digits if it were number."
     warnings(msg)
   }
 
@@ -673,10 +742,10 @@ get_stock_return.gta_db <- function(stock_db, stock_cd_list = NULL,
       )
 
     msg <- sprintf(
-      "return table: %s , return field: %s, date field: %s",
+      "Get stock return: return table: %s , return field: %s, date field: %s.",
       table_name, rlang::quo_text(field_return), rlang::quo_text(field_date)
     )
-    message(msg)
+    rlang::inform(msg)
   } else {
     success <- FALSE
   }
@@ -778,7 +847,7 @@ get_market_return.gta_db <- function(stock_db,
   # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
   if (is.null(stock_db$connection)) {
-    stop("Stock db isn't connected, try to connect db again")
+    rlang::abort("Stock db isn't connected, try to connect db again")
   }
 
   success <- TRUE
@@ -820,10 +889,10 @@ get_market_return.gta_db <- function(stock_db,
       dplyr::select(date = !!field_date, market_index = !!field_return)
 
     msg <- sprintf(
-      "return table: %s , return field: %s, date field: %s",
+      "Get return data from return table: %s , return field: %s, date field: %s.",
       table_name, rlang::quo_text(field_return), rlang::quo_text(field_date)
     )
-    message(msg)
+    rlang::inform(msg)
   } else {
     success <- FALSE
   }
@@ -922,7 +991,7 @@ get_financial_report.gta_db <- function(stock_db,
   # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
   if (is.null(stock_db$connection)) {
-    stop("Stock db isn't connected, try to connect db again")
+    rlang::abort("Stock db isn't connected, try to connect db again")
   }
   assertive::assert_is_logical(consolidated)
 
@@ -1071,6 +1140,7 @@ setMethod(
            ...) {
     get_financial_report.gta_db(
       stock_db = stock_db,
+      stock_cd_list = stock_cd_list,
       statement = statement,
       consolidated = consolidated,
       period_type = period_type,
@@ -1116,7 +1186,7 @@ get_indicators_from_source.gta_db <- function(stock_db,
   # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
   if (is.null(stock_db$connection)) {
-    stop("Stock db isn't connected, try to connect db again")
+    rlang::abort("Stock db isn't connected, try to connect db again")
   }
 
   assertive::assert_is_character(indicator_source)
@@ -1202,7 +1272,7 @@ get_indicators_from_source.gta_db <- function(stock_db,
       )
       if (inherits(result, "error")) {
         msg <- sprintf(
-          "Fail to read indicator from %s:\n%s",
+          "Fail to read indicator from %s:\n%s.",
           path_indicator_source,
           conditionMessage(result)
         )
@@ -1269,7 +1339,7 @@ get_indicators_from_source.gta_db <- function(stock_db,
       if (("stkcd" %in% ds_field_names) && is.numeric(ds_indicators$stkcd)) {
         ds_indicators <- ds_indicators %>%
           dplyr::mutate(stkcd = sprintf("%06d", stkcd))
-        msg <- "Coerce stock cd to character of 6 digits if it were numeric"
+        msg <- "Coerce stock cd to character of 6 digits if it were numeric."
         rlang::warn(msg)
       }
 
@@ -1288,12 +1358,12 @@ get_indicators_from_source.gta_db <- function(stock_db,
 
           if (length(match_date_fields) > 1) {
             msg <- sprintf(
-              "More than one possible date field(%s), the first field(%s) is renamed to 'date'",
+              "More than one possible date field(%s), the first field(%s) is renamed to 'date'.",
               stringr::str_c(match_date_fields, collapse = ","),
               date_field
             )
           } else {
-            msg <- sprintf("date field(%s) is renamed to 'date'", date_field)
+            msg <- sprintf("Date field(%s) is renamed to 'date'.", date_field)
           }
 
           rlang::inform(msg)
@@ -1318,7 +1388,7 @@ get_indicators_from_source.gta_db <- function(stock_db,
         } else {
           # invalid type for date field
           msg <- sprintf(
-            "fail to translate date field of type of %s",
+            "Fail to translate date field of type of %s.",
             typeof(ds_indicators$date)
           )
           rlang::abort(msg)
@@ -1406,7 +1476,7 @@ get_indicators_from_source.gta_db <- function(stock_db,
       # message results
       if (!is.null(indicator_codes)) {
         msg <- sprintf(
-          "get indicators: %s(%s) from %s",
+          "Get indicators: %s(%s) from %s.",
           stringr::str_c(indicator_codes, collapse = ","),
           stringr::str_c(code2name(stock_db, indicator_codes, type = "field"),
             collapse = ","
@@ -1415,7 +1485,7 @@ get_indicators_from_source.gta_db <- function(stock_db,
         )
       } else {
         msg <- sprintf(
-          "get all indicators from %s",
+          "Get all indicators from %s.",
           indicator_source
         )
       }
@@ -1425,7 +1495,7 @@ get_indicators_from_source.gta_db <- function(stock_db,
 
       # some indicators miss from result dataset
       msg <- sprintf(
-        "indicators: %s aren't in the table of %s",
+        "Indicators: %s aren't in the table of %s.",
         stringr::str_c(indicator_codes[!indicators_is_existed], collapse = ","),
         indicator_source
       )
@@ -1447,12 +1517,13 @@ get_indicators_from_source.gta_db <- function(stock_db,
           tidyr::gather(
             key = "ind_code",
             value = "ind_value",
-            !!value_fields
+            !!value_fields,
+            na.rm = TRUE
           )
       } else {
         # raise error for no numeric fields
         msg <- sprintf(
-          "can't tranfrom into long-formt dataset, since no numeric field in the table of %s",
+          "Can't tranfrom into long-formt dataset, since no numeric field in the table of %s.",
           indicator_source
         )
         rlang::abort(msg)
@@ -1503,11 +1574,11 @@ save_indicators_to_source.gta_db <- function(stock_db,
   # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
   if (is.null(stock_db$connection)) {
-    stop("Stock db isn't connected, try to connect db again")
+    rlang::abort("Stock db isn't connected, try to connect db again")
   }
 
   if (missing(indicator_source) || !is.character(indicator_source)) {
-    stop("data source name must be character string")
+    rlang::abort("Data source name must be character string")
   }
 
   assertive::assert_is_data.frame(ts_indicators)
@@ -1595,7 +1666,7 @@ get_indicators.gta_db <- function(stock_db, indicator_codes, ...) {
   # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
   if (is.null(stock_db$connection)) {
-    stop("Stock db isn't connected, try to connect db again")
+    rlang::abort("Stock db isn't connected, try to connect db again")
   }
 
   assertive::assert_is_not_null(indicator_codes)
@@ -1681,7 +1752,7 @@ get_factors.gta_db <- function(stock_db, factor_codes, ...) {
   # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
   if (is.null(stock_db$connection)) {
-    stop("Stock db isn't connected, try to connect db again")
+    rlang::abort("Stock db isn't connected, try to connect db again")
   }
 
   assertive::assert_is_not_null(factor_codes)
@@ -1754,7 +1825,7 @@ get_factors_info.gta_db <- function(stock_db,
   # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
   if (is.null(stock_db$connection)) {
-    stop("Stock db isn't connected, try to connect db again")
+    rlang::abort("Stock db isn't connected, try to connect db again")
   }
 
   # get file table name mapping for referece
@@ -1773,7 +1844,8 @@ get_factors_info.gta_db <- function(stock_db,
       factor_name = factor_name,
       factor_type = factor_type,
       factor_group = factor_group,
-      factor_description = factor_description
+      factor_description = factor_description,
+      factor_lag_month = factor_lag_month
     )
 
   return(matched_factors_info)
@@ -1801,7 +1873,7 @@ get_stock_industry.gta_db <- function(stock_db, ...) {
   # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
   if (is.null(stock_db$connection)) {
-    stop("Stock db isn't connected, try to connect db again")
+    rlang::abort("Stock db isn't connected, try to connect db again")
   }
 
   # get industry info about stocks from database
@@ -1846,7 +1918,7 @@ get_spt_stocks.gta_db <- function(stock_db, ...) {
   # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
   if (is.null(stock_db$connection)) {
-    stop("Stock db isn't connected, try to connect db again")
+    rlang::abort("Stock db isn't connected, try to connect db again")
   }
 
   # get spt info about stocks from database
@@ -1943,7 +2015,7 @@ get_riskfree_rate.gta_db <- function(stock_db,
   # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
   if (is.null(stock_db$connection)) {
-    stop("Stock db isn't connected, try to connect db again")
+    rlang::abort("Stock db isn't connected, try to connect db again")
   }
 
   # get riskfree rate from database
@@ -2020,7 +2092,7 @@ dir_path_db.gta_db <- function(stock_db,
   # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
   if (is.null(stock_db$connection)) {
-    stop("Stock db isn't connected, try to connect db again")
+    rlang::abort("Stock db isn't connected, try to connect db again")
   }
 
   # get dir variable from profile
@@ -2077,7 +2149,7 @@ stock_field_list.gta_db <- function(stock_db) {
 
     field_name_list <- code_name_list(codes, names)
   } else {
-    warning("can't create code_name_list due to failing
+    rlang::warn("Can't create code_name_list due to failing
             to get data from stock db")
   }
 
@@ -2097,7 +2169,7 @@ stock_name_list.gta_db <- function(stock_db) {
     # Coerce stock code to 6 digit of characters of format of "xxxxxxx"
     if (!is.character(codes)) {
       codes <- stringr::str_pad(codes, width = 6, pad = "0")
-      msg <- "Coerce stock cd to character of 6 digits if it were number"
+      msg <- "Coerce stock cd to character of 6 digits if it were number."
       warnings(msg)
     }
 
@@ -2105,7 +2177,7 @@ stock_name_list.gta_db <- function(stock_db) {
 
     stock_name_list <- code_name_list(codes, names)
   } else {
-    warning("can't create code_name_list due to failing
+    rlang::warn("Can't create code_name_list due to failing
             to get data from stock db")
   }
 
@@ -2131,7 +2203,7 @@ industry_name_list.gta_db <- function(stock_db) {
 
     stock_name_list <- code_name_list(codes, names)
   } else {
-    warning("can't create code_name_list due to failing
+    rlang::warn("Can't create code_name_list due to failing
             to get data from stock db")
   }
 

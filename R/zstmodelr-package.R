@@ -49,7 +49,7 @@ parallel_enable <- FALSE
     cluster <<- parallel::makeCluster(parallel::detectCores() - 1)
     if (requireNamespace("doParallel", quietly = FALSE)) {
       doParallel::registerDoParallel(cluster)
-      parallel_enable <- TRUE
+      parallel_enable <<- TRUE
     } else {
       rlang::warn("parallel is needed for parallel processing,
                   please install it.\n")

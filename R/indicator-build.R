@@ -29,12 +29,11 @@ compute_indicator <- function(ts_compute_vars,
                               parallel = TRUE) {
 
   # Define method to compute single group
-  .compute_indicator_single_group <- function(ts_compute_vars,
-                                              compute_fun,
-                                              ...,
-                                              date_index_field = c("date"),
-                                              key_fields = NULL) {
-
+  .compute_indicator_single <- function(ts_compute_vars,
+                                          compute_fun,
+                                          ...,
+                                          date_index_field = c("date"),
+                                          key_fields = NULL) {
     # validate params
     assertive::assert_is_data.frame(ts_compute_vars)
     assertive::assert_is_function(compute_fun)
@@ -73,9 +72,7 @@ compute_indicator <- function(ts_compute_vars,
     return(ts_indicator)
   }
 
-
   # -- Main Function --
-
   # validate params
   assertive::assert_is_data.frame(ts_compute_vars)
   assertive::assert_is_function(compute_fun)
@@ -92,7 +89,7 @@ compute_indicator <- function(ts_compute_vars,
   # Work for single/multi group dataset
   if (is.null(key_fields)) {
     # For single group
-    ds_indicator <- .compute_indicator_single_group(
+    ds_indicator <- .compute_indicator_single(
       ts_compute_vars,
       compute_fun = compute_fun,
       ...,
@@ -111,7 +108,7 @@ compute_indicator <- function(ts_compute_vars,
         ds_indicator <- plyr::ddply(
           ts_compute_vars,
           .variables = key_fields,
-          .fun = .compute_indicator_single_group,
+          .fun = .compute_indicator_single,
           compute_fun = compute_fun,
           ...,
           date_index_field = date_index_field,
@@ -149,7 +146,7 @@ compute_indicator <- function(ts_compute_vars,
 #' @param debug     A logic to determine whether to turn on debug in creating
 #'  indicator. Default FALSE means not to use debug.
 #' @param date_index_field  Name of date index field of ts_def_vars,
-#'  default 'date'.
+#'   default 'date'.
 #' @param key_fields    A character vector of key fields, which identify unique
 #'   observation in each date. Default NULL means to not divide data into
 #'   groups.
@@ -161,7 +158,6 @@ compute_indicator <- function(ts_compute_vars,
 #'
 #' @return A dataframe of new indicator timeseries if succeed, otherwise NULL.
 #'
-#' @export
 #' @examples
 #' \dontrun{
 #'
@@ -195,7 +191,7 @@ compute_indicator <- function(ts_compute_vars,
 #'   parallel = TRUE
 #' )
 #' }
-#'
+#' @export
 create_indicator <- function(ts_def_vars,
                              ind_def_fun,
                              ...,
@@ -261,7 +257,6 @@ create_indicator <- function(ts_def_vars,
   return(ds_new_indicator)
 }
 
-
 #' Modify indicator to add new attribute
 #'
 #' Use modifying function to modify indicator timeseries,
@@ -270,10 +265,10 @@ create_indicator <- function(ts_def_vars,
 #' @param ts_indicator A dataframe of indicator timeseries to modify.
 #' @param modify_fun   A function of modify indicator.
 #' @param ...          Params to modify_fun.
-#' @param replace_exist      A logical to determine whether to replace existed
-#'  attribute fields. Default FALSE means to not replace existed field.
+#' @param replace_exist   A logic flag to determine whether to replace existed
+#'   attribute fields. Default FALSE means to not replace existed field.
 #' @param date_index_field  Name of date index field of ts_indicator,
-#'  default 'date'.
+#'   default 'date'.
 #' @param key_fields    A character vector of key fields, which identify unique
 #'   observation in each date. Default NULL means to not divide data into
 #'   groups.
@@ -286,7 +281,6 @@ create_indicator <- function(ts_def_vars,
 #' @return A dataframe of modified indicator timeseries if succeed, otherwise NULL.
 #'
 #' @examples
-#'
 #' \dontrun{
 #'
 #' # modify ts_indicator with customized ind_attr_def_fun
@@ -323,7 +317,6 @@ create_indicator <- function(ts_def_vars,
 #'   parallel = FALSE
 #' )
 #' }
-#'
 #' @export
 modify_indicator <- function(ts_indicator,
                              modify_fun,
@@ -378,19 +371,19 @@ modify_indicator <- function(ts_indicator,
           )
 
         msg <- sprintf(
-          "attribute(%s) has existed, and replace by new value.",
+          "Attribute(%s) has existed, but replaced by new value.",
           attr_name
         )
-        rlang::warn(msg)
+        rlang::inform(msg)
       } else {
         # not replace exsisted attributee
         ds_modify_indicator <- ts_indicator
 
         msg <- sprintf(
-          "Attribute(%s) has existed, and old attribute will remains.",
+          "Attribute(%s) has existed, and old value will remain.",
           attr_name
         )
-        rlang::warn(msg)
+        rlang::inform(msg)
       }
     } else {
       # add new attribute

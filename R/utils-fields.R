@@ -11,7 +11,7 @@
 #'
 #' @return  Invisible NULL if succeed, otherwise raise error.
 #'
-#' @export
+#' @noRd
 verify_fields <- function(data, fields) {
 
   # validate params
@@ -45,18 +45,19 @@ verify_fields <- function(data, fields) {
 #'
 #' @param data     A vector of date/timestamps.
 #' @param expect_type A character of type to test, e.g. "numeric", "integer",
-#' "double", "character", "date", "factor", "list", "NA"
-#' @param negate  A logical to negate expect_type of not, Default FALSE means
-#'  not to negate the expect_type.
+#'   "double", "character", "date", "factor", "list", "NA"
+#' @param negate  A logic flag of whether to negate expect_type of not,
+#'   Default FALSE means
+#'   not to negate the expect_type.
 #' @param predicate_fun  A function used as testing, return TRUE if matched.
-#'  Default NULL means not to use predicate_fun for testing.
+#'   Default NULL means not to use predicate_fun for testing.
 #' @param ... Params to predicate_fun.
 #'
 #'
 #' @family utils_fields
 #' @return  return a vectors of logical with same length of names of dataframe.
 #'
-#' @export
+#' @noRd
 is_type_field <- function(data, expect_type = c(
                             "numeric",
                             "integer",
@@ -133,11 +134,11 @@ is_type_field <- function(data, expect_type = c(
 #' @inheritParams is_type_field
 #'
 #' @return A vectors of field names with specified type. If no field is
-#' expect type , return a character(0).
+#'   expect type, return a character(0).
 #'
 #' @family utils_fields
 #'
-#' @export
+#' @noRd
 expect_type_fields <- function(data, expect_type = c(
                                  "numeric",
                                  "integer",

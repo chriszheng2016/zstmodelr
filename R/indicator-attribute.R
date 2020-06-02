@@ -87,9 +87,9 @@ NULL
 #' Add customized attribute to indicator timeseries of stocks
 #' @param ts_indicators   A dataframe of indicator timeseries.
 #' @param new_attr_def   A function to compute attribute value for stock
-#'  indicator.
+#'   indicator.
 #' @param parallel   A logic to determine whether to use parallel processing.
-#'  Default TRUE means to use parallel processing.
+#'   Default TRUE means to use parallel processing.
 #'
 #' @describeIn indicator_attribute  add customized attribute to indicators
 #'   timeseries of stocks.

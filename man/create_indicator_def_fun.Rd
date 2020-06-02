@@ -8,7 +8,8 @@ create_indicator_def_fun(
   indicator_code,
   indicator_expr,
   rolly_window = 0,
-  period = c("day", "month", "quarter", "year")
+  period = c("day", "month", "quarter", "year"),
+  fillna_method = c("ffill", "bfill", "nfill")
 )
 }
 \arguments{
@@ -21,6 +22,10 @@ no rolling.}
 
 \item{period}{A periodicity of indicator, e.g. "day", "month",
 "quarter", "year".}
+
+\item{fillna_method}{A method to fill NA , e.g. "ffill", "bfill", "nfill".
+Default "ffill" means to use value before NAs to fill NAs; "bfill" means
+to use data behind NAs to fill NAs; "nfill" means to don't fill NAs.}
 }
 \value{
 A function of indicator definition to compute indicator if succeed,
@@ -39,6 +44,7 @@ Other indicator define functions:
 \code{\link{ind_attr_def_indcd}()},
 \code{\link{ind_attr_def_trdstat}()},
 \code{\link{parse_indicator_vars}()},
-\code{\link{prioritize_indicator_defs}()}
+\code{\link{prioritize_indicator_defs}()},
+\code{\link{related_indicator_defs}()}
 }
 \concept{indicator define functions}

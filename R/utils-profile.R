@@ -13,12 +13,12 @@ NULL
 .PACKAGE_NAME <- "zstmodelr"
 .PROFILE_DIR <- "etc"
 
-# get full path of profile
+# Get full path of profile
 #' @param profile_name  A character of profile name, e.g. .GTA_PROFILE_FILE
-#' or "gta_profile.xlsx".
+#'   or "gta_profile.xlsx".
 #' @param profile_dir   A character name of dir where profile is located.
-#' Default .PROFILE_DIR is etc in package directory.
-#' @return \strong{get_profile_path}: A path of profile if succeed, otherwise "".
+#'   Default .PROFILE_DIR is etc in package directory.
+#' @return \strong{get_profile_path()}: A path of profile if succeed, otherwise "".
 #' @describeIn utils_profile  get full path of profile.
 #' @export
 get_profile_path <- function(profile_name, profile_dir = .PROFILE_DIR) {
@@ -40,7 +40,7 @@ get_profile_path <- function(profile_name, profile_dir = .PROFILE_DIR) {
 }
 
 # Get table name value from profile of database
-#' @param profile_path path of profile to get data from.
+#' @param profile_path Path of profile to get data from.
 #' @param variable A character of name of variable to get.
 #' @return \strong{others}: A dataframe of setting if succeed, otherwise NULL.
 #' @describeIn utils_profile  get table name value from profile of database.
@@ -66,13 +66,14 @@ profile_get_varible_setting <- function(profile_path, variable) {
 
 # Get info of indicators from profile of database
 #' @param factor_codes  A character vector of factor codes to fetch.
-#' Default NULL means to fetch all factors.
+#'   Default NULL means to fetch all factors.
 #' @param factor_groups A character vector of factor groups to fetch.
-#' Default NULL means to fetch all factor groups.
+#'   Default NULL means to fetch all factor groups.
 #'
 #' @describeIn utils_profile  get table name value from profile of database.
 #' @export
-profile_get_factors <- function(profile_path, factor_codes = NULL,
+profile_get_factors <- function(profile_path,
+                                factor_codes = NULL,
                                 factor_groups = NULL) {
   stopifnot(!is.null(profile_path), is.character(profile_path))
 
@@ -125,6 +126,10 @@ profile_get_factors <- function(profile_path, factor_codes = NULL,
     }
   }
 
+  # output only active factor
+  matched_factors <- matched_factors %>%
+    dplyr::filter(is_active == TRUE)
+
   return(matched_factors)
 }
 
@@ -148,7 +153,7 @@ profile_get_datasource_files <- function(profile_path) {
 
 # Get info of indicators from profile of database
 #' @param indicator_codes  A character vector of indicator codes to fetch.
-#'  Default NULL means to fetch all indicators.
+#'   Default NULL means to fetch all indicators.
 #' @describeIn utils_profile  get info of indicators from profile of database.
 #' @export
 profile_get_indicators <- function(profile_path, indicator_codes = NULL) {
@@ -193,7 +198,7 @@ profile_get_indicators <- function(profile_path, indicator_codes = NULL) {
 
 # Get info of customized indicators from profile of database
 #' @describeIn utils_profile  get info of customized indicators from profile
-#'  of database.
+#'   of database.
 #' @export
 profile_get_customized_indicators <- function(profile_path) {
   stopifnot(!is.null(profile_path), is.character(profile_path))

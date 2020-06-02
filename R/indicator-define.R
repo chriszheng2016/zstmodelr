@@ -13,7 +13,7 @@
 #' @family indicator define functions
 #'
 #' @return A dataframe of definitions of customized indicators if succeed,
-#' otherwise NULL.
+#'   otherwise NULL.
 #'
 #' @export
 # S3 generic definition
@@ -36,13 +36,13 @@ setGeneric(
 #'
 #' @param stock_db         A stock database object to operate.
 #' @param indicator_defs   A dataframe of indicator definitions, which require
-#'  vars to compute indicators.
+#'   vars to compute indicators.
 #' @param ... Extra arguments to be passed to methods.
 #'
 #' @family indicator define functions
 #'
 #' @return A dataframe of input vars for computing customized indicators
-#' if succeed, otherwise NULL.
+#'   if succeed, otherwise NULL.
 #'
 #' @export
 # S3 generic definition
@@ -96,7 +96,7 @@ setGeneric(
 #' @family indicator define functions
 #'
 #' @return A function of attribute definition of industry code if succeed,
-#'  otherwise NULL.
+#'   otherwise NULL.
 #'
 #' @export
 # S3 generic definition
@@ -123,7 +123,7 @@ setGeneric(
 #' @family indicator define functions
 #'
 #' @return A function of attribute definition of trading status if succeed,
-#'  otherwise NULL.
+#'   otherwise NULL.
 #'
 #' @export
 # S3 generic definition
@@ -155,12 +155,15 @@ setGeneric(
 #'  no rolling.
 #' @param period   A periodicity of indicator, e.g. "day", "month",
 #'    "quarter", "year".
+#' @param fillna_method   A method to fill NA , e.g. "ffill", "bfill", "nfill".
+#'   Default "ffill" means to use value before NAs to fill NAs; "bfill" means
+#'   to use data behind NAs to fill NAs; "nfill" means to don't fill NAs.
 #'
 #'
 #' @family indicator define functions
 #'
 #' @return A function of indicator definition to compute indicator if succeed,
-#' otherwise NULL.
+#'   otherwise NULL.
 #'
 #' @export
 create_indicator_def_fun <- function(indicator_code,
@@ -169,6 +172,9 @@ create_indicator_def_fun <- function(indicator_code,
                                      period = c(
                                        "day", "month",
                                        "quarter", "year"
+                                     ),
+                                     fillna_method = c(
+                                       "ffill", "bfill", "nfill"
                                      )) {
 
   # validate params
@@ -210,37 +216,49 @@ create_indicator_def_fun <- function(indicator_code,
 
   # define ds_var process
   .process_vars <- function(ds_vars,
-                            date_index_field = c("date"),
-                            re_freq = c(
-                              "day", "month",
-                              "quarter", "year"
-                            )) {
+                              date_index_field = c("date"),
+                              key_fields = NULL,
+                              re_freq = c(
+                                "day", "month",
+                                "quarter", "year"
+                              ),
+                              fillna_method = c(
+                                "ffill", "bfill", "nfill"
+                              )) {
 
     # validate params
     assertive::assert_is_data.frame(ds_vars)
 
-    # ensure all import fields are existed
-    verify_fields(ds_vars, c("ind_code", "ind_value"))
+    # ensure all import fields exist
+    verify_fields(ds_vars, c(
+      date_index_field, key_fields,
+      "period", "ind_code", "ind_value"
+    ))
 
 
     # re-group vars by period
     ds_vars_by_period <- ds_vars %>%
+      dplyr::select(
+        !!date_index_field, !!key_fields,
+        period, ind_code, ind_value
+      ) %>%
       tidyr::spread(key = "ind_code", value = "ind_value") %>%
       dplyr::group_by(period) %>%
       tidyr::nest()
 
     # re-freq vars in different priods
     re_freq <- match.arg(re_freq)
+    fillna_method <- match.arg(fillna_method)
     ds_vars_by_period <- ds_vars_by_period %>%
       dplyr::mutate(
         refreq_data =
           purrr::map(data,
-            ts_resample,
+            ts_asfreq,
             freq_rule = re_freq,
-            fillna_method = "ffill",
-            agg_method = mean,
-            date_index_field = c("date"),
-            key_fields = NULL
+            fillna_method = fillna_method,
+            date_index_field = date_index_field,
+            key_fields = key_fields,
+            parallel = FALSE
           )
       )
 
@@ -279,7 +297,12 @@ create_indicator_def_fun <- function(indicator_code,
     verify_fields(ds_vars, c(date_index_field, key_fields))
 
     # process ds_vars
-    ds_vars <- .process_vars(ds_vars, re_freq = period)
+    ds_vars <- .process_vars(ds_vars,
+      date_index_field = date_index_field,
+      key_fields = key_fields,
+      re_freq = period,
+      fillna_method = fillna_method
+    )
 
     # Evaluate exprs in ds_vars
     if (rolly_window > 0) {
@@ -427,8 +450,8 @@ create_attribute_def_fun <- function(attr_name,
 #'
 #' @family indicator define functions
 #'
-#' @return A dataframe of definitions of prioritized indicators if succeed,
-#'  otherwise NULL.
+#' @return A dataframe of definitions of prioritized indicators.
+#'   Raise error if anything goes wrong.
 #' @export
 prioritize_indicator_defs <- function(ds_indicator_defs) {
 
@@ -490,25 +513,7 @@ prioritize_indicator_defs <- function(ds_indicator_defs) {
     return(independ_indicators)
   }
 
-  # function to clean ind_defs_trees to ensure indicators are ok
-  .clean_ind_defs_trees <- function(ind_defs_trees) {
-
-    # validate params
-    assertive::assert_is_data.frame(ind_defs_trees)
-
-    # validate indicators in defs_trees
-    clean_defs_trees <- validate_indicators(ind_defs_trees)
-
-    # check duplicated indicators in defs_trees
-    clean_defs_trees <- check_duplicated_indicators(clean_defs_trees)
-
-    # check loop-dependency among indicators
-    clean_defs_trees <- check_loop_depdency(clean_defs_trees)
-
-    return(clean_defs_trees)
-  }
-
-  # main body of function ---
+  # main body of function
 
   # validate params
   assertive::assert_is_data.frame(ds_indicator_defs)
@@ -516,44 +521,63 @@ prioritize_indicator_defs <- function(ds_indicator_defs) {
   # build defs_trees to parse dependency among indicators
   ind_defs_trees <- create_ind_defs_trees(ds_indicator_defs)
 
+  # clean defs_defs
+  ind_defs_trees <- clean_ind_defs_trees(ind_defs_trees)
+
   # set priority for indicators according to dependency
   ds_indicator_defs_priority <- ds_indicator_defs %>%
     dplyr::mutate(priority = NA)
   priority <- 1
-  while (NROW(ind_defs_trees) > 0) {
 
-    # clean ind_defs trees
-    ind_defs_trees <- .clean_ind_defs_trees(ind_defs_trees)
+  # go through each def tree in def_trees to find proper priority.
+  for (i in seq_len(NROW(ind_defs_trees))) {
+    defs_tree_node <- ind_defs_trees[i, ]
 
-    # find indenpendent indicators of head tree of def_trees
-    root_defs_tree <- ind_defs_trees[1, ]
-    root_ind_code <- root_defs_tree$ind_code
-    independ_indicators <- .find_independ_indcators(root_ind_code,
-      ind_defs_trees = ind_defs_trees
-    )
+    # set priority for each target tree in ind_def_trees
+    if (defs_tree_node$is_root_node) {
 
-    # set priority for independent indicator
-    ds_indicator_defs_priority$priority[ds_indicator_defs_priority$ind_code
-      %in% independ_indicators] <- priority
+      # get a target tree for setting priority
+      target_ind_defs_tree <- ind_defs_trees[i:NROW(ind_defs_trees), ]
+      target_ind_defs_tree <- as_ind_defs_trees(target_ind_defs_tree)
 
-    # reset priority for next indicator
-    if (root_ind_code %in% independ_indicators) {
-      # when indicator of head_defs_tree is independent indicator,
-      # it means analyzing head_defs_tree has finished, we should
-      # move to next head_defs_tree and reset priority to 1
-      priority <- 1
-    } else {
-      # otherwise, we still in analyzing sub-tree of head_defs_tree,
-      # move priority to next level
-      priority <- priority + 1
+      # set priority for the targt tree
+      while (NROW(target_ind_defs_tree) > 0) {
+
+        # clean target ind_defs trees
+        target_ind_defs_tree <- clean_ind_defs_trees(target_ind_defs_tree)
+
+        # find indenpendent indicators from root node of target tree of def_trees
+        defs_tree <- target_ind_defs_tree[1, ]
+        root_ind_code <- defs_tree$ind_code
+        independ_indicators <- .find_independ_indcators(root_ind_code,
+          ind_defs_trees = target_ind_defs_tree
+        )
+
+        # set priority for independent indicator
+        ds_indicator_defs_priority$priority[ds_indicator_defs_priority$ind_code
+          %in% independ_indicators] <- priority
+
+        # reset priority for next indicator
+        if (root_ind_code %in% independ_indicators) {
+          # when indicator of head_defs_tree is independent indicator,
+          # it means analyzing head_defs_tree has finished, we should
+          # move to next head_defs_tree and reset priority to 1
+          priority <- 1
+        } else {
+          # otherwise, we still in analyzing sub-tree of head_defs_tree,
+          # move priority to next level
+          priority <- priority + 1
+        }
+
+        # get new trees by removing found independent indicators
+        target_ind_defs_tree <- target_ind_defs_tree %>%
+          dplyr::filter(!(ind_code %in% independ_indicators))
+
+        target_ind_defs_tree <- as_ind_defs_trees(target_ind_defs_tree)
+      }
     }
-
-    # get new trees by removing found independent indicators
-    ind_defs_trees <- ind_defs_trees %>%
-      dplyr::filter(!(ind_code %in% independ_indicators))
-
-    ind_defs_trees <- as_ind_defs_trees(ind_defs_trees)
   }
+
 
   # re-order and re-group indicator defs by priority
   ds_indicator_defs_priority <- ds_indicator_defs_priority %>%
@@ -566,6 +590,123 @@ prioritize_indicator_defs <- function(ds_indicator_defs) {
   return(ds_indicator_defs_priority)
 }
 
+
+#' Get related indicator_defs of specified indicators
+#'
+#' Get defs of related indicators of specified indicators by analyzing
+#' dependency among indicators
+#'
+#' @param ds_indicator_defs   A dataframe of indicators definition info.
+#'
+#' @param indicator_codes     A character vector of indicator codes.
+#'
+#'
+#' @family indicator define functions
+#'
+#' @return A dataframe of definitions of related indicators. Raise error if
+#'   anything goes wrong.
+#' @export
+related_indicator_defs <- function(ds_indicator_defs,
+                                   indicator_codes) {
+
+  # function to find all indicators related to a indicator recursively
+  .find_related_indcators <- function(ind_code, ind_defs_trees) {
+
+    # validate params
+    assertive::assert_is_character(ind_code)
+    assertive::assert_is_data.frame(ind_defs_trees)
+
+    related_indicators <- character(0)
+
+    # find ind_def node matched by ind_code
+    ind_def <- ind_defs_trees %>%
+      dplyr::filter(ind_code == !!ind_code)
+    if (NROW(ind_def) == 1) {
+
+      # find current indicator def
+      depend_indicators <- unique(ind_def$depend_ind_codes[[1]])
+
+      # judge whether ind_def is independent or not
+      ind_def_is_independent <- is.null(depend_indicators) ||
+        (length(depend_indicators) == 0)
+
+      # process by its dependency
+      if (ind_def_is_independent) {
+        # current indicator is independent indicator:
+        # the indepent indicator is only related indicator
+        related_indicators <- ind_def$ind_code
+      } else {
+        # current indicator is a dependent indicator:
+        # use recursion to find other related indicators of parent indicators
+
+        # get dependent indicators defs of current indicator
+        depend_indicators_def_trees <- ind_defs_trees %>%
+          dplyr::filter(ind_code %in% depend_indicators)
+
+        # find related indicators of dependent indicators of current indicator
+        related_indicators_list <- purrr::map(depend_indicators_def_trees$ind_code,
+          .find_related_indcators,
+          ind_defs_trees = ind_defs_trees
+        )
+
+        related_indicators <- purrr::flatten_chr(related_indicators_list)
+
+        # combine current_indicator and its related indicators
+        related_indicators <- c(ind_code, related_indicators)
+      }
+    } else {
+      # find zero or more than one ind_code in ind_defs_trees
+      msg <- sprintf(
+        "There is %d of %s in ind_defs_trees, not unique one",
+        NROW(ind_def),
+        ind_code
+      )
+      rlang::abort(msg)
+    }
+
+    # only return unqiue indicators
+    related_indicators <- unique(related_indicators)
+
+    return(related_indicators)
+  }
+
+  # main body of function
+
+  # validate params
+  assertive::assert_is_data.frame(ds_indicator_defs)
+  assertive::assert_is_character(indicator_codes)
+
+  # check specifed indicators existed in defs
+  indicator_exsited <- indicator_codes %in% ds_indicator_defs$ind_code
+  if (any(!indicator_exsited)) {
+    msg <- sprintf(
+      "There is no indicator definition for %s.",
+      paste0(indicator_codes[!indicator_exsited], collapse = ",")
+    )
+    rlang::abort(msg)
+  }
+
+  # build defs_trees to parse dependency among indicators
+  ind_defs_trees <- create_ind_defs_trees(ds_indicator_defs)
+
+  # clean defs_defs
+  ind_defs_trees <- clean_ind_defs_trees(ind_defs_trees)
+
+  # go through all indicators to find out all related indicators
+  all_related_ind_codes <- NULL
+  for (ind_code in indicator_codes) {
+    related_ind_codes <- .find_related_indcators(ind_code, ind_defs_trees)
+    all_related_ind_codes <- unique(c(all_related_ind_codes, related_ind_codes))
+  }
+
+  # filter ind_defs by related indicators
+  all_related_indicator_defs <- ds_indicator_defs %>%
+    dplyr::filter(ind_code %in% all_related_ind_codes)
+
+  return(all_related_indicator_defs)
+}
+
+
 # Internal functions for indicator define  -------------------------------
 
 # Create tress of indicator defs
@@ -577,15 +718,17 @@ create_ind_defs_trees <- function(ds_indicator_defs) {
   # build defs_trees to parse dependency among indicators
   if (all(c("ind_code", "ind_vars") %in% names(ds_indicator_defs))) {
     defs_trees_info <- ds_indicator_defs %>%
-      dplyr::select(ind_code, depend_ind_codes = ind_vars)
-  } else if (all(c("ind_code", "depend_ind_codes") %in% names(ds_indicator_defs))) {
+      dplyr::select(ind_code, depend_ind_codes = ind_vars) %>%
+      dplyr::mutate(is_root_node = NA)
+  } else if (all(c("ind_code", "depend_ind_codes", "is_root_node") %in%
+    names(ds_indicator_defs))) {
     defs_trees_info <- ds_indicator_defs
   } else {
     msg <- "Invalid data.frame of indicators_defs."
     rlang::abort(msg)
   }
 
-  # creaet new class
+  # create new class
   defs_trees <- tibble::new_tibble(
     defs_trees_info,
     nrow = nrow(defs_trees_info),
@@ -606,6 +749,24 @@ as_ind_defs_trees <- function(x) {
   }
 
   return(ind_defs_trees)
+}
+
+# Clean ind_defs_trees to ensure indicators are ok
+clean_ind_defs_trees <- function(ind_defs_trees) {
+
+  # validate params
+  assertive::assert_is_data.frame(ind_defs_trees)
+
+  # validate indicators in defs_trees
+  clean_defs_trees <- validate_indicators(ind_defs_trees)
+
+  # check duplicated indicators in defs_trees
+  clean_defs_trees <- check_duplicated_indicators(clean_defs_trees)
+
+  # check loop-dependency among indicators
+  clean_defs_trees <- check_loop_depdency(clean_defs_trees)
+
+  return(clean_defs_trees)
 }
 
 # Validate indicators to ensure every indicator depends on indicators
@@ -699,9 +860,8 @@ check_loop_depdency <- function(ind_defs_trees) {
     # No loop dependency among indicators
     # put root indicators in the front of defs_tree
     pass_defs_trees <- ind_defs_trees %>%
-      dplyr::mutate(is_root_indicator = (ind_code %in% root_indicators)) %>%
-      dplyr::arrange(desc(is_root_indicator)) %>%
-      dplyr::select(-is_root_indicator)
+      dplyr::mutate(is_root_node = (ind_code %in% root_indicators)) %>%
+      dplyr::arrange(desc(is_root_node))
   } else {
     # found loop dependency
     msg <- sprintf(

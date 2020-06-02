@@ -73,7 +73,6 @@ ts_indicator <- create_indicator(
   parallel = TRUE
 )
 }
-
 }
 \seealso{
 Other indicator build functions: 

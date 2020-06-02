@@ -42,6 +42,7 @@ Other stock_db generics:
 \code{\link{get_riskfree_rate}()},
 \code{\link{get_stock_dataset}()},
 \code{\link{get_stock_industry}()},
+\code{\link{get_stock_info}()},
 \code{\link{get_stock_return}()},
 \code{\link{get_table_dataset}()},
 \code{\link{init_stock_db}()},

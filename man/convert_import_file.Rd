@@ -30,7 +30,7 @@ input file as working dir, default NULL.}
 in data file, by default 2L, which means first line is header and actual
 data starts from second lines.}
 
-\item{ignore_problems}{A logical to determine whether to ignore problems
+\item{ignore_problems}{A logic flag to determine whether to ignore problems
 when covert data, if TRUE, continue to import data but log problems into
 log file, otherwise abort reading process.  By default TRUE.}
 

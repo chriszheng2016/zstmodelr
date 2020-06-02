@@ -14,7 +14,7 @@
 #' @family data management
 #'
 #' @return A dataframe of info about importing raw data if succeed,
-#' otherwise NULL.
+#'   otherwise NULL.
 #'
 #' @export
 # S3 generic definition
@@ -80,10 +80,10 @@ setGeneric(
 #'   only update on these tables with recording failure in log file.
 #'   By default NULL.
 #' @param log_file_prefix  A character of log file prefix to name log file.
-#'    Log file is named as format of "log_file_prefix_XXXX_(current).csv"
-#'  Default is "update_db_log".
+#'   Log file is named as format of "log_file_prefix_XXXX_(current).csv"
+#'   Default is "update_db_log".
 #' @param log_dir Path to save updating log file. NULL means to use "./" as
-#'  log dir. Default "./log".
+#'   log dir. Default "./log".
 #' @param ... Extra arguments to be passed to methods.
 #'
 #' @family data management
@@ -203,10 +203,10 @@ setGeneric(
 #'   only process on these input_files with recording failure in log file.
 #'   By default NULL.
 #' @param log_file_prefix  A character of log file prefix to name log file.
-#'    Log file is named as format of "log_file_prefix_XXXX_(current).csv"
-#'  Default is "update_db_log".
+#'   Log file is named as format of "log_file_prefix_XXXX_(current).csv"
+#'   Default is "update_db_log".
 #' @param log_dir Path to save process log file. NULL means to use "./"
-#'  as log dir. Default "./log".
+#'   as log dir. Default "./log".
 #' @param ... Extra arguments to be passed to methods.
 #'
 #' @family data management
@@ -224,11 +224,11 @@ setGeneric(
   name = "process_files",
   signature = c("stock_db"),
   def = process_files <- function(stock_db,
-                                  data_source = get_datasource(stock_db),
-                                  retry_log = NULL,
-                                  log_file_prefix = "process_files_log",
-                                  log_dir = "./log",
-                                  ...) {
+                                    data_source = get_datasource(stock_db),
+                                    retry_log = NULL,
+                                    log_file_prefix = "process_files_log",
+                                    log_dir = "./log",
+                                    ...) {
     standardGeneric("process_files")
   }
 )
@@ -243,13 +243,13 @@ setGeneric(
 #' @param input_file  A name or a path of input data file.
 #' @param input_type  A character of input file format, e.g. "txt", "csv".
 #' @param input_dir   A path of working dir of input file, if NULL, use dir of
-#' input file as working dir, default NULL.
+#'   input file as working dir, default NULL.
 #' @param start_index A integer of start index of first line of actual records
-#'  in data file, by default 2L, which means first line is header and actual
-#'  data starts from second lines.
-#' @param ignore_problems A logical to determine whether to ignore problems
-#'  when covert data, if TRUE, continue to import data but log problems into
-#'  log file, otherwise abort reading process.  By default TRUE.
+#'   in data file, by default 2L, which means first line is header and actual
+#'   data starts from second lines.
+#' @param ignore_problems A logic flag to determine whether to ignore problems
+#'   when covert data, if TRUE, continue to import data but log problems into
+#'   log file, otherwise abort reading process.  By default TRUE.
 #' @param log_dir   Path of log dir for saving problem log file,
 #'   by default"./log", if the log path doesn't existed, it  will be created.
 #'
@@ -395,7 +395,7 @@ read_import_file <- function(input_file,
 #' @param output_file  A name or a path of input data file.
 #' @param output_type  A character of output file format, e.g. "txt", "csv".
 #' @param output_dir A path of working dir of output file, if NULL, use dir
-#'  of output file as working dir, by default NULL,
+#'   of output file as working dir, by default NULL,
 #'
 #' @family data management
 #'
@@ -594,7 +594,7 @@ convert_import_file <- function(input_file,
 #'
 #' @param ds_financial_report   A data.frame of financial report to convert.
 #' @param date_index_field  A character name of date index field of dataframe of
-#'  financial report, default 'Accper'.
+#'   financial report, default 'Accper'.
 #' @param key_fields    A character vector of key fields, which identify unique
 #'   observation in each date, default c("Stkcd", "Typrep").
 #' @param field_suffix A character suffix for result fields, default is "ttm".
@@ -604,7 +604,7 @@ convert_import_file <- function(input_file,
 #' @family data management
 #'
 #' @return A dataframe of financial report of TTM format if succeed,
-#'  otherwise NULL.
+#'   otherwise NULL.
 #'
 #' @export
 ttm_financial_report <- function(ds_financial_report,

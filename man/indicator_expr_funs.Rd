@@ -19,7 +19,7 @@ Ratio(x_numerator, y_denominator)
 
 Demean(x)
 
-Quarter_TTM(date, x)
+Quarter_TTM(date, x, accumulated = TRUE)
 
 Beta(y_dependent, x_independent)
 
@@ -39,6 +39,9 @@ RiskFreeRate(
 \item{y_denominator}{A non-zero numeric as denominator of ratio.}
 
 \item{date}{A date vector or array.}
+
+\item{accumulated}{A logic about whether specified data series is
+accumulated or not. Default is TRUE.}
 
 \item{y_dependent}{A dependent variable.}
 

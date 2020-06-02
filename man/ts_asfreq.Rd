@@ -31,13 +31,15 @@ ts_asfreq(
 )
 }
 \arguments{
-\item{ts_dataset}{A timeseries of tibble/timeseries.#}
+\item{ts_dataset}{A timeseries of tibble/timeSeries.}
 
-\item{freq_rule}{The offset string or object representing target conversion,
+\item{freq_rule}{A offset string or object representing target conversion,
 e.g. "day", "month", "quarter", "year", default "day".}
 
-\item{fillna_method}{Method to fill holes in reindexed Series, e.g.
-"nfill", "bfill","ffill", default nfill(fill with NA).}
+\item{fillna_method}{A method to fill NAs in reindexed Series, e.g.
+"nfill", "ffill", "bfill" . Default "nfill" don't fill NAs; "ffill" means to
+use data before NAs to fill NAs; "bfill" means to use data after NAs to fill
+NAs.}
 
 \item{...}{Extra arguments to be passed to methods.}
 
