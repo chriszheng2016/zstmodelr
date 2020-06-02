@@ -19,15 +19,17 @@ build_report(
 
 \item{report_params}{A list of report params, by default NULL.}
 
-\item{output_format}{Output file format i.e. "html_document","pdf",
-by default "html_document".}
+\item{output_format}{Output file format i.e. "html_document","pdf_document",
+"word_document", "rticles::ctex". Default "html_document".}
 
-\item{output_sn}{NULL, serial number or id for output file.}
+\item{output_sn}{Serial number or id for output file. Default NULL}
 
-\item{output_dir}{Dir to save output file, i.e. "output", if NULL,
-save in directory of template file, otherwise in output_dir.}
+\item{output_dir}{Path of dir to save output file. Default "output" means to
+save file in output in current dir. If NULL save in directory of template
+file, otherwise in output_dir}
 
-\item{quiet}{TRUE to suppress printing of the pandoc command line.}
+\item{quiet}{A logic flag of whether to suppress printing of the pandoc
+command line.}
 
 \item{...}{Arguments passed to rmarkdown::render.}
 }

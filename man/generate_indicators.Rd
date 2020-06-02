@@ -8,6 +8,7 @@ generate_indicators(
   stock_db,
   ds_indicator_defs,
   validate_def = FALSE,
+  validate_stkcds = c("600031", "000157", "600066", "000550"),
   parallel = TRUE,
   log_file_prefix = "generate_indicator_log",
   log_dir = "./log"
@@ -18,9 +19,12 @@ generate_indicators(
 
 \item{ds_indicator_defs}{A dataframe of indicator definition to generate.}
 
-\item{validate_def}{A logical determine whether to validate indicator
+\item{validate_def}{A logic flag to determine whether to validate indicator
 definition or not.Default FALSE, means to produce indicators on full
 dataset, TRUE means to validate definition on small datasets.}
+
+\item{validate_stkcds}{A character vector of stock codes used for validating
+indicator definition.}
 
 \item{parallel}{A logic to determine whether to use parallel processing.
 Default TRUE means to use parallel processing.}
@@ -49,6 +53,7 @@ dataset from stock_db, which will take shorter time.
 }
 \seealso{
 Other indicator generate functions: 
+\code{\link{backup_indicators}()},
 \code{\link{delete_indicators}()}
 }
 \concept{indicator generate functions}

@@ -20,6 +20,7 @@ built indicator files.
 }
 \seealso{
 Other indicator generate functions: 
+\code{\link{backup_indicators}()},
 \code{\link{generate_indicators}()}
 }
 \concept{indicator generate functions}

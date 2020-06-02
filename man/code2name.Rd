@@ -11,7 +11,7 @@ code2name(x, code, ...)
 
 \S4method{code2name}{code_name_list}(x, code, ...)
 
-\S4method{code2name}{gta_db}(x, code, ...)
+\S4method{code2name}{gta_db}(x, code, type = c("stock", "field", "industry"), ...)
 }
 \arguments{
 \item{x}{A object containing code/name information.}
@@ -19,6 +19,9 @@ code2name(x, code, ...)
 \item{code}{A code or a vector of codes to be translated.}
 
 \item{...}{Extra arguments to be passed to methods.}
+
+\item{type}{A character of conversion type, e.g, "stock", "field", "industry".
+Default "stock" means to covert stock code to stock name.}
 }
 \value{
 \preformatted{A name or a vector of names.
@@ -50,6 +53,7 @@ Other stock_db generics:
 \code{\link{get_spt_stocks}()},
 \code{\link{get_stock_dataset}()},
 \code{\link{get_stock_industry}()},
+\code{\link{get_stock_info}()},
 \code{\link{get_stock_return}()},
 \code{\link{get_table_dataset}()},
 \code{\link{init_stock_db}()},

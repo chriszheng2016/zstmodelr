@@ -32,10 +32,10 @@ By default 1.
 }
 see details for more info.}
 
-\item{trim}{A logical value. By default TRUE, the first missing observation in the return series
-will be removed.}
+\item{trim}{A logic flag of whether to remove the first missing observation in
+the return series. Default TRUE,}
 
-\item{...}{Arguments passed to other methods}
+\item{...}{Arguments passed to other methods.}
 
 \item{date_index_field}{Name of date index field of ts_df for resample,
 default 'date', Column must be date-like.
