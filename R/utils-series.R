@@ -83,9 +83,9 @@ rollify_series <- function(data_series, fun, ..., window = 1L,
 #' @param dates         A vector of data.
 #' @param data_series  A dataframe or matrix of numeric series to trail.
 #' @param period        A period string of dates, i.e., "day", "month",
-#'  "quarter". Default day.
-#' @param accumulated   A logic flag of whether specified data series is
-#'   accumulated or not.
+#'  "quarter". Default is "day".
+#' @param accumulated   A logic about whether specified data series is
+#'   accumulated or not. Default is TRUE.
 #' @param trailling_month  A integer of months of data to trail. Default is 12,
 #'   which means 12 months, i.e., TTT(Trail Twelve Month).
 #' @param agg_fun       A function to aggrate data sereis in trailling month.

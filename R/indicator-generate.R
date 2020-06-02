@@ -280,6 +280,9 @@ delete_indicators <- function(stock_db,
 #'
 #' @param stock_db  A stock database object to operate.
 #' @param ds_indicator_defs  A dataframe of indicator definition to delete.
+#' @param backup_dir     A path of dir to save backup indicators. Default
+#'   "backup" is the subdirectory of indicator dir which is specified by
+#'   `dir_path_db(stock_db, "DIR_DB_DATA_INDICATOR")`
 #'
 #' @family indicator generate functions
 #'

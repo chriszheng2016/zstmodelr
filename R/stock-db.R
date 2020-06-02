@@ -164,7 +164,7 @@ setGeneric(
 #' open_stock_db(stock_db)
 #' init_stock_db(stock_db)
 #' }
-#' 
+#'
 #' @export
 
 # S3 generic definition
@@ -200,7 +200,7 @@ setGeneric(
 #' init_stock_db(stock_db)
 #' list_stock_tables(stock_db)
 #' }
-#' 
+#'
 #' @export
 
 # S3 generic definition
@@ -323,6 +323,7 @@ setGeneric(
 #' @param stock_db    A stock database object to operate.
 #' @param stock_cd_list A list of stock cd, default value of NULL means
 #'  all stock data will return.
+#' @param ... Extra arguments to be passed to methods.
 #'
 #' @family stock_db generics
 #'

@@ -114,6 +114,9 @@ Demean <- function(x) {
 
 # Make a quarterly TTM(Trial Twelve Month) series
 #' @param date A date vector or array.
+#' @param accumulated A logic about whether specified data series is
+#'   accumulated or not. Default is TRUE.
+#'
 #' @describeIn indicator_expr_funs  make a quarterly TTM(Trial Twelve Month)
 #'  series.
 Quarter_TTM <- function(date, x, accumulated = TRUE) {

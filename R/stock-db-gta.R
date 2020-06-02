@@ -619,9 +619,9 @@ setMethod(
 # Get stock info from stock_db
 # Method definition for s3 generic
 # @describeIn get_stock_info get stock info from a database of gta_db class
-#' @export
+# @export
 get_stock_info.gta_db <- function(stock_db,
-                                  stock_cd_list = NULL) {
+                                  stock_cd_list = NULL, ...) {
 
   # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
@@ -671,7 +671,7 @@ setMethod(
   signature(stock_db = "gta_db"),
   function(stock_db, stock_cd_list, ...) {
     get_stock_info.gta_db(
-      stock_db, stock_cd_list
+      stock_db, stock_cd_list, ...
     )
   }
 )
