@@ -230,7 +230,7 @@ create_indicator_def_fun <- function(indicator_code,
     assertive::assert_is_data.frame(ds_vars)
 
     # ensure all import fields exist
-    check_fields(ds_vars, c(
+    verify_fields(ds_vars, c(
       date_index_field, key_fields,
       "period", "ind_code", "ind_value"
     ))

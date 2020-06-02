@@ -118,12 +118,12 @@ parse_indicator_vars.gta_db <- function(stock_db, indicator_expr, ...) {
   all_indicators_info <- profile_get_indicators(gta_profile_name)
   if (!is.null(all_indicators_info)) {
     all_indicators_codes <- all_indicators_info$ind_code
-    all_indictors_names <- all_indictors_info$ind_name
-    names(all_indictors_names) <- all_indictors_codes
+    all_indicators_names <- all_indicators_info$ind_name
+    names(all_indicators_names) <- all_indicators_codes
 
-    syms_are_indicators <- syms %in% all_indictors_codes
+    syms_are_indicators <- syms %in% all_indicators_codes
     indicator_vars <- syms[syms_are_indicators]
-    indicator_vars_names <- all_indictors_names[indicator_vars]
+    indicator_vars_names <- all_indicators_names[indicator_vars]
     non_indicator_vars <- syms[!syms_are_indicators]
 
     msg <- sprintf(
@@ -244,7 +244,7 @@ setMethod(
 #' Build indicator defs from customeized indicator info
 #'
 #' @param stock_db         A stock database object to operate.
-#' @param customized_indictors_info A dataframe of customized indicator info.
+#' @param customized_indicators_info A dataframe of customized indicator info.
 #'
 #' @return A dataframe of inicator defs.
 #' @noRd

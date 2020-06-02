@@ -108,7 +108,7 @@ compute_indicator <- function(ts_compute_vars,
         ds_indicator <- plyr::ddply(
           ts_compute_vars,
           .variables = key_fields,
-          .fun = .compute_indicator_single_group,
+          .fun = .compute_indicator_single,
           compute_fun = compute_fun,
           ...,
           date_index_field = date_index_field,
@@ -307,34 +307,6 @@ create_indicator <- function(ts_def_vars,
 #' # create definition function of pre-defined attribute of indcd
 #' new_attr_indcd <- ind_attr_def_indcd(stock_db)
 #'
-#' # modify existed ts_indicators
-#' ts_indicator <- modify_indicator(
-#'   ts_indicator = ts_indicator,
-#'   modify_fun = new_attr_indcd,
-#'   replace_exist = FALSE,
-#'   date_index_field = "date",
-#'   key_fields = "stkcd",
-#'   parallel = FALSE
-#' )
-#' }
-#' ind_attr_def_fun <- create_attribute_def_fun(
-#'   attr_name,
-#'   attr_fun = attr_fun
-#' )
-#' # modify existed ts_indicators
-#' ts_modify_indicator <- modify_indicator(ts_modify_indicator,
-#'   modify_fun = ind_attr_def_fun,
-#'   date_index_field = "date",
-#'   key_fields = "stkcd",
-#'   parallel = FALSE
-#' )
-#' 
-#' 
-#' # modify ts_indicator with pre-defined ind_attr_def_fun
-#' 
-#' # create defintion function of pre-defined attribute of indcd
-#' new_attr_indcd <- ind_attr_def_indcd(stock_db)
-#' 
 #' # modify existed ts_indicators
 #' ts_indicator <- modify_indicator(
 #'   ts_indicator = ts_indicator,

@@ -175,7 +175,7 @@ trail_periodic_series <- function(dates, data_series,
       ds_period <- ds_period %>%
         dplyr::group_by(year) %>%
         dplyr::mutate_at(
-          .vars = vars(-date, -year),
+          .vars = dplyr::vars(-date, -year),
           .funs = .period_value
         )
 
