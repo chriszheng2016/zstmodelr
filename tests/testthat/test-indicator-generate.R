@@ -32,6 +32,7 @@ customized_indicators_info <- tibble::tibble(
   ind_keys = list(c("stkcd")),
   rolling_window = 0,
   period = c("month", "quarter"),
+  fillna_method = "ffill",
   output_format = "csv",
   is_active = TRUE
 )
