@@ -445,7 +445,7 @@ read_import_file <- function(input_file,
             col_names = col_names,
             locale = readr::locale(encoding = file_encoding),
             skip = skip,
-            guess_max = 500000
+            guess_max = getOption("zstmodelr.data_mgt.guess_max", 50000)
           )
         },
         csv = {
@@ -454,7 +454,7 @@ read_import_file <- function(input_file,
             col_names = col_names,
             locale = readr::locale(encoding = file_encoding),
             skip = skip,
-            guess_max = 500000
+            guess_max = getOption("zstmodelr.data_mgt.guess_max", 50000)
           )
         }
       )
