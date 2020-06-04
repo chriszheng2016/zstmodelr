@@ -146,7 +146,7 @@ ts_resample.tbl_df <- function(ts_dataset,
                                ...,
                                date_index_field = c("date"),
                                key_fields = NULL,
-                               parallel = TRUE) {
+                               parallel = getOption("zstmodelr.common.parallel", TRUE)) {
 
   # define internal function to process single group dataset
   .ts_resample_single_df <- function(ts_dataset,
@@ -282,7 +282,7 @@ ts_asfreq.tbl_df <- function(ts_dataset,
                              ...,
                              date_index_field = c("date"),
                              key_fields = NULL,
-                             parallel = TRUE) {
+                             parallel = getOption("zstmodelr.common.parallel", TRUE)) {
 
   # define internal function to process single group dataset
   .ts_asfreq_single_df <- function(ts_dataset,
@@ -390,7 +390,7 @@ ts_lag.tbl_df <- function(ts_dataset,
                           ...,
                           date_index_field = c("date"),
                           key_fields = NULL,
-                          parallel = TRUE) {
+                          parallel = getOption("zstmodelr.common.parallel", TRUE)) {
 
   # compute lag timeseries for single group dataset
   .ts_lag_single_df <- function(ts_dataset,

@@ -469,7 +469,7 @@ process_files.gta_db <- function(stock_db,
               process_fun <- purrr::partial(ttm_financial_report,
                 date_index_field = "Accper",
                 key_fields = c("Stkcd", "Typrep"),
-                parallel = TRUE
+                parallel = getOption("zstmodelr.common.parallel", TRUE)
               )
             }
           )

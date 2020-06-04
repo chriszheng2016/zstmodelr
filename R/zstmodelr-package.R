@@ -7,13 +7,10 @@
 
 
 #' @section Options:
-#'   - `zstmodelr.data_mgt.guess_max`: Maximum number of records to use for
-#'   guessing column types in importing txt/csv files(default:`50000`).
-#'   - `testthat.use_colours`: Should the output be coloured? (Default: `TRUE`).
-#'   - `testthat.summary.max_reports`: The maximum number of detailed test
-#'   reports printed for the summary reporter (default: 10).
-#'   - `testthat.summary.omit_dots`: Omit progress dots in the summary reporter
-#'   (default: `FALSE`).
+#' - `zstmodelr.data_mgt.guess_max`: Maximum number of records to use for
+#' guessing column types in importing txt/csv files(default:`50000`).
+#' - `zstmodelr.common.parallel`: Should proccess be excuted parally
+#' (default: `TRUE`).
 
 #' @examples
 #' \dontrun{
@@ -45,7 +42,8 @@ cluster <- NULL
 parallel_enable <- FALSE
 
 zstmodelr_options <- list(
-  zstmodelr.data_mgt.guess_max = 50000
+  zstmodelr.data_mgt.guess_max = 50000,
+  zstmodelr.common.parallel = TRUE
 )
 
 .onLoad <- function(libname, pkgname) {

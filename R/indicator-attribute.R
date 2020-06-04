@@ -96,7 +96,7 @@ NULL
 #' @export
 attr_indicators <- function(ts_indicators,
                             new_attr_def,
-                            parallel = TRUE) {
+                            parallel = getOption("zstmodelr.common.parallel", TRUE)) {
 
   # validate params
   assertive::assert_is_data.frame(ts_indicators)
@@ -138,7 +138,7 @@ attr_indicators <- function(ts_indicators,
 #' @export
 attr_indicators_indcd <- function(stock_db,
                                   ts_indicators,
-                                  parallel = TRUE) {
+                                  parallel = getOption("zstmodelr.common.parallel", TRUE)) {
 
   # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "stock_db"))
@@ -166,7 +166,7 @@ attr_indicators_indcd <- function(stock_db,
 #' @export
 attr_indicators_trdstat <- function(stock_db,
                                     ts_indicators,
-                                    parallel = TRUE) {
+                                    parallel = getOption("zstmodelr.common.parallel", TRUE)) {
 
   # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "stock_db"))

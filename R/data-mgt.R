@@ -715,7 +715,7 @@ ttm_financial_report <- function(ds_financial_report,
                                  date_index_field = "Accper",
                                  key_fields = c("Stkcd", "Typrep"),
                                  field_suffix = "ttm",
-                                 parallel = TRUE) {
+                                 parallel = getOption("zstmodelr.common.parallel", TRUE)) {
 
   # function to trial data in a group with unique value of key_fields
   .trail_fun <- function(ds_financial_report,
