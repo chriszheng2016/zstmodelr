@@ -224,11 +224,11 @@ setGeneric(
   name = "process_files",
   signature = c("stock_db"),
   def = process_files <- function(stock_db,
-                                    data_source = get_datasource(stock_db),
-                                    retry_log = NULL,
-                                    log_file_prefix = "process_files_log",
-                                    log_dir = "./log",
-                                    ...) {
+                                  data_source = get_datasource(stock_db),
+                                  retry_log = NULL,
+                                  log_file_prefix = "process_files_log",
+                                  log_dir = "./log",
+                                  ...) {
     standardGeneric("process_files")
   }
 )
@@ -240,18 +240,21 @@ setGeneric(
 #'
 #' Read a raw file into a dataframe for processing or importing.
 #'
-#' @param input_file  A name or a path of input data file.
+#' @param input_file  A name or a path of input data file, which could use
+#'   regular expression to read multiple files into a combined dataframe, e.g.
+#'   "test[0-9]*.txt" will read files like test.txt, test1.txt,...,
+#'   test9.txt..., etc., the files ware queued in ascending alphabet order.
 #' @param input_type  A character of input file format, e.g. "txt", "csv".
 #' @param input_dir   A path of working dir of input file, if NULL, use dir of
 #'   input file as working dir, default NULL.
 #' @param start_index A integer of start index of first line of actual records
 #'   in data file, by default 2L, which means first line is header and actual
-#'   data starts from second lines.
+#'   data starts from second line.
 #' @param ignore_problems A logic flag to determine whether to ignore problems
 #'   when covert data, if TRUE, continue to import data but log problems into
 #'   log file, otherwise abort reading process.  By default TRUE.
-#' @param log_dir   Path of log dir for saving problem log file,
-#'   by default"./log", if the log path doesn't existed, it  will be created.
+#' @param log_dir   Path of log dir for saving problem log file, by
+#'   default"./log", if the log path doesn't existed, it  will be created.
 #'
 #' @family data management
 #'
@@ -264,126 +267,227 @@ read_import_file <- function(input_file,
                              start_index = 2L,
                              ignore_problems = TRUE,
                              log_dir = "./log") {
+  # Define method to compute single file
+  .read_single_file <- function(input_file,
+                                input_type,
+                                input_dir,
+                                start_index,
+                                ignore_problems,
+                                log_dir,
+                                file_encoding = "UTF-8",
+                                col_names = TRUE,
+                                col_types = NULL) {
+    # validate params
 
+    # get full path of input file
+    if (!is.null(input_dir)) {
+      input_file_path <- paste0(input_dir, "/", basename(input_file))
+    } else {
+      input_file_path <- normalizePath(input_file, winslash = "/")
+    }
+
+    # get data file name
+    file_name <- basename(input_file_path)
+    file_name <- tools::file_path_sans_ext(file_name)
+
+
+    # read raw data into dataframe
+    import_data_frame <- NULL
+    suppressMessages({
+      skip <- start_index - 1L
+
+      import_data_frame <- switch(input_type,
+        txt = {
+          readr::read_tsv(
+            input_file_path,
+            locale = readr::locale(encoding = file_encoding),
+            col_names = col_names,
+            col_types = col_types,
+            skip = skip
+          )
+        },
+        csv = {
+          readr::read_csv(
+            input_file_path,
+            locale = readr::locale(encoding = file_encoding),
+            col_names = col_names,
+            col_types = col_types,
+            skip = skip
+          )
+        }
+      )
+    })
+
+    # log problems in reading data
+    problems_data <- readr::problems(import_data_frame)
+    if ((NROW(import_data_frame) == 0) || (NROW(problems_data) != 0)) {
+      if (is.null(log_dir)) {
+        problems_file <- sprintf(
+          "%s/%s(%s).csv",
+          dirname(input_file_path),
+          file_name,
+          format(Sys.Date(), "%Y-%m-%d")
+        )
+      } else {
+        if (!file.exists(log_dir)) {
+          dir.create(log_dir)
+        }
+
+        problems_file <- sprintf(
+          "%s/%s(%s).csv",
+          log_dir,
+          file_name,
+          format(Sys.Date(), "%Y-%m-%d")
+        )
+      }
+
+      readr::write_excel_csv(problems_data, problems_file)
+
+      msg <- sprintf(
+        "Converting problems in %s, plese check %s for detail.",
+        input_file_path,
+        problems_file
+      )
+
+      if (ignore_problems) {
+        rlang::warn(msg)
+      } else {
+        rlang::abort(msg)
+      }
+    }
+
+    # return NULL if no data was read
+    if (NROW(import_data_frame) == 0) {
+      import_data_frame <- NULL
+    }
+
+    return(import_data_frame)
+  }
+
+  # -- Main Function --
   # validate params
-  assertive::assert_is_not_null(input_file)
+  #   assertive::assert_is_not_null(input_file)
   assertive::assert_is_integer(start_index)
   assertive::assert_all_are_greater_than_or_equal_to(start_index, 1L)
   assertive::assert_is_logical(ignore_problems)
 
-  # get full path of input file
-  if (!is.null(input_dir)) {
-    input_file_path <- paste0(input_dir, "/", basename(input_file))
+  # Get traget files for importing
+  if (is.null(input_dir)) {
+    input_dir <- dirname(input_file)
   } else {
-    input_file_path <- normalizePath(input_file, winslash = "/")
+    input_dir <- file.path(input_dir, dirname(input_file))
   }
-
-  # get data file name
-  file_name <- basename(input_file_path)
-  file_name <- tools::file_path_sans_ext(file_name)
-
-  # guess file encoding
-  file_encoding_info <- readr::guess_encoding(input_file_path)
-  if (NROW(file_encoding_info) > 0) {
-    file_encoding <- file_encoding_info$encoding[1]
-  } else {
-    file_encoding <- "GB18030"
-  }
-
-  # read data from raw file into dataframe
-  input_type <- match.arg(input_type)
-  # Get colnames of rawdata header
-  suppressMessages(
-    raw_data_header <- switch(input_type,
-      txt = {
-        readr::read_tsv(input_file_path,
-          locale = readr::locale(encoding = file_encoding),
-          n_max = 0
-        )
-      },
-      csv = {
-        readr::read_csv(input_file_path,
-          locale = readr::locale(encoding = file_encoding),
-          n_max = 0
-        )
-      }
+  input_dir <- normalizePath(input_dir, winslash = "/")
+  target_files <- list.files(input_dir,
+    pattern = stringr::regex(
+      basename(input_file),
+      ignore_case = TRUE,
+      dotall = TRUE
     )
   )
-  raw_data_colnames <- names(raw_data_header)
-  if (nrow(raw_data_header) != 0) {
-    msg <- sprintf("Error in getting header from %s", input_file_path)
-    rlang::abort(msg)
-  }
+  target_files <- stringr::str_sort(target_files, decreasing = FALSE)
 
-  # read raw data into dataframe
-  raw_data_frame <- NULL
-  suppressMessages({
-    skip <- start_index - 1L
+  # Process multiple target files
+  ds_import_data <- NULL
+  if (length(target_files) > 0) {
 
-    raw_data_frame <- switch(input_type,
-      txt = {
-        readr::read_tsv(input_file_path,
-          locale = readr::locale(encoding = file_encoding),
-          col_names = raw_data_colnames,
-          skip = skip,
-          guess_max = 50000
-        )
-      },
-      csv = {
-        readr::read_csv(input_file_path,
-          locale = readr::locale(encoding = file_encoding),
-          col_names = raw_data_colnames,
-          skip = skip,
-          guess_max = 50000
-        )
-      }
-    )
-  })
+    # use first file configration(col_name, col_type) as configuration for all files
+    first_target_file <- target_files[1]
 
-  # log problems in reading data
-  problems_data <- readr::problems(raw_data_frame)
-  if ((NROW(raw_data_frame) == 0) || (NROW(problems_data) != 0)) {
-    if (is.null(log_dir)) {
-      problems_file <- sprintf(
-        "%s/%s(%s).csv",
-        dirname(input_file_path),
-        file_name,
-        format(Sys.Date(), "%Y-%m-%d")
-      )
+    # get full path of input file
+    if (!is.null(input_dir)) {
+      input_file_path <-
+        paste0(input_dir, "/", basename(first_target_file))
     } else {
-      if (!file.exists(log_dir)) {
-        dir.create(log_dir)
-      }
-
-      problems_file <- sprintf(
-        "%s/%s(%s).csv",
-        log_dir,
-        file_name,
-        format(Sys.Date(), "%Y-%m-%d")
-      )
+      input_file_path <- normalizePath(first_target_file, winslash = "/")
     }
 
-    readr::write_excel_csv(problems_data, problems_file)
-
-    msg <- sprintf(
-      "Converting problems in %s, plese check %s for detail.",
-      input_file_path,
-      problems_file
-    )
-
-    if (ignore_problems) {
-      rlang::warn(msg)
+    # guess file encoding
+    file_encoding_info <- readr::guess_encoding(input_file_path)
+    if (NROW(file_encoding_info) > 0) {
+      file_encoding <- file_encoding_info$encoding[1]
     } else {
+      file_encoding <- "GB18030"
+    }
+
+    input_type <- match.arg(input_type)
+
+    # get colnames of import data
+    suppressMessages(
+      import_data_header <- switch(input_type,
+        txt = {
+          readr::read_tsv(input_file_path,
+            locale = readr::locale(encoding = file_encoding),
+            n_max = 0
+          )
+        },
+        csv = {
+          readr::read_csv(input_file_path,
+            locale = readr::locale(encoding = file_encoding),
+            n_max = 0
+          )
+        }
+      )
+    )
+    col_names <- names(import_data_header)
+    if (nrow(import_data_header) != 0) {
+      msg <- sprintf("Error in getting header from %s", input_file_path)
       rlang::abort(msg)
     }
+
+    # get column types
+    suppressMessages({
+      skip <- start_index - 1L
+      col_spec <- switch(input_type,
+        txt = {
+          readr::spec_tsv(
+            input_file_path,
+            col_names = col_names,
+            locale = readr::locale(encoding = file_encoding),
+            skip = skip,
+            guess_max = 500000
+          )
+        },
+        csv = {
+          readr::spec_csv(
+            input_file_path,
+            col_names = col_names,
+            locale = readr::locale(encoding = file_encoding),
+            skip = skip,
+            guess_max = 500000
+          )
+        }
+      )
+    })
+    col_types <- col_spec
+
+    # set configuration for target files
+    ds_target_files <- tibble::tibble(
+      input_file = target_files,
+      input_dir = input_dir,
+      file_encoding = file_encoding,
+      col_names = list(col_names),
+      col_types = list(col_types)
+    )
+
+    # read target files
+    ds_target_files <- ds_target_files %>%
+      dplyr::mutate(
+        import_data = purrr::pmap(
+          .,
+          .f = .read_single_file,
+          input_type = input_type,
+          start_index = start_index,
+          ignore_problems = ignore_problems,
+          log_dir = log_dir
+        )
+      )
+
+    # consolidate imported data into a data.frame
+    ds_import_data <- purrr::map_dfr(ds_target_files$import_data, .f = ~.)
   }
 
-  # return NULL if no data was read
-  if (NROW(raw_data_frame) == 0) {
-    raw_data_frame <- NULL
-  }
-
-  return(raw_data_frame)
+  ds_import_data
 }
 
 #' Write a raw file for importing to stock db

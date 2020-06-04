@@ -315,24 +315,62 @@ test_that("read_import_file, with various arguments", {
   input_file <- "./data/test_table01.csv"
   log_dir <- "./log"
 
-  ds_raw_data <- read_import_file(input_file)
+  ds_import_data <- read_import_file(input_file)
 
-  expect_is(ds_raw_data, "data.frame")
-  expect_true(NROW(ds_raw_data) > 0)
+  expect_is(ds_import_data, "data.frame")
+  expect_true(NROW(ds_import_data) > 0)
   expect_fields <- c("field_code", "field_name", "field_category")
-  expect_true(all(names(ds_raw_data) %in% expect_fields))
+  expect_true(all(names(ds_import_data) %in% expect_fields))
 
 
   # read_import_file with various arguments ====
+
+  # >> argument: input_file ----
+  # Read single/multi files into data.frame
+  input_file <- "./data/test_table03_01.txt"
+  input_files <- "./data/test_table03_[0-9]+.txt"
+  # test_table03_[0-9]+.txt include 3 files with same rows of record:
+  # test_table03_01.txt, test_table03_02.txt, test_table03_03.txt
+
+  log_dir <- "./log"
+
+  # Notice: real data start from line 4, so need skip 3 lines
+  ds_import_data_single_file <- read_import_file(
+    input_file = input_file,
+    input_type = "txt",
+    start_index = 4L,
+    ignore_problems = TRUE,
+    log_dir = log_dir
+  )
+  suppress_warnings({
+    # Ignore some warnings caused by inconsistent type of Crcd column in
+    # diferent files
+    ds_import_data_multi_files <- read_import_file(
+      input_file = input_files,
+      input_type = "txt",
+      start_index = 4L,
+      ignore_problems = TRUE,
+      log_dir = log_dir
+    )
+  },
+  warn_pattern = "parsing failures|Converting problems")
+
+  expect_is(ds_import_data_multi_files, "data.frame")
+  expect_is(ds_import_data_single_file, "data.frame")
+  expect_true(all(
+    names(ds_import_data_multi_files) %in% names(ds_import_data_single_file)
+  ))
+  expect_true(NROW(ds_import_data_multi_files) == 3 * NROW(ds_import_data_single_file))
+
   # >> argument: input_type ----
   input_file <- "./data/test_table02.txt"
   file_name <- tools::file_path_sans_ext(basename(input_file))
   log_dir <- "./log"
 
-  # Import txt data into table
+  # Read txt data into data.frame
   # Notice: real data start from line 4, so need skip 3 lines
   expect_warning(
-    ds_raw_data <- read_import_file(
+    ds_import_data <- read_import_file(
       input_file = input_file,
       input_type = "txt",
       start_index = 4L,
@@ -341,6 +379,8 @@ test_that("read_import_file, with various arguments", {
     ),
     regexp = "Converting problems"
   )
+  expect_is(ds_import_data, "data.frame")
+  expect_true(NROW(ds_import_data) > 0)
 
   # Check problems files
   problems_file <- sprintf(
@@ -358,7 +398,7 @@ test_that("read_import_file, with various arguments", {
 
   expect_error(
     suppressWarnings(
-      read_import_file(
+      ds_import_data <- read_import_file(
         input_file = input_file,
         input_type = "txt",
         start_index = 4L,

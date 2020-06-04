@@ -1,0 +1,13 @@
+Cuntrycd	Stkcd	Stknme	Conme	Conme_en	Indcd	Indnme	Nindcd	Nindnme	Nnindcd	Nnindnme	Estbdt	Listdt	Favaldt	Curtrd	Ipoprm	Ipoprc	Ipocur	Nshripo	Parvcur	Ipodt	Parval	Sctcd	Statco	Crcd	Statdt	Commnt	Markettype
+国家代码	证券代码	证券简称	公司全称	公司英文全称	行业代码A	行业名称A	行业代码B	行业名称B	行业代码C	行业名称C	公司成立日期	上市日期	数据库最早交易记录的日期	数据库中交易数据的计量货币	股票发行溢价	发行价格	发行价格的计量货币	发行数量	股票面值的计量货币	发行日期	股票面值	区域码	公司活动情况	AB股交叉码	情况变动日	H股交叉码	市场类型
+没有单位	没有单位	没有单位	没有单位	没有单位	没有单位	没有单位	没有单位	没有单位	没有单位	没有单位	没有单位	没有单位	没有单位	没有单位	元	元/股	没有单位	千股	没有单位	没有单位	元	没有单位	没有单位	没有单位	没有单位	没有单位	没有单位
+10	21	深科技	深圳长城开发科技股份有限公司	"Shenzhen Kaifa Technology Co., Ltd."	5	工业	G	信息技术业	C39	计算机、通信和其他电子设备制造业	1993-12-29	1994-2-2	1994-2-2	CNY	3.65	4.65	CNY	25675	CNY	1993-11-22	1	2	A		2018-5-31		4
+10	22	深赤湾A	深圳赤湾港航股份有限公司	"Shenzhen Chiwan Wharf Holdings Co., Ltd."	2	公用事业	F07	水上运输业	G55	水上运输业	1993-3-21	1993-5-5	1993-5-5	CNY	2.1	3.1	CNY	46000	CNY	1993-2-18	1	2	A	200022	2018-10-10		4
+10	23	深天地A	深圳市天地(集团)股份有限公司	"Shenzhen Universe (Group)Co., Ltd."	5	工业	C61	非金属矿物制品业	C30	非金属矿物制品业	1984-9-18	1993-4-29	1993-4-29	CNY	2.1	3.1	CNY	25300	CNY	1993-3-1	1	2	A		2018-5-31		4
+10	24	招商地产	招商局地产控股股份有限公司	"China Merchants Property Development Co., Ltd."	3	房地产	J01	房地产开发与经营业	K70	房地产业	1993-4-10	1993-6-7	1993-6-7	CNY	2.4	3.4	CNY	27000	CNY	1993-3-15	1	2	D	200024	2015-12-30		4
+10	25	特力A	深圳市特力(集团)股份有限公司	"Shenzhen Tellus Holding Co., Ltd."	6	商业	H	批发和零售贸易	F51	批发业	1993-4-18	1993-6-21	1993-6-21	CNY	3.18	4.18	CNY	25980	CNY	1993-3-15	1	2	A	200025	2018-5-31		4
+10	26	飞亚达A	飞亚达(集团)股份有限公司	Fiyta Holdings Ltd.	6	商业	H11	零售业	F52	零售业	1993-4-18	1993-6-3	1993-6-3	CNY	2.6	3.6	CNY	12500	CNY	1993-3-10	1	2	A	200026	2018-5-31		4
+10	27	深圳能源	深圳能源集团股份有限公司	"Shenzhen Energy Group Co., Ltd."	5	工业	D01	电力、蒸汽、热水的生产和供应业	D44	电力、热力生产和供应业	1993-6-2	1993-9-3	1993-9-3	CNY	2.5	3.5	CNY	107300	CNY	1993-4-6	1	2	A		2018-5-31		4
+10	28	国药一致	国药集团一致药业股份有限公司	China National Accord Medicines Corporation Ltd.	6	商业	H	批发和零售贸易	F51	批发业	1993-7-3	1993-8-9	1993-8-9	CNY	2.5	3.5	CNY	30000	CNY	1993-5-5	1	2	A	200028	2018-5-31		4
+10	29	深深房A	深圳经济特区房地产(集团)股份有限公司	"Shenzhen Special Economic Zone Real Estate and Properties (Group) Co., Ltd."	3	房地产	J	房地产业	K70	房地产业	1993-8-15	1993-9-15	1993-9-15	CNY	2.8	3.8	CNY	112000	CNY	1993-6-21	1	2	N	200029	2016-9-14		4
+10	30	富奥股份	富奥汽车零部件股份有限公司	FAWER Automotive Parts Limited Company	5	工业	C75	交通运输设备制造业	C36	汽车制造业	1993-8-28	1993-9-29	1993-9-29	CNY	3.55	4.55	CNY	43500	CNY	1993-6-28	1	2	A	200030	2018-5-31		4
