@@ -242,7 +242,7 @@ setGeneric(
 #'
 #' @param input_file  A name or a path of input data file, which could use
 #'   regular expression to read multiple files into a combined dataframe, e.g.
-#'   "test[0-9]*.txt" will read files like test.txt, test1.txt,...,
+#'   "`test[0-9]*.txt`" will read files like test.txt, test1.txt,...,
 #'   test9.txt..., etc., the files ware queued in ascending alphabet order.
 #' @param input_type  A character of input file format, e.g. "txt", "csv".
 #' @param input_dir   A path of working dir of input file, if NULL, use dir of
