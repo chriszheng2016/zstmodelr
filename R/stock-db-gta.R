@@ -1379,19 +1379,23 @@ get_indicators_from_source.gta_db <- function(stock_db,
         if (lubridate::is.timepoint(ds_indicators$date)) {
           # translate all time format into date format
           ts_date <- lubridate::as_date(ds_indicators$date)
-        } else if (is.character(ds_indicators$date)) {
-          # try translate charactor date as possible
-          ts_date <- lubridate::parse_date_time(ds_indicators$date,
+        } else {
+          # try translate date as charater as possible
+          ts_date <- as.character(ds_indicators$date)
+
+          # parse date field as character and return na if not recognised
+          ts_date <- lubridate::parse_date_time(ts_date,
             orders = c("y", "ym", "yW", "ymd")
           )
+          if (all(is.na(ts_date))) {
+            # invalid type for date field
+            msg <- sprintf(
+              "Fail to translate date field of type of %s.",
+              typeof(ds_indicators$date)
+            )
+            rlang::abort(msg)
+          }
           ts_date <- lubridate::as_date(ts_date)
-        } else {
-          # invalid type for date field
-          msg <- sprintf(
-            "Fail to translate date field of type of %s.",
-            typeof(ds_indicators$date)
-          )
-          rlang::abort(msg)
         }
 
         # translate date into last day of period, add period field

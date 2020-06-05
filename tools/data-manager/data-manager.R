@@ -1,6 +1,7 @@
 # Tools for updating database periodically
 
 library(zstmodelr)
+options(zstmodelr.data_mgt.guess_max = 300000)
 
 # process stock database
 process_stock_db <- function(dsn = c("GTA_SQLData", "GTA_SQLData_TEST"),

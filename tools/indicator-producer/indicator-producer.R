@@ -217,7 +217,7 @@ indicator_producer <- function(dsn = c("GTA_SQLData"),
 # Archive all indicators files by default
 # indicator_producer(fun = "archive")
 #
-# Archive all indicators files by default
+# Archive specific indicator files by default
 # indicator_producer(fun = "archive", indicator_codes = c("m_nop_ttm"))
 #
 # Clear all indicators files by default
