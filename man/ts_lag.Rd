@@ -15,7 +15,7 @@ ts_lag(ts_dataset, k = 1, trim = TRUE, ...)
   ...,
   date_index_field = c("date"),
   key_fields = NULL,
-  parallel = TRUE
+  parallel = getOption("zstmodelr.common.parallel", TRUE)
 )
 
 \method{ts_lag}{timeSeries}(ts_dataset, k = 1, trim = TRUE, ...)

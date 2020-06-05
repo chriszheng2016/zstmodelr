@@ -40,7 +40,7 @@ generate_indicators <- function(stock_db,
                                   "600031", "000157",
                                   "600066", "000550"
                                 ),
-                                parallel = TRUE,
+                                parallel = getOption("zstmodelr.common.parallel", TRUE),
                                 log_file_prefix = "generate_indicator_log",
                                 log_dir = "./log") {
 

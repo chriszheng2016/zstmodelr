@@ -11,7 +11,7 @@ modify_indicator(
   replace_exist = FALSE,
   date_index_field = c("date"),
   key_fields = NULL,
-  parallel = TRUE
+  parallel = getOption("zstmodelr.common.parallel", TRUE)
 )
 }
 \arguments{

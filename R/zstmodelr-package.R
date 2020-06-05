@@ -7,11 +7,10 @@
 
 
 #' @section Options:
-#' - `testthat.use_colours`: Should the output be coloured? (Default: `TRUE`).
-#' - `testthat.summary.max_reports`: The maximum number of detailed test
-#'    reports printed for the summary reporter (default: 10).
-#' - `testthat.summary.omit_dots`: Omit progress dots in the summary reporter
-#'    (default: `FALSE`).
+#' - `zstmodelr.data_mgt.guess_max`: Maximum number of records to use for
+#' guessing column types in importing txt/csv files(default:`20000`).
+#' - `zstmodelr.common.parallel`: Should process be executed in parallel.
+#' (default: `TRUE`).
 
 #' @examples
 #' \dontrun{
@@ -42,6 +41,11 @@ NULL
 cluster <- NULL
 parallel_enable <- FALSE
 
+zstmodelr_options <- list(
+  zstmodelr.data_mgt.guess_max = 200000,
+  zstmodelr.common.parallel = TRUE
+)
+
 .onLoad <- function(libname, pkgname) {
   # Set up for parallel processing
   if (requireNamespace("parallel", quietly = FALSE)) {
@@ -63,15 +67,11 @@ parallel_enable <- FALSE
     rlang::inform("Parallel process is disabled due failure of initialization.\n")
   }
 
+  # Set default options of package
   op <- options()
-  op.zstmodelr <- list(
-    zstmodelr.name = "Chris Zheng",
-    zstmodelr.desc.author = "Chris Zheng <first.last@example.com> [aut, cre]",
-    zstmodelr.parallel = ifelse(parallel_enable, "TRUE", "FALSE")
-  )
-  toset <- !(names(op.zstmodelr) %in% names(op))
+  toset <- !(names(zstmodelr_options) %in% names(op))
   if (any(toset)) {
-    options(op.zstmodelr[toset])
+    options(zstmodelr_options[toset])
   }
 
   invisible()

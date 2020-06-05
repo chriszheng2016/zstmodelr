@@ -9,7 +9,7 @@ generate_indicators(
   ds_indicator_defs,
   validate_def = FALSE,
   validate_stkcds = c("600031", "000157", "600066", "000550"),
-  parallel = TRUE,
+  parallel = getOption("zstmodelr.common.parallel", TRUE),
   log_file_prefix = "generate_indicator_log",
   log_dir = "./log"
 )

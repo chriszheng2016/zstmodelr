@@ -19,7 +19,10 @@ convert_import_file(
 )
 }
 \arguments{
-\item{input_file}{A name or a path of input data file.}
+\item{input_file}{A name or a path of input data file, which could use
+regular expression to read multiple files into a combined dataframe, e.g.
+"\code{test[0-9]*.txt}" will read files like test.txt, test1.txt,...,
+test9.txt..., etc., the files ware queued in ascending alphabet order.}
 
 \item{input_type}{A character of input file format, e.g. "txt", "csv".}
 
@@ -28,14 +31,14 @@ input file as working dir, default NULL.}
 
 \item{start_index}{A integer of start index of first line of actual records
 in data file, by default 2L, which means first line is header and actual
-data starts from second lines.}
+data starts from second line.}
 
 \item{ignore_problems}{A logic flag to determine whether to ignore problems
 when covert data, if TRUE, continue to import data but log problems into
 log file, otherwise abort reading process.  By default TRUE.}
 
-\item{log_dir}{Path of log dir for saving problem log file,
-by default"./log", if the log path doesn't existed, it  will be created.}
+\item{log_dir}{Path of log dir for saving problem log file, by
+default"./log", if the log path doesn't existed, it  will be created.}
 
 \item{process_fun}{A function to process input file into output file.}
 

@@ -107,7 +107,7 @@ test_that("get_stock_info, with various arguments", {
     "market_type"
   )
   actual_fields <- names(ds_stock_info)
-
+  expect_gt(NROW(ds_stock_info), 0)
   expect_is(ds_stock_info, "data.frame")
   expect_true(all(actual_fields %in% expect_fields))
 
@@ -124,6 +124,7 @@ test_that("get_stock_info, with various arguments", {
   )
   actual_fields <- names(ds_stock_info)
 
+  expect_gt(NROW(ds_stock_info), 0)
   expect_is(ds_stock_info, "data.frame")
   expect_true(all(actual_fields %in% expect_fields))
   expect_true(all(unique(ds_stock_info$stkcd) %in% stock_cd_list))
@@ -139,6 +140,7 @@ test_that("get_stock_return, with various arguments", {
     period_date = "start",
     output_type = "timeSeries"
   )
+  expect_gt(NROW(ds_stock_return), 0)
   expect_is(ds_stock_return, "timeSeries")
   expect_true(all(names(ds_stock_return) %in% stock_stkcds_list))
 
@@ -148,6 +150,7 @@ test_that("get_stock_return, with various arguments", {
     period_date = "start",
     output_type = "tibble"
   )
+  expect_gt(NROW(ds_stock_return), 0)
   expect_is(ds_stock_return, "tbl_df")
   expect_fields <- c("date", "stkcd", "return")
   expect_equal(names(ds_stock_return), expect_fields)
@@ -162,6 +165,7 @@ test_that("get_stock_return, with various arguments", {
     period_date = "start",
     output_type = "tibble"
   )
+  expect_gt(NROW(ds_stock_return), 0)
   # expect_true(timeDate::isDaily(timeDate::as.timeDate(ds_stock_return$date)))
   expect_true(mean(lag(ds_stock_return$date) - ds_stock_return$date, na.rm = TRUE) < 2)
 
@@ -171,6 +175,7 @@ test_that("get_stock_return, with various arguments", {
     period_date = "start",
     output_type = "tibble"
   )
+  expect_gt(NROW(ds_stock_return), 0)
   expect_true(timeDate::isMonthly(timeDate::as.timeDate(ds_stock_return$date)))
 
   ds_stock_return <- get_stock_return(stock_db,
@@ -179,6 +184,7 @@ test_that("get_stock_return, with various arguments", {
     period_date = "start",
     output_type = "tibble"
   )
+  expect_gt(NROW(ds_stock_return), 0)
   expect_true(timeDate::frequency(timeDate::as.timeDate(ds_stock_return$date)) == 1)
 
 
@@ -190,6 +196,7 @@ test_that("get_stock_return, with various arguments", {
     period_date = "start",
     output_type = "tibble"
   )
+  expect_gt(NROW(ds_stock_return), 0)
   expect <- as.Date(timeDate::timeFirstDayInMonth
   (format(ds_stock_return$date, "%Y-%m-%d")))
   actual <- ds_stock_return$date
@@ -201,6 +208,7 @@ test_that("get_stock_return, with various arguments", {
     period_date = "end",
     output_type = "tibble"
   )
+  expect_gt(NROW(ds_stock_return), 0)
   expect <- as.Date(timeDate::timeLastDayInMonth
   (format(ds_stock_return$date, "%Y-%m-%d")))
   actual <- ds_stock_return$date
@@ -216,15 +224,18 @@ test_that("get_market_return, with various arguments", {
     period_date = "start",
     output_type = "timeSeries"
   )
+  expect_gt(NROW(ds_market_return), 0)
   expect_is(ds_market_return, "timeSeries")
   expect_fields <- c("market_index")
   expect_equal(names(ds_market_return), expect_fields)
+
 
   ds_market_return <- get_market_return(stock_db,
     period_type = "month",
     period_date = "start",
     output_type = "tibble"
   )
+  expect_gt(NROW(ds_market_return), 0)
   expect_is(ds_market_return, "tbl_df")
   expect_fields <- c("date", "market_index")
   expect_equal(names(ds_market_return), expect_fields)
@@ -235,6 +246,7 @@ test_that("get_market_return, with various arguments", {
     period_date = "start",
     output_type = "tibble"
   )
+  expect_gt(NROW(ds_market_return), 0)
   # expect_true(timeDate::isDaily(timeDate::as.timeDate(ds_market_return$date)))
   expect_true(mean(lag(ds_market_return$date) - ds_market_return$date, na.rm = TRUE) < 2)
 
@@ -243,6 +255,7 @@ test_that("get_market_return, with various arguments", {
     period_date = "start",
     output_type = "tibble"
   )
+  expect_gt(NROW(ds_market_return), 0)
   expect_true(timeDate::isMonthly(timeDate::as.timeDate(ds_market_return$date)))
 
   ds_market_return <- get_market_return(stock_db,
@@ -250,6 +263,7 @@ test_that("get_market_return, with various arguments", {
     period_date = "start",
     output_type = "tibble"
   )
+  expect_gt(NROW(ds_market_return), 0)
   expect_true(timeDate::frequency(timeDate::as.timeDate(ds_market_return$date)) == 1)
 
   # get_market_return with arguments: period_date ====
@@ -258,6 +272,7 @@ test_that("get_market_return, with various arguments", {
     period_date = "start",
     output_type = "tibble"
   )
+  expect_gt(NROW(ds_market_return), 0)
   expect <- as.Date(timeDate::timeFirstDayInMonth
   (format(ds_market_return$date, "%Y-%m-%d")))
   actual <- ds_market_return$date
@@ -268,6 +283,7 @@ test_that("get_market_return, with various arguments", {
     period_date = "end",
     output_type = "tibble"
   )
+  expect_gt(NROW(ds_market_return), 0)
   expect <- as.Date(timeDate::timeLastDayInMonth
   (format(ds_market_return$date, "%Y-%m-%d")))
   actual <- ds_market_return$date
@@ -280,6 +296,7 @@ test_that("get_financial_report, with various arguments", {
   # get_financial_report with default arguments ====
   ts_report <- get_financial_report(stock_db)
   expect_is(ts_report, "data.frame")
+  expect_gt(NROW(ts_report), 0)
   expect_true(all(c("date", "stkcd") %in% names(ts_report)))
   expect_true(lubridate::is.Date(ts_report$date))
   expect_true(is.character(ts_report$stkcd))
@@ -312,6 +329,7 @@ test_that("get_financial_report, with various arguments", {
       period_date = "end"
     )
     expect_is(ts_report, "data.frame")
+    expect_gt(NROW(ts_report), 0)
     expect_true(all(c("date", "stkcd") %in% names(ts_report)))
     expect_true(lubridate::is.Date(ts_report$date))
     expect_true(is.character(ts_report$stkcd))
@@ -328,6 +346,7 @@ test_that("get_financial_report, with various arguments", {
     period_type = "quarter"
   )
   expect_is(ts_report, "data.frame")
+  expect_gt(NROW(ts_report), 0)
   expect_true(all(c("date", "stkcd") %in% names(ts_report)))
   expect_true(lubridate::is.Date(ts_report$date))
   expect_true(is.character(ts_report$stkcd))
@@ -339,6 +358,7 @@ test_that("get_financial_report, with various arguments", {
     period_type = "year"
   )
   expect_is(ts_report, "data.frame")
+  expect_gt(NROW(ts_report), 0)
   expect_true(all(c("date", "stkcd") %in% names(ts_report)))
   expect_true(lubridate::is.Date(ts_report$date))
   expect_true(is.character(ts_report$stkcd))
@@ -352,6 +372,7 @@ test_that("get_financial_report, with various arguments", {
     period_date = "start"
   )
   expect_is(ts_report, "data.frame")
+  expect_gt(NROW(ts_report), 0)
   expect_true(all(c("date", "stkcd") %in% names(ts_report)))
   expect_true(lubridate::is.Date(ts_report$date))
   expect_true(is.character(ts_report$stkcd))
@@ -363,6 +384,7 @@ test_that("get_financial_report, with various arguments", {
     period_date = "end"
   )
   expect_is(ts_report, "data.frame")
+  expect_gt(NROW(ts_report), 0)
   expect_true(all(c("date", "stkcd") %in% names(ts_report)))
   expect_true(lubridate::is.Date(ts_report$date))
   expect_true(is.character(ts_report$stkcd))

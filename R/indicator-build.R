@@ -26,14 +26,14 @@ compute_indicator <- function(ts_compute_vars,
                               ...,
                               date_index_field = c("date"),
                               key_fields = NULL,
-                              parallel = TRUE) {
+                              parallel = getOption("zstmodelr.common.parallel", TRUE)) {
 
   # Define method to compute single group
   .compute_indicator_single <- function(ts_compute_vars,
-                                          compute_fun,
-                                          ...,
-                                          date_index_field = c("date"),
-                                          key_fields = NULL) {
+                                        compute_fun,
+                                        ...,
+                                        date_index_field = c("date"),
+                                        key_fields = NULL) {
     # validate params
     assertive::assert_is_data.frame(ts_compute_vars)
     assertive::assert_is_function(compute_fun)
@@ -198,7 +198,7 @@ create_indicator <- function(ts_def_vars,
                              debug = FALSE,
                              date_index_field = c("date"),
                              key_fields = NULL,
-                             parallel = TRUE) {
+                             parallel = getOption("zstmodelr.common.parallel", TRUE)) {
 
   # validate params
   assertive::assert_is_data.frame(ts_def_vars)
@@ -324,7 +324,7 @@ modify_indicator <- function(ts_indicator,
                              replace_exist = FALSE,
                              date_index_field = c("date"),
                              key_fields = NULL,
-                             parallel = TRUE) {
+                             parallel = getOption("zstmodelr.common.parallel", TRUE)) {
 
 
 

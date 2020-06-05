@@ -332,10 +332,10 @@ import_table.gta_db <- function(stock_db,
     }
 
     if (success) {
-      msg <- sprintf("Import %s successfully.", input_file)
+      msg <- sprintf("Import %s successfully.\n", input_file)
       rlang::inform(msg)
     } else {
-      msg <- sprintf("Fail to import %s, error: %s.", input_file, error_msg)
+      msg <- sprintf("Fail to import %s, error: %s.\n", input_file, error_msg)
       rlang::warn(msg)
     }
   }
@@ -469,7 +469,7 @@ process_files.gta_db <- function(stock_db,
               process_fun <- purrr::partial(ttm_financial_report,
                 date_index_field = "Accper",
                 key_fields = c("Stkcd", "Typrep"),
-                parallel = TRUE
+                parallel = getOption("zstmodelr.common.parallel", TRUE)
               )
             }
           )

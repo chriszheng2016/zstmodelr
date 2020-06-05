@@ -5,7 +5,7 @@ library(zstmodelr)
 produce_indicators <- function(dsn = c("GTA_SQLData"),
                                indicator_codes = NULL,
                                validate_def = FALSE,
-                               parallel = TRUE) {
+                               parallel = getOption("zstmodelr.common.parallel", TRUE)) {
 
   # validate params
   if (!is.null(indicator_codes)) assertive::assert_is_character(indicator_codes)
@@ -24,8 +24,10 @@ produce_indicators <- function(dsn = c("GTA_SQLData"),
     ds_indicator_defs_origin <- related_indicator_defs(ds_indicator_defs_origin,
       indicator_codes = indicator_codes
     )
-    msg <- sprintf("\nProduce related indicators: %s...",
-                   paste0(ds_indicator_defs_origin$ind_code, collapse = ","))
+    msg <- sprintf(
+      "\nProduce related indicators: %s...",
+      paste0(ds_indicator_defs_origin$ind_code, collapse = ",")
+    )
   } else {
     msg <- sprintf("\nProduce all indicators...")
   }
@@ -94,10 +96,13 @@ archive_indicators <- function(dsn = c("GTA_SQLData"),
 
   # backup indicators files
   path_archive_dir <- backup_indicators(stock_db, ds_indicator_defs,
-                                        backup_dir = "backup")
+    backup_dir = "backup"
+  )
 
-  msg <- sprintf("Indicator files arachived in %s.",
-                 path_archive_dir)
+  msg <- sprintf(
+    "Indicator files arachived in %s.",
+    path_archive_dir
+  )
   rlang::inform(msg)
 
   # close stock db
@@ -212,7 +217,7 @@ indicator_producer <- function(dsn = c("GTA_SQLData"),
 # Archive all indicators files by default
 # indicator_producer(fun = "archive")
 #
-# Archive all indicators files by default
+# Archive specific indicator files by default
 # indicator_producer(fun = "archive", indicator_codes = c("m_nop_ttm"))
 #
 # Clear all indicators files by default
