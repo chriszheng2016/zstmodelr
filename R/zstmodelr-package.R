@@ -9,7 +9,7 @@
 #' @section Options:
 #' - `zstmodelr.data_mgt.guess_max`: Maximum number of records to use for
 #' guessing column types in importing txt/csv files(default:`20000`).
-#' - `zstmodelr.common.parallel`: Should proccess be excuted parally
+#' - `zstmodelr.common.parallel`: Should process be executed in parallel.
 #' (default: `TRUE`).
 
 #' @examples

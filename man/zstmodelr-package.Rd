@@ -21,11 +21,10 @@ To learn more about zstmodelr, start with the vignettes:
 \section{Options}{
 
 \itemize{
-\item \code{testthat.use_colours}: Should the output be coloured? (Default: \code{TRUE}).
-\item \code{testthat.summary.max_reports}: The maximum number of detailed test
-reports printed for the summary reporter (default: 10).
-\item \code{testthat.summary.omit_dots}: Omit progress dots in the summary reporter
-(default: \code{FALSE}).
+\item \code{zstmodelr.data_mgt.guess_max}: Maximum number of records to use for
+guessing column types in importing txt/csv files(default:\code{20000}).
+\item \code{zstmodelr.common.parallel}: Should process be executed in parallel.
+(default: \code{TRUE}).
 }
 }
 

@@ -20,7 +20,7 @@ ts_asfreq(
   ...,
   date_index_field = c("date"),
   key_fields = NULL,
-  parallel = TRUE
+  parallel = getOption("zstmodelr.common.parallel", TRUE)
 )
 
 \method{ts_asfreq}{timeSeries}(

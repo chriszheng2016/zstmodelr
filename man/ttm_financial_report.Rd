@@ -9,7 +9,7 @@ ttm_financial_report(
   date_index_field = "Accper",
   key_fields = c("Stkcd", "Typrep"),
   field_suffix = "ttm",
-  parallel = TRUE
+  parallel = getOption("zstmodelr.common.parallel", TRUE)
 )
 }
 \arguments{
