@@ -326,41 +326,66 @@ test_that("read_import_file, with various arguments", {
   # read_import_file with various arguments ====
 
   # >> argument: input_file ----
-  # Read single/multi files into data.frame
-  input_file <- "./data/test_table03_01.txt"
-  input_files <- "./data/test_table03_[0-9]+.txt"
-  # test_table03_[0-9]+.txt include 3 files with same rows of record:
-  # test_table03_01.txt, test_table03_02.txt, test_table03_03.txt
-
   log_dir <- "./log"
 
+  # Read single file into data.frame
+  input_file <- "./data/test_table03_01.txt"
   # Notice: real data start from line 4, so need skip 3 lines
-  ds_import_data_single_file <- read_import_file(
-    input_file = input_file,
-    input_type = "txt",
-    start_index = 4L,
-    ignore_problems = TRUE,
-    log_dir = log_dir
-  )
-  suppress_warnings({
-    # Ignore some warnings caused by inconsistent type of Crcd column in
-    # diferent files
-    ds_import_data_multi_files <- read_import_file(
-      input_file = input_files,
+  expect_message(
+    ds_import_data_single_file <- read_import_file(
+      input_file = input_file,
       input_type = "txt",
       start_index = 4L,
       ignore_problems = TRUE,
       log_dir = log_dir
-    )
-  },
-  warn_pattern = "parsing failures|Converting problems")
+    ),
+    regexp = "test_table03_01.txt"
+  )
+  expect_is(ds_import_data_single_file, "data.frame")
+
+  # Read multiple files into data.frame
+  input_files <- "./data/test_table03_[0-9]+.txt"
+  # test_table03_[0-9]+.txt include 3 files with same rows of record:
+  # test_table03_01.txt, test_table03_02.txt, test_table03_03.txt
+  expect_message(
+    suppress_warnings(
+      # Ignore some warnings caused by inconsistent type of Crcd column in
+      # diferent files
+      ds_import_data_multi_files <- read_import_file(
+        input_file = input_files,
+        input_type = "txt",
+        start_index = 4L,
+        ignore_problems = TRUE,
+        log_dir = log_dir
+      ),
+      warn_pattern = "parsing failures|Converting problems"
+    ),
+    regexp = "test_table03_01.txt|test_table03_02.txt|test_table03_03.txt"
+  )
 
   expect_is(ds_import_data_multi_files, "data.frame")
-  expect_is(ds_import_data_single_file, "data.frame")
   expect_true(all(
     names(ds_import_data_multi_files) %in% names(ds_import_data_single_file)
   ))
-  expect_true(NROW(ds_import_data_multi_files) == 3 * NROW(ds_import_data_single_file))
+  expect_true(NROW(ds_import_data_multi_files)
+  == 3 * NROW(ds_import_data_single_file))
+
+  # Read files that don't existed or matched
+  input_file <- "./data/non_existed_files.txt"
+
+  expect_warning(
+    ds_import_data_single_file <- read_import_file(
+      input_file = input_file,
+      input_type = "txt",
+      start_index = 4L,
+      ignore_problems = TRUE,
+      log_dir = log_dir
+    ),
+    regexp = "non_existed_files.txt"
+  )
+
+  expect_null(ds_import_data_single_file)
+
 
   # >> argument: input_type ----
   input_file <- "./data/test_table02.txt"

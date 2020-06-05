@@ -391,6 +391,11 @@ read_import_file <- function(input_file,
   ds_import_data <- NULL
   if (length(target_files) > 0) {
 
+    # Inform matched files to read
+    msg <- sprintf("Read data from file(s):%s...\n",
+              paste(target_files, collapse = ","))
+    rlang::inform(msg)
+
     # use first file configration(col_name, col_type) as configuration for all files
     first_target_file <- target_files[1]
 
@@ -485,6 +490,13 @@ read_import_file <- function(input_file,
 
     # consolidate imported data into a data.frame
     ds_import_data <- purrr::map_dfr(ds_target_files$import_data, .f = ~.)
+  } else {
+
+    # Warn not-matched files to read
+    msg <- sprintf("Can't found files matched with %s.\n", input_file)
+    rlang::warn(msg)
+
+    ds_import_data <- NULL
   }
 
   ds_import_data

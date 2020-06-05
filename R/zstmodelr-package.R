@@ -42,7 +42,7 @@ cluster <- NULL
 parallel_enable <- FALSE
 
 zstmodelr_options <- list(
-  zstmodelr.data_mgt.guess_max = 50000,
+  zstmodelr.data_mgt.guess_max = 200000,
   zstmodelr.common.parallel = TRUE
 )
 
