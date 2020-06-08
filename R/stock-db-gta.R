@@ -790,7 +790,7 @@ get_stock_return.gta_db <- function(stock_db, stock_cd_list = NULL,
 
         # spread stkcd as columns
         ds_return <- ds_return %>%
-          tidyr::spread(key = stkcd, value = return)
+          tidyr::pivot_wider(names_from = stkcd, values_from = return)
 
         # arrange colname as the order of stock_cd_list
         if (!is.null(stock_cd_list) && length(stock_cd_list) != 0) {
@@ -1223,7 +1223,7 @@ get_indicators_from_source.gta_db <- function(stock_db,
       code_expr <- create_expr(!!indicator_source)
 
       # redefine eval_tidy to return default value and display error,
-      # if an error occured in evaluating expr
+      # if an error occurred in evaluating expr
       eval_tidy_with_dfault <- purrr::possibly(rlang::eval_tidy,
         otherwise = NULL,
         quiet = FALSE
@@ -1237,7 +1237,7 @@ get_indicators_from_source.gta_db <- function(stock_db,
     "file" = {
       # get dataset from file
 
-      # get vaild file path of indicator
+      # get valid file path of indicator
       path_dir_indicator <- dir_path_db.gta_db(stock_db,
         dir_id = "DIR_DB_DATA_INDICATOR",
         force = FALSE
@@ -1507,22 +1507,22 @@ get_indicators_from_source.gta_db <- function(stock_db,
     }
   }
 
-  # trasnform by ouptput format
+  # transform by output format
   if (!is.null(ds_indicators)) {
     ouput_format <- match.arg(ouput_format)
 
-    # by default, ds_indicatgor is shortrer and wider format
+    # by default, ds_indicator is shorter and wider format
     # transform it into longer and narrower format if specified
     if (ouput_format == "long") {
-      # use numeric fields as value fields for tansform
+      # use numeric fields as value fields for transform
       value_fields <- expect_type_fields(ds_indicators, expect_type = "double")
       if (length(value_fields) > 0) {
         ds_indicators <- ds_indicators %>%
-          tidyr::gather(
-            key = "ind_code",
-            value = "ind_value",
+          tidyr::pivot_longer(
+            names_to = "ind_code",
+            values_to = "ind_value",
             !!value_fields,
-            na.rm = TRUE
+            values_drop_na = FALSE   #must keep vars with NAs
           )
       } else {
         # raise error for no numeric fields
@@ -1612,12 +1612,12 @@ save_indicators_to_source.gta_db <- function(stock_db,
       rlang::abort("Can't save indicator into a table in databse.")
     },
     "code" = {
-      # dont't save data to read-only dynamic source
+      # don't save data to read-only dynamic source
       rlang::abort("Can't save indicator into read-only dynamic source.")
     },
     "file" = {
       # save dataset to file
-      # get vaild file path of indicator
+      # get valid file path of indicator
       path_dir_indicator <- dir_path_db.gta_db(stock_db,
         dir_id = "DIR_DB_DATA_INDICATOR",
         force = FALSE

@@ -418,7 +418,8 @@ exploreFactorsCorrelation <- function(input, output, session, ds_factors) {
 
     ds_select_factors <- ds_select_factors %>%
       dplyr::ungroup() %>%
-      tidyr::spread(key = "factor_name", value = "factor_exposure", drop = TRUE) %>%
+      # tidyr::spread(key = "factor_name", value = "factor_exposure", drop = TRUE) %>%
+      tidyr::pivot_wider(names_from = factor_name, values_from = factor_exposure) %>%
       dplyr::select(-(date:indcd))
 
     # plot the select data correlation
@@ -431,7 +432,8 @@ exploreFactorsCorrelation <- function(input, output, session, ds_factors) {
 
     ds_select_factors <- ds_select_factors %>%
       dplyr::ungroup() %>%
-      tidyr::spread(key = "factor_name", value = "factor_exposure", drop = TRUE) %>%
+      # tidyr::spread(key = "factor_name", value = "factor_exposure", drop = TRUE) %>%
+      tidyr::pivot_wider(names_from = factor_name, values_from = factor_exposure) %>%
       dplyr::select(-(date:indcd))
 
     select_factors_correlation <- cor(ds_select_factors, use = "complete")
