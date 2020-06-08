@@ -1,16 +1,24 @@
 # Tools for producing customized indicators periodically
 library(zstmodelr)
 
-# Procduce indicators
+# Produce indicators
 produce_indicators <- function(dsn = c("GTA_SQLData"),
                                indicator_codes = NULL,
                                validate_def = FALSE,
+                               validate_stkcds = c("600031", "000157", "600066", "000550"),
                                parallel = getOption("zstmodelr.common.parallel", TRUE)) {
-
   # validate params
-  if (!is.null(indicator_codes)) assertive::assert_is_character(indicator_codes)
+  assertive::assert_is_a_non_empty_string(dsn)
+  if (!is.null(indicator_codes)) {
+    assertive::assert_is_character(indicator_codes)
+  }
+  assertive::assert_is_logical(validate_def)
+  if (validate_def) {
+    assertive::assert_is_character(validate_stkcds)
+  }
+  assertive::assert_is_logical(parallel)
 
-  # conect to target stock db
+  # connect to target stock db
   dsn <- match.arg(dsn)
   stock_db <- stock_db(gta_db, dsn)
   open_stock_db(stock_db)
@@ -21,9 +29,10 @@ produce_indicators <- function(dsn = c("GTA_SQLData"),
 
   # get related indicator defs of target indicators
   if (!is.null(indicator_codes)) {
-    ds_indicator_defs_origin <- related_indicator_defs(ds_indicator_defs_origin,
-      indicator_codes = indicator_codes
-    )
+    ds_indicator_defs_origin <-
+      related_indicator_defs(ds_indicator_defs_origin,
+        indicator_codes = indicator_codes
+      )
     msg <- sprintf(
       "\nProduce related indicators: %s...",
       paste0(ds_indicator_defs_origin$ind_code, collapse = ",")
@@ -36,17 +45,20 @@ produce_indicators <- function(dsn = c("GTA_SQLData"),
   rlang::inform(msg)
 
   # prioritize indicator_defs by dependency among indicators
-  ds_indicator_defs_priority <- prioritize_indicator_defs(ds_indicator_defs_origin)
+  ds_indicator_defs_priority <-
+    prioritize_indicator_defs(ds_indicator_defs_origin)
 
   # produce indicators by order of priority
   log_dir <- dir_path_db(stock_db, dir_id = "DIR_DB_DATA_LOG")
-  validate_stkcds <- c("600031", "000157", "600066", "000550")
   for (i in seq_len(NROW(ds_indicator_defs_priority))) {
-    ds_indicator_defs <- ds_indicator_defs_priority$ds_indicator_defs[[i]]
+    ds_indicator_defs <-
+      ds_indicator_defs_priority$ds_indicator_defs[[i]]
 
     # produce indicators in batch mode
-    log_file_prefix <- sprintf("generate_indicator_log(batch#%d)", i)
-    generate_indicators(stock_db,
+    log_file_prefix <-
+      sprintf("generate_indicator_log(batch#%d)", i)
+    generate_indicators(
+      stock_db,
       ds_indicator_defs = ds_indicator_defs,
       validate_def = validate_def,
       validate_stkcds <- validate_stkcds,
@@ -213,11 +225,14 @@ indicator_producer <- function(dsn = c("GTA_SQLData"),
 # Validate some indicator definition
 # indicator_producer(fun = "produce", indicator_codes = c("m_nop_ttm"),
 #                    validate_def = TRUE, parallel = FALSE)
+# Validate some indicator definition for some stkcds
+# indicator_producer(fun = "produce", indicator_codes = c("m_ev"),
+#      validate_def = TRUE, validate_stkcds = c("000015"), parallel = FALSE)
 #
 # Archive all indicators files by default
 # indicator_producer(fun = "archive")
 #
-# Archive specific indicator files by default
+# Archive some indicator files by default
 # indicator_producer(fun = "archive", indicator_codes = c("m_nop_ttm"))
 #
 # Clear all indicators files by default
