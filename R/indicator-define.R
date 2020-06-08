@@ -216,15 +216,15 @@ create_indicator_def_fun <- function(indicator_code,
 
   # define ds_var process
   .process_vars <- function(ds_vars,
-                              date_index_field = c("date"),
-                              key_fields = NULL,
-                              re_freq = c(
-                                "day", "month",
-                                "quarter", "year"
-                              ),
-                              fillna_method = c(
-                                "ffill", "bfill", "nfill"
-                              )) {
+                            date_index_field = c("date"),
+                            key_fields = NULL,
+                            re_freq = c(
+                              "day", "month",
+                              "quarter", "year"
+                            ),
+                            fillna_method = c(
+                              "ffill", "bfill", "nfill"
+                            )) {
 
     # validate params
     assertive::assert_is_data.frame(ds_vars)
@@ -235,18 +235,24 @@ create_indicator_def_fun <- function(indicator_code,
       "period", "ind_code", "ind_value"
     ))
 
-
     # re-group vars by period
     ds_vars_by_period <- ds_vars %>%
       dplyr::select(
         !!date_index_field, !!key_fields,
         period, ind_code, ind_value
       ) %>%
-      tidyr::spread(key = "ind_code", value = "ind_value") %>%
       dplyr::group_by(period) %>%
       tidyr::nest()
 
-    # re-freq vars in different priods
+    # transform dataset into wide format
+    ds_vars_by_period <- ds_vars_by_period %>%
+      dplyr::mutate(data = purrr::map(data,
+        tidyr::pivot_wider,
+        names_from = ind_code,
+        values_from = ind_value
+      ))
+
+    # re-freq vars in different periods
     re_freq <- match.arg(re_freq)
     fillna_method <- match.arg(fillna_method)
     ds_vars_by_period <- ds_vars_by_period %>%
@@ -262,21 +268,12 @@ create_indicator_def_fun <- function(indicator_code,
           )
       )
 
-    # remove columns which are all NA in refreq_data
-    ds_vars_by_period <- ds_vars_by_period %>%
-      dplyr::mutate(refreq_data = purrr::map(
-        refreq_data,
-        dplyr::select_if,
-        function(x) !all(is.na(x))
-      ))
-
     # combine refreq_data into final result
-    suppressMessages({
-      ds_vars_output <- purrr::reduce(
-        ds_vars_by_period$refreq_data,
-        dplyr::full_join
-      )
-    })
+    ds_vars_output <- purrr::reduce(
+      ds_vars_by_period$refreq_data,
+      dplyr::full_join,
+      by = c(date_index_field, key_fields)
+    )
 
 
     return(ds_vars_output)
@@ -306,7 +303,7 @@ create_indicator_def_fun <- function(indicator_code,
 
     # Evaluate exprs in ds_vars
     if (rolly_window > 0) {
-      # rolling evalattion
+      # rolling evaluation
       ds_indicator <- rollify_series(ds_vars,
         fun = .eval_expr,
         window = as.integer(rolly_window),
@@ -355,9 +352,8 @@ create_indicator_def_fun <- function(indicator_code,
         dplyr::bind_cols(ts_indicator)
     }
 
-    # filter non-na result
-    # ts_indicator <- ts_indicator %>%
-    #   dplyr::filter(!is.na(!!rlang::parse_expr(indicator_code)))
+    # Notice : NAs in indicator value are valid and should not be removed.
+
 
 
     # arrange result fields : non-ind fields, ind fields

@@ -204,9 +204,7 @@ create_indicator <- function(ts_def_vars,
   assertive::assert_is_data.frame(ts_def_vars)
   assertive::assert_is_function(ind_def_fun)
 
-  # process input vars to fix problem when the value of keys are na
-  ts_def_vars <- ts_def_vars %>%
-    dplyr::filter(!is.na(ind_value))
+  # Process input vars to fix problem when the value of keys are NAs
 
   # get dataset of value of keys are not na
   keys_are_ok_expr <- key_fields %>%
