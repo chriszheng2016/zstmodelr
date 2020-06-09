@@ -46,6 +46,7 @@ Imports:
     xts,
     zoo,
     foreach
+    cli
 Suggests: 
     covr,
     knitr,
