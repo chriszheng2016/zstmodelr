@@ -2,6 +2,9 @@
 # Skip tests on cran due to consuming long time.
 # skip_on_cran()
 
+# enable parallel process
+enable_parallel()
+
 # Test tool functions ----
 # Build test dataset
 ds_test_timeseries <- function(from = "2015-01-01",
@@ -927,3 +930,6 @@ test_that("refreq_dateindex, with various normal arguments", {
     }
   }
 })
+
+# disable parallel process
+disable_parallel()
