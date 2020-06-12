@@ -1,5 +1,7 @@
 # Tools for producing customized indicators periodically
 library(zstmodelr)
+# enable parallel process
+enable_parallel()
 
 # Produce indicators
 produce_indicators <- function(dsn = c("GTA_SQLData"),
@@ -76,7 +78,7 @@ archive_indicators <- function(dsn = c("GTA_SQLData"),
                                indicator_codes = NULL,
                                ...) {
 
-  # conect to target stock db
+  # connect to target stock db
   dsn <- match.arg(dsn)
   stock_db <- stock_db(gta_db, dsn)
   open_stock_db(stock_db)
@@ -92,7 +94,7 @@ archive_indicators <- function(dsn = c("GTA_SQLData"),
 
   # filter ind_defs by specified indicator codes
   if (!is.null(indicator_codes)) {
-    # check specifed indicators existed in defs
+    # check specified indicators existed in defs
     indicator_exsited <- indicator_codes %in% ds_indicator_defs$ind_code
     if (any(!indicator_exsited)) {
       msg <- sprintf(
@@ -243,3 +245,5 @@ indicator_producer <- function(dsn = c("GTA_SQLData"),
 #
 # Clear some indicators files
 # indicator_producer(fun = "clear", indicator_codes = c("m_nop_ttm"))
+
+

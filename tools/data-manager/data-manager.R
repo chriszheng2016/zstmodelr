@@ -2,6 +2,8 @@
 
 library(zstmodelr)
 options(zstmodelr.data_mgt.guess_max = 300000)
+# enable parallel process
+enable_parallel()
 
 # process stock database
 process_stock_db <- function(dsn = c("GTA_SQLData", "GTA_SQLData_TEST"),
@@ -164,3 +166,4 @@ data_manager <- function(dsn = c("GTA_SQLData", "GTA_SQLData_TEST"),
 #
 # # Clear all tables forcefully
 # data_manager(dsn = "GTA_SQLData", fun = "clear", force = TRUE)
+
