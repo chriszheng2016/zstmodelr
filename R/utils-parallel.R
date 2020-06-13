@@ -91,7 +91,7 @@ enable_parallel <- function(env_globals = .pkg_globals) {
 
   # env_globals must be a environment to store parallel info
   if (!is.null(env_globals)) {
-    assertive.types::assert_is_environment(env_globals)
+    assertive::assert_is_environment(env_globals)
   } else {
     env_globals <- parent.frame()
   }
@@ -125,7 +125,7 @@ enable_parallel <- function(env_globals = .pkg_globals) {
                 please install it.\n")
     }
   } else {
-    assertive.types::assert_is_any_of(cluster, c("SOCKcluster", "cluster"))
+    assertive::assert_is_any_of(cluster, c("SOCKcluster", "cluster"))
     msg <- sprintf("There are already %d clusters been working.\n",
                    length(cluster))
     msg <- paste0(msg, "Use parallel_status() to show more information.\n")
@@ -142,7 +142,7 @@ disable_parallel <- function(env_globals = .pkg_globals) {
 
   # env_globals must be a environment to store parallel info
   if (!is.null(env_globals)) {
-    assertive.types::assert_is_environment(env_globals)
+    assertive::assert_is_environment(env_globals)
   } else {
     env_globals <- parent.frame()
   }
@@ -196,7 +196,7 @@ parallel_status <- function(env_globals = .pkg_globals) {
 
   # env_globals must be a environment to store parallel info
   if (!is.null(env_globals)) {
-    assertive.types::assert_is_environment(env_globals)
+    assertive::assert_is_environment(env_globals)
   } else {
     env_globals <- parent.frame()
   }
