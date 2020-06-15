@@ -85,6 +85,7 @@ Collate:
     'shiny-factor-tools.R'
     'stock-db-default.R'
     'testthat-extends.R'
+    'utils-cliui.R'
     'utils-dates.R'
     'utils-expr.R'
     'utils-fields.R'

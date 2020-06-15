@@ -1,0 +1,283 @@
+# Utility functions - Command Line Interactive User Interface(cliui)
+
+
+#' Prompt user to input value for a argument
+#'
+#' @param arg  a symbol name of argument.
+#' @param choices vector of values to be chose for argument. Default NULL means
+#'   to use information in argument `fun` to get value of `choices`.
+#' @param fun a function with arguments information to get input values.
+#'
+#' @return a list of a argument.
+#' @noRd
+arg_value <- function(arg, choices = NULL, fun = NULL) {
+
+  # Validate params
+  if (!is.null(fun)) {
+    assertive::assert_is_function(fun)
+  } else {
+    # use parent call as the fun
+    fun <- sys.function(sysP <- sys.parent())
+  }
+
+  # Get value of a argument
+  arg_name <- as.character(rlang::enexpr(arg))
+  arg_value <- NULL
+  if (arg_name != "...") {
+
+    # build candidate list of choice
+    if (is.null(choices)) {
+      eval_tidy_with_dfault <- purrr::possibly(rlang::eval_tidy,
+        otherwise = NULL,
+        quiet = TRUE
+      )
+      formal.args <- formals(fun)
+      choices <- eval_tidy_with_dfault(
+        formal.args[[arg_name]],
+        env = parent.frame()
+      )
+      if (is.logical(choices)) {
+        choices <- c(FALSE, TRUE)
+      }
+    }
+
+    # prompt user to choose a value for argument
+    if (length(choices) > 1) {
+      cli::cli_rule(center = " * select value for {arg_name} * ")
+      # arg_value <- choices[utils::menu(choices)]
+      arg_value <- select.list(choices, multiple = TRUE)
+    } else {
+      # ask user input new value when choice is NULL or choice with 1 default value
+      # value
+      cli::cli_rule(center = " * input value for {arg_name} * ")
+      default_value <- ifelse(is.null(choices), "NULL", choices)
+      cli::cli_alert_info("{arg_name} default: {default_value}, input new value or 'q' to cancel.")
+      user_input <- readline(prompt = ">")
+      if (user_input != "") {
+        if (user_input != "q") {
+          arg_value <- stringr::str_split(user_input, ",")[[1]]
+          arg_value <- readr::parse_guess(arg_value)
+          if (stringr::str_to_upper(arg_value) == "NULL") {
+            arg_value <- NULL
+          }
+        } else {
+          # user input "q" to cancel input
+          arg_value <- character(0)
+        }
+      } else {
+        # when user input "", we should use choices as default value
+        # notice: NULL value is still valid since NULL could be default value
+        arg_value <- choices
+      }
+    }
+
+    # notify selection results
+    if ((is.null(arg_value)) || (length(arg_value) > 0)) {
+      if (is.null(arg_value)) {
+        input_arg_value <- "NULL"
+      } else {
+        input_arg_value <- arg_value
+      }
+      input_arg_value <- paste0(input_arg_value, collapse = ",")
+      cli::cli_alert_success("selected {arg_name}: {.strong {input_arg_value}}.\n")
+    } else {
+      # only character(0) means cancel select/input value
+      cli::cli_alert_warning("please see function {.strong usage} carefully.")
+      # help_fun(fun)
+      rlang::abort("Abort without a value for argument.\n")
+    }
+
+    arg_value <- rlang::list2(!!arg_name := arg_value)
+  }
+
+  arg_value
+}
+
+#' Prompt user to input values for arguments of a function
+#'
+#' @param fun a function with arguments information to get input values.
+#' @param arg_value_fun a function used for getting value for a argument,
+#'   default `arg_value` to get a value for a argument.
+#'
+#' @return a list of multiple arguments.
+#' @noRd
+args_values <- function(fun, arg_value_fun = arg_value) {
+
+  # Validate params
+  assertive::assert_is_function(fun)
+  assertive::assert_is_function(arg_value_fun)
+
+  # Get values for all arguments of fun
+  args_defs <- formals(fun)
+  args_names <- names(args_defs)
+  args_values <- purrr::map(args_names,
+    .f = arg_value_fun,
+    fun = fun
+  )
+  args_values <- purrr::reduce(args_values, .f = c)
+
+  args_values
+}
+
+#' Execute a function with list of arguments
+#'
+#' @param fun a function to be executed.
+#' @param args_values a list of multiple arguments.
+#' @param quiet a logical of whether display interactive message. Default FALSE
+#'   means display interactive message in execution.
+#' @param debug a logical of whether execute `fun` in simulation mode or real
+#'   mode. Default FALSE means to execute function in real mode.
+#'
+#' @return return value from `fun` if `debug = TRUE`, otherwise NULL.
+#' @noRd
+execute_fun <- function(fun, args_values = NULL, quiet = FALSE, debug = FALSE) {
+
+  # Validate params
+  assertive::assert_is_function(fun)
+
+  # Execute fun with arguments
+  result <- NULL
+  if (quiet) {
+    if (!debug) {
+      # rlang::eval_tidy(action)
+      result <- do.call(fun, args = args_values)
+    }
+  } else {
+    fun_name <- as.character(substitute(fun))
+    action <- rlang::expr(fun(!!!args_values))
+    action_str <- rlang::as_label(action)
+    action_str <- stringr::str_replace(action_str,
+      pattern = "fun",
+      replacement = fun_name
+    )
+    cli::cli_code(format(rlang::parse_expr(action_str)))
+    cat("It may take long time. Are you sure to execute?\n")
+    user_answer <- utils::select.list(c("Yes", "No"))
+    if (user_answer == "Yes") {
+      if (!debug) {
+        cli::cli_alert_info("Run {fun_name}... ")
+        # rlang::eval_tidy(action)
+        result <- do.call(fun, args = args_values)
+        cli::cli_alert_success("{fun_name} done.")
+      } else {
+        cli::cli_alert_info("Simulate to run {fun_name}... ")
+        Sys.sleep(3)
+        cli::cli_alert_success("{fun_name} done.")
+      }
+    } else {
+      cli::cli_alert_warning("Action is aborted.")
+    }
+  }
+
+  invisible(result)
+}
+
+
+#' Call a function interactively
+#'
+#' @param fun a function to be executed.
+#' @param quiet a logical of whether display interactive message. Default FALSE
+#'   means display interactive message in execution.
+#' @param debug a logical of whether execute fun in simulation mode or real
+#'   mode. Default FALSE means to execute function in real mode.
+#' @return return value from `fun` if `debug = TRUE`, otherwise NULL.
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#'
+#' # Call a function by prompting user to provide values for arguments
+#' interactive_call(print)
+#'
+#' # Call a function interactively which execute without displaying information
+#' interactive_call(print, quiet = TRUE)
+#'
+#' # Call a function interactively which execute it in debug mode
+#' interactive_call(print, debug = TRUE)
+#' }
+interactive_call <- function(fun, debug = FALSE, quiet = FALSE) {
+
+  # Validate params
+  assertive::assert_is_function(fun)
+
+  # Prompt user to input values for arguments
+  args_values <- args_values(fun)
+
+  # Execute function by input values of arguments
+  result <- execute_fun(fun, args_values = args_values, quiet = quiet, debug = debug)
+
+  invisible(result)
+}
+
+#' Turn a function into interactive function
+#'
+#' @param fun a function to be executed.
+#' @param quiet a logical of whether display interactive message. Default FALSE
+#'   means display interactive message in execution.
+#' @param debug a logical of whether execute fun in simulation mode or real
+#'   mode. Default FALSE means to execute function in real mode.
+#' @return return value from `fun` if `debug = TRUE`, otherwise NULL.
+#'
+#' @return a function which could be call in interactive mode.
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#'
+#'
+#' # Turn print() into interactive function and call it interactively
+#' inter_print <- interactive_fun(print)
+#' inter_print()
+#'
+#'
+#' # Turn print() into interactive function and call it interactively,
+#' # execute it without displaying information
+#' inter_print <- interactive_fun(print, quiet = TRUE)
+#' inter_print()
+#'
+#' # Turn print() into interactive function and call it interactively,
+#' # execute it in debug mode
+#' inter_print <- interactive_fun(print, debug = TRUE)
+#' inter_print()
+#' }
+interactive_fun <- function(fun, debug = FALSE, quiet = FALSE) {
+
+  # Validate params
+  assertive::assert_is_function(fun)
+
+  inter_fun <- purrr::partial(.f = interactive_call, fun = fun, debug = debug, quiet = quiet)
+
+  inter_fun
+}
+
+#' Display usage of function
+#'
+#' @param fun a function to be display usage.
+#' @param argument_desc a character arguments description.
+#' @param examples a character examples.
+#'
+#' @return standard output
+#' @noRd
+#' @export
+help_fun <- function(fun = NULL,
+                     argument_desc = "",
+                     examples = "") {
+
+  # Validate params
+  if (!is.null(fun)) {
+    assertive::assert_is_function(fun)
+  }
+
+  # fun_name <- as.character(rlang::enexpr(fun))
+  fun_name <- as.character(substitute(fun))
+  cli::cli_rule(center = "{fun_name} Help")
+  cli::cli_code(args(fun))
+
+  # usage of arguments
+  cli::cli_rule(center = "Arguments")
+  cat(argument_desc)
+
+  # usage of examples
+  cli::cli_rule(center = "Examples")
+  cat(examples)
+}
