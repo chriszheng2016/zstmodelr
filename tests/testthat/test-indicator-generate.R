@@ -13,6 +13,8 @@ skip_if_not(db_ready,
 )
 suppressMessages(init_stock_db(stock_db))
 
+enable_parallel()
+
 # prepare test datasets
 customized_indicators_info <- tibble::tibble(
   ind_code = c("m_ep_ttm", "q_ep_ttm"),
@@ -125,5 +127,6 @@ test_that("delete_indicators", {
 
 
 
-# clear up testing conext
+# Clear up testing context
 suppressMessages(close_stock_db(stock_db))
+disable_parallel()

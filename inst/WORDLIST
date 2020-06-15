@@ -8,9 +8,9 @@ bfill
 CamelCase
 cashflow
 cd
+cliui
 clsdt
 Codecov
-coloured
 csv
 ctex
 customised
@@ -23,8 +23,10 @@ ds
 dsn
 expr
 ffill
+foreach
 funs
 github
+globals
 gta
 GTA
 IC
@@ -53,6 +55,7 @@ ROCE
 rolly
 rticles
 shrchdgt
+SOCKcluster
 SQLData
 stdev
 stkcd

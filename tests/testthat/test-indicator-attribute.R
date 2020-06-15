@@ -13,6 +13,9 @@ skip_if_not(db_ready,
 )
 suppressMessages(init_stock_db(stock_db))
 
+# enable parallel process
+enable_parallel()
+
 test_that("attr_indicators", {
 
   # define attribute
@@ -125,3 +128,5 @@ test_that("attr_indicators_trdstat", {
 
 # clear up testing conext
 suppressMessages(close_stock_db(stock_db))
+# disable parallel process
+disable_parallel()

@@ -1,6 +1,9 @@
 # Tests for function of indicator build  ----
 context("Tests for function of indicator build")
 
+# enable parallel process
+enable_parallel()
+
 test_that("compute_indicator", {
 
   # indicator definition params
@@ -248,3 +251,6 @@ test_that("modify_indicator", {
   expect_true(all(actual_fields %in% expect_fields))
   expect_true(all(ts_modify_indicator[attr_name] == attr_value2))
 })
+
+# disable parallel process
+disable_parallel()

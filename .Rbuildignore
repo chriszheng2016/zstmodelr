@@ -15,3 +15,5 @@ check
 ^pkgdown$
 ^codecov\.yml$
 ^\.github$
+^\.git$
+[.]log$

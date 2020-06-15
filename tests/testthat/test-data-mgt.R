@@ -14,6 +14,7 @@ suppressMessages(init_stock_db(stock_db))
 db_info <- DBI::dbGetInfo(stock_db$connection)
 target_database <- db_info$dbname
 
+enable_parallel()
 
 test_that("get_datasource, with various arguments", {
 
@@ -832,7 +833,9 @@ test_that("process_files, with various arguments", {
   expect_true(all(data_source_ttm$input_file %in% log_info$input_file))
 })
 
-# clear up testing conext
+# Clear up testing context
 DBI::dbRemoveTable(stock_db$connection, "test_table01")
 DBI::dbRemoveTable(stock_db$connection, "test_table02")
 suppressMessages(close_stock_db(stock_db))
+
+disable_parallel()

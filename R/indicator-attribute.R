@@ -107,12 +107,12 @@ attr_indicators <- function(ts_indicators,
   if (is_long_format) {
     ind_codes <- unique(ts_indicators$ind_code)
     ts_indicator_wide <- ts_indicators %>%
-      tidyr::spread(key = ind_code, value = ind_value)
+      tidyr::pivot_wider(names_from = ind_code, values_from = ind_value)
   } else {
     ts_indicator_wide <- ts_indicators
   }
 
-  # add attributes into indicatros
+  # add attributes into indicators
   ts_indicator_with_attr <- modify_indicator(
     ts_indicator = ts_indicator_wide,
     modify_fun = new_attr_def,
@@ -123,10 +123,10 @@ attr_indicators <- function(ts_indicators,
   )
 
   # transform back to long format if need
-  if (is_long_format) {
-    ts_indicator_with_attr <- ts_indicator_with_attr %>%
-      tidyr::gather(key = "ind_code", value = "ind_value", !!ind_codes)
-  }
+if (is_long_format) {
+  ts_indicator_with_attr <- ts_indicator_with_attr %>%
+    tidyr::pivot_longer(names_to = "ind_code", values_to = "ind_value", !!ind_codes)
+}
 
   return(ts_indicator_with_attr)
 }
