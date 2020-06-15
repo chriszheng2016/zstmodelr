@@ -9,6 +9,9 @@
 #' @param fun a function with arguments information to get input values.
 #'
 #' @return a list of a argument.
+#'
+#' @family utils_cliui
+#'
 #' @noRd
 arg_value <- function(arg, choices = NULL, fun = NULL) {
 
@@ -44,8 +47,7 @@ arg_value <- function(arg, choices = NULL, fun = NULL) {
     # prompt user to choose a value for argument
     if (length(choices) > 1) {
       cli::cli_rule(center = " * select value for {arg_name} * ")
-      # arg_value <- choices[utils::menu(choices)]
-      arg_value <- select.list(choices, multiple = TRUE)
+      arg_value <- utils::select.list(choices, multiple = TRUE)
     } else {
       # ask user input new value when choice is NULL or choice with 1 default value
       # value
@@ -100,6 +102,9 @@ arg_value <- function(arg, choices = NULL, fun = NULL) {
 #'   default `arg_value` to get a value for a argument.
 #'
 #' @return a list of multiple arguments.
+#'
+#' @family utils_cliui
+#'
 #' @noRd
 args_values <- function(fun, arg_value_fun = arg_value) {
 
@@ -129,6 +134,9 @@ args_values <- function(fun, arg_value_fun = arg_value) {
 #'   mode. Default FALSE means to execute function in real mode.
 #'
 #' @return return value from `fun` if `debug = TRUE`, otherwise NULL.
+#'
+#' @family utils_cliui
+#'
 #' @noRd
 execute_fun <- function(fun, args_values = NULL, quiet = FALSE, debug = FALSE) {
 
@@ -175,6 +183,11 @@ execute_fun <- function(fun, args_values = NULL, quiet = FALSE, debug = FALSE) {
 
 #' Call a function interactively
 #'
+#' Since calling a function needs arguments, we should provide values explicitly
+#' to a argument without default value. Except that, we could call it
+#' interactively, i.e. we could ask user to provide value for each argument
+#' during execution of function.
+#'
 #' @param fun a function to be executed.
 #' @param quiet a logical of whether display interactive message. Default FALSE
 #'   means display interactive message in execution.
@@ -182,6 +195,8 @@ execute_fun <- function(fun, args_values = NULL, quiet = FALSE, debug = FALSE) {
 #'   mode. Default FALSE means to execute function in real mode.
 #' @return return value from `fun` if `debug = TRUE`, otherwise NULL.
 #' @export
+#'
+#' @family utils_cliui
 #'
 #' @examples
 #' \dontrun{
@@ -211,14 +226,21 @@ interactive_call <- function(fun, debug = FALSE, quiet = FALSE) {
 
 #' Turn a function into interactive function
 #'
+#' A function normally needs be provided value for arguments to be called. We
+#' could turn a normal function into a function with ability to be called
+#' interactively, i.e. we could call it interactively by asking user to provide
+#' value for each argument during execution.
+#'
 #' @param fun a function to be executed.
 #' @param quiet a logical of whether display interactive message. Default FALSE
 #'   means display interactive message in execution.
 #' @param debug a logical of whether execute fun in simulation mode or real
 #'   mode. Default FALSE means to execute function in real mode.
-#' @return return value from `fun` if `debug = TRUE`, otherwise NULL.
 #'
-#' @return a function which could be call in interactive mode.
+#' @return a function which could be called in interactive mode.
+#'
+#' @family utils_cliui
+#'
 #' @export
 #'
 #' @examples
@@ -252,12 +274,15 @@ interactive_fun <- function(fun, debug = FALSE, quiet = FALSE) {
 
 #' Display usage of function
 #'
+#' Display help for a function by arguments usage and examples.
+#'
 #' @param fun a function to be display usage.
 #' @param argument_desc a character arguments description.
 #' @param examples a character examples.
 #'
 #' @return standard output
-#' @noRd
+#' @family utils_cliui
+#'
 #' @export
 help_fun <- function(fun = NULL,
                      argument_desc = "",
