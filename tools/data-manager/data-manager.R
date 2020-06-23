@@ -131,19 +131,18 @@ clear_stock_db <- function(dsn = c("GTA_SQLData", "GTA_SQLData_TEST"),
 }
 
 # Fetch action fun by name
-.action_fun <- function(action = c("process", "update", "clear")){
-
+.action_fun <- function(action = c("process", "update", "clear")) {
   action <- match.arg(action)
   action_fun <- switch(
     action,
     "process" = {
-      process_stock_db
+      rlang::quo(process_stock_db)
     },
     "update" = {
-      update_stock_db
+      rlang::quo(update_stock_db)
     },
     "clear" = {
-      clear_stock_db
+      rlang::quo(clear_stock_db)
     }
   )
 
@@ -160,25 +159,24 @@ data_manager <- function(dsn = c("GTA_SQLData", "GTA_SQLData_TEST"),
   } else {
     dsn <- match.arg(dsn)
     action <- match.arg(action)
-    action_fun <- .action_fun(action)
+    action_fun <- rlang::eval_tidy(.action_fun(action))
     action_fun(dsn, ...)
   }
 }
 
 # Interactive UI of main function to conduct data management
 data_manager_ui <- function(debug = FALSE) {
+  # prompt use select action function
+  action_fun <- interactive_call_(rlang::quo(.action_fun), quiet = TRUE)
 
-   # prompt use select action function
-   action_fun <- interactive_call(.action_fun, quiet = TRUE)
-
-   # run action interactively
-   interactive_call(action_fun, debug = debug)
+  # run action interactively
+  interactive_call_(action_fun, debug = debug)
 }
 
 help_usage <- function() {
 
   # usage of arguments
-  argment_desc <- c('
+  argment_desc <- c("
   * dsn: name of data source of database.
 
   * action: action to perform.
@@ -192,7 +190,7 @@ help_usage <- function() {
 
   * help: diplay usage or not.
 
-  ')
+  ")
 
   # usage of examples
   examples <- c('
@@ -215,8 +213,10 @@ help_usage <- function() {
   data_manager(dsn = "GTA_SQLData", action = "clear", force = TRUE)
   ')
 
-  help_fun(data_manager, argument_desc = argment_desc,
-           examples = examples)
+  help_fun(data_manager,
+    argument_desc = argment_desc,
+    examples = examples
+  )
 }
 
 
@@ -226,5 +226,3 @@ help_usage <- function() {
 #
 # Run data_manager in interactive mode
 # data_manager_ui()
-
-
