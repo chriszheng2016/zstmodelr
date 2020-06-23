@@ -221,6 +221,8 @@ execute_fun <- function(quo_fun, args_values = NULL, quiet = FALSE, debug = FALS
 #' @examples
 #' \dontrun{
 #'
+#' # NSE examples -- Usage in interactive mode
+#'
 #' # Call a function by prompting user to provide values for arguments
 #' interactive_call(print)
 #'
@@ -229,6 +231,16 @@ execute_fun <- function(quo_fun, args_values = NULL, quiet = FALSE, debug = FALS
 #'
 #' # Call a function interactively which execute it in debug mode
 #' interactive_call(print, debug = TRUE)
+#'
+#' # SE examples -- Usage in program mode
+#'
+#' # Program with SE version function
+#' inter_call <- function(fun) {
+#'   interactive_call_(rlang::quo(fun), quiet = TRUE)
+#' }
+#'
+#' inter_call(print)
+#'
 #' }
 
 # NSE version of function
