@@ -116,7 +116,8 @@ test_that("import_table, with various arguments", {
         log_dir = log_dir
       )
     ),
-    regexp = "Converting problems"
+    regexp = "Converting problems",
+    class = "dplyr_error"
   )
 })
 
@@ -432,7 +433,8 @@ test_that("read_import_file, with various arguments", {
         log_dir = log_dir
       )
     ),
-    regexp = "Converting problems"
+    regexp = "Converting problems",
+    class = "dplyr_error"
   )
 })
 
