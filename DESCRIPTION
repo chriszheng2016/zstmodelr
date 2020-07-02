@@ -49,10 +49,13 @@ Imports:
     zoo
 Suggests: 
     covr,
+    glue,
     knitr,
+    mockery,
     spelling,
     testthat,
-    tinytex
+    tinytex,
+    withr
 VignetteBuilder: 
     knitr
 Encoding: UTF-8
