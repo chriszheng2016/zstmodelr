@@ -143,14 +143,14 @@
     <p>Use data rank as new data</p>
     </div>
 
-    <pre class="usage"><span class='fu'>build_report</span>(
-  <span class='no'>report_template</span>,
-  <span class='kw'>report_params</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>output_format</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"html_document"</span>, <span class='st'>"pdf_document"</span>, <span class='st'>"word_document"</span>, <span class='st'>"rticles::ctex"</span>),
-  <span class='kw'>output_sn</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>output_dir</span> <span class='kw'>=</span> <span class='st'>"output"</span>,
-  <span class='kw'>quiet</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
-  <span class='no'>...</span>
+    <pre class="usage"><span class='fu'><a href='https://rdrr.io/pkg/zstmodelr/man/build_report.html'>build_report</a></span>(
+  <span class='kw'>report_template</span>,
+  report_params = <span class='kw'>NULL</span>,
+  output_format = <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"html_document"</span>, <span class='st'>"pdf_document"</span>, <span class='st'>"word_document"</span>, <span class='st'>"rticles::ctex"</span>),
+  output_sn = <span class='kw'>NULL</span>,
+  output_dir = <span class='st'>"output"</span>,
+  quiet = <span class='fl'>TRUE</span>,
+  <span class='kw'>...</span>
 )</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
@@ -166,21 +166,23 @@
     </tr>
     <tr>
       <th>output_format</th>
-      <td><p>Output file format i.e. "html_document","pdf",
-by default "html_document".</p></td>
+      <td><p>Output file format i.e. "html_document","pdf_document",
+"word_document", "rticles::ctex". Default "html_document".</p></td>
     </tr>
     <tr>
       <th>output_sn</th>
-      <td><p>NULL, serial number or id for output file.</p></td>
+      <td><p>Serial number or id for output file. Default NULL</p></td>
     </tr>
     <tr>
       <th>output_dir</th>
-      <td><p>Dir to save output file, i.e. "output", if NULL,
-save in directory of template file, otherwise in output_dir.</p></td>
+      <td><p>Path of dir to save output file. Default "output" means to
+save file in output in current dir. If NULL save in directory of template
+file, otherwise in output_dir</p></td>
     </tr>
     <tr>
       <th>quiet</th>
-      <td><p>TRUE to suppress printing of the pandoc command line.</p></td>
+      <td><p>A logic flag of whether to suppress printing of the pandoc
+command line.</p></td>
     </tr>
     <tr>
       <th>...</th>

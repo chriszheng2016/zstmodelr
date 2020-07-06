@@ -143,17 +143,17 @@ modify_indicator." />
 
     <div class="ref-description">
     <p>Use customized function and variable timeseries to compute indicator.
-Its is a working horse behind <code><a href='create_indicator.html'>create_indicator</a></code>,
-<code><a href='modify_indicator.html'>modify_indicator</a></code>.</p>
+Its is a working horse behind <code><a href='https://rdrr.io/pkg/zstmodelr/man/create_indicator.html'>create_indicator</a></code>,
+<code><a href='https://rdrr.io/pkg/zstmodelr/man/modify_indicator.html'>modify_indicator</a></code>.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>compute_indicator</span>(
-  <span class='no'>ts_compute_vars</span>,
-  <span class='no'>compute_fun</span>,
-  <span class='no'>...</span>,
-  <span class='kw'>date_index_field</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"date"</span>),
-  <span class='kw'>key_fields</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>parallel</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>
+    <pre class="usage"><span class='fu'><a href='https://rdrr.io/pkg/zstmodelr/man/compute_indicator.html'>compute_indicator</a></span>(
+  <span class='kw'>ts_compute_vars</span>,
+  <span class='kw'>compute_fun</span>,
+  <span class='kw'>...</span>,
+  date_index_field = <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"date"</span>),
+  key_fields = <span class='kw'>NULL</span>,
+  parallel = <span class='fu'><a href='https://rdrr.io/r/base/options.html'>getOption</a></span>(<span class='st'>"zstmodelr.common.parallel"</span>, <span class='fl'>TRUE</span>)
 )</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
@@ -194,8 +194,8 @@ Default TRUE means to use parallel processing.</p></td>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
     <div class='dont-index'><p>Other indicator build functions: 
-<code><a href='create_indicator.html'>create_indicator</a>()</code>,
-<code><a href='modify_indicator.html'>modify_indicator</a>()</code></p></div>
+<code><a href='https://rdrr.io/pkg/zstmodelr/man/create_indicator.html'>create_indicator</a>()</code>,
+<code><a href='https://rdrr.io/pkg/zstmodelr/man/modify_indicator.html'>modify_indicator</a>()</code></p></div>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

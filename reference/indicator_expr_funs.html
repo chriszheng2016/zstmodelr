@@ -143,22 +143,22 @@
     <p>Functions are only used in defining indicator expr.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>Lag</span>(<span class='no'>x</span>, <span class='kw'>k</span> <span class='kw'>=</span> <span class='fl'>1</span>)
+    <pre class="usage"><span class='fu'><a href='https://rdrr.io/pkg/zstmodelr/man/indicator_expr_funs.html'>Lag</a></span>(<span class='kw'>x</span>, k = <span class='fl'>1</span>)
 
-<span class='fu'>GrowthRate</span>(<span class='no'>x</span>)
+<span class='fu'><a href='https://rdrr.io/pkg/zstmodelr/man/indicator_expr_funs.html'>GrowthRate</a></span>(<span class='kw'>x</span>)
 
-<span class='fu'>Ratio</span>(<span class='no'>x_numerator</span>, <span class='no'>y_denominator</span>)
+<span class='fu'><a href='https://rdrr.io/pkg/zstmodelr/man/indicator_expr_funs.html'>Ratio</a></span>(<span class='kw'>x_numerator</span>, <span class='kw'>y_denominator</span>)
 
-<span class='fu'>Demean</span>(<span class='no'>x</span>)
+<span class='fu'><a href='https://rdrr.io/pkg/zstmodelr/man/indicator_expr_funs.html'>Demean</a></span>(<span class='kw'>x</span>)
 
-<span class='fu'>Quarter_TTM</span>(<span class='no'>date</span>, <span class='no'>x</span>)
+<span class='fu'><a href='https://rdrr.io/pkg/zstmodelr/man/indicator_expr_funs.html'>Quarter_TTM</a></span>(<span class='kw'>date</span>, <span class='kw'>x</span>, accumulated = <span class='fl'>TRUE</span>)
 
-<span class='fu'>Beta</span>(<span class='no'>y_dependent</span>, <span class='no'>x_independent</span>)
+<span class='fu'><a href='https://rdrr.io/pkg/zstmodelr/man/indicator_expr_funs.html'>Beta</a></span>(<span class='kw'>y_dependent</span>, <span class='kw'>x_independent</span>)
 
-<span class='fu'>RiskFreeRate</span>(
-  <span class='no'>stock_db</span>,
-  <span class='no'>indicator_code</span>,
-  <span class='kw'>period</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"day"</span>, <span class='st'>"month"</span>, <span class='st'>"quarter"</span>, <span class='st'>"year"</span>)
+<span class='fu'><a href='https://rdrr.io/pkg/zstmodelr/man/indicator_expr_funs.html'>RiskFreeRate</a></span>(
+  <span class='kw'>stock_db</span>,
+  <span class='kw'>indicator_code</span>,
+  period = <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"day"</span>, <span class='st'>"month"</span>, <span class='st'>"quarter"</span>, <span class='st'>"year"</span>)
 )</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
@@ -183,6 +183,11 @@
     <tr>
       <th>date</th>
       <td><p>A date vector or array.</p></td>
+    </tr>
+    <tr>
+      <th>accumulated</th>
+      <td><p>A logic about whether specified data series is
+accumulated or not. Default is TRUE.</p></td>
     </tr>
     <tr>
       <th>y_dependent</th>

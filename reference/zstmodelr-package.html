@@ -48,8 +48,8 @@
 
 <meta property="og:title" content="zstmodelr: Stock Factor Models for China Stock Market Investment — zstmodelr-package" />
 <meta property="og:description" content="
-An implementation of analytical tools of stock factors models for 
-   investing China stock market." />
+An implementation of analytical tools of stock
+    factors models for investing China stock market." />
 <meta property="og:image" content="/logo.png" />
 
 
@@ -143,8 +143,8 @@ An implementation of analytical tools of stock factors models for
 
     <div class="ref-description">
     <p><img src='figures/logo.png' align='right' alt='logo' width='120' /></p>
-<p>An implementation of analytical tools of stock factors models for 
-   investing China stock market.</p>
+<p>An implementation of analytical tools of stock
+    factors models for investing China stock market.</p>
     </div>
 
 
@@ -160,11 +160,12 @@ modern ML method to build stock models for China stock market.</p>
     
 
 <ul>
-<li><p><code>testthat.use_colours</code>: Should the output be coloured? (Default: <code>TRUE</code>).</p></li>
-<li><p><code>testthat.summary.max_reports</code>: The maximum number of detailed test
-reports printed for the summary reporter (default: 10).</p></li>
-<li><p><code>testthat.summary.omit_dots</code>: Omit progress dots in the summary reporter
-(default: <code>FALSE</code>).</p></li>
+<li><p><code>zstmodelr.data_mgt.guess_max</code>: maximum number of records to use for
+guessing column types in importing txt/csv files(default:<code>20000</code>).</p></li>
+<li><p><code>zstmodelr.common.parallel</code>: whether process will be executed in parallel
+or not (default: <code>TRUE</code>).</p></li>
+<li><p><code>zstmodelr.common.clusters</code>: number of clusters to be used for parallel
+processing(default: <code>parallel::detectCores() - 1</code>).</p></li>
 </ul>
 
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
@@ -180,11 +181,15 @@ reports printed for the summary reporter (default: 10).</p></li>
     <p><strong>Maintainer</strong>: Chris Zheng <a href='mailto:chriszheng@vip.sina.com.cn'>chriszheng@vip.sina.com.cn</a> (<a href='https://orcid.org/CHRISZHENG'S-ORCID-ID'>ORCID</a>)</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='kw'>if</span> (<span class='fl'>FALSE</span>) {
-<span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>testthat</span>)
-<span class='no'>a</span> <span class='kw'>&lt;-</span> <span class='fl'>9</span>
-<span class='fu'><a href='https://testthat.r-lib.org/reference/expect_that.html'>expect_that</a></span>(<span class='no'>a</span>, <span class='fu'><a href='https://testthat.r-lib.org/reference/oldskool.html'>is_less_than</a></span>(<span class='fl'>10</span>))
-<span class='fu'><a href='https://testthat.r-lib.org/reference/comparison-expectations.html'>expect_lt</a></span>(<span class='no'>a</span>, <span class='fl'>10</span>)
+    <pre class="examples"><div class='input'><span class='co'>if</span> (<span class='fl'>FALSE</span>) {
+<span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='kw'><a href='https://github.com/chriszheng2016/zstmodelr'>zstmodelr</a></span>)
+
+<span class='co'># adjust options for reading importing files</span>
+<span class='fu'><a href='https://rdrr.io/r/base/options.html'>options</a></span>(zstmodelr.data_mgt.guess_max = <span class='fl'>300000</span>)
+
+<span class='co'># read some importing files....</span>
+<span class='kw'>ds_import_data</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/zstmodelr/man/read_import_file.html'>read_import_file</a></span>(<span class='kw'>input_file</span>)
+
 }</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

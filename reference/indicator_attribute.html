@@ -143,11 +143,23 @@
     <p>Compute attribute values of stocks and add them to indicator timeseries.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>attr_indicators</span>(<span class='no'>ts_indicators</span>, <span class='no'>new_attr_def</span>, <span class='kw'>parallel</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)
+    <pre class="usage"><span class='fu'><a href='https://rdrr.io/pkg/zstmodelr/man/indicator_attribute.html'>attr_indicators</a></span>(
+  <span class='kw'>ts_indicators</span>,
+  <span class='kw'>new_attr_def</span>,
+  parallel = <span class='fu'><a href='https://rdrr.io/r/base/options.html'>getOption</a></span>(<span class='st'>"zstmodelr.common.parallel"</span>, <span class='fl'>TRUE</span>)
+)
 
-<span class='fu'>attr_indicators_indcd</span>(<span class='no'>stock_db</span>, <span class='no'>ts_indicators</span>, <span class='kw'>parallel</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)
+<span class='fu'><a href='https://rdrr.io/pkg/zstmodelr/man/indicator_attribute.html'>attr_indicators_indcd</a></span>(
+  <span class='kw'>stock_db</span>,
+  <span class='kw'>ts_indicators</span>,
+  parallel = <span class='fu'><a href='https://rdrr.io/r/base/options.html'>getOption</a></span>(<span class='st'>"zstmodelr.common.parallel"</span>, <span class='fl'>TRUE</span>)
+)
 
-<span class='fu'>attr_indicators_trdstat</span>(<span class='no'>stock_db</span>, <span class='no'>ts_indicators</span>, <span class='kw'>parallel</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)</pre>
+<span class='fu'><a href='https://rdrr.io/pkg/zstmodelr/man/indicator_attribute.html'>attr_indicators_trdstat</a></span>(
+  <span class='kw'>stock_db</span>,
+  <span class='kw'>ts_indicators</span>,
+  parallel = <span class='fu'><a href='https://rdrr.io/r/base/options.html'>getOption</a></span>(<span class='st'>"zstmodelr.common.parallel"</span>, <span class='fl'>TRUE</span>)
+)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -178,22 +190,22 @@ Default TRUE means to use parallel processing.</p></td>
 otherwise NULL.</p>
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p><code>attr_indicators</code> is a working horse behind
-<code>attr_indicators_indcd</code>,<code>attr_indicators_trdstat</code>,
+    <p><code><a href='https://rdrr.io/pkg/zstmodelr/man/indicator_attribute.html'>attr_indicators</a></code> is a working horse behind
+<code><a href='https://rdrr.io/pkg/zstmodelr/man/indicator_attribute.html'>attr_indicators_indcd</a></code>,<code><a href='https://rdrr.io/pkg/zstmodelr/man/indicator_attribute.html'>attr_indicators_trdstat</a></code>,
 which is mainly used to develop customized attribute function to
 add attribute to indicator timeseries.</p>
-<p><code>attr_indicators_indcd</code>, <code>attr_indicators_trdstat</code>, etc.
+<p><code><a href='https://rdrr.io/pkg/zstmodelr/man/indicator_attribute.html'>attr_indicators_indcd</a></code>, <code><a href='https://rdrr.io/pkg/zstmodelr/man/indicator_attribute.html'>attr_indicators_trdstat</a></code>, etc.
 are used to add predefined attribute to indicator timeseries by using data from
 stock_db.</p>
 <p>There are two way to add attribute to timeseries of indicators of stocks:</p><ul>
 <li><p><strong>add attribute directly</strong>:
-use <code>attr_indicators_indcd</code>, <code>attr_indicators_trdstat</code>
+use <code><a href='https://rdrr.io/pkg/zstmodelr/man/indicator_attribute.html'>attr_indicators_indcd</a></code>, <code><a href='https://rdrr.io/pkg/zstmodelr/man/indicator_attribute.html'>attr_indicators_trdstat</a></code>
 to add attribute directly. The pros is easy to use, the cons is slow since
 it have to load data from stock database each calling. The method is
 mainly used to add one attribute to one indicator timeseries.</p></li>
 <li><p><strong>add attribute indirectly</strong>:
-use <code><a href='ind_attr_def_indcd.html'>ind_attr_def_indcd</a></code>, <code><a href='ind_attr_def_trdstat.html'>ind_attr_def_trdstat</a></code> and
-<code><a href='modify_indicator.html'>modify_indicator</a></code>. The pros is that it can be faster by dividing
+use <code><a href='https://rdrr.io/pkg/zstmodelr/man/ind_attr_def_indcd.html'>ind_attr_def_indcd</a></code>, <code><a href='https://rdrr.io/pkg/zstmodelr/man/ind_attr_def_trdstat.html'>ind_attr_def_trdstat</a></code> and
+<code><a href='https://rdrr.io/pkg/zstmodelr/man/modify_indicator.html'>modify_indicator</a></code>. The pros is that it can be faster by dividing
 defining attribute(load data from database once) and modifying indicators
 (can modify repeatedly by using same attribute definition). The cons is that it is more complex than direct method. The method is mainly
 used to add same attribute to multi-indicators timeseries.</p></li>
@@ -213,46 +225,46 @@ timeseries of stocks.</p></li>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'>
-<span class='kw'>if</span> (<span class='fl'>FALSE</span>) {
+<span class='co'>if</span> (<span class='fl'>FALSE</span>) {
 
 <span class='co'># create a indicator from vars dataset.</span>
-<span class='no'>ts_indicator</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='create_indicator.html'>create_indicator</a></span>(<span class='no'>ds_def_vars</span>,
-  <span class='kw'>ind_def_fun</span> <span class='kw'>=</span> <span class='no'>ind_def_fun</span>,
-  <span class='kw'>debug</span> <span class='kw'>=</span> <span class='no'>debug</span>,
-  <span class='kw'>date_index_field</span> <span class='kw'>=</span> <span class='st'>"date"</span>,
-  <span class='kw'>key_fields</span> <span class='kw'>=</span> <span class='no'>key_fields</span>,
-  <span class='kw'>parallel</span> <span class='kw'>=</span> <span class='no'>parallel</span>
+<span class='kw'>ts_indicator</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/zstmodelr/man/create_indicator.html'>create_indicator</a></span>(<span class='kw'>ds_def_vars</span>,
+  ind_def_fun = <span class='kw'>ind_def_fun</span>,
+  debug = <span class='kw'>debug</span>,
+  date_index_field = <span class='st'>"date"</span>,
+  key_fields = <span class='kw'>key_fields</span>,
+  parallel = <span class='kw'>parallel</span>
 )
 
 
 <span class='co'># --- add attribute directly ---</span>
 
 <span class='co'># add attribute of indcd</span>
-<span class='no'>ts_indicators_with_indcd</span> <span class='kw'>&lt;-</span> <span class='fu'>attr_indicators_indcd</span>(<span class='no'>stock_db</span>,
-  <span class='kw'>ts_indicators</span> <span class='kw'>=</span> <span class='no'>ts_indicators</span>
+<span class='kw'>ts_indicators_with_indcd</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/zstmodelr/man/indicator_attribute.html'>attr_indicators_indcd</a></span>(<span class='kw'>stock_db</span>,
+  ts_indicators = <span class='kw'>ts_indicators</span>
 )
 
 <span class='co'># add attribute of trdstats</span>
-<span class='no'>ts_indicators_wide_with_attr</span> <span class='kw'>&lt;-</span> <span class='fu'>attr_indicators_trdstat</span>(<span class='no'>stock_db</span>,
-  <span class='kw'>ts_indicators</span> <span class='kw'>=</span> <span class='no'>ts_indicators</span>
+<span class='kw'>ts_indicators_wide_with_attr</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/zstmodelr/man/indicator_attribute.html'>attr_indicators_trdstat</a></span>(<span class='kw'>stock_db</span>,
+  ts_indicators = <span class='kw'>ts_indicators</span>
 )
 
 <span class='co'># --- add attribute indirectly ---</span>
 
 <span class='co'># create attr defs by using data from stock</span>
-<span class='no'>new_attr_indcd</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='ind_attr_def_indcd.html'>ind_attr_def_indcd</a></span>(<span class='no'>stock_db</span>)
+<span class='kw'>new_attr_indcd</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/zstmodelr/man/ind_attr_def_indcd.html'>ind_attr_def_indcd</a></span>(<span class='kw'>stock_db</span>)
 
 <span class='co'># use attribute def to modify multi-indicators</span>
-<span class='kw'>for</span> (<span class='no'>i</span> <span class='kw'>in</span> <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq_len</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/nrow.html'>NROW</a></span>(<span class='no'>ds_ts_indicators</span>))) {
-  <span class='no'>ts_indicator</span> <span class='kw'>&lt;-</span> <span class='no'>ds_ts_indicators</span>$<span class='no'>data</span><span class='kw'>[[</span><span class='no'>i</span>]]
+<span class='co'>for</span> (<span class='kw'>i</span> <span class='co'>in</span> <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq_len</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/nrow.html'>NROW</a></span>(<span class='kw'>ds_ts_indicators</span>))) {
+  <span class='kw'>ts_indicator</span> <span class='op'>&lt;-</span> <span class='kw'>ds_ts_indicators</span><span class='op'>$</span><span class='kw'>data</span>[[<span class='kw'>i</span>]]
 
-  <span class='no'>ts_indicator</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='modify_indicator.html'>modify_indicator</a></span>(
-    <span class='kw'>ts_indicator</span> <span class='kw'>=</span> <span class='no'>ts_indicator</span>,
-    <span class='kw'>modify_fun</span> <span class='kw'>=</span> <span class='no'>new_attr_indcd</span>,
-    <span class='kw'>replace_exist</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-    <span class='kw'>date_index_field</span> <span class='kw'>=</span> <span class='st'>"date"</span>,
-    <span class='kw'>key_fields</span> <span class='kw'>=</span> <span class='st'>"stkcd"</span>,
-    <span class='kw'>parallel</span> <span class='kw'>=</span> <span class='no'>parallel</span>
+  <span class='kw'>ts_indicator</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/zstmodelr/man/modify_indicator.html'>modify_indicator</a></span>(
+    ts_indicator = <span class='kw'>ts_indicator</span>,
+    modify_fun = <span class='kw'>new_attr_indcd</span>,
+    replace_exist = <span class='fl'>FALSE</span>,
+    date_index_field = <span class='st'>"date"</span>,
+    key_fields = <span class='st'>"stkcd"</span>,
+    parallel = <span class='kw'>parallel</span>
   )
 }
 }</div></pre>

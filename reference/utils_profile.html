@@ -145,17 +145,17 @@ information of stock database." />
 information of stock database.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>get_profile_path</span>(<span class='no'>profile_name</span>, <span class='kw'>profile_dir</span> <span class='kw'>=</span> <span class='no'>.PROFILE_DIR</span>)
+    <pre class="usage"><span class='fu'><a href='https://rdrr.io/pkg/zstmodelr/man/utils_profile.html'>get_profile_path</a></span>(<span class='kw'>profile_name</span>, profile_dir = <span class='kw'>.PROFILE_DIR</span>)
 
-<span class='fu'>profile_get_varible_setting</span>(<span class='no'>profile_path</span>, <span class='no'>variable</span>)
+<span class='fu'><a href='https://rdrr.io/pkg/zstmodelr/man/utils_profile.html'>profile_get_varible_setting</a></span>(<span class='kw'>profile_path</span>, <span class='kw'>variable</span>)
 
-<span class='fu'>profile_get_factors</span>(<span class='no'>profile_path</span>, <span class='kw'>factor_codes</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>factor_groups</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)
+<span class='fu'><a href='https://rdrr.io/pkg/zstmodelr/man/utils_profile.html'>profile_get_factors</a></span>(<span class='kw'>profile_path</span>, factor_codes = <span class='kw'>NULL</span>, factor_groups = <span class='kw'>NULL</span>)
 
-<span class='fu'>profile_get_datasource_files</span>(<span class='no'>profile_path</span>)
+<span class='fu'><a href='https://rdrr.io/pkg/zstmodelr/man/utils_profile.html'>profile_get_datasource_files</a></span>(<span class='kw'>profile_path</span>)
 
-<span class='fu'>profile_get_indicators</span>(<span class='no'>profile_path</span>, <span class='kw'>indicator_codes</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)
+<span class='fu'><a href='https://rdrr.io/pkg/zstmodelr/man/utils_profile.html'>profile_get_indicators</a></span>(<span class='kw'>profile_path</span>, indicator_codes = <span class='kw'>NULL</span>)
 
-<span class='fu'>profile_get_customized_indicators</span>(<span class='no'>profile_path</span>)</pre>
+<span class='fu'><a href='https://rdrr.io/pkg/zstmodelr/man/utils_profile.html'>profile_get_customized_indicators</a></span>(<span class='kw'>profile_path</span>)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -172,7 +172,7 @@ Default .PROFILE_DIR is etc in package directory.</p></td>
     </tr>
     <tr>
       <th>profile_path</th>
-      <td><p>path of profile to get data from.</p></td>
+      <td><p>Path of profile to get data from.</p></td>
     </tr>
     <tr>
       <th>variable</th>
@@ -197,7 +197,7 @@ Default NULL means to fetch all indicators.</p></td>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p><strong>get_profile_path</strong>: A path of profile if succeed, otherwise "".</p>
+    <p><strong>get_profile_path()</strong>: A path of profile if succeed, otherwise "".</p>
 <p><strong>others</strong>: A dataframe of setting if succeed, otherwise NULL.</p>
     <h2 class="hasAnchor" id="functions"><a class="anchor" href="#functions"></a>Functions</h2>
 

@@ -143,18 +143,18 @@
     <p>convert_import_file is the working horse backing process_files.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>convert_import_file</span>(
-  <span class='no'>input_file</span>,
-  <span class='kw'>input_type</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"csv"</span>, <span class='st'>"txt"</span>),
-  <span class='kw'>input_dir</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>start_index</span> <span class='kw'>=</span> <span class='fl'>2L</span>,
-  <span class='kw'>ignore_problems</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
-  <span class='kw'>log_dir</span> <span class='kw'>=</span> <span class='st'>"./log"</span>,
-  <span class='kw'>process_fun</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='no'>...</span>,
-  <span class='kw'>output_file</span> <span class='kw'>=</span> <span class='no'>input_file</span>,
-  <span class='kw'>output_type</span> <span class='kw'>=</span> <span class='no'>input_type</span>,
-  <span class='kw'>output_dir</span> <span class='kw'>=</span> <span class='no'>input_dir</span>
+    <pre class="usage"><span class='fu'><a href='https://rdrr.io/pkg/zstmodelr/man/convert_import_file.html'>convert_import_file</a></span>(
+  <span class='kw'>input_file</span>,
+  input_type = <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"csv"</span>, <span class='st'>"txt"</span>),
+  input_dir = <span class='kw'>NULL</span>,
+  start_index = <span class='fl'>2L</span>,
+  ignore_problems = <span class='fl'>TRUE</span>,
+  log_dir = <span class='st'>"./log"</span>,
+  process_fun = <span class='kw'>NULL</span>,
+  <span class='kw'>...</span>,
+  output_file = <span class='kw'>input_file</span>,
+  output_type = <span class='kw'>input_type</span>,
+  output_dir = <span class='kw'>input_dir</span>
 )</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
@@ -162,7 +162,10 @@
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>input_file</th>
-      <td><p>A name or a path of input data file.</p></td>
+      <td><p>A name or a path of input data file, which could use
+regular expression to read multiple files into a combined dataframe, e.g.
+"<code>test[0-9]*.txt</code>" will read files like test.txt, test1.txt,...,
+test9.txt..., etc., the files ware queued in ascending alphabet order.</p></td>
     </tr>
     <tr>
       <th>input_type</th>
@@ -177,18 +180,18 @@ input file as working dir, default NULL.</p></td>
       <th>start_index</th>
       <td><p>A integer of start index of first line of actual records
 in data file, by default 2L, which means first line is header and actual
-data starts from second lines.</p></td>
+data starts from second line.</p></td>
     </tr>
     <tr>
       <th>ignore_problems</th>
-      <td><p>A logical to determine whether to ignore problems
+      <td><p>A logic flag to determine whether to ignore problems
 when covert data, if TRUE, continue to import data but log problems into
 log file, otherwise abort reading process.  By default TRUE.</p></td>
     </tr>
     <tr>
       <th>log_dir</th>
-      <td><p>Path of log dir for saving problem log file,
-by default"./log", if the log path doesn't existed, it  will be created.</p></td>
+      <td><p>Path of log dir for saving problem log file, by
+default"./log", if the log path doesn't existed, it  will be created.</p></td>
     </tr>
     <tr>
       <th>process_fun</th>
@@ -229,14 +232,14 @@ using process_fun, like ttm_financial_report;</p></li>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
     <div class='dont-index'><p>Other data management: 
-<code><a href='clear_tables.html'>clear_tables</a>()</code>,
-<code><a href='get_datasource.html'>get_datasource</a>()</code>,
-<code><a href='import_table.html'>import_table</a>()</code>,
-<code><a href='process_files.html'>process_files</a>()</code>,
-<code><a href='read_import_file.html'>read_import_file</a>()</code>,
-<code><a href='ttm_financial_report.html'>ttm_financial_report</a>()</code>,
-<code><a href='update_db.html'>update_db</a>()</code>,
-<code><a href='write_import_file.html'>write_import_file</a>()</code></p></div>
+<code><a href='https://rdrr.io/pkg/zstmodelr/man/clear_tables.html'>clear_tables</a>()</code>,
+<code><a href='https://rdrr.io/pkg/zstmodelr/man/get_datasource.html'>get_datasource</a>()</code>,
+<code><a href='https://rdrr.io/pkg/zstmodelr/man/import_table.html'>import_table</a>()</code>,
+<code><a href='https://rdrr.io/pkg/zstmodelr/man/process_files.html'>process_files</a>()</code>,
+<code><a href='https://rdrr.io/pkg/zstmodelr/man/read_import_file.html'>read_import_file</a>()</code>,
+<code><a href='https://rdrr.io/pkg/zstmodelr/man/ttm_financial_report.html'>ttm_financial_report</a>()</code>,
+<code><a href='https://rdrr.io/pkg/zstmodelr/man/update_db.html'>update_db</a>()</code>,
+<code><a href='https://rdrr.io/pkg/zstmodelr/man/write_import_file.html'>write_import_file</a>()</code></p></div>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

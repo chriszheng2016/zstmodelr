@@ -145,33 +145,33 @@ date index" />
 date index</p>
     </div>
 
-    <pre class="usage"><span class='fu'>ts_resample</span>(
-  <span class='no'>ts_dataset</span>,
-  <span class='kw'>freq_rule</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"day"</span>, <span class='st'>"month"</span>, <span class='st'>"quarter"</span>, <span class='st'>"year"</span>),
-  <span class='kw'>fillna_method</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"nfill"</span>, <span class='st'>"ffill"</span>, <span class='st'>"bfill"</span>),
-  <span class='kw'>agg_fun</span> <span class='kw'>=</span> <span class='no'>mean</span>,
-  <span class='no'>...</span>
+    <pre class="usage"><span class='fu'><a href='https://rdrr.io/pkg/zstmodelr/man/ts_resample.html'>ts_resample</a></span>(
+  <span class='kw'>ts_dataset</span>,
+  freq_rule = <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"day"</span>, <span class='st'>"month"</span>, <span class='st'>"quarter"</span>, <span class='st'>"year"</span>),
+  fillna_method = <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"nfill"</span>, <span class='st'>"ffill"</span>, <span class='st'>"bfill"</span>),
+  agg_fun = <span class='kw'>mean</span>,
+  <span class='kw'>...</span>
 )
 
 <span class='co'># S3 method for tbl_df</span>
-<span class='fu'>ts_resample</span>(
-  <span class='no'>ts_dataset</span>,
-  <span class='kw'>freq_rule</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"day"</span>, <span class='st'>"month"</span>, <span class='st'>"quarter"</span>, <span class='st'>"year"</span>),
-  <span class='kw'>fillna_method</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"nfill"</span>, <span class='st'>"ffill"</span>, <span class='st'>"bfill"</span>),
-  <span class='kw'>agg_fun</span> <span class='kw'>=</span> <span class='no'>mean</span>,
-  <span class='no'>...</span>,
-  <span class='kw'>date_index_field</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"date"</span>),
-  <span class='kw'>key_fields</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>parallel</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>
+<span class='fu'><a href='https://rdrr.io/pkg/zstmodelr/man/ts_resample.html'>ts_resample</a></span>(
+  <span class='kw'>ts_dataset</span>,
+  freq_rule = <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"day"</span>, <span class='st'>"month"</span>, <span class='st'>"quarter"</span>, <span class='st'>"year"</span>),
+  fillna_method = <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"nfill"</span>, <span class='st'>"ffill"</span>, <span class='st'>"bfill"</span>),
+  agg_fun = <span class='kw'>mean</span>,
+  <span class='kw'>...</span>,
+  date_index_field = <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"date"</span>),
+  key_fields = <span class='kw'>NULL</span>,
+  parallel = <span class='fu'><a href='https://rdrr.io/r/base/options.html'>getOption</a></span>(<span class='st'>"zstmodelr.common.parallel"</span>, <span class='fl'>TRUE</span>)
 )
 
 <span class='co'># S3 method for timeSeries</span>
-<span class='fu'>ts_resample</span>(
-  <span class='no'>ts_dataset</span>,
-  <span class='kw'>freq_rule</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"day"</span>, <span class='st'>"month"</span>, <span class='st'>"quarter"</span>),
-  <span class='kw'>fillna_method</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"nfill"</span>, <span class='st'>"ffill"</span>, <span class='st'>"bfill"</span>),
-  <span class='kw'>agg_fun</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"mean"</span>, <span class='st'>"sum"</span>),
-  <span class='no'>...</span>
+<span class='fu'><a href='https://rdrr.io/pkg/zstmodelr/man/ts_resample.html'>ts_resample</a></span>(
+  <span class='kw'>ts_dataset</span>,
+  freq_rule = <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"day"</span>, <span class='st'>"month"</span>, <span class='st'>"quarter"</span>),
+  fillna_method = <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"nfill"</span>, <span class='st'>"ffill"</span>, <span class='st'>"bfill"</span>),
+  agg_fun = <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"mean"</span>, <span class='st'>"sum"</span>),
+  <span class='kw'>...</span>
 )</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
@@ -179,26 +179,28 @@ date index</p>
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>ts_dataset</th>
-      <td><p>A timeseries of tibble or timeseries.</p></td>
+      <td><p>A timeseries of tibble/timeSeries.</p></td>
     </tr>
     <tr>
       <th>freq_rule</th>
-      <td><p>The offset string or object representing target conversion,
-e.g. "day", "month", "quarter", "year", default "Day".</p></td>
+      <td><p>A offset string or object representing target conversion,
+e.g. "day", "month", "quarter", "year", default "day".</p></td>
     </tr>
     <tr>
       <th>fillna_method</th>
-      <td><p>method to fill holes in reindexed Series, e.g.
-"nfill", "bfill","ffill", default nafill(fill NA)</p></td>
+      <td><p>A method to fill NAs in reindexed Series, e.g.
+"nfill", "ffill", "bfill" . Default "nfill" don't fill NAs; "ffill" means to
+use data before NAs to fill NAs; "bfill" means to use data after NAs to fill
+NAs.</p></td>
     </tr>
     <tr>
       <th>agg_fun</th>
       <td><p>Function to aggregate values of group data for new timestamp,
-default setting is mean</p></td>
+default setting is mean.</p></td>
     </tr>
     <tr>
       <th>...</th>
-      <td><p>Arguments passed to agg_fun</p></td>
+      <td><p>Arguments passed to agg_fun.</p></td>
     </tr>
     <tr>
       <th>date_index_field</th>
@@ -229,7 +231,7 @@ Only be used for tibble dataset.</p></td>
     <p>Convert timeseries to specified frequency by resampling date index.
 Optionally provide filling method to pad/backfill missing values. Return
 aggregating data conformed to a new index with the specified frequency.</p>
-<p>resample is more appropriate if an operation, such as summarization, is
+<p>ts_resample is more appropriate if an operation, such as summarization, is
 necessary to represent the data at the new frequency.</p>
     <h2 class="hasAnchor" id="methods-by-class-"><a class="anchor" href="#methods-by-class-"></a>Methods (by class)</h2>
 
@@ -241,8 +243,8 @@ necessary to represent the data at the new frequency.</p>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
     <div class='dont-index'><p>Other utils_timeseries: 
-<code><a href='ts_asfreq.html'>ts_asfreq</a>()</code>,
-<code><a href='ts_lag.html'>ts_lag</a>()</code></p></div>
+<code><a href='https://rdrr.io/pkg/zstmodelr/man/ts_asfreq.html'>ts_asfreq</a>()</code>,
+<code><a href='https://rdrr.io/pkg/zstmodelr/man/ts_lag.html'>ts_lag</a>()</code></p></div>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

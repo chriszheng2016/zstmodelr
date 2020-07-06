@@ -143,13 +143,14 @@
     <p>Generate customized indicators of stock_db in batch, and save into files.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>generate_indicators</span>(
-  <span class='no'>stock_db</span>,
-  <span class='no'>ds_indicator_defs</span>,
-  <span class='kw'>validate_def</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-  <span class='kw'>parallel</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
-  <span class='kw'>log_file_prefix</span> <span class='kw'>=</span> <span class='st'>"generate_indicator_log"</span>,
-  <span class='kw'>log_dir</span> <span class='kw'>=</span> <span class='st'>"./log"</span>
+    <pre class="usage"><span class='fu'><a href='https://rdrr.io/pkg/zstmodelr/man/generate_indicators.html'>generate_indicators</a></span>(
+  <span class='kw'>stock_db</span>,
+  <span class='kw'>ds_indicator_defs</span>,
+  validate_def = <span class='fl'>FALSE</span>,
+  validate_stkcds = <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"600031"</span>, <span class='st'>"000157"</span>, <span class='st'>"600066"</span>, <span class='st'>"000550"</span>),
+  parallel = <span class='fu'><a href='https://rdrr.io/r/base/options.html'>getOption</a></span>(<span class='st'>"zstmodelr.common.parallel"</span>, <span class='fl'>TRUE</span>),
+  log_file_prefix = <span class='st'>"generate_indicator_log"</span>,
+  log_dir = <span class='st'>"./log"</span>
 )</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
@@ -165,9 +166,14 @@
     </tr>
     <tr>
       <th>validate_def</th>
-      <td><p>A logical determine whether to validate indicator
+      <td><p>A logic flag to determine whether to validate indicator
 definition or not.Default FALSE, means to produce indicators on full
 dataset, TRUE means to validate definition on small datasets.</p></td>
+    </tr>
+    <tr>
+      <th>validate_stkcds</th>
+      <td><p>A character vector of stock codes used for validating
+indicator definition.</p></td>
     </tr>
     <tr>
       <th>parallel</th>
@@ -202,7 +208,8 @@ dataset from stock_db, which will take shorter time.</p></li>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
     <div class='dont-index'><p>Other indicator generate functions: 
-<code><a href='delete_indicators.html'>delete_indicators</a>()</code></p></div>
+<code><a href='https://rdrr.io/pkg/zstmodelr/man/backup_indicators.html'>backup_indicators</a>()</code>,
+<code><a href='https://rdrr.io/pkg/zstmodelr/man/delete_indicators.html'>delete_indicators</a>()</code></p></div>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

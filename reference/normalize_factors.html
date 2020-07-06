@@ -143,13 +143,13 @@
     <p>Normalize factors dataset by cleaning extremes and standardization.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>normalize_factors</span>(
-  <span class='no'>ds_factors</span>,
-  <span class='kw'>factors_list</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>group_by</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>clean_extremes_method</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"sigma"</span>, <span class='st'>"mad"</span>),
-  <span class='kw'>standard_method</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"normal"</span>, <span class='st'>"rank"</span>),
-  <span class='no'>...</span>
+    <pre class="usage"><span class='fu'><a href='https://rdrr.io/pkg/zstmodelr/man/normalize_factors.html'>normalize_factors</a></span>(
+  <span class='kw'>ds_factors</span>,
+  factors_list = <span class='kw'>NULL</span>,
+  group_by = <span class='kw'>NULL</span>,
+  clean_extremes_method = <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"sigma"</span>, <span class='st'>"mad"</span>),
+  standard_method = <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"normal"</span>, <span class='st'>"rank"</span>),
+  <span class='kw'>...</span>
 )</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
@@ -172,13 +172,13 @@ is default value which means no group setting.</p></td>
       <th>clean_extremes_method</th>
       <td><p>Method of cleaning extremes before standardization
 , i.e. "sigma","mad", by default "sigma".
-see details: <code><a href='clean_extremes_sigma.html'>clean_extremes_sigma</a></code>, <code><a href='clean_extremes_mad.html'>clean_extremes_mad</a></code></p></td>
+see details: <code><a href='https://rdrr.io/pkg/zstmodelr/man/clean_extremes_sigma.html'>clean_extremes_sigma</a></code>, <code><a href='https://rdrr.io/pkg/zstmodelr/man/clean_extremes_mad.html'>clean_extremes_mad</a></code></p></td>
     </tr>
     <tr>
       <th>standard_method</th>
       <td><p>method of standardizing data, i.e. "normal","rank",
 by default "normal".
-see details: <code><a href='standardize_normal_scale.html'>standardize_normal_scale</a></code>, <code><a href='standardize_rank_scale.html'>standardize_rank_scale</a></code></p></td>
+see details: <code><a href='https://rdrr.io/pkg/zstmodelr/man/standardize_normal_scale.html'>standardize_normal_scale</a></code>, <code><a href='https://rdrr.io/pkg/zstmodelr/man/standardize_rank_scale.html'>standardize_rank_scale</a></code></p></td>
     </tr>
     <tr>
       <th>...</th>

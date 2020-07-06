@@ -145,21 +145,21 @@ timeline" />
 timeline</p>
     </div>
 
-    <pre class="usage"><span class='fu'>ts_lag</span>(<span class='no'>ts_dataset</span>, <span class='kw'>k</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>trim</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='no'>...</span>)
+    <pre class="usage"><span class='fu'><a href='https://rdrr.io/pkg/zstmodelr/man/ts_lag.html'>ts_lag</a></span>(<span class='kw'>ts_dataset</span>, k = <span class='fl'>1</span>, trim = <span class='fl'>TRUE</span>, <span class='kw'>...</span>)
 
 <span class='co'># S3 method for tbl_df</span>
-<span class='fu'>ts_lag</span>(
-  <span class='no'>ts_dataset</span>,
-  <span class='kw'>k</span> <span class='kw'>=</span> <span class='fl'>1</span>,
-  <span class='kw'>trim</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
-  <span class='no'>...</span>,
-  <span class='kw'>date_index_field</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"date"</span>),
-  <span class='kw'>key_fields</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>parallel</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>
+<span class='fu'><a href='https://rdrr.io/pkg/zstmodelr/man/ts_lag.html'>ts_lag</a></span>(
+  <span class='kw'>ts_dataset</span>,
+  k = <span class='fl'>1</span>,
+  trim = <span class='fl'>TRUE</span>,
+  <span class='kw'>...</span>,
+  date_index_field = <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"date"</span>),
+  key_fields = <span class='kw'>NULL</span>,
+  parallel = <span class='fu'><a href='https://rdrr.io/r/base/options.html'>getOption</a></span>(<span class='st'>"zstmodelr.common.parallel"</span>, <span class='fl'>TRUE</span>)
 )
 
 <span class='co'># S3 method for timeSeries</span>
-<span class='fu'>ts_lag</span>(<span class='no'>ts_dataset</span>, <span class='kw'>k</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>trim</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='no'>...</span>)</pre>
+<span class='fu'><a href='https://rdrr.io/pkg/zstmodelr/man/ts_lag.html'>ts_lag</a></span>(<span class='kw'>ts_dataset</span>, k = <span class='fl'>1</span>, trim = <span class='fl'>TRUE</span>, <span class='kw'>...</span>)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -179,12 +179,12 @@ By default 1.</p><ul>
     </tr>
     <tr>
       <th>trim</th>
-      <td><p>A logical value. By default TRUE, the first missing observation in the return series
-will be removed.</p></td>
+      <td><p>A logic flag of whether to remove the first missing observation in
+the return series. Default TRUE,</p></td>
     </tr>
     <tr>
       <th>...</th>
-      <td><p>Arguments passed to other methods</p></td>
+      <td><p>Arguments passed to other methods.</p></td>
     </tr>
     <tr>
       <th>date_index_field</th>
@@ -229,8 +229,8 @@ which means use later data as current data while keeping current timeline</p></l
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
     <div class='dont-index'><p>Other utils_timeseries: 
-<code><a href='ts_asfreq.html'>ts_asfreq</a>()</code>,
-<code><a href='ts_resample.html'>ts_resample</a>()</code></p></div>
+<code><a href='https://rdrr.io/pkg/zstmodelr/man/ts_asfreq.html'>ts_asfreq</a>()</code>,
+<code><a href='https://rdrr.io/pkg/zstmodelr/man/ts_resample.html'>ts_resample</a>()</code></p></div>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

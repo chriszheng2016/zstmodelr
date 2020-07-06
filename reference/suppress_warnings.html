@@ -145,7 +145,7 @@ suppress some specific warnings and output remain warnings." />
 suppress some specific warnings and output remain warnings.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>suppress_warnings</span>(<span class='no'>expr</span>, <span class='kw'>warn_pattern</span> <span class='kw'>=</span> <span class='fl'>NA</span>)</pre>
+    <pre class="usage"><span class='fu'><a href='https://rdrr.io/pkg/zstmodelr/man/suppress_warnings.html'>suppress_warnings</a></span>(<span class='kw'>expr</span>, warn_pattern = <span class='fl'>NA</span>)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -166,18 +166,18 @@ means suppressing all warnings.</p></td>
     <p>The warning message as character string, invisibly.</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='fu'>suppress_warnings</span>(
+    <pre class="examples"><div class='input'><span class='fu'><a href='https://rdrr.io/pkg/zstmodelr/man/suppress_warnings.html'>suppress_warnings</a></span>(
   {
-    <span class='fu'><a href='https://rdrr.io/r/base/MathFun.html'>sqrt</a></span>(-<span class='fl'>1</span>)
-    <span class='fu'><a href='https://rdrr.io/r/base/warning.html'>warning</a></span>(<span class='st'>"ooops"</span>, <span class='kw'>call.</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)
+    <span class='fu'><a href='https://rdrr.io/r/base/MathFun.html'>sqrt</a></span>(<span class='op'>-</span><span class='fl'>1</span>)
+    <span class='fu'><a href='https://rdrr.io/r/base/warning.html'>warning</a></span>(<span class='st'>"ooops"</span>, call. = <span class='fl'>FALSE</span>)
   },
-  <span class='kw'>warn_pattern</span> <span class='kw'>=</span> <span class='st'>"NaN"</span>
-)</div><div class='output co'>#&gt; <span class='warning'>Warning: ooops</span></div><div class='input'><span class='fu'>suppress_warnings</span>(
+  warn_pattern = <span class='st'>"NaN"</span>
+)</div><div class='output co'>#&gt; <span class='warning'>Warning: ooops</span></div><div class='input'><span class='fu'><a href='https://rdrr.io/pkg/zstmodelr/man/suppress_warnings.html'>suppress_warnings</a></span>(
   {
-    <span class='fu'><a href='https://rdrr.io/r/base/MathFun.html'>sqrt</a></span>(-<span class='fl'>1</span>)
-    <span class='fu'><a href='https://rdrr.io/r/base/warning.html'>warning</a></span>(<span class='st'>"ooops"</span>, <span class='kw'>call.</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)
+    <span class='fu'><a href='https://rdrr.io/r/base/MathFun.html'>sqrt</a></span>(<span class='op'>-</span><span class='fl'>1</span>)
+    <span class='fu'><a href='https://rdrr.io/r/base/warning.html'>warning</a></span>(<span class='st'>"ooops"</span>, call. = <span class='fl'>FALSE</span>)
   },
-  <span class='kw'>warn_pattern</span> <span class='kw'>=</span> <span class='st'>"o"</span>
+  warn_pattern = <span class='st'>"o"</span>
 )</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
