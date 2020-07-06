@@ -2,18 +2,24 @@
 % Please edit documentation in R/utils-cliui.R
 \name{interactive_call}
 \alias{interactive_call}
+\alias{interactive_call_}
 \title{Call a function interactively}
 \usage{
-interactive_call(fun, debug = FALSE, quiet = FALSE)
+interactive_call(fun, quiet = FALSE, debug = FALSE)
+
+interactive_call_(quo_fun, quiet = FALSE, debug = FALSE)
 }
 \arguments{
 \item{fun}{a function to be executed.}
 
+\item{quiet}{a logical of whether display interactive message. Default FALSE
+means display interactive message in execution.}
+
 \item{debug}{a logical of whether execute fun in simulation mode or real
 mode. Default FALSE means to execute function in real mode.}
 
-\item{quiet}{a logical of whether display interactive message. Default FALSE
-means display interactive message in execution.}
+\item{quo_fun}{a function quoted by \code{\link[rlang:quo]{rlang::quo()}} or \code{\link[rlang:enquo]{rlang::enquo()}} to be
+executed.}
 }
 \value{
 return value from \code{fun} if \code{debug = TRUE}, otherwise NULL.
@@ -27,6 +33,8 @@ during execution of function.
 \examples{
 \dontrun{
 
+# NSE examples -- Usage in interactive mode
+
 # Call a function by prompting user to provide values for arguments
 interactive_call(print)
 
@@ -35,7 +43,18 @@ interactive_call(print, quiet = TRUE)
 
 # Call a function interactively which execute it in debug mode
 interactive_call(print, debug = TRUE)
+
+# SE examples -- Usage in program mode
+
+# Program with SE version function
+inter_call <- function(fun) {
+  interactive_call_(rlang::quo(fun), quiet = TRUE)
 }
+
+inter_call(print)
+}
+
+# NSE version of function
 }
 \seealso{
 Other utils_cliui: 

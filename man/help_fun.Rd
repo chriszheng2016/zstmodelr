@@ -2,9 +2,12 @@
 % Please edit documentation in R/utils-cliui.R
 \name{help_fun}
 \alias{help_fun}
+\alias{help_fun_}
 \title{Display usage of function}
 \usage{
-help_fun(fun = NULL, argument_desc = "", examples = "")
+help_fun(fun, argument_desc = NULL, examples = NULL)
+
+help_fun_(quo_fun, argument_desc = NULL, examples = NULL)
 }
 \arguments{
 \item{fun}{a function to be display usage.}
@@ -12,6 +15,9 @@ help_fun(fun = NULL, argument_desc = "", examples = "")
 \item{argument_desc}{a character arguments description.}
 
 \item{examples}{a character examples.}
+
+\item{quo_fun}{a function quoted by \code{\link[rlang:quo]{rlang::quo()}} or \code{\link[rlang:enquo]{rlang::enquo()}} to be
+display usage.}
 }
 \value{
 standard output

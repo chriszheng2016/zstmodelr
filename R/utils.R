@@ -41,3 +41,43 @@ suppress_warnings <- function(expr, warn_pattern = NA) {
     suppressWarnings(expr)
   }
 }
+
+# Print environments of a function
+print_fn_envs <- function(fn) {
+
+  # Validate params
+  assertive::assert_is_function(fn)
+
+  fun_env <- rlang::fn_env(fn)
+  fun_name <- as.character(substitute(fn))
+
+  print_env_chain(fun_env, env_name = fun_name)
+
+}
+
+# Print chain of environments
+print_env_chain <- function(env, env_name = NULL) {
+
+  #Validate params
+  assertive::assert_is_environment(env)
+  if(!is.null(env_name)) assertive::assert_is_character(env_name)
+
+  # Display information about current environment
+  if(!is.null(env_name)){
+    cli::cli_rule(center = " * current env of {env_name} * ")
+  } else {
+    cli::cli_rule(center = " * current env * ")
+  }
+  rlang::env_print(env)
+
+  # Display information about parent environment of functions
+  if(!is.null(env_name)){
+    cli::cli_rule(center = " * parents of current env of {env_name} * ")
+  } else {
+    cli::cli_rule(center = " * parents of current env * ")
+  }
+  parent_envs <- rlang::env_parents(env)
+  parent_envs %>%
+    purrr::map(.f = rlang::env_print)
+
+}

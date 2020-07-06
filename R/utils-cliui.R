@@ -3,19 +3,30 @@
 
 #' Prompt user to input value for a argument
 #'
-#' @param arg  a symbol name of argument.
+#' @param arg_name  a character name of argument.
 #' @param choices vector of values to be chose for argument. Default NULL means
 #'   to use information in argument `fun` to get value of `choices`.
-#' @param fun a function with arguments information to get input values.
+#' @param quo_fun a function quoted by [rlang::quo()] or [rlang::enquo()] to get
+#'   input values of arguments.
 #'
 #' @return a list of a argument.
 #'
 #' @family utils_cliui
 #'
 #' @noRd
-arg_value <- function(arg, choices = NULL, fun = NULL) {
+
+arg_value <- function(arg_name, choices = NULL, quo_fun = NULL) {
 
   # Validate params
+  assertive::assert_is_character(arg_name)
+  assertive::assert_is_non_empty(arg_name)
+  if (!is.null(quo_fun)) {
+    assertive::assert_is_inherited_from(quo_fun, c("quosure", "formula"))
+  }
+
+  fun_name <- rlang::as_label(quo_fun)
+  fun <- rlang::eval_tidy(quo_fun)
+
   if (!is.null(fun)) {
     assertive::assert_is_function(fun)
   } else {
@@ -24,7 +35,6 @@ arg_value <- function(arg, choices = NULL, fun = NULL) {
   }
 
   # Get value of a argument
-  arg_name <- as.character(rlang::enexpr(arg))
   arg_value <- NULL
   if (arg_name != "...") {
 
@@ -47,25 +57,28 @@ arg_value <- function(arg, choices = NULL, fun = NULL) {
     # prompt user to choose a value for argument
     if (length(choices) > 1) {
       cli::cli_rule(center = " * select value for {arg_name} * ")
-      arg_value <- utils::select.list(choices, multiple = TRUE)
+      arg_value <- user_select_values(choices, multiple = TRUE)
     } else {
       # ask user input new value when choice is NULL or choice with 1 default value
       # value
       cli::cli_rule(center = " * input value for {arg_name} * ")
       default_value <- ifelse(is.null(choices), "NULL", choices)
-      cli::cli_alert_info("{arg_name} default: {default_value}, input new value or 'q' to cancel.")
-      user_input <- readline(prompt = ">")
-      if (user_input != "") {
-        if (user_input != "q") {
-          arg_value <- stringr::str_split(user_input, ",")[[1]]
+      cli::cli_alert_info("{arg_name} default: {default_value}
+                          input a value or multiple values separate by ',', or 'q' to cancel.")
+      user_input <- user_input_values()
+      if (user_input[1] != "") {
+        if (user_input[1] != "q") {
+          arg_value <- unlist(stringr::str_split(user_input, ","))
+          arg_value <- stringr::str_trim(arg_value)
           arg_value <- readr::parse_guess(arg_value)
-          if (stringr::str_to_upper(arg_value) == "NULL") {
+          if (stringr::str_to_upper(arg_value)[1] == "NULL") {
             arg_value <- NULL
           }
         } else {
           # user input "q" to cancel input
           arg_value <- character(0)
         }
+
       } else {
         # when user input "", we should use choices as default value
         # notice: NULL value is still valid since NULL could be default value
@@ -83,9 +96,12 @@ arg_value <- function(arg, choices = NULL, fun = NULL) {
       input_arg_value <- paste0(input_arg_value, collapse = ",")
       cli::cli_alert_success("selected {arg_name}: {.strong {input_arg_value}}.\n")
     } else {
-      # only character(0) means cancel select/input value
-      cli::cli_alert_warning("please see function {.strong usage} carefully.")
-      # help_fun(fun)
+      if (!is.null(quo_fun)) {
+        # only character(0) means cancel select/input value
+        cli::cli_alert_warning("please see function {.strong usage} carefully.")
+        help_fun_(quo_fun)
+      }
+
       rlang::abort("Abort without a value for argument.\n")
     }
 
@@ -95,9 +111,12 @@ arg_value <- function(arg, choices = NULL, fun = NULL) {
   arg_value
 }
 
+
+
 #' Prompt user to input values for arguments of a function
 #'
-#' @param fun a function with arguments information to get input values.
+#' @param quo_fun a function quoted by [rlang::quo()] or [rlang::enquo()] to get
+#'   input values of arguments.
 #' @param arg_value_fun a function used for getting value for a argument,
 #'   default `arg_value` to get a value for a argument.
 #'
@@ -106,18 +125,24 @@ arg_value <- function(arg, choices = NULL, fun = NULL) {
 #' @family utils_cliui
 #'
 #' @noRd
-args_values <- function(fun, arg_value_fun = arg_value) {
+
+args_values <- function(quo_fun, arg_value_fun = arg_value) {
 
   # Validate params
-  assertive::assert_is_function(fun)
+  if (!is.null(quo_fun)) {
+    assertive::assert_is_inherited_from(quo_fun, c("quosure", "formula"))
+  }
   assertive::assert_is_function(arg_value_fun)
+
+  fun_name <- rlang::as_label(quo_fun)
+  fun <- rlang::eval_tidy(quo_fun)
 
   # Get values for all arguments of fun
   args_defs <- formals(fun)
   args_names <- names(args_defs)
   args_values <- purrr::map(args_names,
     .f = arg_value_fun,
-    fun = fun
+    quo_fun = quo_fun
   )
   args_values <- purrr::reduce(args_values, .f = c)
 
@@ -126,7 +151,8 @@ args_values <- function(fun, arg_value_fun = arg_value) {
 
 #' Execute a function with list of arguments
 #'
-#' @param fun a function to be executed.
+#' @param quo_fun a function quoted by [rlang::quo()] or [rlang::enquo()] to be
+#'   executed.
 #' @param args_values a list of multiple arguments.
 #' @param quiet a logical of whether display interactive message. Default FALSE
 #'   means display interactive message in execution.
@@ -138,10 +164,15 @@ args_values <- function(fun, arg_value_fun = arg_value) {
 #' @family utils_cliui
 #'
 #' @noRd
-execute_fun <- function(fun, args_values = NULL, quiet = FALSE, debug = FALSE) {
+execute_fun <- function(quo_fun, args_values, quiet = FALSE, debug = FALSE) {
 
   # Validate params
-  assertive::assert_is_function(fun)
+  assertive::assert_is_inherited_from(quo_fun, classes = c("quosure", "formula"))
+  assertive::assert_is_not_null(args_values)
+  assertive::assert_is_inherited_from(args_values, classes = "list")
+
+  fun_name <- rlang::as_label(quo_fun)
+  fun <- rlang::eval_tidy(quo_fun)
 
   # Execute fun with arguments
   result <- NULL
@@ -151,7 +182,6 @@ execute_fun <- function(fun, args_values = NULL, quiet = FALSE, debug = FALSE) {
       result <- do.call(fun, args = args_values)
     }
   } else {
-    fun_name <- as.character(substitute(fun))
     action <- rlang::expr(fun(!!!args_values))
     action_str <- rlang::as_label(action)
     action_str <- stringr::str_replace(action_str,
@@ -159,8 +189,8 @@ execute_fun <- function(fun, args_values = NULL, quiet = FALSE, debug = FALSE) {
       replacement = fun_name
     )
     cli::cli_code(format(rlang::parse_expr(action_str)))
-    cat("It may take long time. Are you sure to execute?\n")
-    user_answer <- utils::select.list(c("Yes", "No"))
+    user_answer <- user_select_values(c("Yes", "No"),
+             title = "It may take long time. Are you sure to execute?")
     if (user_answer == "Yes") {
       if (!debug) {
         cli::cli_alert_info("Run {fun_name}... ")
@@ -201,6 +231,8 @@ execute_fun <- function(fun, args_values = NULL, quiet = FALSE, debug = FALSE) {
 #' @examples
 #' \dontrun{
 #'
+#' # NSE examples -- Usage in interactive mode
+#'
 #' # Call a function by prompting user to provide values for arguments
 #' interactive_call(print)
 #'
@@ -209,17 +241,41 @@ execute_fun <- function(fun, args_values = NULL, quiet = FALSE, debug = FALSE) {
 #'
 #' # Call a function interactively which execute it in debug mode
 #' interactive_call(print, debug = TRUE)
+#'
+#' # SE examples -- Usage in program mode
+#'
+#' # Program with SE version function
+#' inter_call <- function(fun) {
+#'   interactive_call_(rlang::quo(fun), quiet = TRUE)
 #' }
-interactive_call <- function(fun, debug = FALSE, quiet = FALSE) {
+#'
+#' inter_call(print)
+#' }
+#'
+#' # NSE version of function
+interactive_call <- function(fun, quiet = FALSE, debug = FALSE ) {
+  interactive_call_(
+    quo_fun = rlang::enquo(fun),
+    quiet = quiet,
+    debug = debug
+  )
+}
+
+# SE version of function
+#' @param quo_fun a function quoted by [rlang::quo()] or [rlang::enquo()] to be
+#'   executed.
+#' @rdname interactive_call
+#' @export
+interactive_call_ <- function(quo_fun, quiet = FALSE, debug = FALSE) {
 
   # Validate params
-  assertive::assert_is_function(fun)
+  assertive::assert_is_inherited_from(quo_fun, c("quosure", "formula"))
 
   # Prompt user to input values for arguments
-  args_values <- args_values(fun)
+  args_values <- args_values(quo_fun)
 
   # Execute function by input values of arguments
-  result <- execute_fun(fun, args_values = args_values, quiet = quiet, debug = debug)
+  result <- execute_fun(quo_fun, args_values = args_values, quiet = quiet, debug = debug)
 
   invisible(result)
 }
@@ -262,12 +318,13 @@ interactive_call <- function(fun, debug = FALSE, quiet = FALSE) {
 #' inter_print <- interactive_fun(print, debug = TRUE)
 #' inter_print()
 #' }
-interactive_fun <- function(fun, debug = FALSE, quiet = FALSE) {
-
-  # Validate params
-  assertive::assert_is_function(fun)
-
-  inter_fun <- purrr::partial(.f = interactive_call, fun = fun, debug = debug, quiet = quiet)
+interactive_fun <- function(fun, quiet = FALSE, debug = FALSE) {
+  inter_fun <- purrr::partial(
+    .f = interactive_call_,
+    quo_fun = rlang::enquo(fun),
+    quiet = quiet,
+    debug = debug
+  )
 
   inter_fun
 }
@@ -284,25 +341,66 @@ interactive_fun <- function(fun, debug = FALSE, quiet = FALSE) {
 #' @family utils_cliui
 #'
 #' @export
-help_fun <- function(fun = NULL,
-                     argument_desc = "",
-                     examples = "") {
+
+# NSE version function
+help_fun <- function(fun,
+                     argument_desc = NULL,
+                     examples = NULL) {
+  help_fun_(
+    quo_fun = rlang::enquo(fun),
+    argument_desc = argument_desc,
+    examples = examples
+  )
+}
+
+# SE version of function
+#' @param quo_fun a function quoted by [rlang::quo()] or [rlang::enquo()] to be
+#'   display usage.
+#' @rdname help_fun
+#' @export
+help_fun_ <- function(quo_fun,
+                      argument_desc = NULL,
+                      examples = NULL) {
 
   # Validate params
-  if (!is.null(fun)) {
-    assertive::assert_is_function(fun)
-  }
+  assertive::assert_is_inherited_from(quo_fun, c("quosure", "formula"))
 
-  # fun_name <- as.character(rlang::enexpr(fun))
-  fun_name <- as.character(substitute(fun))
+  fun_name <- rlang::as_label(quo_fun)
+  fun <- rlang::eval_tidy(quo_fun)
+
   cli::cli_rule(center = "{fun_name} Help")
-  cli::cli_code(args(fun))
+  fun_str <- rlang::expr_text(args(fun))
+  fun_str <- stringr::str_replace(fun_str, "function", fun_name)
+  fun_str <- stringr::str_remove(fun_str, "NULL$")
+  cli::cli_code(fun_str)
 
   # usage of arguments
-  cli::cli_rule(center = "Arguments")
-  cat(argument_desc)
+  if (!is.null(argument_desc)) {
+    cli::cli_rule(center = "Arguments")
+    # cat(argument_desc, "\n")
+    cli::cat_line(argument_desc)
+  }
 
   # usage of examples
-  cli::cli_rule(center = "Examples")
-  cat(examples)
+  if (!is.null(examples)) {
+    cli::cli_rule(center = "Examples")
+    # cat(examples, "\n")
+    cli::cat_line(examples)
+  }
+
+  # display help doc
+  if (is.null(argument_desc) || is.null(examples)) {
+    cli::cli_alert_info("please see document of {fun_name} in help window...")
+    #help(topic = fun_name)
+  }
+}
+
+# User select values from console - easy for mock testing
+user_select_values <- function(choices,  multiple = FALSE, title = NULL) {
+  utils::select.list(choices, multiple = multiple, title = title)
+}
+
+# User input values to console - easy for mock testing
+user_input_values <- function() {
+  readline(prompt = ">")
 }

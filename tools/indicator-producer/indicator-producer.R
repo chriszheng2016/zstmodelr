@@ -196,13 +196,13 @@ clear_indicators <- function(dsn = c("GTA_SQLData", "GTA_SQLData_TEST"),
   action_fun <- switch(
     action,
     "produce" = {
-      produce_indicators
+      rlang::quo(produce_indicators)
     },
     "archive" = {
-      archive_indicators
+      rlang::quo(archive_indicators)
     },
     "clear" = {
-      clear_indicators
+      rlang::quo(clear_indicators)
     }
   )
 
@@ -219,7 +219,7 @@ indicator_producer <- function(dsn = c("GTA_SQLData", "GTA_SQLData_TEST"),
   } else {
     dsn <- match.arg(dsn)
     action <- match.arg(action)
-    action_fun <- .action_fun(action)
+    action_fun <- rlang::eval_tidy(.action_fun(action))
     action_fun(dsn, ...)
   }
 }
@@ -228,10 +228,10 @@ indicator_producer <- function(dsn = c("GTA_SQLData", "GTA_SQLData_TEST"),
 indicator_producer_ui <- function(debug = FALSE) {
 
   # prompt use select action function
-  action_fun <- interactive_call(.action_fun, quiet = TRUE)
+  action_fun <- interactive_call_(rlang::quo(.action_fun), quiet = TRUE)
 
   # run action interactively
-  interactive_call(action_fun, debug = debug)
+  interactive_call_(action_fun, debug = debug)
 }
 
 help_usage <- function() {

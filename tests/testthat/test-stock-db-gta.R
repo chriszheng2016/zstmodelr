@@ -1,6 +1,7 @@
 
-# Tests for function of indicator define - non-generic functions of gta_db class ----
-context("Tests for indicator define - non-generic functions of gta_db class")
+# Tests for stock_db - non-generic internal functions of gta_db class ----
+context("Tests for stock_db - non-generic internal functions of gta_db class")
+
 
 # set up testing context
 dsn <- "GTA_SQLData"
