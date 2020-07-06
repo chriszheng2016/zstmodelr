@@ -22,7 +22,7 @@ ts_resample(
   ...,
   date_index_field = c("date"),
   key_fields = NULL,
-  parallel = TRUE
+  parallel = getOption("zstmodelr.common.parallel", TRUE)
 )
 
 \method{ts_resample}{timeSeries}(
@@ -34,18 +34,20 @@ ts_resample(
 )
 }
 \arguments{
-\item{ts_dataset}{A timeseries of tibble or timeseries.}
+\item{ts_dataset}{A timeseries of tibble/timeSeries.}
 
-\item{freq_rule}{The offset string or object representing target conversion,
-e.g. "day", "month", "quarter", "year", default "Day".}
+\item{freq_rule}{A offset string or object representing target conversion,
+e.g. "day", "month", "quarter", "year", default "day".}
 
-\item{fillna_method}{method to fill holes in reindexed Series, e.g.
-"nfill", "bfill","ffill", default nafill(fill NA)}
+\item{fillna_method}{A method to fill NAs in reindexed Series, e.g.
+"nfill", "ffill", "bfill" . Default "nfill" don't fill NAs; "ffill" means to
+use data before NAs to fill NAs; "bfill" means to use data after NAs to fill
+NAs.}
 
 \item{agg_fun}{Function to aggregate values of group data for new timestamp,
-default setting is mean}
+default setting is mean.}
 
-\item{...}{Arguments passed to agg_fun}
+\item{...}{Arguments passed to agg_fun.}
 
 \item{date_index_field}{Name of date index field of ts_df for resample,
 default 'date', Column must be date-like.
@@ -70,7 +72,7 @@ Convert timeseries to specified frequency by resampling date index.
 Optionally provide filling method to pad/backfill missing values. Return
 aggregating data conformed to a new index with the specified frequency.
 
-resample is more appropriate if an operation, such as summarization, is
+ts_resample is more appropriate if an operation, such as summarization, is
 necessary to represent the data at the new frequency.
 }
 \section{Methods (by class)}{

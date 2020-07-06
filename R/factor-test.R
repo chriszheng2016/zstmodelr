@@ -141,7 +141,6 @@ factor_test_uniregress <- function(ds_test,
   # Build factor return series
   ds_factor_returns <- ds_factor_returns_raw %>%
     dplyr::select(!!factor_field, !!date_field, return = estimate) %>%
-    # tidyr::spread(key = !!factor_field, value = return) %>%
     tidyr::pivot_wider(names_from = !!factor_field, values_from = return) %>%
     dplyr::arrange(!!date_field)
 
@@ -272,7 +271,6 @@ factor_test_IC <- function(ds_test,
   # Build factor IC series
   ds_factor_ICs <- ds_factor_ICs_raw %>%
     dplyr::select(!!factor_field, !!date_field, IC = estimate) %>%
-    # tidyr::spread(key = !!factor_field, value = IC) %>%
     tidyr::pivot_wider(names_from = !!factor_field, values_from = IC) %>%
     dplyr::arrange(!!date_field)
 
@@ -418,7 +416,6 @@ factor_test_sort_portfolios <- function(ds_test,
   ds_portfolios_return_raw <- ds_test_result %>%
     dplyr::select(-c(data, sort_portfolios)) %>%
     tidyr::unnest(sort_portfolio_return) %>%
-    # tidyr::spread(key = portfolio_group, value = return)
     tidyr::pivot_wider(names_from = portfolio_group, values_from = return)
 
 
@@ -492,7 +489,6 @@ factor_test_sort_portfolios <- function(ds_test,
   # Build factor returns datasets from group_zero portfolio
   ds_factor_returns <- ds_portfolios_return %>%
     dplyr::select(!!factor_field, !!date_field, return = group_zero) %>%
-    # tidyr::spread(key = !!factor_field, value = return)
     tidyr::pivot_wider(names_from = !!factor_field, values_from = return)
 
 

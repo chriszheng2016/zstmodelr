@@ -113,7 +113,7 @@ normalize <- function(x, clean_extremes_method = c("sigma", "mad"),
     ds_result <- switch(
       clean_extremes_method,
       sigma = clean_extremes_sigma(ds_result, ...),
-      mad   = clean_extremes_mad(ds_result, ...),
+      mad = clean_extremes_mad(ds_result, ...),
       clean_extremes_sigma(ds_result, ...)
     )
   }
@@ -125,7 +125,7 @@ normalize <- function(x, clean_extremes_method = c("sigma", "mad"),
     ds_result <- switch(
       standard_method,
       normal = standardize_normal_scale(ds_result),
-      rank   = standardize_rank_scale(ds_result),
+      rank = standardize_rank_scale(ds_result),
       standardize_normal_scale(ds_result)
     )
   }

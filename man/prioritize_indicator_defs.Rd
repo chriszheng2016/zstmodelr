@@ -10,8 +10,8 @@ prioritize_indicator_defs(ds_indicator_defs)
 \item{ds_indicator_defs}{A dataframe of indicators definition info.}
 }
 \value{
-A dataframe of definitions of prioritized indicators if succeed,
-otherwise NULL.
+A dataframe of definitions of prioritized indicators.
+Raise error if anything goes wrong.
 }
 \description{
 Prioritize indicators defs according priority means that indicator defs with
@@ -30,6 +30,7 @@ Other indicator define functions:
 \code{\link{get_indicator_vars}()},
 \code{\link{ind_attr_def_indcd}()},
 \code{\link{ind_attr_def_trdstat}()},
-\code{\link{parse_indicator_vars}()}
+\code{\link{parse_indicator_vars}()},
+\code{\link{related_indicator_defs}()}
 }
 \concept{indicator define functions}

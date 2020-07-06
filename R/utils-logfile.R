@@ -5,7 +5,7 @@
 #' Utility functions to handle log file, which contains log info of operating
 #' in stock database.
 #'
-#' The log file is saved in and read as "csv" file.
+#' The log file is saved and read as "csv" file.
 #'
 #'
 #' @name utils_logfile
@@ -15,10 +15,10 @@ NULL
 # Save log info into log file.
 #' @param ds_log_info  A dataframe of log info to save.
 #' @param log_file_prefix  A prefix of log file, which define log file as
-#'  in format of "log_file_prefix(current).csv"
+#'   in format of "log_file_prefix(current).csv"
 #' @param log_dir  A character of log dir where log file is located.
-#' Default "./".
-#' @return \strong{save_log}: full path of save log file.
+#'   Default "./".
+#' @return \strong{save_log()}: full path of save log file.
 #' @describeIn utils_logfile save log info into log file.
 #' @export
 save_log <- function(ds_log_info,

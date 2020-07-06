@@ -7,12 +7,14 @@
 #'
 #'
 #' @name utils_expr
+#' @noRd
 NULL
 
 # Create a expr for evaluation from expr, list of exprs, or strings
 #' @param expr  A expr or list of exprs or string to parse as expr.
 #' @describeIn utils_expr  create a expr for evaluation from expr,
-#' list of exprs, or strings.
+#' list of exprs, strings.
+#' @noRd
 create_expr <- function(expr) {
   expr <- rlang::enexpr(expr)
 
@@ -46,9 +48,10 @@ create_expr <- function(expr) {
 }
 
 # Find symbols in expr by matching pattern.
-#' @param pattern  a character of regular rule for matching.
+#' @param pattern  A character of regular rule for matching.
 #' @param ... Extra arguments to be passed to purrr::map.
 #' @describeIn utils_expr  Find symbols in expr by matching pattern.
+#' @noRd
 find_syms <- function(expr, pattern = NULL, ...) {
   expr <- rlang::enexpr(expr)
 
@@ -83,7 +86,7 @@ find_syms <- function(expr, pattern = NULL, ...) {
   return(result)
 }
 
-# get type of expr
+# Get type of expr
 expr_type <- function(x) {
   if (rlang::is_syntactic_literal(x)
   | rlang::is_vector(x)) {
@@ -99,7 +102,7 @@ expr_type <- function(x) {
   }
 }
 
-# template for processing different type of expr
+# Template for processing different type of expr
 switch_expr <- function(x, ...) {
   switch(expr_type(x),
     ...,

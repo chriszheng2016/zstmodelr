@@ -22,7 +22,7 @@ Default "./".}
 \item{log_file_name}{A character name of log file to read.}
 }
 \value{
-\strong{save_log}: full path of save log file.
+\strong{save_log()}: full path of save log file.
 
 \strong{read_log}: A dataframe of log info if succeed, otherwise NULL.
 }
@@ -31,7 +31,7 @@ Utility functions to handle log file, which contains log info of operating
 in stock database.
 }
 \details{
-The log file is saved in and read as "csv" file.
+The log file is saved and read as "csv" file.
 }
 \section{Functions}{
 \itemize{

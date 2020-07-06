@@ -197,7 +197,7 @@ exploreFactorsDistribution <- function(input, output, session, ds_factors) {
       histogram = base_plot + geom_histogram(
         aes(x = factor_exposure, fill = factor_name),
         alpha = 0.4,
-        bins =  input$bins_adjust
+        bins = input$bins_adjust
       ),
       freqpoly = base_plot + geom_freqpoly(
         aes(x = factor_exposure, colour = factor_name),
@@ -418,7 +418,8 @@ exploreFactorsCorrelation <- function(input, output, session, ds_factors) {
 
     ds_select_factors <- ds_select_factors %>%
       dplyr::ungroup() %>%
-      tidyr::spread(key = "factor_name", value = "factor_exposure", drop = TRUE) %>%
+      # tidyr::spread(key = "factor_name", value = "factor_exposure", drop = TRUE) %>%
+      tidyr::pivot_wider(names_from = factor_name, values_from = factor_exposure) %>%
       dplyr::select(-(date:indcd))
 
     # plot the select data correlation
@@ -431,7 +432,8 @@ exploreFactorsCorrelation <- function(input, output, session, ds_factors) {
 
     ds_select_factors <- ds_select_factors %>%
       dplyr::ungroup() %>%
-      tidyr::spread(key = "factor_name", value = "factor_exposure", drop = TRUE) %>%
+      # tidyr::spread(key = "factor_name", value = "factor_exposure", drop = TRUE) %>%
+      tidyr::pivot_wider(names_from = factor_name, values_from = factor_exposure) %>%
       dplyr::select(-(date:indcd))
 
     select_factors_correlation <- cor(ds_select_factors, use = "complete")

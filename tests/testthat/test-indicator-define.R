@@ -65,11 +65,9 @@ test_ds_vars <- function(dates, peroid) {
       rep("mclsprc", length(dates))
     ),
     ind_value = c(
-      rep(1.1, length(dates)),
-      rep(2.1, length(dates))
+      seq(from = 1.1, by = 1, length.out = length(dates)),
+      seq(from = 2.1, by = 1, length.out = length(dates))
     )
-    # ind_value = c(runif(length(dates)),
-    #               runif(length(dates)))
   )
 
   return(ds_vars)
@@ -143,12 +141,11 @@ test_that("create_indicator_def_fun", {
   indicator_code <- test_indicator_defs$ind_code
 
   ind_def_fun <- create_indicator_def_fun(indicator_code,
-    indicator_expr = indicator_expr,
-    rolly_window = 0,
-    period = "month"
+    indicator_expr = indicator_expr
   )
   expect_true(is.function(ind_def_fun))
 
+  # create_indicator_def_fun with various arguments ====
   for (i in seq_along(list_ds_vars)) {
     period <- test_indicator_defs$period
     ds_vars <- list_ds_vars[[i]]
@@ -158,8 +155,11 @@ test_that("create_indicator_def_fun", {
     ind_def_fun <- create_indicator_def_fun(indicator_code,
       indicator_expr = indicator_expr,
       rolly_window = 0,
-      period = period
+      period = period,
+      fillna_method = "ffill"
     )
+
+    expect_true(is.function(ind_def_fun))
 
     # use definition function to compute indicator -- No debug
     ds_indicator <- ind_def_fun(ds_vars,
@@ -206,7 +206,10 @@ test_that("create_attribute_def_fun", {
 })
 
 test_that("prioritize_indicator_defs", {
-  depend_indicators_defs <- test_indicator_defs[FALSE, ] %>%
+  # prioritize_indicator_defs with default arguments ====
+
+  # >> two independent trees ----
+  independ_indicators_defs <- test_indicator_defs[FALSE, ] %>%
     # -- defs tree 1 --
     tibble::add_row(
       ind_code = "ind_1-2-3.1",
@@ -258,9 +261,8 @@ test_that("prioritize_indicator_defs", {
       ind_vars = list(c("ind_2-2.1", "ind_2-2.2"))
     )
 
-
-  # prioritize_indicator_defs with default arguments ====
-  prioritized_indicator_defs <- prioritize_indicator_defs(depend_indicators_defs)
+  # prioritized indicator defs
+  prioritized_indicator_defs <- prioritize_indicator_defs(independ_indicators_defs)
 
   expect_fields <- c("priority", "ds_indicator_defs")
   actual_fields <- names(prioritized_indicator_defs)
@@ -281,12 +283,221 @@ test_that("prioritize_indicator_defs", {
     )
   )
 
+  # validate result
+  for (i in seq_len(NROW(prioritized_indicator_defs))) {
+    actual_ind_codes <- prioritized_indicator_defs$ds_indicator_defs[[i]]$ind_code
+    expect_ind_codes <- expect_proity$ind_code[[i]]
+    expect_true(all(actual_ind_codes %in% expect_ind_codes))
+  }
+
+  # >> two dependent trees ----
+  depend_indicators_defs <- test_indicator_defs[FALSE, ] %>%
+    # -- defs tree 1 --
+    tibble::add_row(
+      ind_code = "ind_1-2-3.1",
+      ind_vars = list(NULL)
+    ) %>%
+    tibble::add_row(
+      ind_code = "ind_1-2-3.2",
+      ind_vars = list(NULL)
+    ) %>%
+    tibble::add_row(
+      ind_code = "ind_1-2-3.3",
+      ind_vars = list(NULL)
+    ) %>%
+    tibble::add_row(
+      ind_code = "ind_1-2.1",
+      ind_vars = list(c("ind_1-2-3.1", "ind_1-2-3.2"))
+    ) %>%
+    tibble::add_row(
+      ind_code = "ind_1-2.2",
+      ind_vars = list(c("ind_1-2-3.2", "ind_1-2-3.3"))
+    ) %>%
+    tibble::add_row(
+      ind_code = "ind_1",
+      ind_vars = list(c("ind_1-2.1", "ind_1-2.2"))
+    ) %>%
+    # -- defs tree 2 --
+    tibble::add_row(
+      ind_code = "ind_2-2-3.1",
+      ind_vars = list(NULL)
+    ) %>%
+    tibble::add_row(
+      ind_code = "ind_2-2.1",
+      ind_vars = list(c("ind_2-2-3.1", "ind_1-2-3.3"))
+    ) %>%
+    tibble::add_row(
+      ind_code = "ind_2",
+      ind_vars = list(c("ind_2-2.1", "ind_1-2.2"))
+    )
+
+  # prioritized indicator defs
+  prioritized_indicator_defs <- prioritize_indicator_defs(depend_indicators_defs)
+
+  expect_fields <- c("priority", "ds_indicator_defs")
+  actual_fields <- names(prioritized_indicator_defs)
+  expect_true(all(actual_fields %in% expect_fields))
+
+  expect_proity <- tibble::tibble(
+    priority = c(1, 2, 3),
+    ind_code = c(
+      list(c("ind_1-2-3.1", "ind_1-2-3.2", "ind_1-2-3.3", "ind_2-2-3.1")),
+      list(c("ind_1-2.1", "ind_1-2.2", "ind_2-2.1")),
+      list(c("ind_1", "ind_2"))
+    )
+  )
+
+  # validate result
   for (i in seq_len(NROW(prioritized_indicator_defs))) {
     actual_ind_codes <- prioritized_indicator_defs$ds_indicator_defs[[i]]$ind_code
     expect_ind_codes <- expect_proity$ind_code[[i]]
     expect_true(all(actual_ind_codes %in% expect_ind_codes))
   }
 })
+
+test_that("related_indicator_defs", {
+
+  # related_indicator_defs with default arguments ====
+
+  # two independent trees
+  independ_indicators_defs <- test_indicator_defs[FALSE, ] %>%
+    # -- defs tree 1 --
+    tibble::add_row(
+      ind_code = "ind_1-2-3.1",
+      ind_vars = list(NULL)
+    ) %>%
+    tibble::add_row(
+      ind_code = "ind_1-2-3.2",
+      ind_vars = list(NULL)
+    ) %>%
+    tibble::add_row(
+      ind_code = "ind_1-2-3.3",
+      ind_vars = list(NULL)
+    ) %>%
+    tibble::add_row(
+      ind_code = "ind_1-2.1",
+      ind_vars = list(c("ind_1-2-3.1", "ind_1-2-3.2"))
+    ) %>%
+    tibble::add_row(
+      ind_code = "ind_1-2.2",
+      ind_vars = list(c("ind_1-2-3.2", "ind_1-2-3.3"))
+    ) %>%
+    tibble::add_row(
+      ind_code = "ind_1",
+      ind_vars = list(c("ind_1-2.1", "ind_1-2.2"))
+    ) %>%
+    # -- defs tree 2 --
+    tibble::add_row(
+      ind_code = "ind_2-2-3.1",
+      ind_vars = list(NULL)
+    ) %>%
+    tibble::add_row(
+      ind_code = "ind_2-2-3.2",
+      ind_vars = list(NULL)
+    ) %>%
+    tibble::add_row(
+      ind_code = "ind_2-2-3.3",
+      ind_vars = list(NULL)
+    ) %>%
+    tibble::add_row(
+      ind_code = "ind_2-2.1",
+      ind_vars = list(c("ind_2-2-3.1", "ind_2-2-3.2"))
+    ) %>%
+    tibble::add_row(
+      ind_code = "ind_2-2.2",
+      ind_vars = list(c("ind_2-2-3.2", "ind_2-2-3.3"))
+    ) %>%
+    tibble::add_row(
+      ind_code = "ind_2",
+      ind_vars = list(c("ind_2-2.1", "ind_2-2.2"))
+    )
+
+  # >> related indicator defs of a root node ----
+  all_related_indicator_defs <- related_indicator_defs(independ_indicators_defs,
+    indicator_codes = "ind_1"
+  )
+
+  # validate result
+  expect_fields <- names(independ_indicators_defs)
+  actual_fields <- names(all_related_indicator_defs)
+  expect_true(all(actual_fields %in% expect_fields))
+
+  expect_related_ind_codes <- c(
+    "ind_1-2-3.1", "ind_1-2-3.2", "ind_1-2-3.3",
+    "ind_1-2.1", "ind_1-2.2", "ind_1"
+  )
+  expect_setequal(
+    all_related_indicator_defs$ind_code,
+    expect_related_ind_codes
+  )
+
+
+  # >> related indicator defs of middle node ----
+  all_related_indicator_defs <- related_indicator_defs(independ_indicators_defs,
+    indicator_codes = "ind_1-2.1"
+  )
+
+  # validate result
+  expect_fields <- names(independ_indicators_defs)
+  actual_fields <- names(all_related_indicator_defs)
+  expect_true(all(actual_fields %in% expect_fields))
+
+  expect_related_ind_codes <- c(
+    "ind_1-2-3.1", "ind_1-2-3.2",
+    "ind_1-2.1"
+  )
+  expect_setequal(
+    all_related_indicator_defs$ind_code,
+    expect_related_ind_codes
+  )
+
+  # >> related indicator defs of leaf node ----
+  all_related_indicator_defs <- related_indicator_defs(independ_indicators_defs,
+    indicator_codes = "ind_1-2-3.1"
+  )
+
+  # validate result
+  expect_fields <- names(independ_indicators_defs)
+  actual_fields <- names(all_related_indicator_defs)
+  expect_true(all(actual_fields %in% expect_fields))
+
+  expect_related_ind_codes <- c(
+    "ind_1-2-3.1"
+  )
+  expect_setequal(
+    all_related_indicator_defs$ind_code,
+    expect_related_ind_codes
+  )
+
+  # >> related indicator defs of multi-nodes ----
+  all_related_indicator_defs <- related_indicator_defs(independ_indicators_defs,
+    indicator_codes = c("ind_1", "ind_2")
+  )
+
+  # validate result
+  expect_fields <- names(independ_indicators_defs)
+  actual_fields <- names(all_related_indicator_defs)
+  expect_true(all(actual_fields %in% expect_fields))
+
+  expect_related_ind_codes <- c(
+    "ind_1-2-3.1", "ind_1-2-3.2", "ind_1-2-3.3",
+    "ind_1-2.1", "ind_1-2.2", "ind_1",
+    "ind_2-2-3.1", "ind_2-2-3.2", "ind_2-2-3.3",
+    "ind_2-2.1", "ind_2-2.2", "ind_2"
+  )
+  expect_setequal(
+    all_related_indicator_defs$ind_code,
+    expect_related_ind_codes
+  )
+
+  # >> related indicator defs of non-exist indicator ----
+  expect_error(
+    all_related_indicator_defs <- related_indicator_defs(independ_indicators_defs,
+      indicator_codes = c("ind_3", "ind_4")
+    )
+  )
+})
+
 
 # Tests for function of indicator define - Internal functions ----
 
@@ -324,7 +535,11 @@ test_that("create_defs_trees", {
 
   ind_defs_trees <- create_ind_defs_trees(new_indicators_defs)
   expect_is(ind_defs_trees, "ind_defs_trees")
-  expect_equal(names(ind_defs_trees), c("ind_code", "depend_ind_codes"))
+  expect_equal(names(ind_defs_trees), c(
+    "ind_code",
+    "depend_ind_codes",
+    "is_root_node"
+  ))
 })
 
 test_that("validate_indicators", {
@@ -364,7 +579,11 @@ test_that("validate_indicators", {
   valid_ind_defs_trees <- validate_indicators(ind_defs_trees)
 
   expect_is(valid_ind_defs_trees, "ind_defs_trees")
-  expect_equal(names(valid_ind_defs_trees), c("ind_code", "depend_ind_codes"))
+  expect_equal(names(valid_ind_defs_trees), c(
+    "ind_code",
+    "depend_ind_codes",
+    "is_root_node"
+  ))
   expect_equal(
     valid_ind_defs_trees$ind_code,
     ind_defs_trees$ind_code
@@ -379,7 +598,11 @@ test_that("validate_indicators", {
   new_valid_ind_defs_trees <- validate_indicators(ind_defs_trees)
 
   expect_is(new_valid_ind_defs_trees, "ind_defs_trees")
-  expect_equal(names(new_valid_ind_defs_trees), c("ind_code", "depend_ind_codes"))
+  expect_equal(names(new_valid_ind_defs_trees), c(
+    "ind_code",
+    "depend_ind_codes",
+    "is_root_node"
+  ))
   expect_equal(
     new_valid_ind_defs_trees$ind_code,
     valid_ind_defs_trees$ind_code
@@ -425,7 +648,11 @@ test_that("check_duplicated_indicators", {
   ind_defs_trees_pass <- check_duplicated_indicators(ind_defs_trees)
 
   expect_is(ind_defs_trees_pass, "ind_defs_trees")
-  expect_equal(names(ind_defs_trees_pass), c("ind_code", "depend_ind_codes"))
+  expect_equal(names(ind_defs_trees_pass), c(
+    "ind_code",
+    "depend_ind_codes",
+    "is_root_node"
+  ))
   expect_equal(
     ind_defs_trees_pass$ind_code,
     ind_defs_trees$ind_code
@@ -505,7 +732,10 @@ test_that("check_loop_depdency", {
   ind_defs_trees_pass <- check_loop_depdency(ind_defs_trees)
 
   expect_is(ind_defs_trees_pass, "ind_defs_trees")
-  expect_equal(names(ind_defs_trees_pass), c("ind_code", "depend_ind_codes"))
+  expect_equal(names(ind_defs_trees_pass), c(
+    "ind_code", "depend_ind_codes",
+    "is_root_node"
+  ))
   expect_equal(
     ind_defs_trees_pass$ind_code,
     c(

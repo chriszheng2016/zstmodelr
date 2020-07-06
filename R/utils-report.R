@@ -7,12 +7,14 @@
 #'
 #' @param report_template A rmd file as report template.
 #' @param report_params   A list of report params, by default NULL.
-#' @param output_format   Output file format i.e. "html_document","pdf",
-#' by default "html_document".
-#' @param output_sn  NULL, serial number or id for output file.
-#' @param output_dir  Dir to save output file, i.e. "output", if NULL,
-#' save in directory of template file, otherwise in output_dir.
-#' @param quiet TRUE to suppress printing of the pandoc command line.
+#' @param output_format   Output file format i.e. "html_document","pdf_document",
+#'   "word_document", "rticles::ctex". Default "html_document".
+#' @param output_sn   Serial number or id for output file. Default NULL
+#' @param output_dir  Path of dir to save output file. Default "output" means to
+#'   save file in output in current dir. If NULL save in directory of template
+#'   file, otherwise in output_dir
+#' @param quiet  A logic flag of whether to suppress printing of the pandoc
+#'   command line.
 #' @param ... Arguments passed to rmarkdown::render.
 #'
 #' @family utils_report
@@ -57,8 +59,8 @@ build_report <- function(report_template,
     paste0(output_filename_main, outout_filename_ext)
   }
 
-  msg <- sprintf("generate report for %s ...\n", report_template)
-  message(msg)
+  msg <- sprintf("Get report template from %s ...\n", report_template)
+  rlang::inform(msg)
 
   rmarkdown::render(
     input = report_template,
@@ -71,6 +73,6 @@ build_report <- function(report_template,
     ...
   )
 
-  msg <- sprintf("generate %s in %s\n", output_filename, output_dir)
-  message(msg)
+  msg <- sprintf("Generate %s into %s\n", output_filename, output_dir)
+  rlang::inform(msg)
 }

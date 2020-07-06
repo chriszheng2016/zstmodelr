@@ -7,7 +7,7 @@
 #'
 #' @param data_series  A dataframe or matrix of numeric series to trail.
 #' @param fun          A function to apply on series data.
-#' @param ...          params passed to fun.
+#' @param ...          Params passed to fun.
 #' @param window       A integer of periods in rolling window which must be
 #'  in range of `[1L, length of data_series]`, default 1L.
 #' @param unlist       A logical to determine whether unlist result or not.
@@ -23,6 +23,7 @@
 #'
 #' @return A vector or list of result with same length of original series
 #'  if succeed, otherwise a vector of NAs with same length of original series.
+#' @noRd
 rollify_series <- function(data_series, fun, ..., window = 1L,
                            unlist = TRUE, na_value = NA) {
 
@@ -82,12 +83,12 @@ rollify_series <- function(data_series, fun, ..., window = 1L,
 #' @param dates         A vector of data.
 #' @param data_series  A dataframe or matrix of numeric series to trail.
 #' @param period        A period string of dates, i.e., "day", "month",
-#'  "quarter". default day.
-#' @param accumulated   A logical to specified data series is accumulated or not.
-#' @param trailing_month     A integer of months of data to trail. Default is 12,
-#'  which means 12 months, i.e., TTT(Trail Twelve Month).
-#' @param agg_fun       A function to aggregate data series in trailing
-#'  month.
+#'  "quarter". Default is "day".
+#' @param accumulated   A logic about whether specified data series is
+#'   accumulated or not. Default is TRUE.
+#' @param trailling_month  A integer of months of data to trail. Default is 12,
+#'   which means 12 months, i.e., TTT(Trail Twelve Month).
+#' @param agg_fun       A function to aggrate data sereis in trailling month.
 #' @param ...    Params pass to agg_fun.
 #'
 #'
@@ -97,7 +98,7 @@ rollify_series <- function(data_series, fun, ..., window = 1L,
 #'
 #' @return A dataframe of trailed data if succeed, otherwise a dataframe with
 #'  zero length.
-
+#' @noRd
 trail_periodic_series <- function(dates, data_series,
                                   period = c("day", "month", "quarter"),
                                   accumulated = TRUE,
@@ -106,7 +107,10 @@ trail_periodic_series <- function(dates, data_series,
                                   ...) {
 
   # function to calculate value in each period
-  .period_value <- function(a_series, period_index) {
+  .period_value <- function(a_series) {
+
+    # remove the NA at index of 1 if need
+    a_series <- tidyr::replace_na(a_series, replace = 0)
 
     # value of period(except 1st period) is difference
     # between adjacent element of x
@@ -135,15 +139,12 @@ trail_periodic_series <- function(dates, data_series,
     # trail regular peridic data
     switch(period,
       "day" = {
-        period_index_fun <- lubridate::yday
         rolly_window <- as.integer((365 / 12) * trailing_month)
       },
       "month" = {
-        period_index_fun <- lubridate::month
         rolly_window <- as.integer((12 / 12) * trailing_month)
       },
       "quarter" = {
-        period_index_fun <- lubridate::quarter
         rolly_window <- as.integer((4 / 12) * trailing_month)
       }
     )
@@ -155,31 +156,43 @@ trail_periodic_series <- function(dates, data_series,
 
     # convert into period data
     if (accumulated) {
+
       # original data is accumalated
 
+      # add year field to indicate period
       ds_period <- ds_origin %>%
         dplyr::mutate(
-          year = lubridate::year(date),
-          period_index = period_index_fun(date)
+          year = lubridate::year(date)
         )
 
-      # compute period data from accumulated data
+      # fill NAs with value before NAs
+      ds_period <- ds_period %>%
+        dplyr::group_by(year) %>%
+        tidyr::fill(names(ds_series), .direction = "down") %>%
+        dplyr::ungroup()
+
+      # compute value of each period
       ds_period <- ds_period %>%
         dplyr::group_by(year) %>%
         dplyr::mutate_at(
-          .vars = dplyr::vars(-date, -year, -period_index),
-          .funs = purrr::partial(.period_value,
-            period_index = period_index
-          )
+          .vars = dplyr::vars(-date, -year),
+          .funs = .period_value
         )
 
+      # get period dataset
       ds_period <- ds_period %>%
         dplyr::ungroup() %>%
-        dplyr::select(-date, -year, -period_index)
+        dplyr::select(-date, -year)
     } else {
-      # original data is not accumated
+      # original data is not accumated(already contain period data)
+
+      # use origin data as period data directly
       ds_period <- ds_origin %>%
         dplyr::select(-date)
+
+      # replace NA in series with 0
+      ds_period <- ds_period %>%
+        dplyr::mutate_all(.funs = tidyr::replace_na, replace = 0)
     }
 
     # trail data from period data

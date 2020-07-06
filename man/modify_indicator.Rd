@@ -11,7 +11,7 @@ modify_indicator(
   replace_exist = FALSE,
   date_index_field = c("date"),
   key_fields = NULL,
-  parallel = TRUE
+  parallel = getOption("zstmodelr.common.parallel", TRUE)
 )
 }
 \arguments{
@@ -21,7 +21,7 @@ modify_indicator(
 
 \item{...}{Params to modify_fun.}
 
-\item{replace_exist}{A logical to determine whether to replace existed
+\item{replace_exist}{A logic flag to determine whether to replace existed
 attribute fields. Default FALSE means to not replace existed field.}
 
 \item{date_index_field}{Name of date index field of ts_indicator,
@@ -42,7 +42,6 @@ Use modifying function to modify indicator timeseries,
 e.g. add new attribute to existed indicator timeseries.
 }
 \examples{
-
 \dontrun{
 
 # modify ts_indicator with customized ind_attr_def_fun
@@ -79,7 +78,6 @@ ts_indicator <- modify_indicator(
   parallel = FALSE
 )
 }
-
 }
 \seealso{
 Other indicator build functions: 

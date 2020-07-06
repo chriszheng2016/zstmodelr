@@ -7,11 +7,23 @@
 \alias{attr_indicators_trdstat}
 \title{Add attribute to indicator timeseries of stocks}
 \usage{
-attr_indicators(ts_indicators, new_attr_def, parallel = TRUE)
+attr_indicators(
+  ts_indicators,
+  new_attr_def,
+  parallel = getOption("zstmodelr.common.parallel", TRUE)
+)
 
-attr_indicators_indcd(stock_db, ts_indicators, parallel = TRUE)
+attr_indicators_indcd(
+  stock_db,
+  ts_indicators,
+  parallel = getOption("zstmodelr.common.parallel", TRUE)
+)
 
-attr_indicators_trdstat(stock_db, ts_indicators, parallel = TRUE)
+attr_indicators_trdstat(
+  stock_db,
+  ts_indicators,
+  parallel = getOption("zstmodelr.common.parallel", TRUE)
+)
 }
 \arguments{
 \item{ts_indicators}{A dataframe of indicator timeseries.}

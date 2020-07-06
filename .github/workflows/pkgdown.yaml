@@ -1,8 +1,8 @@
 on:
   push:
     branches:
-     - master
-     - develop
+     - master #produce site only for master
+     #- develop
 
 name: pkgdown
 

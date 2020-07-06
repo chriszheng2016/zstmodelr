@@ -1,5 +1,5 @@
 # Tests for function of indicator define funs  ----
-context("Tests for function of f indicator define funs")
+context("Tests for function of indicator define funs")
 
 # prepare test datasets
 # set up testing context
@@ -70,13 +70,71 @@ test_that("Ratio", {
   x <- 1:series_length
   y <- x / expect_ratio
 
-  actual_Ratio <- Ratio(x, y)
-  expect_equal(mean(actual_Ratio, na.rm = TRUE), expect_ratio)
+  actual_ratio <- Ratio(x, y)
+  expect_equal(mean(actual_ratio, na.rm = TRUE), expect_ratio)
+})
+
+test_that("Sum", {
+
+  # Sum with default arguments ====
+  # >> Sum non NA Series ----
+  x <- rep(1, series_length)
+  y <- x
+  z <- x
+  expect_sum <- x + y + z
+
+  actual_sum <- Sum(x, y, z)
+  expect_equal(actual_sum, expect_sum)
+
+  # >> Sum on NA Series ----
+  na_length <- series_length %/% 2
+  x <- 1:series_length
+  y <- c(x[1:(series_length - na_length)], rep(NA, na_length))
+  z <- c(x[1:(series_length - na_length)], rep(NA, na_length))
+  expect_sum <- c(
+    x[1:(series_length - na_length)] * 3,
+    x[(na_length + 1):series_length] +
+      rep(0, na_length) +
+      rep(0, na_length)
+  )
+  # compute sum of series
+  actual_sum <- Sum(x, y, z)
+  expect_equal(actual_sum, expect_sum)
+
+  # Sum with various arguments ====
+  # >> argument: substitue_NA ----
+  x <- 1:series_length
+  y <- c(x[1:(series_length - na_length)], rep(NA, na_length))
+  z <- c(x[1:(series_length - na_length)], rep(NA, na_length))
+  substitute_NA_values <- c("zero", "mean", "median", "keep")
+
+  for (i in seq_along(substitute_NA_values)) {
+
+    # compute replace_na_value
+    substitute_NA <- substitute_NA_values[i]
+    replace_na_value <- switch(substitute_NA,
+      "zero" = 0,
+      "mean" = mean(x[1:(series_length - na_length)]),
+      "median" = median(x[1:(series_length - na_length)]),
+      "keep" = NA
+    )
+    expect_sum <- c(
+      x[1:(series_length - na_length)] * 3,
+      x[(na_length + 1):series_length] +
+        rep(replace_na_value, na_length) +
+        rep(replace_na_value, na_length)
+    )
+
+    # compute sum of series
+    actual_sum <- Sum(x, y, z, substitute_NA = substitute_NA)
+
+    expect_equal(actual_sum, expect_sum)
+  }
 })
 
 test_that("Demean", {
 
-  # Ratio with default arguments ====
+  # Demean with default arguments ====
   x <- sample(1:series_length, series_length)
   x_demean <- Demean(x)
 
@@ -87,9 +145,9 @@ test_that("Quarter_TTM", {
 
   # function to create time series
   create_periodic_ts <- function(start_date,
-                                 end_date,
-                                 accumulated = TRUE,
-                                 period = c("day", "month", "quarter")) {
+                                   end_date,
+                                   accumulated = TRUE,
+                                   period = c("day", "month", "quarter")) {
     match.arg(period)
     accumulated_periodic_data <- switch(period,
       "day" = lubridate::yday,

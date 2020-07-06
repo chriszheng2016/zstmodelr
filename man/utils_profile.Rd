@@ -29,7 +29,7 @@ or "gta_profile.xlsx".}
 \item{profile_dir}{A character name of dir where profile is located.
 Default .PROFILE_DIR is etc in package directory.}
 
-\item{profile_path}{path of profile to get data from.}
+\item{profile_path}{Path of profile to get data from.}
 
 \item{variable}{A character of name of variable to get.}
 
@@ -43,7 +43,7 @@ Default NULL means to fetch all factor groups.}
 Default NULL means to fetch all indicators.}
 }
 \value{
-\strong{get_profile_path}: A path of profile if succeed, otherwise "".
+\strong{get_profile_path()}: A path of profile if succeed, otherwise "".
 
 \strong{others}: A dataframe of setting if succeed, otherwise NULL.
 }

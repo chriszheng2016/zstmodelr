@@ -12,18 +12,13 @@
 #' Optionally provide filling method to pad/backfill missing values. Return
 #' aggregating data conformed to a new index with the specified frequency.
 #'
-#' resample is more appropriate if an operation, such as summarization, is
+#' ts_resample is more appropriate if an operation, such as summarization, is
 #' necessary to represent the data at the new frequency.
 #'
-#' @param ts_dataset A timeseries of tibble or timeseries.
-#'
-#' @param freq_rule  The offset string or object representing target conversion,
-#'  e.g. "day", "month", "quarter", "year", default "Day".
-#' @param fillna_method method to fill holes in reindexed Series, e.g.
-#'  "nfill", "bfill","ffill", default nafill(fill NA)
+#' @inheritParams ts_asfreq
 #' @param agg_fun    Function to aggregate values of group data for new timestamp,
-#'  default setting is mean
-#' @param ...        Arguments passed to agg_fun
+#'  default setting is mean.
+#' @param ...        Arguments passed to agg_fun.
 #'
 #' @family utils_timeseries
 #'
@@ -60,11 +55,13 @@ ts_resample <- function(ts_dataset, freq_rule = c("day", "month", "quarter", "ye
 #'
 #' ts_asfreq is more appropriate if use original the data at the new frequency.
 #'
-#' @param ts_dataset   A timeseries of tibble/timeseries.#
-#' @param freq_rule    The offset string or object representing target conversion,
+#' @param ts_dataset   A timeseries of tibble/timeSeries.
+#' @param freq_rule    A offset string or object representing target conversion,
 #'  e.g. "day", "month", "quarter", "year", default "day".
-#' @param fillna_method  Method to fill holes in reindexed Series, e.g.
-#'  "nfill", "bfill","ffill", default nfill(fill with NA).
+#' @param fillna_method  A method to fill NAs in reindexed Series, e.g.
+#'  "nfill", "ffill", "bfill" . Default "nfill" don't fill NAs; "ffill" means to
+#'  use data before NAs to fill NAs; "bfill" means to use data after NAs to fill
+#'  NAs.
 #' @param ... Extra arguments to be passed to methods.
 #'
 #' @family utils_timeseries
@@ -105,14 +102,14 @@ ts_asfreq <- function(ts_dataset,
 #' }
 #' see details for more info.
 #'
-#' @param trim             A logical value. By default TRUE, the first missing observation in the return series
-#' will be removed.
-#' @param ...              Arguments passed to other methods
+#' @param trim    A logic flag of whether to remove the first missing observation in
+#'   the return series. Default TRUE,
+#' @param ...              Arguments passed to other methods.
 #' @param date_index_field Name of date index field of ts_df for resample,
-#' default 'date', Column must be date-like.
-#' Only be used for tibble dataset.
+#'   default 'date', Column must be date-like.
+#'   Only be used for tibble dataset.
 #' @param key_fields    A character vector of key fields, which identify unique
-#' observation in each date. Only be used for tibble dataset.
+#'   observation in each date. Only be used for tibble dataset.
 #'
 #' @family utils_timeseries
 #'
@@ -149,7 +146,7 @@ ts_resample.tbl_df <- function(ts_dataset,
                                ...,
                                date_index_field = c("date"),
                                key_fields = NULL,
-                               parallel = TRUE) {
+                               parallel = getOption("zstmodelr.common.parallel", TRUE)) {
 
   # define internal function to process single group dataset
   .ts_resample_single_df <- function(ts_dataset,
@@ -218,6 +215,7 @@ ts_resample.tbl_df <- function(ts_dataset,
   }
 
   # -- Main function --
+
   # work for single/multi group dataset
   if (is.null(key_fields)) {
     # for single group process
@@ -284,7 +282,7 @@ ts_asfreq.tbl_df <- function(ts_dataset,
                              ...,
                              date_index_field = c("date"),
                              key_fields = NULL,
-                             parallel = TRUE) {
+                             parallel = getOption("zstmodelr.common.parallel", TRUE)) {
 
   # define internal function to process single group dataset
   .ts_asfreq_single_df <- function(ts_dataset,
@@ -339,6 +337,7 @@ ts_asfreq.tbl_df <- function(ts_dataset,
   }
 
   # -- Main function --
+
   # work for single/multi group dataset
   if (is.null(key_fields)) {
     # for single group
@@ -391,7 +390,7 @@ ts_lag.tbl_df <- function(ts_dataset,
                           ...,
                           date_index_field = c("date"),
                           key_fields = NULL,
-                          parallel = TRUE) {
+                          parallel = getOption("zstmodelr.common.parallel", TRUE)) {
 
   # compute lag timeseries for single group dataset
   .ts_lag_single_df <- function(ts_dataset,
@@ -465,6 +464,7 @@ ts_lag.tbl_df <- function(ts_dataset,
   }
 
   # -- Main function --
+
   # work for single/multi group dataset
   if (is.null(key_fields)) {
     # for single group

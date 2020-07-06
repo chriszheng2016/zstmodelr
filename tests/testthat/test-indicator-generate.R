@@ -13,6 +13,8 @@ skip_if_not(db_ready,
 )
 suppressMessages(init_stock_db(stock_db))
 
+enable_parallel()
+
 # prepare test datasets
 customized_indicators_info <- tibble::tibble(
   ind_code = c("m_ep_ttm", "q_ep_ttm"),
@@ -32,6 +34,7 @@ customized_indicators_info <- tibble::tibble(
   ind_keys = list(c("stkcd")),
   rolling_window = 0,
   period = c("month", "quarter"),
+  fillna_method = "ffill",
   output_format = "csv",
   is_active = TRUE
 )
@@ -41,9 +44,10 @@ test_indicator_defs <- build_indicator_defs.gta_db(stock_db, customized_indicato
 
 test_that("generate_indicators", {
   log_file_prefix <- "generate_indicator_log"
-  log_dir <- "./log"
+  log_dir <- "log"
+  validate_stkcds <- c("600031", "000157", "600066", "000550")
 
-  # generate_indicators with various arguments ====
+  # generate_indicators with default arguments ====
   ds_indicators <- generate_indicators(stock_db,
     ds_indicator_defs = test_indicator_defs,
     validate_def = TRUE
@@ -67,11 +71,12 @@ test_that("generate_indicators", {
 
   # generate_indicators with various arguments ====
   log_file_prefix <- "generate_indicator_log1"
-  log_dir <- "./log"
+  log_dir <- "log"
 
   ds_indicators <- generate_indicators(stock_db,
     ds_indicator_defs = test_indicator_defs,
     validate_def = TRUE,
+    validate_stkcds = validate_stkcds,
     parallel = FALSE,
     log_file_prefix = log_file_prefix,
     log_dir = log_dir
@@ -94,8 +99,21 @@ test_that("generate_indicators", {
   expect_true(all(test_indicator_defs$ind_code %in% log_info$ind_code))
 })
 
-test_that("delete_indicators", {
+test_that("backup_indicators", {
 
+  ## backup_indicators with various arguments ====
+  backup_dir <- "backup"
+  backup_dir_path <- backup_indicators(stock_db,
+    ds_indicator_defs = test_indicator_defs,
+    backup_dir = backup_dir
+  )
+
+  # check output file
+  path_backuup_files <- paste0(backup_dir_path, "/", test_indicator_defs$ind_source)
+  purrr::map(path_backuup_files, ~ expect_true(file.exists(.x)))
+})
+
+test_that("delete_indicators", {
   ## delete_indicators with various arguments ====
   delete_indicators(stock_db,
     ds_indicator_defs = test_indicator_defs
@@ -103,9 +121,12 @@ test_that("delete_indicators", {
 
   # check output file
   dir_indicators <- dir_path_db(stock_db, "DIR_DB_DATA_INDICATOR")
-  path_ouput_files <- paste0(dir_indicators, "/", test_indicator_defs$ind_source)
-  purrr::map(path_ouput_files, ~ expect_false(file.exists(.x)))
+  path_target_files <- paste0(dir_indicators, "/", test_indicator_defs$ind_source)
+  purrr::map(path_target_files, ~ expect_false(file.exists(.x)))
 })
 
-# clear up testing conext
+
+
+# Clear up testing context
 suppressMessages(close_stock_db(stock_db))
+disable_parallel()

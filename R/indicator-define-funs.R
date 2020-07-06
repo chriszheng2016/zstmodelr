@@ -79,6 +79,29 @@ Ratio <- function(x_numerator, y_denominator) {
   return(ratio)
 }
 
+# Sum multiple series
+Sum <- function(..., substitute_NA = c("zero", "mean", "median", "keep")) {
+  series_list <- list(...)
+
+  # substitute NA in sereis
+  substitute_NA <- match.arg(substitute_NA)
+  replace_na_value <- switch(substitute_NA,
+    "zero" = function(x) 0,
+    "mean" = purrr::partial(mean, na.rm = TRUE),
+    "median" = purrr::partial(median, na.rm = TRUE),
+    "keep" = function(x) x
+  )
+  series_list_no_na <- purrr::map(series_list, ~ ifelse(is.na(.x),
+    replace_na_value(.x),
+    .x
+  ))
+
+  # sum series without NA
+  result_series <- purrr::reduce(series_list_no_na, .f = `+`)
+
+  return(result_series)
+}
+
 # Substract mean from a series
 #' @describeIn indicator_expr_funs  substract mean from a series.
 Demean <- function(x) {
@@ -91,15 +114,19 @@ Demean <- function(x) {
 
 # Make a quarterly TTM(Trial Twelve Month) series
 #' @param date A date vector or array.
+#' @param accumulated A logic about whether specified data series is
+#'   accumulated or not. Default is TRUE.
+#'
 #' @describeIn indicator_expr_funs  make a quarterly TTM(Trial Twelve Month)
 #'  series.
-Quarter_TTM <- function(date, x) {
+Quarter_TTM <- function(date, x, accumulated = TRUE) {
   date_expr <- rlang::enexpr(date)
   x_expr <- rlang::enexpr(x)
 
   # validate params
   assertive::assert_is_date(date)
   assertive::assert_is_vector(x)
+  assertive::assert_is_logical(accumulated)
 
   # get quarter dataset
   ds_origin <- tibble::tibble(date = date, x = x)
@@ -125,6 +152,7 @@ Quarter_TTM <- function(date, x) {
     trail_x <- trail_periodic_series(ds_origin_quarter$date,
       data_series = ds_origin_quarter$x,
       period = period,
+      accumulated = accumulated,
       trailing_month = 12L,
       agg_fun = sum,
       na.rm = TRUE

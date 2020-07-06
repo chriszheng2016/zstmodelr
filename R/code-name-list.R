@@ -48,6 +48,7 @@ code_name_list <- function(codes, names) {
 # @export
 code2name.code_name_list <- function(x, code, ...) {
   stopifnot(inherits(x, "code_name_list"), !is.null(code))
+  stopifnot(inherits(x, "code_name_list"), !is.null(code))
 
   # translate number code into charater code if stored code is character
   if (is.character(x$code) && is.numeric(code)) {
@@ -79,6 +80,7 @@ setMethod(
 # @describeIn name2code Translate name into code in a object of code_name_list
 # @export
 name2code.code_name_list <- function(x, name, ...) {
+  stopifnot(inherits(x, "code_name_list"), !is.null(name), is.character(name))
   stopifnot(inherits(x, "code_name_list"), !is.null(name), is.character(name))
 
   match_index <- match(name, x$name)

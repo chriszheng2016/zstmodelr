@@ -87,16 +87,16 @@ NULL
 #' Add customized attribute to indicator timeseries of stocks
 #' @param ts_indicators   A dataframe of indicator timeseries.
 #' @param new_attr_def   A function to compute attribute value for stock
-#'  indicator.
+#'   indicator.
 #' @param parallel   A logic to determine whether to use parallel processing.
-#'  Default TRUE means to use parallel processing.
+#'   Default TRUE means to use parallel processing.
 #'
 #' @describeIn indicator_attribute  add customized attribute to indicators
 #'   timeseries of stocks.
 #' @export
 attr_indicators <- function(ts_indicators,
                             new_attr_def,
-                            parallel = TRUE) {
+                            parallel = getOption("zstmodelr.common.parallel", TRUE)) {
 
   # validate params
   assertive::assert_is_data.frame(ts_indicators)
@@ -107,12 +107,12 @@ attr_indicators <- function(ts_indicators,
   if (is_long_format) {
     ind_codes <- unique(ts_indicators$ind_code)
     ts_indicator_wide <- ts_indicators %>%
-      tidyr::spread(key = ind_code, value = ind_value)
+      tidyr::pivot_wider(names_from = ind_code, values_from = ind_value)
   } else {
     ts_indicator_wide <- ts_indicators
   }
 
-  # add attributes into indicatros
+  # add attributes into indicators
   ts_indicator_with_attr <- modify_indicator(
     ts_indicator = ts_indicator_wide,
     modify_fun = new_attr_def,
@@ -123,10 +123,10 @@ attr_indicators <- function(ts_indicators,
   )
 
   # transform back to long format if need
-  if (is_long_format) {
-    ts_indicator_with_attr <- ts_indicator_with_attr %>%
-      tidyr::gather(key = "ind_code", value = "ind_value", !!ind_codes)
-  }
+if (is_long_format) {
+  ts_indicator_with_attr <- ts_indicator_with_attr %>%
+    tidyr::pivot_longer(names_to = "ind_code", values_to = "ind_value", !!ind_codes)
+}
 
   return(ts_indicator_with_attr)
 }
@@ -138,7 +138,7 @@ attr_indicators <- function(ts_indicators,
 #' @export
 attr_indicators_indcd <- function(stock_db,
                                   ts_indicators,
-                                  parallel = TRUE) {
+                                  parallel = getOption("zstmodelr.common.parallel", TRUE)) {
 
   # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "stock_db"))
@@ -166,7 +166,7 @@ attr_indicators_indcd <- function(stock_db,
 #' @export
 attr_indicators_trdstat <- function(stock_db,
                                     ts_indicators,
-                                    parallel = TRUE) {
+                                    parallel = getOption("zstmodelr.common.parallel", TRUE)) {
 
   # validate params
   stopifnot(!is.null(stock_db), inherits(stock_db, "stock_db"))

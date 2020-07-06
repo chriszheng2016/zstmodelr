@@ -1,6 +1,9 @@
 # Tests for function of indicator build  ----
 context("Tests for function of indicator build")
 
+# enable parallel process
+enable_parallel()
+
 test_that("compute_indicator", {
 
   # indicator definition params
@@ -216,7 +219,7 @@ test_that("modify_indicator", {
   )
 
   # don't change existed attribute
-  expect_warning(
+  expect_message(
     ts_modify_indicator <- modify_indicator(ts_modify_indicator,
       modify_fun = ind_attr_def_fun,
       date_index_field = "date",
@@ -232,7 +235,7 @@ test_that("modify_indicator", {
   expect_true(all(ts_modify_indicator[attr_name] == attr_value1))
 
   # replace existed attribute
-  expect_warning(
+  expect_message(
     ts_modify_indicator <- modify_indicator(ts_modify_indicator,
       modify_fun = ind_attr_def_fun,
       replace_exist = TRUE,
@@ -248,3 +251,6 @@ test_that("modify_indicator", {
   expect_true(all(actual_fields %in% expect_fields))
   expect_true(all(ts_modify_indicator[attr_name] == attr_value2))
 })
+
+# disable parallel process
+disable_parallel()

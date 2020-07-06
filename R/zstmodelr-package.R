@@ -7,20 +7,24 @@
 
 
 #' @section Options:
-#' - `testthat.use_colours`: Should the output be coloured? (Default: `TRUE`).
-#' - `testthat.summary.max_reports`: The maximum number of detailed test
-#'    reports printed for the summary reporter (default: 10).
-#' - `testthat.summary.omit_dots`: Omit progress dots in the summary reporter
-#'    (default: `FALSE`).
+#' - `zstmodelr.data_mgt.guess_max`: maximum number of records to use for
+#' guessing column types in importing txt/csv files(default:`20000`).
+#' - `zstmodelr.common.parallel`: whether process will be executed in parallel
+#'    or not (default: `TRUE`).
+#' - `zstmodelr.common.clusters`: number of clusters to be used for parallel
+#'    processing(default: `parallel::detectCores() - 1`).
 
 #' @examples
 #' \dontrun{
-#' library(testthat)
-#' a <- 9
-#' expect_that(a, is_less_than(10))
-#' expect_lt(a, 10)
-#' }
+#' library(zstmodelr)
 #'
+#' # adjust options for reading importing files
+#' options(zstmodelr.data_mgt.guess_max = 300000)
+#'
+#' # read some importing files....
+#' ds_import_data <- read_import_file(input_file)
+#'
+#'}
 #' @keywords internal
 "_PACKAGE"
 
@@ -38,50 +42,33 @@ NULL
 #' @importFrom stats profile quantile sd shapiro.test t.test time
 #' @importFrom utils data head
 
+# Global vars of pkg
+.pkg_globals <- new.env(parent = emptyenv())
+.pkg_globals$.cluster <- NULL
+.pkg_globals$.parallel_log <- "parallel.log"
 
-cluster <- NULL
-parallel_enable <- FALSE
+# Options of pkg
+pkg_options <- list(
+  zstmodelr.data_mgt.guess_max = 200000,
+  zstmodelr.common.parallel = TRUE,
+  zstmodelr.common.clusters = parallel::detectCores() - 1
+)
 
 .onLoad <- function(libname, pkgname) {
-  # Set up for parallel processing
-  if (requireNamespace("parallel", quietly = FALSE)) {
-    rlang::inform("Initiate clusters for parallel process...\n")
-    cluster <<- parallel::makeCluster(parallel::detectCores() - 1)
-    if (requireNamespace("doParallel", quietly = FALSE)) {
-      doParallel::registerDoParallel(cluster)
-      parallel_enable <- TRUE
-    } else {
-      rlang::warn("parallel is needed for parallel processing,
-                  please install it.\n")
-    }
-  } else {
-    rlang::warn("doParallel is needed for parallel processing,
-                please install it.\n")
-  }
 
-  if (!parallel_enable) {
-    rlang::inform("Parallel process is disabled due failure of initialization.\n")
-  }
-
+  # Set default options of package
   op <- options()
-  op.zstmodelr <- list(
-    zstmodelr.name = "Chris Zheng",
-    zstmodelr.desc.author = "Chris Zheng <first.last@example.com> [aut, cre]",
-    zstmodelr.parallel = ifelse(parallel_enable, "TRUE", "FALSE")
-  )
-  toset <- !(names(op.zstmodelr) %in% names(op))
+  toset <- !(names(pkg_options) %in% names(op))
   if (any(toset)) {
-    options(op.zstmodelr[toset])
+    options(as.list(pkg_options)[toset])
   }
 
-  invisible()
+  invisible(NULL)
 }
 
-
 .onUnload <- function(libpath) {
-  # Clear up for parallel processing
-  if (!is.null(cluster)) {
-    rlang::inform("Stop existed clusters for parallel process...\n")
-    parallel::stopCluster(cluster)
-  }
+
+  # Stop parallel processing
+  disable_parallel(.pkg_globals)
+
 }

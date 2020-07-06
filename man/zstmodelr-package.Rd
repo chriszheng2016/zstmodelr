@@ -8,8 +8,8 @@
 \description{
 \if{html}{\figure{logo.png}{options: align='right' alt='logo' width='120'}}
 
-An implementation of analytical tools of stock factors models for 
-   investing China stock market.
+An implementation of analytical tools of stock
+    factors models for investing China stock market.
 }
 \details{
 The main goals of zstmodelr is to leverage traditional financial theory and
@@ -21,22 +21,26 @@ To learn more about zstmodelr, start with the vignettes:
 \section{Options}{
 
 \itemize{
-\item \code{testthat.use_colours}: Should the output be coloured? (Default: \code{TRUE}).
-\item \code{testthat.summary.max_reports}: The maximum number of detailed test
-reports printed for the summary reporter (default: 10).
-\item \code{testthat.summary.omit_dots}: Omit progress dots in the summary reporter
-(default: \code{FALSE}).
+\item \code{zstmodelr.data_mgt.guess_max}: maximum number of records to use for
+guessing column types in importing txt/csv files(default:\code{20000}).
+\item \code{zstmodelr.common.parallel}: whether process will be executed in parallel
+or not (default: \code{TRUE}).
+\item \code{zstmodelr.common.clusters}: number of clusters to be used for parallel
+processing(default: \code{parallel::detectCores() - 1}).
 }
 }
 
 \examples{
 \dontrun{
-library(testthat)
-a <- 9
-expect_that(a, is_less_than(10))
-expect_lt(a, 10)
-}
+library(zstmodelr)
 
+# adjust options for reading importing files
+options(zstmodelr.data_mgt.guess_max = 300000)
+
+# read some importing files....
+ds_import_data <- read_import_file(input_file)
+
+}
 }
 \seealso{
 Useful links:

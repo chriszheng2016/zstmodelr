@@ -11,7 +11,7 @@ create_indicator(
   debug = FALSE,
   date_index_field = c("date"),
   key_fields = NULL,
-  parallel = TRUE
+  parallel = getOption("zstmodelr.common.parallel", TRUE)
 )
 }
 \arguments{
@@ -73,7 +73,6 @@ ts_indicator <- create_indicator(
   parallel = TRUE
 )
 }
-
 }
 \seealso{
 Other indicator build functions: 
