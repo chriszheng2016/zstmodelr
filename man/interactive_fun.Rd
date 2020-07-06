@@ -4,16 +4,16 @@
 \alias{interactive_fun}
 \title{Turn a function into interactive function}
 \usage{
-interactive_fun(fun, debug = FALSE, quiet = FALSE)
+interactive_fun(fun, quiet = FALSE, debug = FALSE)
 }
 \arguments{
 \item{fun}{a function to be executed.}
 
-\item{debug}{a logical of whether execute fun in simulation mode or real
-mode. Default FALSE means to execute function in real mode.}
-
 \item{quiet}{a logical of whether display interactive message. Default FALSE
 means display interactive message in execution.}
+
+\item{debug}{a logical of whether execute fun in simulation mode or real
+mode. Default FALSE means to execute function in real mode.}
 }
 \value{
 a function which could be called in interactive mode.

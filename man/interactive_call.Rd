@@ -5,18 +5,18 @@
 \alias{interactive_call_}
 \title{Call a function interactively}
 \usage{
-interactive_call(fun, debug = FALSE, quiet = FALSE)
+interactive_call(fun, quiet = FALSE, debug = FALSE)
 
-interactive_call_(quo_fun, debug = FALSE, quiet = FALSE)
+interactive_call_(quo_fun, quiet = FALSE, debug = FALSE)
 }
 \arguments{
 \item{fun}{a function to be executed.}
 
-\item{debug}{a logical of whether execute fun in simulation mode or real
-mode. Default FALSE means to execute function in real mode.}
-
 \item{quiet}{a logical of whether display interactive message. Default FALSE
 means display interactive message in execution.}
+
+\item{debug}{a logical of whether execute fun in simulation mode or real
+mode. Default FALSE means to execute function in real mode.}
 
 \item{quo_fun}{a function quoted by \code{\link[rlang:quo]{rlang::quo()}} or \code{\link[rlang:enquo]{rlang::enquo()}} to be
 executed.}
@@ -52,8 +52,9 @@ inter_call <- function(fun) {
 }
 
 inter_call(print)
-
 }
+
+# NSE version of function
 }
 \seealso{
 Other utils_cliui: 
