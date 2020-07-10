@@ -2,8 +2,6 @@
 
 skip_on_ci()
 
-library(zstmodelr)
-
 context("Tests for utility functions of cliui")
 
 test_fun <- function(arg1,
@@ -197,11 +195,11 @@ test_that("arg_value, with various arguments", {
   rlang::fn_env(arg_value) <- pkg_namespace
   mockery::stub(arg_value, what = "user_input_values", how = user_input_enter)
   arg_name <- "arg1"
-  expect_value <- NULL
+
   actual_value <- arg_value(arg_name, quo_fun = rlang::quo(test_fun))
   expect_is(actual_value, class = "list")
   expect_equal(names(actual_value), arg_name)
-  expect_equal(actual_value[[arg_name]], expect_value)
+  expect_true(rlang::is_missing(actual_value[[arg_name]]))
 
   rlang::fn_env(arg_value) <- pkg_namespace
   mockery::stub(arg_value, what = "user_input_values", how = user_input_enter)
