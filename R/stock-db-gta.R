@@ -1790,8 +1790,8 @@ get_factors.gta_db <- function(stock_db, factor_codes, ...) {
   if (success) {
 
     # use lookup table to translate value of ind_name to value of factor_name
-    lookup <- factor_codes
-    names(lookup) <- tolower(indicator_codes)
+    lookup <- matched_factors_info$factor_code
+    names(lookup) <- tolower(matched_factors_info$indicator_code)
     ds_factors <- ds_indicators %>%
       dplyr::mutate(ind_code = unname(lookup[ind_code]))
 
