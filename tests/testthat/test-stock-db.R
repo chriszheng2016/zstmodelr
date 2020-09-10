@@ -147,7 +147,8 @@ test_that("get_industry_info, with various arguments", {
   industry_codes <- c("C38", "J66")
 
   ds_industry_info <- get_industry_info(stock_db,
-                                        industry_codes = industry_codes)
+    industry_codes = industry_codes
+  )
   expect_fields <- c(
     "indcd", "indname"
   )
@@ -865,10 +866,204 @@ test_that("dir_path_db, with various arguments", {
 })
 
 test_that("Translation between code and name", {
-  expect_equal(name2code(stock_db, "资产报酬率A", type = "field"), "f050101b")
-  expect_equal(code2name(stock_db, "f050101b", type = "field"), "资产报酬率A")
-  expect_equal(name2code(stock_db, "三一重工", type = "stock"), "600031")
+
+  # name2code/code2name with default arguments ====
   expect_equal(code2name(stock_db, "600031", type = "stock"), "三一重工")
+  expect_equal(name2code(stock_db, "三一重工", type = "stock"), "600031")
+
+  # name2code/code2name with various arguments ====
+
+  # >>single code/name with exact match = TRUE(default)----
+  expect_equal(code2name(stock_db, "600031", type = "stock"), "三一重工")
+  expect_equal(name2code(stock_db, "三一重工", type = "stock"), "600031")
+  expect_equal(code2name(stock_db, "f050101b", type = "field"), "资产报酬率A")
+  expect_equal(name2code(stock_db, "资产报酬率A", type = "field"), "f050101b")
+  expect_equal(code2name(stock_db, "C28", type = "industry"), "化学纤维制造业")
+  expect_equal(name2code(stock_db, "化学纤维制造业", type = "industry"), "C28")
+  expect_equal(code2name(stock_db, "GPM", type = "factor"), "Gross profit margin")
+  expect_equal(name2code(stock_db, "Gross profit margin", type = "factor"), "GPM")
+  expect_equal(code2name(stock_db, "f050101b", type = "indicator"), "资产报酬率A")
+  expect_equal(name2code(stock_db, "资产报酬率A", type = "indicator"), "f050101b")
+
+  # >>multple code/name with exact match = TRUE(default)----
+  expect_equal(
+    code2name(stock_db, c("600031", "600030"), type = "stock"),
+    c("三一重工", "中信证券")
+  )
+  expect_equal(
+    name2code(stock_db, c("三一重工", "中信证券"), type = "stock"),
+    c("600031", "600030")
+  )
+  expect_equal(
+    code2name(stock_db, c("f050101b", "f050102b"), type = "field"),
+    c("资产报酬率A", "资产报酬率B")
+  )
+  expect_equal(
+    name2code(stock_db, c("资产报酬率A", "资产报酬率B"), type = "field"),
+    c("f050101b", "f050102b")
+  )
+  expect_equal(
+    code2name(stock_db, c("C28", "C29"), type = "industry"),
+    c("化学纤维制造业", "橡胶和塑料制品业")
+  )
+  expect_equal(
+    name2code(stock_db, c("化学纤维制造业", "橡胶和塑料制品业"),
+      type = "industry"
+    ),
+    c("C28", "C29")
+  )
+  expect_equal(
+    code2name(stock_db, c("GPM", "OPM"), type = "factor"),
+    c("Gross profit margin", "Operating profit margin")
+  )
+  expect_equal(
+    name2code(stock_db, c("Gross profit margin", "Operating profit margin"),
+      type = "factor"
+    ),
+    c("GPM", "OPM")
+  )
+  expect_equal(
+    code2name(stock_db, c("f050101b", "f050102b"), type = "indicator"),
+    c("资产报酬率A", "资产报酬率B")
+  )
+  expect_equal(
+    name2code(stock_db, c("资产报酬率A", "资产报酬率B"), type = "indicator"),
+    c("f050101b", "f050102b")
+  )
+
+  # >> single code/name with exact match = FALSE----
+  expect_gte(
+    length(
+      code2name(stock_db, "60003", type = "stock", exact_match = FALSE)
+    ), 1
+  )
+  expect_gte(
+    length(
+      name2code(stock_db, "格力", type = "stock", exact_match = FALSE)
+    ), 1
+  )
+  expect_gte(
+    length(
+      code2name(stock_db, "f05010", type = "field", exact_match = FALSE)
+    ), 1
+  )
+  expect_gte(
+    length(
+      name2code(stock_db, "资产报酬", type = "field", exact_match = FALSE)
+    ), 1
+  )
+  expect_gte(
+    length(
+      code2name(stock_db, "C2", type = "industry", exact_match = FALSE)
+    ), 1
+  )
+  expect_gte(
+    length(
+      name2code(stock_db, "化学", type = "industry", exact_match = FALSE)
+    ), 1
+  )
+  expect_gte(
+    length(
+      code2name(stock_db, "PM", type = "factor", exact_match = FALSE)
+    ), 1
+  )
+  expect_gte(
+    length(
+      name2code(stock_db, "profit margin", type = "factor", exact_match = FALSE)
+    ), 1
+  )
+  expect_gte(
+    length(
+      code2name(stock_db, "f05010", type = "indicator", exact_match = FALSE)
+    ), 1
+  )
+  expect_gte(
+    length(
+      name2code(stock_db, "资产报酬", type = "indicator", exact_match = FALSE)
+    ), 1
+  )
+
+  # >> multiple code/name with exact match = FALSE----
+  expect_gte(
+    length(
+      code2name(stock_db, c("60003", "60002"),
+        type = "stock",
+        exact_match = FALSE
+      )
+    ), 2
+  )
+  expect_gte(
+    length(
+      name2code(stock_db, c("格力", "招商"),
+        type = "stock",
+        exact_match = FALSE
+      )
+    ), 2
+  )
+  expect_gte(
+    length(
+      code2name(stock_db, c("f05010", "f05020"),
+        type = "field",
+        exact_match = FALSE
+      )
+    ), 2
+  )
+  expect_gte(
+    length(
+      name2code(stock_db, c("资产报酬", "净资产收益"),
+        type = "field",
+        exact_match = FALSE
+      )
+    ), 2
+  )
+  expect_gte(
+    length(
+      code2name(stock_db, c("C2", "C3"),
+        type = "industry",
+        exact_match = FALSE
+      )
+    ), 2
+  )
+  expect_gte(
+    length(
+      name2code(stock_db, c("化学", "医药"),
+        type = "industry",
+        exact_match = FALSE
+      )
+    ), 2
+  )
+  expect_gte(
+    length(
+      code2name(stock_db, c("PM", "RO"),
+        type = "factor",
+        exact_match = FALSE
+      )
+    ), 2
+  )
+  expect_gte(
+    length(
+      name2code(stock_db, c("profit margin", "Return on"),
+        type = "factor",
+        exact_match = FALSE
+      )
+    ), 2
+  )
+  expect_gte(
+    length(
+      code2name(stock_db, c("f05010", "f05020"),
+        type = "indicator",
+        exact_match = FALSE
+      )
+    ), 2
+  )
+  expect_gte(
+    length(
+      name2code(stock_db, c("资产报酬", "净资产收益"),
+        type = "indicator",
+        exact_match = FALSE
+      )
+    ), 2
+  )
 })
 
 # Tests for stock_db class - non generic functions ----

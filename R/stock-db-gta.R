@@ -51,7 +51,9 @@ setRefClass("gta_db",
     table_list = "list",
     stock_field_list = "code_name_listOrNull",
     stock_name_list = "code_name_listOrNull",
-    industry_name_list = "code_name_listOrNull"
+    industry_name_list = "code_name_listOrNull",
+    factor_name_list = "code_name_listOrNull",
+    indicator_name_list = "code_name_listOrNull"
   ),
   contains = "stock_db"
 )
@@ -273,6 +275,26 @@ init_stock_db.gta_db <- function(stock_db, ...) {
     }
   }
 
+  # set up factor_name list
+  if (success) {
+    stock_db$factor_name_list <- factor_name_list.gta_db(stock_db)
+    if (is.null(stock_db$factor_name_list)) {
+      rlang::warn("Fail to set up factor_name_list")
+      success <- FALSE
+    }
+  }
+
+  # set up indicator_name list
+  if (success) {
+    stock_db$indicator_name_list <- indicator_name_list.gta_db(stock_db)
+    if (is.null(stock_db$indicator_name_list)) {
+      rlang::warn("Fail to set up indicator_name_list")
+      success <- FALSE
+    }
+  }
+
+
+
   return(invisible(success))
 }
 # Method definition for s4 generic
@@ -328,15 +350,35 @@ setMethod(
 #  Default "stock" means to covert stock name to stock code.
 # @describeIn name2code Translate name into code in a database of gta_db class
 # @export
-name2code.gta_db <- function(stock_db, name,
-                             type = c("stock", "field", "industry"), ...) {
+name2code.gta_db <- function(stock_db, name, exact_match = TRUE,
+                             type = c(
+                               "stock", "field", "industry",
+                               "factor", "indicator"
+                             ), ...) {
   stopifnot(inherits(stock_db, "gta_db"), !missing(name))
 
   target_type <- match.arg(type)
   code <- switch(target_type,
-    field = name2code(stock_db$stock_field_list, name = name),
-    stock = name2code(stock_db$stock_name_list, name = name),
-    industry = name2code(stock_db$industry_name_list, name = name)
+    field = name2code(stock_db$stock_field_list,
+      name = name,
+      exact_match = exact_match
+    ),
+    stock = name2code(stock_db$stock_name_list,
+      name = name,
+      exact_match = exact_match
+    ),
+    industry = name2code(stock_db$industry_name_list,
+      name = name,
+      exact_match = exact_match
+    ),
+    factor = name2code(stock_db$factor_name_list,
+      name = name,
+      exact_match = exact_match
+    ),
+    indicator = name2code(stock_db$indicator_name_list,
+      name = name,
+      exact_match = exact_match
+    )
   )
 
   return(code)
@@ -350,8 +392,12 @@ name2code.gta_db <- function(stock_db, name,
 setMethod(
   "name2code",
   signature(x = "gta_db"),
-  function(x, name, type = c("stock", "field", "industry"), ...) {
-    name2code.gta_db(stock_db = x, name, type, ...)
+  function(x, name, exact_match = TRUE,
+           type = c(
+             "stock", "field", "industry",
+             "factor", "indicator"
+           ), ...) {
+    name2code.gta_db(stock_db = x, name, exact_match, type, ...)
   }
 )
 
@@ -361,15 +407,35 @@ setMethod(
 #  Default "stock" means to covert stock code to stock name.
 # @describeIn code2name Translate code into name in a database of gta_db class
 # @export
-code2name.gta_db <- function(stock_db, code,
-                             type = c("stock", "field", "industry"), ...) {
+code2name.gta_db <- function(stock_db, code, exact_match = TRUE,
+                             type = c(
+                               "stock", "field", "industry",
+                               "factor", "indicator"
+                             ), ...) {
   stopifnot(inherits(stock_db, "gta_db"), !missing(code))
 
   target_type <- match.arg(type)
   name <- switch(target_type,
-    field = code2name(stock_db$stock_field_list, code = code),
-    stock = code2name(stock_db$stock_name_list, code = code),
-    industry = code2name(stock_db$industry_name_list, code = code)
+    field = code2name(stock_db$stock_field_list,
+      code = code,
+      exact_match = exact_match
+    ),
+    stock = code2name(stock_db$stock_name_list,
+      code = code,
+      exact_match = exact_match
+    ),
+    industry = code2name(stock_db$industry_name_list,
+      code = code,
+      exact_match = exact_match
+    ),
+    factor = code2name(stock_db$factor_name_list,
+      code = code,
+      exact_match = exact_match
+    ),
+    indicator = code2name(stock_db$indicator_name_list,
+      code = code,
+      exact_match = exact_match
+    )
   )
 
   return(name)
@@ -382,8 +448,12 @@ code2name.gta_db <- function(stock_db, code,
 setMethod(
   "code2name",
   signature(x = "gta_db"),
-  function(x, code, type = c("stock", "field", "industry"), ...) {
-    code2name.gta_db(stock_db = x, code, type, ...)
+  function(x, code, exact_match = TRUE,
+           type = c(
+             "stock", "field", "industry",
+             "factor", "indicator"
+           ), ...) {
+    code2name.gta_db(stock_db = x, code, exact_match, type, ...)
   }
 )
 # Get a dataset from a table in stock_db
@@ -2304,4 +2374,36 @@ industry_name_list.gta_db <- function(stock_db) {
   }
 
   return(stock_name_list)
+}
+
+# Create a factor_name_list for a database of gta_db class
+factor_name_list.gta_db <- function(stock_db) {
+  stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
+
+  # Build factor_name_list
+  factor_name_list <- NULL
+  factors_info <- zstmodelr::get_factors_info(stock_db)
+  if (!is.null(factors_info)) {
+    codes <- dplyr::pull(factors_info[, "factor_code"])
+    names <- dplyr::pull(factors_info[, "factor_name"])
+    factor_name_list <- code_name_list(codes, names)
+  }
+
+  return(factor_name_list)
+}
+
+# Create a indicator_name_list for a database of gta_db class
+indicator_name_list.gta_db <- function(stock_db) {
+  stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
+
+  # Build indicator_name_list
+  indicator_name_list <- NULL
+  indicators_info <- zstmodelr::get_indicators_info(stock_db)
+  if (!is.null(indicators_info)) {
+    codes <- dplyr::pull(indicators_info[, "ind_code"])
+    names <- dplyr::pull(indicators_info[, "ind_name"])
+    indicator_name_list <- code_name_list(codes, names)
+  }
+
+  return(indicator_name_list)
 }

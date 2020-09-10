@@ -1160,6 +1160,10 @@ fetch_stock_field_dataset <- function(ds_source.df,
 #'
 #' @param x    A object containing code/name information.
 #' @param code A code or a vector of codes to be translated.
+#'  if exact_match is FALSE, code could be regular expression for
+#'  non-exact matching.
+#' @param exact_match  A logic to determine use exact matching or not.
+#'  Default TRUE means to use exact matching
 #' @param ... Extra arguments to be passed to methods.
 #'
 #' @family stock_db generics
@@ -1170,7 +1174,7 @@ fetch_stock_field_dataset <- function(ds_source.df,
 
 
 # S3 generic definition
-# code2name <- function(x, code, ...) {
+# code2name <- function(x, code, exact_match = TRUE, ...) {
 #   UseMethod("code2name")
 # }
 
@@ -1178,7 +1182,7 @@ fetch_stock_field_dataset <- function(ds_source.df,
 setGeneric(
   name = "code2name",
   signature = c("x"),
-  def = code2name <- function(x, code, ...) {
+  def = code2name <- function(x, code, exact_match = TRUE, ...) {
     standardGeneric("code2name")
   }
 )
@@ -1190,6 +1194,10 @@ setGeneric(
 #'
 #' @param x     A object containing code/name information.
 #' @param name  A name or a vector of names to be translated.
+#'  if exact_match is FALSE, name could be regular expression for
+#'  non-exact matching.
+#' @param exact_match  A logic to determine use exact matching or not.
+#'  Default TRUE means to use exact matching
 #' @param ... Extra arguments to be passed to methods.
 #'
 #' @family stock_db generics
@@ -1200,7 +1208,7 @@ setGeneric(
 
 
 # S3 generic definition
-# name2code <- function(x, name, ...) {
+# name2code <- function(x, name, exact_match = TRUE, ...) {
 #   UseMethod("name2code")
 # }
 
@@ -1208,7 +1216,7 @@ setGeneric(
 setGeneric(
   name = "name2code",
   signature = c("x"),
-  def = name2code <- function(x, name, ...) {
+  def = name2code <- function(x, name, exact_match = TRUE, ...) {
     standardGeneric("name2code")
   }
 )
