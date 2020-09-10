@@ -1890,7 +1890,7 @@ get_factors.gta_db <- function(stock_db, factor_codes, ...) {
     # change colname: ind_name/value into factor_name/value
     ds_factors <- ds_factors %>%
       dplyr::rename(
-        factor_name = ind_code,
+        factor_code = ind_code,
         factor_value = ind_value
       )
   }

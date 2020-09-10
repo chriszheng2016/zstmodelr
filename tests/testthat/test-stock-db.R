@@ -725,11 +725,11 @@ test_that("get_factors, with various arguments", {
   ds_factors <- get_factors(stock_db, factor_codes)
   expect_fields <- c(
     "date", "period", "stkcd", "indcd",
-    "factor_name", "factor_value"
+    "factor_code", "factor_value"
   )
   if (!is.null(ds_factors)) {
     expect_true(all(expect_fields %in% names(ds_factors)))
-    expect_true(all(ds_factors$factor_name %in% factor_codes))
+    expect_true(all(ds_factors$factor_code %in% factor_codes))
   }
 })
 
