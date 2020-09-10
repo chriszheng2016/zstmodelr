@@ -260,7 +260,7 @@ setGeneric(
 #' @examples
 #' \dontrun{
 #' ds_trd_dalyr.df <- get_stock_dataset(stock_db,
-#'   table_name = "TRD_Dalyr_日个股回报率",
+#'   table_name = "TRD_Dalyr_鏃ヤ釜鑲″洖鎶ョ巼",
 #'   stock_cd_list = c("600066", "000550")
 #' )
 #' }
@@ -342,12 +342,43 @@ setGeneric(
   name = "get_stock_info",
   signature = c("stock_db"),
   def = get_stock_info <- function(stock_db,
-                                     stock_cd_list = NULL,
-                                     ...) {
+                                   stock_cd_list = NULL,
+                                   ...) {
     standardGeneric("get_stock_info")
   }
 )
 
+#' Get industry info from stock_db
+#'
+#' Generic function to get industry info from stock_db.
+#'
+#' @param stock_db    A stock database object to operate.
+#' @param industry_codes A list of industry codes, default value of NULL means
+#'  all industry data will return.
+#' @param ... Extra arguments to be passed to methods.
+#'
+#' @family stock_db generics
+#'
+#' @return A dataframe of stock info.
+#' @export
+#'
+# S3 generic definition
+# get_industry_info <- function(stock_db,
+#                             industry_codes = NULL,
+#                              ...) {
+#   UseMethod("get_industry_info")
+# }
+
+# S4 generic definition
+setGeneric(
+  name = "get_industry_info",
+  signature = c("stock_db"),
+  def = get_industry_info <- function(stock_db,
+                                   industry_codes = NULL,
+                                   ...) {
+    standardGeneric("get_industry_info")
+  }
+)
 
 #' Get stock return timeseries from stock_db
 #'
@@ -577,7 +608,7 @@ setGeneric(
   name = "save_indicators_to_source",
   signature = c("stock_db"),
   def = save_indicators_to_source <- function(stock_db, indicator_source,
-                                                ts_indicators, ...) {
+                                              ts_indicators, ...) {
     standardGeneric("save_indicators_to_source")
   }
 )
@@ -614,6 +645,37 @@ setGeneric(
     standardGeneric("get_indicators")
   }
 )
+
+#' Get indicators Info from stock_db
+#'
+#' Generic function to get indicator info from stock_db.
+#'
+#' @param stock_db         A stock database object to operate.
+#' @param indicator_codes     A character vector of indicator groups.
+#' Default NULL return all indicators.
+##' @param ... Extra arguments to be passed to methods.
+#'
+#' @family stock_db generics
+#'
+#' @return A dataframe of matched indicators if succeed, otherwise NULL.
+#' @export
+#'
+
+# S3 generic definition
+# get_indicators_info <- function(stock_db, indicator_codes = NULL,
+#                              ...){
+#   UseMethod("get_indicators_info")
+# }
+# S4 generic definition
+setGeneric(
+  name = "get_indicators_info",
+  signature = c("stock_db"),
+  def = get_indicators_info <- function(stock_db, indicator_codes = NULL,
+                                        ...) {
+    standardGeneric("get_indicators_info")
+  }
+)
+
 
 #' Get factors from stock_db
 #'
@@ -665,7 +727,7 @@ setGeneric(
 #'
 
 # S3 generic definition
-# get_factors_info <- function(stock_db, ,factor_codes = NULL,
+# get_factors_info <- function(stock_db, factor_codes = NULL,
 #                              factor_group = NULL,...){
 #   UseMethod("get_factors_info")
 # }

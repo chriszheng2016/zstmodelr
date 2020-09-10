@@ -130,6 +130,36 @@ test_that("get_stock_info, with various arguments", {
   expect_true(all(unique(ds_stock_info$stkcd) %in% stock_cd_list))
 })
 
+test_that("get_industry_info, with various arguments", {
+
+  # get_industry_info with default arguments ====
+  ds_industry_info <- get_industry_info(stock_db)
+  expect_fields <- c(
+    "indcd", "indname"
+  )
+  actual_fields <- names(ds_industry_info)
+  expect_gt(NROW(ds_industry_info), 0)
+  expect_is(ds_industry_info, "data.frame")
+  expect_true(all(actual_fields %in% expect_fields))
+
+
+  # get_industry_info with various arguments ====
+  industry_codes <- c("C38", "J66")
+
+  ds_industry_info <- get_industry_info(stock_db,
+                                        industry_codes = industry_codes)
+  expect_fields <- c(
+    "indcd", "indname"
+  )
+  actual_fields <- names(ds_industry_info)
+
+  expect_gt(NROW(ds_industry_info), 0)
+  expect_is(ds_industry_info, "data.frame")
+  expect_true(all(actual_fields %in% expect_fields))
+  expect_true(all(unique(ds_industry_info$indcd) %in% industry_codes))
+})
+
+
 test_that("get_stock_return, with various arguments", {
 
   # get_stock_return with arguments: output_type ====
@@ -657,6 +687,34 @@ test_that("get_indicators, with various arguments", {
   if (!is.null(ds_indicators)) {
     expect_true(all(expect_fields %in% names(ds_indicators)))
     expect_true(all(ds_indicators$ind_code %in% tolower(indicator_codes)))
+  }
+})
+
+test_that("get_indicators_info, with various arguments", {
+
+  # get_indicators_info with default arguments ====
+  ds_matched_indicators <- get_indicators_info(stock_db)
+  expected_fields <- c(
+    "ind_code", "ind_name", "ind_type",
+    "ind_category", "ind_description"
+  )
+  if (!is.null(ds_matched_indicators)) {
+    expect_is(ds_matched_indicators, "data.frame")
+    actual_fields <- names(ds_matched_indicators)
+    expect_equal(actual_fields, expected_fields)
+  }
+
+
+  # get_indicators_info with indicator_codes ====
+  indicator_codes <- c("f010101a", "f010201a")
+  ds_matched_indicators <- get_indicators_info(stock_db,
+    indicator_codes = indicator_codes
+  )
+  if (!is.null(ds_matched_indicators)) {
+    expect_is(ds_matched_indicators, "data.frame")
+    actual_fields <- names(ds_matched_indicators)
+    expect_equal(actual_fields, expected_fields)
+    expect_true(all(ds_matched_indicators$ind_code %in% indicator_codes))
   }
 })
 

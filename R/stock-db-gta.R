@@ -33,7 +33,7 @@
 
   "TRD_NRRATE", # name for TRD_Nrrate_利率
 
-  "TRD_STOCK_INDUSTRY", # name for table with stock dustry info
+  "TRD_STOCK_INDUSTRY", # name for table with stock industry info
   "SPT_TRDCHG" # name for SPT_Trdchg_特殊处理
 )
 
@@ -631,7 +631,7 @@ get_stock_info.gta_db <- function(stock_db,
   if (!is.null(stock_cd_list)) assertive::assert_is_character(stock_cd_list)
 
 
-  # get riskfree rate from database
+  # get stock info from database
   table_name <- stock_db$table_list[["TRD_Co"]]
   ds_stock_info_raw <- get_table_dataset(stock_db,
     table_name = table_name
@@ -655,7 +655,7 @@ get_stock_info.gta_db <- function(stock_db,
   ds_stock_info <- ds_stock_info_raw %>%
     dplyr::select(stkcd,
       stkname = stknme,
-      indcd = nindcd, indname = nindnme,
+      indcd = nnindcd, indname = nnindnme,
       establish_date = estbdt,
       list_date = listdt,
       market_type
@@ -672,6 +672,50 @@ setMethod(
   function(stock_db, stock_cd_list, ...) {
     get_stock_info.gta_db(
       stock_db, stock_cd_list, ...
+    )
+  }
+)
+
+# Get industry info from stock_db
+# Method definition for s3 generic
+# @describeIn get_industry_info get industry info from a database of gta_db class
+# @export
+get_industry_info.gta_db <- function(stock_db,
+                                     industry_codes = NULL, ...) {
+
+  # validate params
+  stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
+  if (is.null(stock_db$connection)) {
+    rlang::abort("Stock db isn't connected, try to connect db again")
+  }
+  if (!is.null(industry_codes)) assertive::assert_is_character(industry_codes)
+
+  # Get industry info
+  ds_industry_info <- tibble::tibble(
+    indcd = stock_db$industry_name_list$code,
+    indname = stock_db$industry_name_list$name
+  )
+
+  # Filter industry_info by industry_coeds
+  if (!is.null(industry_codes)) {
+    ds_industry_info <- ds_industry_info %>%
+      dplyr::filter(.data[["indcd"]] %in% industry_codes)
+  }
+
+  ds_industry_info <- ds_industry_info %>%
+    dplyr::arrange(.data[["indcd"]])
+
+  return(ds_industry_info)
+}
+# Method definition for s4 generic
+#' @describeIn get_industry_info get industry info from a database of gta_db class
+#' @export
+setMethod(
+  "get_industry_info",
+  signature(stock_db = "gta_db"),
+  function(stock_db, industry_codes, ...) {
+    get_industry_info.gta_db(
+      stock_db, industry_codes, ...
     )
   }
 )
@@ -1522,7 +1566,7 @@ get_indicators_from_source.gta_db <- function(stock_db,
             names_to = "ind_code",
             values_to = "ind_value",
             !!value_fields,
-            values_drop_na = FALSE   #must keep vars with NAs
+            values_drop_na = FALSE # must keep vars with NAs
           )
       } else {
         # raise error for no numeric fields
@@ -1746,6 +1790,54 @@ setMethod(
   }
 )
 
+# Get indicators Info from stock_db
+# Method definition for s3 generic
+# @describeIn get_indicators_info get indicators info from a database of
+#   gta_db class
+# @export
+get_indicators_info.gta_db <- function(stock_db,
+                                       indicator_codes = NULL,
+                                       ...) {
+
+  # validate params
+  stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
+  if (is.null(stock_db$connection)) {
+    rlang::abort("Stock db isn't connected, try to connect db again")
+  }
+
+  # get file table name mapping for reference
+  gta_profile_name <- get_profile(stock_db)
+
+  # get indicators info of matched by indicator_codes
+  matched_indicators_info <- profile_get_indicators(gta_profile_name,
+    indicator_codes = indicator_codes
+  )
+
+  # build specified result of matched indicators
+  matched_indicators_info <- matched_indicators_info %>%
+    dplyr::select(
+      ind_code = ind_code,
+      ind_name = ind_name,
+      ind_type = ind_type,
+      ind_category = ind_category,
+      ind_description = ind_description
+    )
+
+  return(matched_indicators_info)
+}
+
+# Method definition for s4 generic
+#' @describeIn get_indicators_info  get indicators info from a database of
+#' gta_db class
+#' @export
+setMethod(
+  "get_indicators_info",
+  signature(stock_db = "gta_db"),
+  function(stock_db, indicator_codes, ...) {
+    get_indicators_info.gta_db(stock_db, indicator_codes, ...)
+  }
+)
+
 # Get factors timeseries from stock_db
 # Method definition for s3 generic
 # @describeIn get_factors get factor timeseries from
@@ -1857,7 +1949,7 @@ get_factors_info.gta_db <- function(stock_db,
 
 # Method definition for s4 generic
 #' @describeIn get_factors_info  get factors info from a database of gta_db class
-#'  gta_db class
+#'
 #' @export
 setMethod(
   "get_factors_info",
