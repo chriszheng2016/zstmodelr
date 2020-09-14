@@ -153,7 +153,7 @@ clear_stock_db <- function(dsn = c("GTA_SQLData", "GTA_SQLData_TEST"),
 data_manager <- function(dsn = c("GTA_SQLData", "GTA_SQLData_TEST"),
                          action = c("process", "update", "clear"),
                          ...,
-                         help = TRUE) {
+                         help = FALSE) {
   if (help) {
     help_usage()
   } else {
