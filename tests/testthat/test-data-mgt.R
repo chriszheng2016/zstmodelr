@@ -274,11 +274,14 @@ test_that("update_db, with various arguments", {
   )
 
   expect_warning(
-    update_db(stock_db,
-      data_source = data_source,
-      retry_log = basename(log_file_error_path),
-      log_file_prefix = log_file_prefix,
-      log_dir = log_dir
+    suppress_warnings(
+      update_db(stock_db,
+        data_source = data_source,
+        retry_log = basename(log_file_error_path),
+        log_file_prefix = log_file_prefix,
+        log_dir = log_dir
+      ),
+      warn_pattern = "Input `import_data`|parsing failure|Converting problems"
     ),
     regexp = "Since there is no a retry log|all tables will be updated"
   )
@@ -397,12 +400,15 @@ test_that("read_import_file, with various arguments", {
   # Read txt data into data.frame
   # Notice: real data start from line 4, so need skip 3 lines
   expect_warning(
-    ds_import_data <- read_import_file(
-      input_file = input_file,
-      input_type = "txt",
-      start_index = 4L,
-      ignore_problems = TRUE,
-      log_dir = log_dir
+    suppress_warnings(
+      s_import_data <- read_import_file(
+        input_file = input_file,
+        input_type = "txt",
+        start_index = 4L,
+        ignore_problems = TRUE,
+        log_dir = log_dir
+      ),
+      warn_pattern = "Input `import_data`|parsing failure"
     ),
     regexp = "Converting problems"
   )
