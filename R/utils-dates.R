@@ -31,7 +31,7 @@
 #'
 #' @family utils_dates
 #' @return   return TRUE if dates is periodic, otherwise FALSE.
-#' @noRd
+#' @export
 is_periodic_dates <- function(dates_series,
                               freq_rule = c("day", "month", "quarter", "year"),
                               regular = FALSE) {
@@ -138,7 +138,7 @@ isRegularYearly <- function(x) {
 #' @return  return "day" for daily, "month" for monthly, "quarter" for quarterly,
 #'  "year" for yearly, "unknown" for unknown date period.
 #'
-#' @noRd
+#' @export
 guess_dates_period <- function(dates_series, regular = FALSE) {
 
   # validate params
@@ -202,7 +202,7 @@ guess_dates_period <- function(dates_series, regular = FALSE) {
 #' @family utils_dates
 #' @return  A date_series with period format.
 #'
-#' @noRd
+#' @export
 as_period_date <- function(dates_series,
                            period = c("day", "month", "quarter", "year"),
                            period_date = c("start", "end")) {
