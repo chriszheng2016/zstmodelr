@@ -898,7 +898,11 @@ get_stock_return.gta_db <- function(stock_db, stock_cd_list = NULL,
     output_type <- match.arg(output_type)
     switch(output_type,
       tibble = {
-        ts_return <- ds_return
+        # Sort by date in each stock
+        ts_return <- ds_return %>%
+          dplyr::group_by(.data$stkcd) %>%
+          dplyr::arrange(.data$date, .by_group = TRUE) %>%
+          dplyr::ungroup()
       },
       timeSeries = {
 
@@ -914,6 +918,7 @@ get_stock_return.gta_db <- function(stock_db, stock_cd_list = NULL,
         # Build time series
         charvec <- ds_return$date
         ts_return.fts <- timeSeries::timeSeries(ds_return[, -1], charvec)
+        ts_return.fts <- sort(ts_return.fts) # Sort by date
 
         ts_return <- ts_return.fts
       }
@@ -1045,13 +1050,14 @@ get_market_return.gta_db <- function(stock_db,
     output_type <- match.arg(output_type)
     switch(output_type,
       tibble = {
-        ts_return <- ds_return
+        ts_return <- ds_return %>%
+          dplyr::arrange(.data$date)
       },
       timeSeries = {
         # Build time series
         charvec <- ds_return$date
         ts_return.fts <- timeSeries::timeSeries(ds_return[, -1], charvec)
-
+        ts_return.fts <- sort(ts_return.fts) # Sort by date
         ts_return <- ts_return.fts
       }
     )
