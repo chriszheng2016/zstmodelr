@@ -76,20 +76,19 @@ factor_test_uniregress <- function(ds_test,
   # Nest test data by group of factor_name and date
   # cross section: group data by factor and date_field(cross section setting)
   ds_test_groupdata <- ds_test_data %>%
-    dplyr::group_by(!!factor_field, !!date_field) %>%
-    tidyr::nest()
+    dplyr::nest_by(!!factor_field, !!date_field)
 
 
   # Conduct factor regression test
+  safe_regress_fun <- purrr::possibly(regress_fun,
+    otherwise = NULL, quiet = TRUE
+  )
   ds_test_result <- ds_test_groupdata %>%
     dplyr::mutate(
-      model = purrr::map(data, purrr::possibly(regress_fun,
-        otherwise = NULL,
-        quiet = TRUE
-      ), ...),
-      glance = purrr::map(model, broom::glance),
-      tidy = purrr::map(model, broom::tidy),
-      augument = purrr::map2(model, data, broom::augment)
+      model = list(safe_regress_fun(data, ...)),
+      glance = list(broom::glance(model)),
+      tidy = list(broom::tidy(model)),
+      augument = list(broom::augment(model))
     )
 
   # Build Result summary dataset
@@ -121,18 +120,23 @@ factor_test_uniregress <- function(ds_test,
 
   # t-test for estimation of mean of factor return series
   result_factor_return_t.test <- ds_factor_returns_raw %>%
-    dplyr::group_by(!!factor_field) %>%
-    dplyr::do(broom::tidy(t.test(.$estimate))) %>%
+    dplyr::ungroup() %>%
+    dplyr::nest_by(!!factor_field) %>%
+    dplyr::summarise(broom::tidy(t.test(data$estimate))) %>%
     dplyr::select(
       !!factor_field,
       t.test_t = statistic,
       t.test_p = p.value
     )
 
+
   # Normal distribution test for factor return series
+
+
   result_factor_return_normal.test <- ds_factor_returns_raw %>%
-    dplyr::group_by(!!factor_field) %>%
-    dplyr::do(broom::tidy(shapiro.test(.$estimate))) %>%
+    dplyr::ungroup() %>%
+    dplyr::nest_by(!!factor_field) %>%
+    dplyr::summarise(broom::tidy(shapiro.test(data$estimate))) %>%
     dplyr::select(
       !!factor_field,
       normal.test_p = p.value
@@ -251,8 +255,9 @@ factor_test_IC <- function(ds_test,
 
   # t-test for estimation of mean of factor IC series
   result_factor_ICs_t.test <- ds_factor_ICs_raw %>%
-    dplyr::group_by(!!factor_field) %>%
-    dplyr::do(broom::tidy(t.test(.$estimate))) %>%
+    dplyr::ungroup() %>%
+    dplyr::nest_by(!!factor_field) %>%
+    dplyr::summarise(broom::tidy(t.test(data$estimate))) %>%
     dplyr::select(
       !!factor_field,
       t.test_t = statistic,
@@ -261,12 +266,14 @@ factor_test_IC <- function(ds_test,
 
   # Normal distribution test for factor IC series
   result_factor_ICs_normal.test <- ds_factor_ICs_raw %>%
-    dplyr::group_by(!!factor_field) %>%
-    dplyr::do(broom::tidy(shapiro.test(.$estimate))) %>%
+    dplyr::ungroup() %>%
+    dplyr::nest_by(!!factor_field) %>%
+    dplyr::summarise(broom::tidy(shapiro.test(data$estimate))) %>%
     dplyr::select(
       !!factor_field,
       normal.test_p = p.value
     )
+
 
   # Build factor IC series
   ds_factor_ICs <- ds_factor_ICs_raw %>%
@@ -460,22 +467,26 @@ factor_test_sort_portfolios <- function(ds_test,
 
   # t-test for estimation of mean of zero-portfolio return series
   result_zero_portfolio_return_t.test <- ds_portfolios_return %>%
-    dplyr::group_by(!!factor_field) %>%
-    dplyr::do(broom::tidy(t.test(.$group_zero))) %>%
+    dplyr::ungroup() %>%
+    dplyr::nest_by(!!factor_field) %>%
+    dplyr::summarise(broom::tidy(t.test(data$group_zero))) %>%
     dplyr::select(
       !!factor_field,
       t.test_t = statistic,
       t.test_p = p.value
     )
 
+
   # Normal distribution test for zero-portfolio return series
   result_zero_portfolio_return_normal.test <- ds_portfolios_return %>%
-    dplyr::group_by(!!factor_field) %>%
-    dplyr::do(broom::tidy(shapiro.test(.$group_zero))) %>%
+    dplyr::ungroup() %>%
+    dplyr::nest_by(!!factor_field) %>%
+    dplyr::summarise(broom::tidy(shapiro.test(data$group_zero))) %>%
     dplyr::select(
       !!factor_field,
       normal.test_p = p.value
     )
+
 
   # Integrate into result summary
   result_summary <- result_zero_portfolio_return_distrbution %>%
