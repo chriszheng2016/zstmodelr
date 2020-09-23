@@ -81,3 +81,40 @@ print_env_chain <- function(env, env_name = NULL) {
     purrr::map(.f = rlang::env_print)
 
 }
+
+#' get mode value of a vector
+#'
+#' @param x  A vector of numbers, characters, factors
+#'
+#' @return A value with mode numbers
+#'
+#' @examples
+#' \dontrun{
+#'
+#'  # Get mode value of a vector of numeric
+#'  data <- c(1, 2, 2, 3, 3, 3, 4, 4, 5)#'
+#'  mode_value(data)
+#'
+#'  # Get model value of a vector of character
+#'  data <- c("A", "B", "B", "C", "C", "C", "D", "D", "E")
+#'  mode_value(data)
+#'
+#'  # Get model value of a vector of factor
+#'  data <- as.factor(c("A", "B", "B", "C", "C", "C", "D", "D", "E"))
+#'  mode_value(data)
+#'
+#' }
+#'
+#' @export
+mode_value <- function(x) {
+
+  assertive::assert_any_are_true(is.vector(x)|is.factor(x))
+
+  mode_value <- names(which.max(table(x)))
+
+  if(is.numeric(x)) {
+    mode_value <- as.numeric(mode_value)
+  }
+
+  mode_value
+}
