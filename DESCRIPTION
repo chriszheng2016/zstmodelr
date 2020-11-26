@@ -26,6 +26,7 @@ Imports:
     DT,
     foreach,
     fs,
+    glue,
     lubridate,
     magrittr,
     methods,
@@ -49,7 +50,6 @@ Imports:
     zoo
 Suggests: 
     covr,
-    glue,
     knitr,
     mockery,
     spelling,
