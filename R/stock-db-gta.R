@@ -1750,7 +1750,7 @@ save_indicators_to_source.gta_db <- function(stock_db,
           saveRDS(ts_indicators, file = path_indicator_source)
         },
         "csv" = {
-          readr::write_csv(ts_indicators, path = path_indicator_source)
+          readr::write_csv(ts_indicators, file = path_indicator_source)
         },
         {
           msg <- sprintf(
