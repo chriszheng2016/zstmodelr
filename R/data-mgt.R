@@ -341,7 +341,7 @@ read_import_file <- function(input_file,
         )
       }
 
-      readr::write_excel_csv(problems_data, problems_file)
+      readr::write_excel_csv(problems_data, file = problems_file)
 
       msg <- sprintf(
         "Converting problems in %s, plese check %s for detail.",
@@ -396,15 +396,19 @@ read_import_file <- function(input_file,
               paste(target_files, collapse = ","))
     rlang::inform(msg)
 
-    # use first file configration(col_name, col_type) as configuration for all files
-    first_target_file <- target_files[1]
+    # Use configuration(col_name, col_type) of last file as configuration for all
+    # target files, since last file contains some new added fields, which
+    # means these fields in early target files don't have real value. Therefore
+    # if we use configuration of first target file, we might encounter lots of
+    # errors of mismatched field type.
+    config_target_file <- target_files[length(target_files)]
 
     # get full path of input file
     if (!is.null(input_dir)) {
       input_file_path <-
-        paste0(input_dir, "/", basename(first_target_file))
+        paste0(input_dir, "/", basename(config_target_file))
     } else {
-      input_file_path <- normalizePath(first_target_file, winslash = "/")
+      input_file_path <- normalizePath(config_target_file, winslash = "/")
     }
 
     # guess file encoding
@@ -565,10 +569,10 @@ write_import_file <- function(ds_output,
   suppressMessages(
     switch(output_type,
       txt = {
-        readr::write_tsv(ds_output, path = output_file_path)
+        readr::write_tsv(ds_output, file = output_file_path)
       },
       csv = {
-        readr::write_csv(ds_output, path = output_file_path)
+        readr::write_csv(ds_output, file = output_file_path)
       }
     )
   )
