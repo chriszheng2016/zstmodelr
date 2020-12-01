@@ -6,7 +6,7 @@
 ## Prepare raw data from GTA(SQL_DATA/Data/Origin/)
 
 # 1.Download raw data files from GTA into “Download”, please see
-# "数据下载说明(Current)".
+# "Download_Files_Notes(Current)" in "SQL_DATA/DATA/Source/Guide/Specification/
 # 2.Backup old raw files in "SQL_DATA/Data/Origin/" into "Backup", and remove
 # all files except "gta_fieldname.csv".
 # 3.Unzip new raw data file into "SQL_DATA/Data/Origin".
