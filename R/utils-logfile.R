@@ -66,7 +66,7 @@ save_log <- function(ds_log_info,
   }
 
   # write a new log file
-  readr::write_excel_csv(ds_log_info, path = log_file_path)
+  readr::write_excel_csv(ds_log_info, file = log_file_path)
 
   # return path of log file
   return(log_file_path)
