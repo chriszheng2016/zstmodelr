@@ -363,7 +363,7 @@ test_that("read_import_file, with various arguments", {
         ignore_problems = TRUE,
         log_dir = log_dir
       ),
-      warn_pattern = "parsing failures|Converting problems"
+      warn_pattern = "parsing failure|Converting problems"
     ),
     regexp = "test_table03_01.txt|test_table03_02.txt|test_table03_03.txt"
   )
