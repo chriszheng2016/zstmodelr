@@ -23,7 +23,7 @@ test_that("get_datasource, with various arguments", {
   expect_is(ds_datasource, "data.frame")
   # data.frame fields
   expected_fields <- c(
-    "target_table", "input_file", "input_type",
+    "target_table", "input_file", "input_template", "input_type",
     "input_dir", "start_index", "process",
     "process_source"
   )
@@ -132,6 +132,7 @@ test_that("update_db, with various arguments", {
     tibble::add_row(
       target_table = "test_table01",
       input_file = "test_table01.csv",
+      input_template = "test_table01.csv",
       input_type = "csv",
       input_dir = "./data/",
       start_index = 2L,
@@ -141,6 +142,7 @@ test_that("update_db, with various arguments", {
     tibble::add_row(
       target_table = "test_table02",
       input_file = "test_table02.txt",
+      input_template = "test_table02.txt",
       input_type = "txt",
       input_dir = "./data/",
       start_index = 4L,
@@ -350,14 +352,19 @@ test_that("read_import_file, with various arguments", {
 
   # Read multiple files into data.frame
   input_files <- "./data/test_table03_[0-9]+.txt"
+  input_template <- "test_table03_01.txt"
   # test_table03_[0-9]+.txt include 3 files with same rows of record:
-  # test_table03_01.txt, test_table03_02.txt, test_table03_03.txt
+  # test_table03_01.txt, test_table03_02.txt, test_table03_03.txt,
+  # and use test_table03_01.txt as input_template to detect specification of
+  # multiple input files.
+
   expect_message(
     suppress_warnings(
       # Ignore some warnings caused by inconsistent type of Crcd column in
-      # diferent files
+      # different files
       ds_import_data_multi_files <- read_import_file(
         input_file = input_files,
+        input_template = input_template,
         input_type = "txt",
         start_index = 4L,
         ignore_problems = TRUE,

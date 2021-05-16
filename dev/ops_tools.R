@@ -6,16 +6,16 @@
 ## Prepare raw data from GTA(SQL_DATA/Data/Origin/)
 
 # 1.Download raw data files from GTA into “Download”, please see
-# "Download_Files_Notes(Current)" in "SQL_DATA/DATA/Source/Guide/Specification/
-# 2.Backup old raw files in "SQL_DATA/Data/Origin/" into "Backup", and remove
+# "Download_Files_Notes(Current)" in "SQL_Data/Data/Source/Guide/Specification/
+# 2.Backup old raw files in "SQL_DATA/Data/Source/Origin/" into "Backup", and remove
 # all files except "gta_fieldname.csv".
 # 3.Unzip new raw data file into "SQL_DATA/Data/Origin".
 
-## Use "Mircosoft SQL Server Management Stdio" to backup old database
+## Use "Microsoft SQL Server Management Stdio" to backup old database
 
 # 1.Detach GTA_SQLDATA.
 # 2.Compress "GTA_SQLDATA.mdf" and "GTA_SQLDATA_log.ldf" into a zip file.
-# 3.Save zip file into "./../Data_Arichive" like "FY2020Q1(2020-9-11)",in which
+# 3.Save zip file into "./../Data_Archive" like "FY2020Q1(2020-9-11)",in which
 #  FY2020Q1 means last date of report date of data.
 
 ## Use data-manager.R to update/process/clean stock database.
