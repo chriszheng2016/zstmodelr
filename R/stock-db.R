@@ -260,7 +260,7 @@ setGeneric(
 #' @examples
 #' \dontrun{
 #' ds_trd_dalyr.df <- get_stock_dataset(stock_db,
-#'   table_name = "TRD_Dalyr_鏃ヤ釜鑲″洖鎶ョ巼",
+#'   table_name = "TRD_Dalyr",
 #'   stock_cd_list = c("600066", "000550")
 #' )
 #' }
@@ -374,8 +374,8 @@ setGeneric(
   name = "get_industry_info",
   signature = c("stock_db"),
   def = get_industry_info <- function(stock_db,
-                                   industry_codes = NULL,
-                                   ...) {
+                                      industry_codes = NULL,
+                                      ...) {
     standardGeneric("get_industry_info")
   }
 )

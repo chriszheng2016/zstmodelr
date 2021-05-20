@@ -148,9 +148,9 @@ test_that("Quarter_TTM", {
 
   # function to create time series
   create_periodic_ts <- function(start_date,
-                                   end_date,
-                                   accumulated = TRUE,
-                                   period = c("day", "month", "quarter")) {
+                                 end_date,
+                                 accumulated = TRUE,
+                                 period = c("day", "month", "quarter")) {
     match.arg(period)
     accumulated_periodic_data <- switch(period,
       "day" = lubridate::yday,
@@ -240,4 +240,3 @@ test_that("RiskFreeRate", {
     expect_true(all(rf_return$period %in% period))
   }
 })
-

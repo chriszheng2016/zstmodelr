@@ -47,5 +47,3 @@ test_that("industry_name_list.gta_db", {
   expect_true(is.character(industry_name_list$code))
   expect_true(is.character(industry_name_list$name))
 })
-
-

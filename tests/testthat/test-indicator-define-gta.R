@@ -153,5 +153,3 @@ test_that("compute_attr_value.gta_db", {
 
   expect_equal(actual_indcds, expect_indcds)
 })
-
-

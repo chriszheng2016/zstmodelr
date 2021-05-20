@@ -256,5 +256,3 @@ test_that("modify_indicator", {
   expect_true(all(actual_fields %in% expect_fields))
   expect_true(all(ts_modify_indicator[attr_name] == attr_value2))
 })
-
-

@@ -52,18 +52,17 @@ print_fn_envs <- function(fn) {
   fun_name <- as.character(substitute(fn))
 
   print_env_chain(fun_env, env_name = fun_name)
-
 }
 
 # Print chain of environments
 print_env_chain <- function(env, env_name = NULL) {
 
-  #Validate params
+  # Validate params
   assertive::assert_is_environment(env)
-  if(!is.null(env_name)) assertive::assert_is_character(env_name)
+  if (!is.null(env_name)) assertive::assert_is_character(env_name)
 
   # Display information about current environment
-  if(!is.null(env_name)){
+  if (!is.null(env_name)) {
     cli::cli_rule(center = " * current env of {env_name} * ")
   } else {
     cli::cli_rule(center = " * current env * ")
@@ -71,7 +70,7 @@ print_env_chain <- function(env, env_name = NULL) {
   rlang::env_print(env)
 
   # Display information about parent environment of functions
-  if(!is.null(env_name)){
+  if (!is.null(env_name)) {
     cli::cli_rule(center = " * parents of current env of {env_name} * ")
   } else {
     cli::cli_rule(center = " * parents of current env * ")
@@ -79,7 +78,6 @@ print_env_chain <- function(env, env_name = NULL) {
   parent_envs <- rlang::env_parents(env)
   parent_envs %>%
     purrr::map(.f = rlang::env_print)
-
 }
 
 #' get mode value of a vector
@@ -91,28 +89,26 @@ print_env_chain <- function(env, env_name = NULL) {
 #' @examples
 #' \dontrun{
 #'
-#'  # Get mode value of a vector of numeric
-#'  data <- c(1, 2, 2, 3, 3, 3, 4, 4, 5)#'
-#'  mode_value(data)
+#' # Get mode value of a vector of numeric
+#' data <- c(1, 2, 2, 3, 3, 3, 4, 4, 5) #'
+#' mode_value(data)
 #'
-#'  # Get model value of a vector of character
-#'  data <- c("A", "B", "B", "C", "C", "C", "D", "D", "E")
-#'  mode_value(data)
+#' # Get model value of a vector of character
+#' data <- c("A", "B", "B", "C", "C", "C", "D", "D", "E")
+#' mode_value(data)
 #'
-#'  # Get model value of a vector of factor
-#'  data <- as.factor(c("A", "B", "B", "C", "C", "C", "D", "D", "E"))
-#'  mode_value(data)
-#'
+#' # Get model value of a vector of factor
+#' data <- as.factor(c("A", "B", "B", "C", "C", "C", "D", "D", "E"))
+#' mode_value(data)
 #' }
 #'
 #' @export
 mode_value <- function(x) {
-
-  assertive::assert_any_are_true(is.vector(x)|is.factor(x))
+  assertive::assert_any_are_true(is.vector(x) | is.factor(x))
 
   mode_value <- names(which.max(table(x)))
 
-  if(is.numeric(x)) {
+  if (is.numeric(x)) {
     mode_value <- as.numeric(mode_value)
   }
 

@@ -1279,4 +1279,3 @@ test_that("stocks_excess_return, with various arguments", {
   expect_true(is_periodic_dates(ts_stock_excess_return$date, freq_rule = "month"))
   expect_true(all(lubridate::day(ts_stock_excess_return$date + 1) == 1))
 })
-

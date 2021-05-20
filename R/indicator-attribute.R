@@ -123,10 +123,10 @@ attr_indicators <- function(ts_indicators,
   )
 
   # transform back to long format if need
-if (is_long_format) {
-  ts_indicator_with_attr <- ts_indicator_with_attr %>%
-    tidyr::pivot_longer(names_to = "ind_code", values_to = "ind_value", !!ind_codes)
-}
+  if (is_long_format) {
+    ts_indicator_with_attr <- ts_indicator_with_attr %>%
+      tidyr::pivot_longer(names_to = "ind_code", values_to = "ind_value", !!ind_codes)
+  }
 
   return(ts_indicator_with_attr)
 }

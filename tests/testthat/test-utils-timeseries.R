@@ -935,5 +935,3 @@ test_that("refreq_dateindex, with various normal arguments", {
     }
   }
 })
-
-

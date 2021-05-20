@@ -133,5 +133,3 @@ test_that("attr_indicators_trdstat", {
   acutal_fields <- names(ts_indicators_long_with_attr)
   expect_true(all(acutal_fields %in% expect_fields))
 })
-
-

@@ -23,8 +23,7 @@
 #'
 #' # read some importing files....
 #' ds_import_data <- read_import_file(input_file)
-#'
-#'}
+#' }
 #' @keywords internal
 "_PACKAGE"
 
@@ -70,5 +69,4 @@ pkg_options <- list(
 
   # Stop parallel processing
   disable_parallel(.pkg_globals)
-
 }

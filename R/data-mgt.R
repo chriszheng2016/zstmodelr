@@ -382,8 +382,9 @@ read_import_file <- function(input_file,
   # validate params
   assertive::assert_is_not_null(input_file)
   assertive::assert_is_character(input_file)
-  if(!is.null(input_template))
+  if (!is.null(input_template)) {
     assertive::assert_is_character(input_template)
+  }
 
   assertive::assert_is_integer(start_index)
   assertive::assert_all_are_greater_than_or_equal_to(start_index, 1L)
@@ -411,22 +412,26 @@ read_import_file <- function(input_file,
   if (length(target_files) > 0) {
 
     # Inform matched files to read
-    msg <- sprintf("Read data from file(s):%s...\n",
-              paste(target_files, collapse = ","))
+    msg <- sprintf(
+      "Read data from file(s):%s...\n",
+      paste(target_files, collapse = ",")
+    )
     rlang::inform(msg)
 
     # Input_template is used to determine the names and type of columns of
     # multiples input files.
-    if(is.null(input_template)){
+    if (is.null(input_template)) {
       # Use first input file as input_template if NULL.
       input_template <- target_files[1]
     } else {
       input_template <- target_files[input_template]
     }
 
-    if(is.na(input_template)) {
-      msg <- sprintf("Input template (%s) doesn't exisit!\n",
-                     input_template)
+    if (is.na(input_template)) {
+      msg <- sprintf(
+        "Input template (%s) doesn't exisit!\n",
+        input_template
+      )
       rlang::abort(msg)
     }
 

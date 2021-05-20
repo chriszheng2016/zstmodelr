@@ -7,19 +7,17 @@ code_name_list
 test_that("code_name_list, with various arguments", {
 
   # code_name_list with default arguments ====
-  codes <- paste0("code_",1:10)
-  names <- paste0("name_",1:10)
+  codes <- paste0("code_", 1:10)
+  names <- paste0("name_", 1:10)
   code_name_list <- code_name_list(codes, names)
 
   expect_is(code_name_list, "code_name_list")
   expect_true(all(c("code", "name") %in% names(code_name_list)))
-
 })
 
 test_that("code2name/name2code, with various arguments", {
-
-  codes <- paste0("code_",1:10)
-  names <- paste0("name_",1:10)
+  codes <- paste0("code_", 1:10)
+  names <- paste0("name_", 1:10)
   code_name_list <- code_name_list(codes, names)
 
   # code2name/name2code with default arguments ====
@@ -45,30 +43,34 @@ test_that("code2name/name2code, with various arguments", {
   # Convert single code/name with exact match = FALSE
   search_codes <- c("code_1")
   expect_names <- c("name_1", "name_10")
-  result_names <- code2name(code_name_list, code = search_codes,
-                            exact_match = FALSE)
+  result_names <- code2name(code_name_list,
+    code = search_codes,
+    exact_match = FALSE
+  )
   expect_equal(result_names, expect_names)
   search_names <- c("name_1")
   expect_codes <- c("code_1", "code_10")
-  result_codes <- name2code(code_name_list, name = search_names,
-                            exact_match = FALSE)
+  result_codes <- name2code(code_name_list,
+    name = search_names,
+    exact_match = FALSE
+  )
   expect_equal(result_codes, expect_codes)
 
   # Convert multiple code/name with exact match = FALSE
   search_codes <- c("code_1", "code_2")
   expect_names <- c("name_1", "name_10", "name_2")
-  result_names <- code2name(code_name_list, code = search_codes,
-                            exact_match = FALSE)
+  result_names <- code2name(code_name_list,
+    code = search_codes,
+    exact_match = FALSE
+  )
   expect_equal(result_names, expect_names)
   search_names <- c("name_1", "name_2")
   expect_codes <- c("code_1", "code_10", "code_2")
-  result_codes <- name2code(code_name_list, name = search_names,
-                            exact_match = FALSE)
+  result_codes <- name2code(code_name_list,
+    name = search_names,
+    exact_match = FALSE
+  )
   expect_equal(result_codes, expect_codes)
-
-
 })
 
 context("Tests for function of code_name_list - non generic functions")
-
-

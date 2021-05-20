@@ -86,7 +86,7 @@ build_report <- function(report_template,
     "Generate %s into %s successfully.\n",
     fs::path_file(result), output_dir
   )
-  if(length(msg) >1) {
+  if (length(msg) > 1) {
     msg <- paste0(msg, collapse = "\n")
   }
 

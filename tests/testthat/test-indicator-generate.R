@@ -19,7 +19,7 @@ suppressMessages(init_stock_db(stock_db))
 
 
 # Enable parallel process for test
-if(is.null(parallel_status()$cluster)) {
+if (is.null(parallel_status()$cluster)) {
   suppressMessages(enable_parallel())
   withr::defer({
     suppressMessages(disable_parallel())
@@ -140,4 +140,3 @@ test_that("delete_indicators", {
   target_files_path <- paste0(dir_indicators, "/", test_indicator_defs$ind_source)
   purrr::map(target_files_path, ~ expect_false(file.exists(.x)))
 })
-
