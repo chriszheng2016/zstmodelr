@@ -18,6 +18,7 @@ test_that("enable/disable_parallel, with various arguments", {
   options(zstmodelr.common.clusters = test_clusters)
   options(zstmodelr.common.parallel = TRUE)
 
+
   # enable parallel processing
   enable_parallel()
 
@@ -62,6 +63,10 @@ test_that("enable/disable_parallel, with various arguments", {
   options(zstmodelr.common.clusters = test_clusters)
   options(zstmodelr.common.parallel = TRUE)
 
+  withr::local_options(list(
+    zstmodelr.common.clusters = test_clusters,
+    zstmodelr.common.parallel = TRUE)
+  )
 
   # enable parallel processing
   enable_parallel(NULL)

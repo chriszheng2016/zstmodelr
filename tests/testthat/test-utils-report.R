@@ -2,6 +2,12 @@
 
 context("Tests for utility functions of report")
 
+# Clear up testing context
+withr::defer({
+  # Clean output files left by build_report
+  fs::file_delete(fs::dir_ls("./output", glob = "*test_report*.*"))
+})
+
 test_that("build_report, with various arguments", {
   report_template_en <- "./data/test_report.Rmd"
 

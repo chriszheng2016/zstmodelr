@@ -7,6 +7,9 @@ DB_PROFILE_FILE <- "gta_profile.xlsx"
 
 stock_db <- stock_db(gta_db, dsn)
 suppressMessages(db_ready <- open_stock_db(stock_db))
+withr::defer({
+  close_stock_db(stock_db)
+})
 # skip tests if test dsn is not ready
 skip_if_not(db_ready,
   message = sprintf("DSN(%s) is not ready, skip all tests for stock_db", dsn)
@@ -746,7 +749,3 @@ test_that("check_loop_depdency", {
   )
 })
 
-
-
-# clear up testing conext
-suppressMessages(close_stock_db(stock_db))
