@@ -1559,7 +1559,7 @@ get_indicators_from_source.gta_db <- function(stock_db,
             date = ts_date
           )
 
-          # filter out data with invalid date accoring peroid
+          # filter out data with invalid date accoring period
           # speccal coding for quarterly financial report
           if (dates_period == "quarter") {
             ds_indicators <- ds_indicators %>%

@@ -9,13 +9,13 @@
 #' \itemize{
 #'    \item \strong{regular periodic series}:
 #'         a date/time vector is regular periodic, if the vector has not more
-#'     one date/time stamp on each date of peroid and doesn't miss any date of period.
+#'     one date/time stamp on each date of period and doesn't miss any date of period.
 #'     For example, c("2018-01-01", "2018-02-01", "2018-03-01", "2018-04-01",
 #'     "2018-05-01", "2018-06-01") is a regular monthly periodic dates.
 #'
 #'    \item \strong{irregular periodic series}:
 #'        a date/time vector is regular periodic, if the vector has more one
-#'     date/time stamp on each date of peroid or miss some date of period.
+#'     date/time stamp on each date of period or miss some date of period.
 #'     For example, c("2018-01-01", "2018-02-01", "2018-04-01",
 #'     "2018-05-01", "2018-06-01") is is irregular monthly periodic dates,
 #'     which miss date of "2018-03-01" in dates of months.

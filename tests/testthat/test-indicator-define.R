@@ -57,10 +57,10 @@ list_dates <- list(
 
 
 # function to build ds_vars for test
-test_ds_vars <- function(dates, peroid) {
+test_ds_vars <- function(dates, period) {
   ds_vars <- tibble::tibble(
     date = rep(dates, 2),
-    period = peroid,
+    period = period,
     stkcd = "stkcd_01",
     indcd = "incd_01",
     ind_code = c(

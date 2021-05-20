@@ -96,7 +96,7 @@ build_report <- function(report_template,
 #' Custom Knit function for RStudio to build report
 #'
 #' A wrapper of [build_report()] as a custom knit function for Knit button
-#' in RStuido.
+#' in RStudio.
 #'
 #' @param input The input file to be rendered as as report template, which is
 #' required by customized knit function.

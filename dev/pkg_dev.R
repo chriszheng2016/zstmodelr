@@ -1,11 +1,15 @@
-# After you finish a branch, you should check followings before merging into
-# main branch
+
+
+
+## Check before merging ----
 
 # Test package
 devtools::test()
 
-# Update doc and check spelling
-devtools::document()
+# Check spelling
+devtools::document()  # Update document for checking
+usethis::use_spell_check() # Set up spelling check by creating word list
+devtools::spell_check() # Check spelling according to word list
 
 # Check doc
 devtools::check_man()
