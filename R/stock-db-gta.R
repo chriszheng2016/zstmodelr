@@ -711,7 +711,7 @@ get_stock_info.gta_db <- function(stock_db,
   # filter stock_info by stkcds
   if (!is.null(stock_cd_list)) {
     ds_stock_info_raw <- ds_stock_info_raw %>%
-      dplyr::filter(stkcd %in% stock_cd_list)
+      dplyr::filter(.data$stkcd %in% stock_cd_list)
   }
 
   # covert marekt_type
@@ -719,15 +719,19 @@ get_stock_info.gta_db <- function(stock_db,
   markeytype <- c(1, 2, 4, 8, 16)
   names(market_type) <- markeytype
   ds_stock_info_raw <- ds_stock_info_raw %>%
-    dplyr::mutate(market_type = unname(market_type[as.character(markettype)]))
+    dplyr::mutate(
+      market_type = unname(market_type[as.character(.data$markettype)])
+    )
 
   # build output datasets
   ds_stock_info <- ds_stock_info_raw %>%
-    dplyr::select(stkcd,
-      stkname = stknme,
-      indcd = nnindcd, indname = nnindnme,
-      establish_date = estbdt,
-      list_date = listdt,
+    dplyr::select(
+      .data$stkcd,
+      stkname = .data$stknme,
+      indcd = .data$nnindcd,
+      indname = .data$nnindnme,
+      establish_date = .data$estbdt,
+      list_date = .data$listdt,
       market_type
     )
 
@@ -811,28 +815,28 @@ get_stock_return.gta_db <- function(stock_db, stock_cd_list = NULL,
   success <- TRUE
 
   # get stock return dataset
-  field_stkcd <- rlang::quo(stkcd)
+  field_stkcd <- "stkcd"
   period_type <- match.arg(period_type)
   switch(
     period_type,
     "day" = {
       table_name <- stock_db$table_list[["TRD_DALYR"]]
-      field_date <- rlang::quo(trddt)
-      field_return <- rlang::quo(dretwd)
+      field_date <- "trddt"
+      field_return <- "dretwd"
       date_format <- "ymd"
       period_unit <- "day"
     },
     "month" = {
       table_name <- stock_db$table_list[["TRD_MNTH"]]
-      field_date <- rlang::quo(trdmnt)
-      field_return <- rlang::quo(mretwd)
+      field_date <- "trdmnt"
+      field_return <- "mretwd"
       date_format <- "ym"
       period_unit <- "month"
     },
     "year" = {
       table_name <- stock_db$table_list[["TRD_YEAR"]]
-      field_date <- rlang::quo(trdynt)
-      field_return <- rlang::quo(yretwd)
+      field_date <- "trdynt"
+      field_return <- "yretwd"
       date_format <- "y"
       period_unit <- "year"
     }
@@ -851,13 +855,14 @@ get_stock_return.gta_db <- function(stock_db, stock_cd_list = NULL,
     ds_return <- ds_return %>%
       tibble::as_tibble() %>%
       dplyr::select(
-        date = !!field_date, stkcd = !!field_stkcd,
-        return = !!field_return
+        date = .data[[field_date]],
+        stkcd = .data[[field_stkcd]],
+        return = .data[[field_return]]
       )
 
     msg <- sprintf(
       "Get stock return: return table: %s , return field: %s, date field: %s.",
-      table_name, rlang::quo_text(field_return), rlang::quo_text(field_date)
+      table_name, field_return, field_date
     )
     rlang::inform(msg)
   } else {
@@ -908,11 +913,14 @@ get_stock_return.gta_db <- function(stock_db, stock_cd_list = NULL,
 
         # spread stkcd as columns
         ds_return <- ds_return %>%
-          tidyr::pivot_wider(names_from = stkcd, values_from = return)
+          tidyr::pivot_wider(
+            names_from = .data$stkcd,
+            values_from = .data$return
+          )
 
         # arrange colname as the order of stock_cd_list
         if (!is.null(stock_cd_list) && length(stock_cd_list) != 0) {
-          ds_return <- dplyr::select(ds_return, date, stock_cd_list)
+          ds_return <- dplyr::select(ds_return, c("date", stock_cd_list))
         }
 
         # Build time series
@@ -972,28 +980,28 @@ get_market_return.gta_db <- function(stock_db,
   success <- TRUE
 
   # get market return dataset
-  field_markettype <- rlang::quo(markettype)
+  field_markettype <- "markettype"
   period_type <- match.arg(period_type)
   switch(
     period_type,
     "day" = {
       table_name <- stock_db$table_list[["TRD_CNDALYM"]]
-      field_date <- rlang::quo(trddt)
-      field_return <- rlang::quo(cdretwdtl)
+      field_date <- "trddt"
+      field_return <- "cdretwdtl"
       date_format <- "ymd"
       period_unit <- "day"
     },
     "month" = {
       table_name <- stock_db$table_list[["TRD_CNMONT"]]
-      field_date <- rlang::quo(trdmnt)
-      field_return <- rlang::quo(cmretwdtl)
+      field_date <- "trdmnt"
+      field_return <- "cmretwdtl"
       date_format <- "ym"
       period_unit <- "month"
     },
     "year" = {
       table_name <- stock_db$table_list[["TRD_YEARCM"]]
-      field_date <- rlang::quo(trdynt)
-      field_return <- rlang::quo(cyretwdtl)
+      field_date <- "trdynt"
+      field_return <- "cyretwdtl"
       date_format <- "y"
       period_unit <- "year"
     }
@@ -1004,12 +1012,15 @@ get_market_return.gta_db <- function(stock_db,
   if (!is.null(ds_return)) {
     ds_return <- ds_return %>%
       tibble::as_tibble() %>%
-      dplyr::filter(!!field_markettype == 21) %>%
-      dplyr::select(date = !!field_date, market_index = !!field_return)
+      dplyr::filter(.data[[field_markettype]] == 21) %>%
+      dplyr::select(
+        date = .data[[field_date]],
+        market_index = .data[[field_return]]
+      )
 
     msg <- sprintf(
       "Get return data from return table: %s , return field: %s, date field: %s.",
-      table_name, rlang::quo_text(field_return), rlang::quo_text(field_date)
+      table_name, field_return, field_date
     )
     rlang::inform(msg)
   } else {
@@ -1020,7 +1031,9 @@ get_market_return.gta_db <- function(stock_db,
   if (success) {
 
     # Change date format: datetime --> date
-    origin_date <- lubridate::parse_date_time(as.character(ds_return$date), date_format)
+    origin_date <- lubridate::parse_date_time(
+      as.character(ds_return$date), date_format
+    )
     origin_date <- lubridate::as_date(origin_date)
 
     # Set date of period(start date/end date of the period)
@@ -1160,12 +1173,12 @@ get_financial_report.gta_db <- function(stock_db,
   if (success) {
     if (consolidated) {
       ds_report <- ds_report_raw %>%
-        dplyr::filter(typrep == "A") %>%
-        dplyr::select(-typrep)
+        dplyr::filter(.data$typrep == "A") %>%
+        dplyr::select(-.data$typrep)
     } else {
       ds_report <- ds_report_raw %>%
-        dplyr::filter(typrep == "B") %>%
-        dplyr::select(-typrep)
+        dplyr::filter(.data$typrep == "B") %>%
+        dplyr::select(-.data$typrep)
     }
   }
 
@@ -1176,20 +1189,20 @@ get_financial_report.gta_db <- function(stock_db,
     # filter out data at month of 3,6,9,12
     ds_report <- ds_report %>%
       dplyr::mutate(
-        date = accper,
+        date = .data$accper,
         month_index = lubridate::month(date)
       ) %>%
-      dplyr::filter(month_index %in% c(3, 6, 9, 12)) %>%
-      dplyr::select(-accper)
+      dplyr::filter(.data$month_index %in% c(3, 6, 9, 12)) %>%
+      dplyr::select(-.data$accper)
 
     # filter year or quarter report
     if (period_type == "year") {
       ds_report <- ds_report %>%
-        dplyr::filter(month_index == 12)
+        dplyr::filter(.data$month_index == 12)
     }
 
     ds_report <- ds_report %>%
-      dplyr::select(-month_index)
+      dplyr::select(-.data$month_index)
   }
 
 
@@ -1239,8 +1252,8 @@ get_financial_report.gta_db <- function(stock_db,
   ts_report <- NULL
   if (success) {
     ts_report <- ds_report %>%
-      dplyr::arrange(date, stkcd) %>%
-      dplyr::select(date, stkcd, dplyr::everything())
+      dplyr::arrange(.data$date, .data$stkcd) %>%
+      dplyr::select(.data$date, .data$stkcd, dplyr::everything())
   }
 
   return(ts_report)
@@ -1458,7 +1471,7 @@ get_indicators_from_source.gta_db <- function(stock_db,
       # convert numeric stkcd into string stkcd if need
       if (("stkcd" %in% ds_field_names) && is.numeric(ds_indicators$stkcd)) {
         ds_indicators <- ds_indicators %>%
-          dplyr::mutate(stkcd = sprintf("%06d", stkcd))
+          dplyr::mutate(stkcd = sprintf("%06d", .data$stkcd))
         msg <- "Coerce stock cd to character of 6 digits if it were numeric."
         rlang::warn(msg)
       }
@@ -1563,13 +1576,13 @@ get_indicators_from_source.gta_db <- function(stock_db,
           # speccal coding for quarterly financial report
           if (dates_period == "quarter") {
             ds_indicators <- ds_indicators %>%
-              dplyr::filter(lubridate::month(origin_date)
+              dplyr::filter(lubridate::month(.data$origin_date)
               %in% c(3, 6, 9, 12))
           }
 
           # remove origin_date fields
           ds_indicators <- ds_indicators %>%
-            dplyr::select(-origin_date)
+            dplyr::select(-.data$origin_date)
 
           # put "period" field into output non-indicators field
           output_non_indicators <- c(output_non_indicators, "period")
@@ -1810,8 +1823,8 @@ get_indicators.gta_db <- function(stock_db, indicator_codes, ...) {
   if (!is.null(matched_indicators)) {
     # build table_list for fetching indicators
     indicator_sources <- matched_indicators %>%
-      dplyr::filter(ind_code %in% tolower(indicator_codes)) %>%
-      dplyr::group_by(ind_source) %>%
+      dplyr::filter(.data$ind_code %in% tolower(indicator_codes)) %>%
+      dplyr::group_by(.data$ind_source) %>%
       tidyr::nest()
   } else {
     success <- FALSE
@@ -1892,11 +1905,11 @@ get_indicators_info.gta_db <- function(stock_db,
   # build specified result of matched indicators
   matched_indicators_info <- matched_indicators_info %>%
     dplyr::select(
-      ind_code = ind_code,
-      ind_name = ind_name,
-      ind_type = ind_type,
-      ind_category = ind_category,
-      ind_description = ind_description
+      ind_code = .data$ind_code,
+      ind_name = .data$ind_name,
+      ind_type = .data$ind_type,
+      ind_category = .data$ind_category,
+      ind_description = .data$ind_description
     )
 
   return(matched_indicators_info)
@@ -1932,7 +1945,7 @@ get_factors.gta_db <- function(stock_db, factor_codes, ...) {
 
   success <- TRUE
 
-  # get file table name mapping for referece
+  # get file table name mapping for reference
   gta_profile_name <- get_profile(stock_db)
 
   # get indcator info of matched factor
@@ -1961,13 +1974,13 @@ get_factors.gta_db <- function(stock_db, factor_codes, ...) {
     lookup <- matched_factors_info$factor_code
     names(lookup) <- tolower(matched_factors_info$indicator_code)
     ds_factors <- ds_indicators %>%
-      dplyr::mutate(ind_code = unname(lookup[ind_code]))
+      dplyr::mutate(ind_code = unname(lookup[.data$ind_code]))
 
     # change colname: ind_name/value into factor_name/value
     ds_factors <- ds_factors %>%
       dplyr::rename(
-        factor_code = ind_code,
-        factor_value = ind_value
+        factor_code = .data$ind_code,
+        factor_value = .data$ind_value
       )
   }
 
@@ -2012,12 +2025,12 @@ get_factors_info.gta_db <- function(stock_db,
   # build specified result of matched factors
   matched_factors_info <- matched_factors_info %>%
     dplyr::select(
-      factor_code = factor_code,
-      factor_name = factor_name,
-      factor_type = factor_type,
-      factor_group = factor_group,
-      factor_description = factor_description,
-      factor_lag_month = factor_lag_month
+      factor_code = .data$factor_code,
+      factor_name = .data$factor_name,
+      factor_type = .data$factor_type,
+      factor_group = .data$factor_group,
+      factor_description = .data$factor_description,
+      factor_lag_month = .data$factor_lag_month
     )
 
   return(matched_factors_info)
@@ -2059,10 +2072,10 @@ get_stock_industry.gta_db <- function(stock_db, ...) {
   if (!is.null(ds_stock_industry_raw)) {
     ds_stock_industry <- ds_stock_industry_raw %>%
       tibble::as_tibble() %>%
-      dplyr::filter(typrep == "A") %>%
-      dplyr::mutate(date = as.Date(accper)) %>%
-      dplyr::select(date, stkcd, indcd) %>%
-      dplyr::arrange(stkcd, date)
+      dplyr::filter(.data$typrep == "A") %>%
+      dplyr::mutate(date = as.Date(.data$accper)) %>%
+      dplyr::select(.data$date, .data$stkcd, .data$indcd) %>%
+      dplyr::arrange(.data$stkcd, .data$date)
   }
 
   return(ds_stock_industry)
@@ -2109,30 +2122,36 @@ get_spt_stocks.gta_db <- function(stock_db, ...) {
   ds_spt_stocks_raw <- ds_spt_stocks_raw %>%
     tibble::as_tibble() %>%
     dplyr::mutate(
-      annoudt = lubridate::as_date(annoudt),
-      execudt = lubridate::as_date(execudt)
+      annoudt = lubridate::as_date(.data$annoudt),
+      execudt = lubridate::as_date(.data$execudt)
     )
 
-  # get inital status of spt stocks at listing date
+  # get initial status of spt stocks at listing date
   spt_stkcds <- unique(ds_spt_stocks_raw$stkcd)
   ds_spt_stocks_initital_status <- ds_company_info %>%
     tibble::as_tibble() %>%
-    dplyr::filter(stkcd %in% spt_stkcds) %>%
-    dplyr::mutate(status_code = "A", date = lubridate::as_date(listdt)) %>%
-    dplyr::select(stkcd, date, status_code)
+    dplyr::filter(.data$stkcd %in% spt_stkcds) %>%
+    dplyr::mutate(
+      status_code = "A",
+      date = lubridate::as_date(.data$listdt)
+    ) %>%
+    dplyr::select(.data$stkcd, date, .data$status_code)
 
   # get changed status of spt stocks after listing date
   ds_spt_stocks_changed_status <- ds_spt_stocks_raw %>%
-    tidyr::separate(chgtype,
+    tidyr::separate(.data$chgtype,
       into = c("before_status", "after_status"),
       sep = 1
     ) %>%
-    dplyr::select(stkcd, date = execudt, status_code = after_status)
+    dplyr::select(.data$stkcd,
+      date = .data$execudt,
+      status_code = .data$after_status
+    )
 
   # get full history of status of spt stocks
   ds_spt_stocks_status <- ds_spt_stocks_changed_status %>%
     dplyr::bind_rows(ds_spt_stocks_initital_status) %>%
-    dplyr::arrange(stkcd, date)
+    dplyr::arrange(.data$stkcd, .data$date)
 
   # translate status_code into status_name
   # A:正常上市
@@ -2154,7 +2173,7 @@ get_spt_stocks.gta_db <- function(stock_db, ...) {
 
   # add status_names fields crossponding to status_code
   ds_spt_stocks_status <- ds_spt_stocks_status %>%
-    dplyr::mutate(trade_status = trade_status[status_code])
+    dplyr::mutate(trade_status = trade_status[.data$status_code])
 
   return(ds_spt_stocks_status)
 }
@@ -2199,10 +2218,13 @@ get_riskfree_rate.gta_db <- function(stock_db,
   # Notice: all rates in raw data are pecentage
   ds_riskfree_rate <- ds_riskfree_rate_raw %>%
     tibble::as_tibble() %>%
-    dplyr::filter(nrr1 == "NRI01") %>%
-    dplyr::mutate(date = as.Date(clsdt), daily_return = nrrdaydt / 100) %>%
-    dplyr::select(date, daily_return) %>%
-    dplyr::arrange(date)
+    dplyr::filter(.data$nrr1 == "NRI01") %>%
+    dplyr::mutate(
+      date = as.Date(.data$clsdt),
+      daily_return = .data$nrrdaydt / 100
+    ) %>%
+    dplyr::select(c("date", "daily_return")) %>%
+    dplyr::arrange(.data$date)
 
   # refreq riskfree rate into regular daily series
   ds_riskfree_rate <- ds_riskfree_rate %>%
@@ -2227,7 +2249,7 @@ get_riskfree_rate.gta_db <- function(stock_db,
     )
 
   ds_riskfree_rate_period <- ds_riskfree_rate_period %>%
-    dplyr::select(date, riskfree_return = daily_return) %>%
+    dplyr::select(date, riskfree_return = .data$daily_return) %>%
     dplyr::mutate(period = !!period) %>%
     dplyr::select(date, period, dplyr::everything())
 
@@ -2366,7 +2388,7 @@ industry_name_list.gta_db <- function(stock_db) {
   ds_trd_company.df <- get_table_dataset(stock_db, table_name)
   if (!is.null(ds_trd_company.df)) {
     ds_indistry <- ds_trd_company.df %>%
-      dplyr::select(nnindcd, nnindnme) %>%
+      dplyr::select(.data$nnindcd, .data$nnindnme) %>%
       dplyr::distinct()
 
     codes <- ds_indistry[, "nnindcd"]

@@ -1004,7 +1004,7 @@ stocks_excess_return <- function(ts_stocks_return,
   # combine stocks_return and riskfree_rate to compute excess return
   ts_stocks_excess_return <- ts_stocks_return %>%
     dplyr::inner_join(ts_riskfree_rate_with_stkcd, by = c("date", "stkcd")) %>%
-    dplyr::mutate(excess_return = return - riskfree_return)
+    dplyr::mutate(excess_return = .data$return - .data$riskfree_return)
 
   return(ts_stocks_excess_return)
 }

@@ -36,7 +36,7 @@ get_table_dataset.default <- function(stock_db, table_name, quietly = FALSE) {
 }
 
 
-# Default funcation to fetch many datasets from stock_db
+# Default function to fetch many datasets from stock_db
 fetch_table_dataset.default <- function(stock_db, table_list) {
   stopifnot(!is.null(stock_db))
   stop("Unknow class")

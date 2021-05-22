@@ -107,7 +107,10 @@ attr_indicators <- function(ts_indicators,
   if (is_long_format) {
     ind_codes <- unique(ts_indicators$ind_code)
     ts_indicator_wide <- ts_indicators %>%
-      tidyr::pivot_wider(names_from = ind_code, values_from = ind_value)
+      tidyr::pivot_wider(
+        names_from = .data$ind_code,
+        values_from = .data$ind_value
+      )
   } else {
     ts_indicator_wide <- ts_indicators
   }

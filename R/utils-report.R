@@ -18,6 +18,7 @@
 #'   file, otherwise in output_dir.
 #' @param quiet  A logic flag of whether to suppress printing of the pandoc
 #'   command line.
+#' @param encoding Ignored. The encoding is always assumed to be UTF-8.
 #' @param ... Arguments passed to [rmarkdown::render()].
 #'
 #' @family utils_report
@@ -52,8 +53,6 @@ build_report <- function(report_template,
   # Set output_filename for multi-formats if needed, .e.g:
   # When output_format ="all", all formats in template will be produce,
   # which need provide multiple
-
-
 
   if (is.character(output_format)) {
     if ((length(output_format) == 1) && (output_format == "all")) {
