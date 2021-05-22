@@ -286,36 +286,6 @@ setGeneric(
   }
 )
 
-
-#' Fetch many datasets from stock_db
-#'
-#' Generic function to fetch many datasets from stock_db.
-#'
-#' @param stock_db   A stock database object to operate.
-#' @param table_list A character vector of table names.
-#' @param ... Extra arguments to be passed to methods.
-#'
-#' @family stock_db generics
-#'
-#' @return A list of names of table fetched if succeed.
-#' @export
-#'
-
-
-# S3 generic definition
-# fetch_table_dataset <- function(stock_db, table_list, ...) {
-#   UseMethod("fetch_table_dataset")
-# }
-
-# S4 generic definition
-setGeneric(
-  name = "fetch_table_dataset",
-  signature = c("stock_db"),
-  def = fetch_table_dataset <- function(stock_db, table_list, ...) {
-    standardGeneric("fetch_table_dataset")
-  }
-)
-
 #' Get stock info from stock_db
 #'
 #' Generic function to get stock info from stock_db.

@@ -632,60 +632,6 @@ setMethod(
   }
 )
 
-# Fetch many datasets from stock_db
-# Method definition for s3 generic
-# @describeIn fetch_table_dataset get many datasets from a database of gta_db class
-# @export
-fetch_table_dataset.gta_db <- function(stock_db, table_list, ...) {
-
-  # validate params
-  stopifnot(!is.null(stock_db), inherits(stock_db, "gta_db"))
-
-  if (is.null(stock_db$connection)) {
-    rlang::abort("Stock db isn't connected, try to connect db again")
-  }
-
-  if (missing(table_list) || length(table_list) == 0) {
-    rlang::abort("Table_list must contain one table at least")
-  }
-
-  # get datasets from stock db
-  result_table_list <- list(length(table_list))
-  for (table_index in seq_along(table_list)) {
-    the_table <- table_list[table_index]
-    # get stock data for specified stock
-    ds_result <- get_table_dataset.gta_db(stock_db,
-      table_name = the_table
-    )
-
-    # keep the result_ts in GlobalEnv for debug check
-    if (!is.null(ds_result)) {
-
-      # get table successfully
-      ds_name <- sprintf("ds_%s.df", the_table)
-      assign(ds_name, ds_result, envir = .GlobalEnv)
-      # assign(ds_name, ds_result, envir = parent.frame())
-      result_table_list[table_index] <- ds_name
-    } else {
-
-      # fail to get table
-      result_table_list[table_index] <- NULL
-    }
-  }
-
-  return(result_table_list)
-}
-# Method definition for s4 generic
-#' @describeIn fetch_table_dataset get many datasets from a database of gta_db class
-#' @export
-setMethod(
-  "fetch_table_dataset",
-  signature(stock_db = "gta_db"),
-  function(stock_db, table_list, ...) {
-    fetch_table_dataset.gta_db(stock_db, table_list, ...)
-  }
-)
-
 # Get stock info from stock_db
 # Method definition for s3 generic
 # @describeIn get_stock_info get stock info from a database of gta_db class

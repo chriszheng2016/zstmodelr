@@ -81,24 +81,6 @@ test_that("get_stock_dataset, with various arguments", {
   expect_true(is.character(ds_stocks$stkcd))
 })
 
-test_that("fetch_table_dataset, with various arguments", {
-
-  # fetch_table_dataset with default arguments ====
-  table_list <- c(
-    stock_db$table_list$TRD_Co,
-    stock_db$table_list$gta_fieldname_list
-  )
-  expect_message(
-    result_table_list <- fetch_table_dataset(stock_db, table_list),
-    "successfully"
-  )
-  expect_length(result_table_list, length(table_list))
-  for (i in seq_along(result_table_list)) {
-    expect_is(get(result_table_list[[i]]), "data.frame")
-  }
-})
-
-
 test_that("get_stock_info, with various arguments", {
 
   # get_stock_info with default arguments ====
