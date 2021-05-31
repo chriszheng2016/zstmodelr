@@ -6,6 +6,12 @@ context("Tests for data management for stock_db - generic functions")
 dsn <- "GTA_SQLData_TEST"
 stock_db <- stock_db(gta_db, dsn)
 suppressMessages(db_ready <- open_stock_db(stock_db))
+withr::defer({
+  # Clean temp tables used for tests on database
+  DBI::dbRemoveTable(stock_db$connection, "test_table01")
+  DBI::dbRemoveTable(stock_db$connection, "test_table02")
+  close_stock_db(stock_db)
+})
 # skip tests if test dsn is not ready
 skip_if_not(db_ready,
   message = sprintf("DSN(%s) is not ready, skip all tests for data-mangement of stock_db!", dsn)
@@ -14,7 +20,13 @@ suppressMessages(init_stock_db(stock_db))
 db_info <- DBI::dbGetInfo(stock_db$connection)
 target_database <- db_info$dbname
 
-enable_parallel()
+# Enable parallel process for test
+if (is.null(parallel_status()$cluster)) {
+  suppressMessages(enable_parallel())
+  withr::defer({
+    suppressMessages(disable_parallel())
+  })
+}
 
 test_that("get_datasource, with various arguments", {
 
@@ -23,7 +35,7 @@ test_that("get_datasource, with various arguments", {
   expect_is(ds_datasource, "data.frame")
   # data.frame fields
   expected_fields <- c(
-    "target_table", "input_file", "input_type",
+    "target_table", "input_file", "input_template", "input_type",
     "input_dir", "start_index", "process",
     "process_source"
   )
@@ -95,7 +107,9 @@ test_that("import_table, with various arguments", {
     target_table,
     format(Sys.Date(), "%Y-%m-%d")
   )
-  expect_true(file.exists(problems_file))
+  withr::with_file(problems_file, {
+    expect_true(file.exists(problems_file))
+  })
 
   # >> argument: ignore_problems ----
   input_file <- "./data/test_table02.txt"
@@ -119,6 +133,17 @@ test_that("import_table, with various arguments", {
     regexp = "Converting problems",
     class = "dplyr_error"
   )
+
+  # Check problems files
+  problems_file <- sprintf(
+    "%s/%s(%s).csv",
+    log_dir,
+    target_table,
+    format(Sys.Date(), "%Y-%m-%d")
+  )
+  withr::with_file(problems_file, {
+    expect_true(file.exists(problems_file))
+  })
 })
 
 test_that("update_db, with various arguments", {
@@ -132,6 +157,7 @@ test_that("update_db, with various arguments", {
     tibble::add_row(
       target_table = "test_table01",
       input_file = "test_table01.csv",
+      input_template = "test_table01.csv",
       input_type = "csv",
       input_dir = "./data/",
       start_index = 2L,
@@ -141,12 +167,19 @@ test_that("update_db, with various arguments", {
     tibble::add_row(
       target_table = "test_table02",
       input_file = "test_table02.txt",
+      input_template = "test_table02.txt",
       input_type = "txt",
       input_dir = "./data/",
       start_index = 4L,
       process = NA,
       process_source = NA
     )
+
+  # Clear up testing context
+  withr::defer({
+    # Clean problem files left by reading import files
+    fs::file_delete(fs::dir_ls("./log", glob = "*test_table*.csv"))
+  })
 
   # update_db with default arguments ====
   expect_message(
@@ -165,9 +198,11 @@ test_that("update_db, with various arguments", {
     log_file_prefix,
     target_database
   )
-  expect_true(file.exists(log_file_path))
-  log_info <- read_log(basename(log_file_path), log_dir = log_dir)
-  expect_true(all(data_source$target_table %in% log_info$target_table))
+  withr::with_file(log_file_path, {
+    expect_true(file.exists(log_file_path))
+    log_info <- read_log(basename(log_file_path), log_dir = log_dir)
+    expect_true(all(data_source$target_table %in% log_info$target_table))
+  })
 
   # update_db with various arguments ====
   # >> argument: retry, one failure ----
@@ -188,20 +223,21 @@ test_that("update_db, with various arguments", {
     log_file_prefix = log_file_error_prefix,
     log_dir = log_dir
   )
-
-  # use log file with errors to update db
-  # If some table logged with error in log file, we should update them again.
-  expect_message(
-    suppressWarnings(
-      update_db(stock_db,
-        data_source = data_source,
-        retry_log = basename(log_file_error_path),
-        log_file_prefix = log_file_prefix,
-        log_dir = log_dir
-      )
-    ),
-    regexp = "Import data into test_table02 ..."
-  )
+  withr::with_file(log_file_error_path, {
+    # use log file with errors to update db
+    # If some table logged with error in log file, we should update them again.
+    expect_message(
+      suppressWarnings(
+        update_db(stock_db,
+          data_source = data_source,
+          retry_log = basename(log_file_error_path),
+          log_file_prefix = log_file_prefix,
+          log_dir = log_dir
+        )
+      ),
+      regexp = "Import data into test_table02 ..."
+    )
+  })
 
   # check log file
   log_file_path <- sprintf(
@@ -210,13 +246,14 @@ test_that("update_db, with various arguments", {
     log_file_prefix,
     target_database
   )
-  expect_true(file.exists(log_file_path))
 
-  log_info <- read_log(basename(log_file_path), log_dir = log_dir)
-  log_info <- log_info %>%
-    dplyr::filter(target_table == "test_table02")
-  expect_true(log_info$success == TRUE)
-
+  withr::with_file(log_file_path, {
+    expect_true(file.exists(log_file_path))
+    log_info <- read_log(basename(log_file_path), log_dir = log_dir)
+    log_info <- log_info %>%
+      dplyr::filter(target_table == "test_table02")
+    expect_true(log_info$success == TRUE)
+  })
 
   # >> argument: retry, only one success  ----
 
@@ -236,21 +273,23 @@ test_that("update_db, with various arguments", {
     log_file_prefix = log_file_error_prefix,
     log_dir = log_dir
   )
+  withr::with_file(log_file_error_path, {
+    # use log file with errors to update db
+    # If some tables of data_source haven't any log info in log file,
+    # we should update these file in data_source
+    expect_message(
+      suppressWarnings(
+        update_db(stock_db,
+          data_source = data_source,
+          retry_log = basename(log_file_error_path),
+          log_file_prefix = log_file_prefix,
+          log_dir = log_dir
+        )
+      ),
+      regexp = "Import data into test_table02 ..."
+    )
+  })
 
-  # use log file with errrs to update db
-  # If some tables of data_source haven't any log info in log file,
-  # we should update these file in data_source
-  expect_message(
-    suppressWarnings(
-      update_db(stock_db,
-        data_source = data_source,
-        retry_log = basename(log_file_error_path),
-        log_file_prefix = log_file_prefix,
-        log_dir = log_dir
-      )
-    ),
-    regexp = "Import data into test_table02 ..."
-  )
 
   # check log file
   log_file_path <- sprintf(
@@ -259,12 +298,13 @@ test_that("update_db, with various arguments", {
     log_file_prefix,
     target_database
   )
-  expect_true(file.exists(log_file_path))
-
-  log_info <- read_log(basename(log_file_path), log_dir = log_dir)
-  log_info <- log_info %>%
-    dplyr::filter(target_table == "test_table02")
-  expect_true(log_info$success == TRUE)
+  withr::with_file(log_file_path, {
+    expect_true(file.exists(log_file_path))
+    log_info <- read_log(basename(log_file_path), log_dir = log_dir)
+    log_info <- log_info %>%
+      dplyr::filter(target_table == "test_table02")
+    expect_true(log_info$success == TRUE)
+  })
 
   # >> argument: retry, wrong log error file ----
   # If there is no retry log file, all tables will be updated.
@@ -274,11 +314,14 @@ test_that("update_db, with various arguments", {
   )
 
   expect_warning(
-    update_db(stock_db,
-      data_source = data_source,
-      retry_log = basename(log_file_error_path),
-      log_file_prefix = log_file_prefix,
-      log_dir = log_dir
+    suppress_warnings(
+      update_db(stock_db,
+        data_source = data_source,
+        retry_log = basename(log_file_error_path),
+        log_file_prefix = log_file_prefix,
+        log_dir = log_dir
+      ),
+      warn_pattern = "Input `import_data`|parsing failure|Converting problems"
     ),
     regexp = "Since there is no a retry log|all tables will be updated"
   )
@@ -290,9 +333,11 @@ test_that("update_db, with various arguments", {
     log_file_prefix,
     target_database
   )
-  expect_true(file.exists(log_file_path))
-  log_info <- read_log(basename(log_file_path), log_dir = log_dir)
-  expect_true(all(data_source$target_table %in% log_info$target_table))
+  withr::with_file(log_file_path, {
+    expect_true(file.exists(log_file_path))
+    log_info <- read_log(basename(log_file_path), log_dir = log_dir)
+    expect_true(all(data_source$target_table %in% log_info$target_table))
+  })
 })
 
 test_that("clear_tables, with various arguments", {
@@ -347,20 +392,31 @@ test_that("read_import_file, with various arguments", {
 
   # Read multiple files into data.frame
   input_files <- "./data/test_table03_[0-9]+.txt"
+  input_template <- "test_table03_01.txt"
   # test_table03_[0-9]+.txt include 3 files with same rows of record:
-  # test_table03_01.txt, test_table03_02.txt, test_table03_03.txt
+  # test_table03_01.txt, test_table03_02.txt, test_table03_03.txt,
+  # and use test_table03_01.txt as input_template to detect specification of
+  # multiple input files.
+
+  # Clear up testing context
+  withr::defer({
+    # Remove problems files when reading import files
+    fs::file_delete(fs::dir_ls("./log", glob = "*test_table*.csv"))
+  })
+
   expect_message(
     suppress_warnings(
       # Ignore some warnings caused by inconsistent type of Crcd column in
-      # diferent files
+      # different files
       ds_import_data_multi_files <- read_import_file(
         input_file = input_files,
+        input_template = input_template,
         input_type = "txt",
         start_index = 4L,
         ignore_problems = TRUE,
         log_dir = log_dir
       ),
-      warn_pattern = "parsing failures|Converting problems"
+      warn_pattern = "parsing failure|Converting problems"
     ),
     regexp = "test_table03_01.txt|test_table03_02.txt|test_table03_03.txt"
   )
@@ -397,12 +453,15 @@ test_that("read_import_file, with various arguments", {
   # Read txt data into data.frame
   # Notice: real data start from line 4, so need skip 3 lines
   expect_warning(
-    ds_import_data <- read_import_file(
-      input_file = input_file,
-      input_type = "txt",
-      start_index = 4L,
-      ignore_problems = TRUE,
-      log_dir = log_dir
+    suppress_warnings(
+      s_import_data <- read_import_file(
+        input_file = input_file,
+        input_type = "txt",
+        start_index = 4L,
+        ignore_problems = TRUE,
+        log_dir = log_dir
+      ),
+      warn_pattern = "Input `import_data`|parsing failure"
     ),
     regexp = "Converting problems"
   )
@@ -416,8 +475,9 @@ test_that("read_import_file, with various arguments", {
     file_name,
     format(Sys.Date(), "%Y-%m-%d")
   )
-  expect_true(file.exists(problems_file))
-
+  withr::with_file(problems_file, {
+    expect_true(file.exists(problems_file))
+  })
 
   # >> argument: ignore_problems ----
   input_file <- "./data/test_table02.txt"
@@ -436,6 +496,17 @@ test_that("read_import_file, with various arguments", {
     regexp = "Converting problems",
     class = "dplyr_error"
   )
+
+  # Check problems files
+  problems_file <- sprintf(
+    "%s/%s(%s).csv",
+    log_dir,
+    file_name,
+    format(Sys.Date(), "%Y-%m-%d")
+  )
+  withr::with_file(problems_file, {
+    expect_true(file.exists(problems_file))
+  })
 })
 
 test_that("write_import_file, with various arguments", {
@@ -452,12 +523,13 @@ test_that("write_import_file, with various arguments", {
     paste0(output_file_name, ".", output_file_ext)
   )
 
-  write_import_file(ds_output, output_file = output_file_path)
+  withr::with_file(output_file_path, {
+    write_import_file(ds_output, output_file = output_file_path)
 
-  expect_true(file.exists(output_file_path))
-  ds_output_readback <- read_import_file(input_file = output_file_path)
-  expect_equal(ds_output, ds_output_readback)
-
+    expect_true(file.exists(output_file_path))
+    ds_output_readback <- read_import_file(input_file = output_file_path)
+    expect_equal(ds_output, ds_output_readback)
+  })
 
   # write_import_file with various arguments ====
   # >> output_type ----
@@ -467,19 +539,24 @@ test_that("write_import_file, with various arguments", {
   output_types <- c("csv", "txt")
   for (output_type in output_types) {
     output_file_ext <- output_type
-    output_file_path <- paste0(output_file_name, ".", output_file_ext)
-    write_import_file(ds_output,
-      output_file = output_file_path,
-      output_type = output_type,
-      output_dir = output_dir
-    )
-    expect_true(file.exists(file.path(output_dir, output_file_path)))
-    ds_output_readback <- read_import_file(
-      input_file = output_file_path,
-      input_dir = output_dir,
-      input_type = output_type
-    )
-    expect_equal(ds_output, ds_output_readback)
+    output_file_basename <- paste0(output_file_name, ".", output_file_ext)
+    output_file_path <- file.path(output_dir, output_file_basename)
+
+    withr::with_file(output_file_path, {
+      write_import_file(
+        ds_output,
+        output_file = output_file_basename,
+        output_type = output_type,
+        output_dir = output_dir
+      )
+      expect_true(file.exists(output_file_path))
+      ds_output_readback <- read_import_file(
+        input_file = output_file_basename,
+        input_dir = output_dir,
+        input_type = output_type
+      )
+      expect_equal(ds_output, ds_output_readback)
+    })
   }
 })
 
@@ -495,10 +572,10 @@ test_that("convert_import_file, with various arguments", {
     paste0(output_file_name, ".", output_file_ext)
   )
 
-  convert_import_file(origin_file, output_file = output_file_path)
-  expect_true(file.exists(output_file_path))
-
-
+  withr::with_file(output_file_path, {
+    convert_import_file(origin_file, output_file = output_file_path)
+    expect_true(file.exists(output_file_path))
+  })
 
   # convert_import_file with various arguments ====
   # >> output_type ----
@@ -509,17 +586,22 @@ test_that("convert_import_file, with various arguments", {
   output_types <- c("csv", "txt")
   for (output_type in output_types) {
     output_file_ext <- output_type
-    output_file_path <- paste0(output_file_name, ".", output_file_ext)
-    convert_import_file(origin_file,
-      input_type = "csv",
-      start_index = 2L,
-      ignore_problems = TRUE,
-      log_dir = "./log",
-      output_file = output_file_path,
-      output_type = output_type,
-      output_dir = output_dir
-    )
-    expect_true(file.exists(file.path(output_dir, output_file_path)))
+    output_file_basename <- paste0(output_file_name, ".", output_file_ext)
+    output_file_path <- file.path(output_dir, output_file_basename)
+
+    withr::with_file(output_file_path, {
+      convert_import_file(
+        origin_file,
+        input_type = "csv",
+        start_index = 2L,
+        ignore_problems = TRUE,
+        log_dir = "./log",
+        output_file = output_file_basename,
+        output_type = output_type,
+        output_dir = output_dir
+      )
+      expect_true(file.exists(output_file_path))
+    })
   }
 
   # >> process_fun ----
@@ -537,12 +619,14 @@ test_that("convert_import_file, with various arguments", {
       dplyr::bind_rows(x)
   }
 
-  convert_import_file(origin_file,
-    process_fun = process_fun,
-    output_file = output_file_path
-  )
+  withr::with_file(output_file_path, {
+    convert_import_file(origin_file,
+      process_fun = process_fun,
+      output_file = output_file_path
+    )
 
-  expect_true(file.exists(output_file_path))
+    expect_true(file.exists(output_file_path))
+  })
 })
 
 test_that("ttm_financial_report, with various arguments", {
@@ -664,7 +748,9 @@ test_that("process_files, with various arguments", {
     output_file_path <- data_source_ttm$input_file[i]
     output_dir <- data_source_ttm$input_dir[i]
     output_file_path <- file.path(output_dir, output_file_path)
-    expect_true(file.exists(output_file_path))
+    withr::with_file(output_file_path, {
+      expect_true(file.exists(output_file_path))
+    })
   }
 
   # check log file
@@ -674,10 +760,11 @@ test_that("process_files, with various arguments", {
     log_file_prefix,
     target_database
   )
-  expect_true(file.exists(log_file_path))
-  log_info <- read_log(basename(log_file_path), log_dir = log_dir)
-  expect_true(all(data_source_ttm$input_file %in% log_info$input_file))
-
+  withr::with_file(log_file_path, {
+    expect_true(file.exists(log_file_path))
+    log_info <- read_log(basename(log_file_path), log_dir = log_dir)
+    expect_true(all(data_source_ttm$input_file %in% log_info$input_file))
+  })
 
   # process_files with various arguments ====
   # >> argument: retry, one failure ----
@@ -706,15 +793,17 @@ test_that("process_files, with various arguments", {
 
   # use log file with errors to process files
   # If some input_file logged with error in log file, we should process them again.
-  expect_message(
-    process_files(stock_db,
-      data_source = data_source,
-      retry_log = basename(log_file_error_path),
-      log_file_prefix = log_file_prefix,
-      log_dir = log_dir
-    ),
-    regexp = "test_ttm_FS_Comins_ttm02.csv"
-  )
+  withr::with_file(log_file_error_path, {
+    expect_message(
+      process_files(stock_db,
+        data_source = data_source,
+        retry_log = basename(log_file_error_path),
+        log_file_prefix = log_file_prefix,
+        log_dir = log_dir
+      ),
+      regexp = "test_ttm_FS_Comins_ttm02.csv"
+    )
+  })
 
   data_source_ttm <- data_source %>%
     dplyr::filter(process == "TTM")
@@ -722,7 +811,9 @@ test_that("process_files, with various arguments", {
   output_file_path <- data_source_ttm$input_file[2]
   output_dir <- data_source_ttm$input_dir[2]
   output_file_path <- file.path(output_dir, output_file_path)
-  expect_true(file.exists(output_file_path))
+  withr::with_file(output_file_path, {
+    expect_true(file.exists(output_file_path))
+  })
 
   # check log file
   log_file_path <- sprintf(
@@ -731,12 +822,13 @@ test_that("process_files, with various arguments", {
     log_file_prefix,
     target_database
   )
-  expect_true(file.exists(log_file_path))
-
-  log_info <- read_log(basename(log_file_path), log_dir = log_dir)
-  log_info <- log_info %>%
-    dplyr::filter(input_file == "test_ttm_FS_Comins_ttm02.csv")
-  expect_true(log_info$success == TRUE)
+  withr::with_file(log_file_path, {
+    expect_true(file.exists(log_file_path))
+    log_info <- read_log(basename(log_file_path), log_dir = log_dir)
+    log_info <- log_info %>%
+      dplyr::filter(input_file == "test_ttm_FS_Comins_ttm02.csv")
+    expect_true(log_info$success == TRUE)
+  })
 
 
   # >> argument: retry, only one success  ----
@@ -761,15 +853,17 @@ test_that("process_files, with various arguments", {
   # use log file with errrs to process files
   # If some input_files of data_source haven't any log info in log file,
   # we should process these input_file in data_source
-  expect_message(
-    process_files(stock_db,
-      data_source = data_source,
-      retry_log = basename(log_file_error_path),
-      log_file_prefix = log_file_prefix,
-      log_dir = log_dir
-    ),
-    regexp = "test_ttm_FS_Comins_ttm02.csv ..."
-  )
+  withr::with_file(log_file_error_path, {
+    expect_message(
+      process_files(stock_db,
+        data_source = data_source,
+        retry_log = basename(log_file_error_path),
+        log_file_prefix = log_file_prefix,
+        log_dir = log_dir
+      ),
+      regexp = "test_ttm_FS_Comins_ttm02.csv ..."
+    )
+  })
 
   # check output file
   data_source_ttm <- data_source %>%
@@ -778,8 +872,9 @@ test_that("process_files, with various arguments", {
   output_file_path <- data_source_ttm$input_file[2]
   output_dir <- data_source_ttm$input_dir[2]
   output_file_path <- file.path(output_dir, output_file_path)
-  expect_true(file.exists(output_file_path))
-
+  withr::with_file(output_file_path, {
+    expect_true(file.exists(output_file_path))
+  })
 
   # check log file
   log_file_path <- sprintf(
@@ -788,12 +883,14 @@ test_that("process_files, with various arguments", {
     log_file_prefix,
     target_database
   )
-  expect_true(file.exists(log_file_path))
+  withr::with_file(log_file_path, {
+    expect_true(file.exists(log_file_path))
 
-  log_info <- read_log(basename(log_file_path), log_dir = log_dir)
-  log_info <- log_info %>%
-    dplyr::filter(input_file == "test_ttm_FS_Comins_ttm02.csv")
-  expect_true(log_info$success == TRUE)
+    log_info <- read_log(basename(log_file_path), log_dir = log_dir)
+    log_info <- log_info %>%
+      dplyr::filter(input_file == "test_ttm_FS_Comins_ttm02.csv")
+    expect_true(log_info$success == TRUE)
+  })
 
   # >> argument: retry, wrong log error file ----
   # If there is no retry log file, all tables will be updated.
@@ -820,7 +917,9 @@ test_that("process_files, with various arguments", {
     output_file_path <- data_source_ttm$input_file[i]
     output_dir <- data_source_ttm$input_dir[i]
     output_file_path <- file.path(output_dir, output_file_path)
-    expect_true(file.exists(output_file_path))
+    withr::with_file(output_file_path, {
+      expect_true(file.exists(output_file_path))
+    })
   }
 
   # check log file
@@ -830,14 +929,9 @@ test_that("process_files, with various arguments", {
     log_file_prefix,
     target_database
   )
-  expect_true(file.exists(log_file_path))
-  log_info <- read_log(basename(log_file_path), log_dir = log_dir)
-  expect_true(all(data_source_ttm$input_file %in% log_info$input_file))
+  withr::with_file(log_file_path, {
+    expect_true(file.exists(log_file_path))
+    log_info <- read_log(basename(log_file_path), log_dir = log_dir)
+    expect_true(all(data_source_ttm$input_file %in% log_info$input_file))
+  })
 })
-
-# Clear up testing context
-DBI::dbRemoveTable(stock_db$connection, "test_table01")
-DBI::dbRemoveTable(stock_db$connection, "test_table02")
-suppressMessages(close_stock_db(stock_db))
-
-disable_parallel()

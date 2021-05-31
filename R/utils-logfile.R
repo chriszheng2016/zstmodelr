@@ -52,21 +52,25 @@ save_log <- function(ds_log_info,
   if (file.exists(log_file_path)) {
     file_info <- file.info(log_file_path)
     last_modified_time <- file_info$mtime
-    backup_file <- sprintf(
-      "%s/%s(%s).csv",
-      log_dir,
-      log_file_prefix,
-      format(last_modified_time, "%Y-%m-%d")
-    )
-    file.copy(log_file_path,
-      to = backup_file,
-      copy.date = TRUE,
-      overwrite = TRUE
-    )
+
+    # Only backup old log file created before Current Date.
+    if (as.Date(last_modified_time) < Sys.Date()) {
+      backup_file <- sprintf(
+        "%s/%s(%s).csv",
+        log_dir,
+        log_file_prefix,
+        format(last_modified_time, "%Y-%m-%d")
+      )
+      file.copy(log_file_path,
+        to = backup_file,
+        copy.date = TRUE,
+        overwrite = TRUE
+      )
+    }
   }
 
   # write a new log file
-  readr::write_excel_csv(ds_log_info, path = log_file_path)
+  readr::write_excel_csv(ds_log_info, file = log_file_path)
 
   # return path of log file
   return(log_file_path)

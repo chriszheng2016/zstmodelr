@@ -26,7 +26,7 @@ model_build_fundamental <- function(ds_build,
                                     output_type = c("summary", "raw"),
                                     date_field = "date") {
   # Validate params
-  stopifnot(!is.null(ds_build), inherits(ds_build_model, "data.frame"))
+  stopifnot(!is.null(ds_build), inherits(ds_build, "data.frame"))
   ds_build_data <- tibble::as_tibble(ds_build)
 
   stopifnot(!is.null(regress_fun), inherits(regress_fun, "function"))
@@ -40,17 +40,20 @@ model_build_fundamental <- function(ds_build,
       dplyr::group_by(date_field) %>%
       tidyr::nest()
   } else {
-    # pooling: group data by factor, no crossetion
+    # pooling: group data by factor, no cross section
     ds_build_groupdata <- ds_build_data
   }
 
   # Conduct factors regression
   ds_build_result <- ds_build_groupdata %>%
     dplyr::mutate(
-      model = purrr::map(data, purrr::possibly(regress_fun, otherwise = NULL, quiet = TRUE), ...),
-      glance = purrr::map(model, broom::glance),
-      tidy = purrr::map(model, broom::tidy),
-      augument = purrr::map2(model, data, broom::augment)
+      model = purrr::map(
+        .data$data,
+        purrr::possibly(regress_fun, otherwise = NULL, quiet = TRUE), ...
+      ),
+      glance = purrr::map(.data$model, broom::glance),
+      tidy = purrr::map(.data$model, broom::tidy),
+      augument = purrr::map2(.data$model, .data$data, broom::augment)
     )
 
   return(ds_build_result)

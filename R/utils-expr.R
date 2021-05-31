@@ -7,14 +7,13 @@
 #'
 #'
 #' @name utils_expr
-#' @noRd
 NULL
 
 # Create a expr for evaluation from expr, list of exprs, or strings
 #' @param expr  A expr or list of exprs or string to parse as expr.
 #' @describeIn utils_expr  create a expr for evaluation from expr,
 #' list of exprs, strings.
-#' @noRd
+#' @export
 create_expr <- function(expr) {
   expr <- rlang::enexpr(expr)
 
@@ -51,7 +50,7 @@ create_expr <- function(expr) {
 #' @param pattern  A character of regular rule for matching.
 #' @param ... Extra arguments to be passed to purrr::map.
 #' @describeIn utils_expr  Find symbols in expr by matching pattern.
-#' @noRd
+#' @export
 find_syms <- function(expr, pattern = NULL, ...) {
   expr <- rlang::enexpr(expr)
 

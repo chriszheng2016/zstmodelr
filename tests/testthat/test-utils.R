@@ -41,7 +41,6 @@ test_that("suppress_warnings, with various arguments", {
 })
 
 test_that("print_fn_envs, with various arguments", {
-
   withr::local_output_sink(tempfile())
 
   # print_fn_envs on default arguments  ====
@@ -58,7 +57,6 @@ test_that("print_fn_envs, with various arguments", {
 })
 
 test_that("print_env_chain, with various arguments", {
-
   withr::local_output_sink(tempfile())
 
   # print_env_chain on default arguments  ====
@@ -70,8 +68,8 @@ test_that("print_env_chain, with various arguments", {
 
   # print_env_chain on various arguments ====
   output <- capture_messages({
-      env_name <- "baseenv"
-      print_env_chain(baseenv(), env_name = env_name)
+    env_name <- "baseenv"
+    print_env_chain(baseenv(), env_name = env_name)
   })
   expect_true(stringr::str_detect(output[1],
     pattern = glue::glue("current env of {env_name}")
@@ -79,4 +77,26 @@ test_that("print_env_chain, with various arguments", {
   expect_true(stringr::str_detect(output[2],
     pattern = glue::glue("parents of current env of {env_name}")
   ))
+})
+
+test_that("mode_value, with various arguments", {
+
+  # mode_value on a numeric vector ====
+  x <- c(rep(1, 1), rep(2, 2), rep(3, 3), rep(4, 2), rep(5, 1))
+  expect_mode_val <- 3
+  actual_mode_val <- mode_value(x)
+  expect_equal(actual_mode_val, expect_mode_val)
+
+  # mode_value on a charcater vector ====
+  x <- c(rep("A", 1), rep("B", 2), rep("C", 3), rep("D", 2), rep("E", 1))
+  expect_mode_val <- "C"
+  actual_mode_val <- mode_value(x)
+  expect_equal(actual_mode_val, expect_mode_val)
+
+  # mode_value on a factor vector ====
+  x <- c(rep("A", 1), rep("B", 2), rep("C", 3), rep("D", 2), rep("E", 1))
+  x <- factor(x)
+  expect_mode_val <- "C"
+  actual_mode_val <- mode_value(x)
+  expect_equal(actual_mode_val, expect_mode_val)
 })

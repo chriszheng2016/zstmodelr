@@ -204,7 +204,7 @@ RiskFreeRate <- function(stock_db, indicator_code,
   assertive::assert_is_character(indicator_code)
 
   rf_return <- get_riskfree_rate(stock_db, period = period)
-  rf_return <- dplyr::rename(rf_return, !!indicator_code := riskfree_return)
+  rf_return <- dplyr::rename(rf_return, !!indicator_code := .data$riskfree_return)
 
   return(rf_return)
 }

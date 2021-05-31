@@ -1,21 +1,32 @@
 # Tests for function of indicator generate  ----
 context("Tests for function of indicator generate")
 
-# set up testing context
+# Set up testing context
 dsn <- "GTA_SQLData"
 DB_PROFILE_FILE <- "gta_profile.xlsx"
 
+# Open database for tests
 stock_db <- stock_db(gta_db, dsn)
 suppressMessages(db_ready <- open_stock_db(stock_db))
+withr::defer({
+  close_stock_db(stock_db)
+})
 # skip tests if test dsn is not ready
 skip_if_not(db_ready,
   message = sprintf("DSN(%s) is not ready, skip all tests for stock_db", dsn)
 )
 suppressMessages(init_stock_db(stock_db))
 
-enable_parallel()
 
-# prepare test datasets
+# Enable parallel process for test
+if (is.null(parallel_status()$cluster)) {
+  suppressMessages(enable_parallel())
+  withr::defer({
+    suppressMessages(disable_parallel())
+  })
+}
+
+# prepare test data sets
 customized_indicators_info <- tibble::tibble(
   ind_code = c("m_ep_ttm", "q_ep_ttm"),
   ind_type = "",
@@ -55,9 +66,10 @@ test_that("generate_indicators", {
 
   # check output file
   dir_indicators <- dir_path_db(stock_db, "DIR_DB_DATA_INDICATOR")
-  path_ouput_files <- paste0(dir_indicators, "/", test_indicator_defs$ind_source)
-  purrr::map(path_ouput_files, ~ expect_true(file.exists(.x)))
-
+  output_files_path <- paste0(dir_indicators, "/", test_indicator_defs$ind_source)
+  # Notice: Don't delete output files, because they will be used for tests of
+  # delete_indicators
+  purrr::map(output_files_path, ~ expect_true(file.exists(.x)))
 
   # check log file
   log_file_path <- sprintf(
@@ -65,9 +77,12 @@ test_that("generate_indicators", {
     log_dir,
     log_file_prefix
   )
-  expect_true(file.exists(log_file_path))
-  log_info <- read_log(basename(log_file_path), log_dir = log_dir)
-  expect_true(all(test_indicator_defs$ind_code %in% log_info$ind_code))
+  withr::with_file(log_file_path, {
+    expect_true(file.exists(log_file_path))
+    log_info <- read_log(basename(log_file_path), log_dir = log_dir)
+    expect_true(all(test_indicator_defs$ind_code %in% log_info$ind_code))
+  })
+
 
   # generate_indicators with various arguments ====
   log_file_prefix <- "generate_indicator_log1"
@@ -84,9 +99,8 @@ test_that("generate_indicators", {
 
   # check output file
   dir_indicators <- dir_path_db(stock_db, "DIR_DB_DATA_INDICATOR")
-  path_ouput_files <- paste0(dir_indicators, "/", test_indicator_defs$ind_source)
-  purrr::map(path_ouput_files, ~ expect_true(file.exists(.x)))
-
+  output_files_path <- paste0(dir_indicators, "/", test_indicator_defs$ind_source)
+  purrr::map(output_files_path, ~ expect_true(file.exists(.x)))
 
   # check log file
   log_file_path <- sprintf(
@@ -94,9 +108,11 @@ test_that("generate_indicators", {
     log_dir,
     log_file_prefix
   )
-  expect_true(file.exists(log_file_path))
-  log_info <- read_log(basename(log_file_path), log_dir = log_dir)
-  expect_true(all(test_indicator_defs$ind_code %in% log_info$ind_code))
+  withr::with_file(log_file_path, {
+    expect_true(file.exists(log_file_path))
+    log_info <- read_log(basename(log_file_path), log_dir = log_dir)
+    expect_true(all(test_indicator_defs$ind_code %in% log_info$ind_code))
+  })
 })
 
 test_that("backup_indicators", {
@@ -109,8 +125,8 @@ test_that("backup_indicators", {
   )
 
   # check output file
-  path_backuup_files <- paste0(backup_dir_path, "/", test_indicator_defs$ind_source)
-  purrr::map(path_backuup_files, ~ expect_true(file.exists(.x)))
+  backup_files_path <- paste0(backup_dir_path, "/", test_indicator_defs$ind_source)
+  purrr::map(backup_files_path, ~ expect_true(file.exists(.x)))
 })
 
 test_that("delete_indicators", {
@@ -121,12 +137,6 @@ test_that("delete_indicators", {
 
   # check output file
   dir_indicators <- dir_path_db(stock_db, "DIR_DB_DATA_INDICATOR")
-  path_target_files <- paste0(dir_indicators, "/", test_indicator_defs$ind_source)
-  purrr::map(path_target_files, ~ expect_false(file.exists(.x)))
+  target_files_path <- paste0(dir_indicators, "/", test_indicator_defs$ind_source)
+  purrr::map(target_files_path, ~ expect_false(file.exists(.x)))
 })
-
-
-
-# Clear up testing context
-suppressMessages(close_stock_db(stock_db))
-disable_parallel()

@@ -7,6 +7,9 @@ DB_PROFILE_FILE <- "gta_profile.xlsx"
 
 stock_db <- stock_db(gta_db, dsn)
 suppressMessages(db_ready <- open_stock_db(stock_db))
+withr::defer({
+  close_stock_db(stock_db)
+})
 # skip tests if test dsn is not ready
 skip_if_not(db_ready,
   message = sprintf("DSN(%s) is not ready, skip all tests for stock_db", dsn)
@@ -54,10 +57,10 @@ list_dates <- list(
 
 
 # function to build ds_vars for test
-test_ds_vars <- function(dates, peroid) {
+test_ds_vars <- function(dates, period) {
   ds_vars <- tibble::tibble(
     date = rep(dates, 2),
-    period = peroid,
+    period = period,
     stkcd = "stkcd_01",
     indcd = "incd_01",
     ind_code = c(
@@ -745,8 +748,3 @@ test_that("check_loop_depdency", {
     )
   )
 })
-
-
-
-# clear up testing conext
-suppressMessages(close_stock_db(stock_db))

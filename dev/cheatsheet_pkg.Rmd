@@ -1,0 +1,59 @@
+---
+title: "Cheetsheet for R package"
+author: "Chris Zheng"
+date: "2021/5/29"
+output:
+  html_document:
+    fig_caption: yes
+    number_sections: yes
+    toc: yes
+    toc_depth: 4
+    toc_float:
+      collapsed: no
+      smooth_scroll: no
+    df_print: paged
+    theme: cerulean
+    highlight: pygments
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# R-build *.R to * Rmd for including in following sections
+child_r_files <- c("pkg_init.R", "pkg_dev.R", "pkg_deploy.R", "pkg_tools.R")
+for (child_r_file in child_r_files) {
+  res <- knitr::spin(child_r_file, knit = FALSE)
+  cat(res, sep = "\n")
+}
+
+# Child rmd files needs included into final file
+child_rmd_files <- fs::path_ext_set(child_r_files, ext = "Rmd")
+```
+
+**The cheat sheet is used as a notes for developer to develop, deploy, and 
+operate an production-grade shiny App.** 
+
+It was generated from following R scripts files:
+
+ * 01_start.R should be filled at start.
+
+ * 02_dev.R should be used to keep track of your development during the project.
+
+ * 03_deploy.R should be used once you need to deploy your app.
+ 
+ * run_dev.R should be used to run your app in production/debug mode
+
+
+```{r, child=child_rmd_files, echo=TRUE}
+# include child Rmd files
+```
+
+```{r, include=FALSE}
+   for (child_rmd in child_rmd_files) {
+     try(
+       unlink(child_rmd)
+     )
+   }
+```
+
+

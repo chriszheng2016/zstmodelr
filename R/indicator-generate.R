@@ -72,7 +72,7 @@ generate_indicators <- function(stock_db,
       # filter vars to small scale dataset to validate indicator definition
       validate_stkcds <- c(validate_stkcds, NA)
       ds_all_vars <- ds_all_vars %>%
-        dplyr::filter(stkcd %in% validate_stkcds)
+        dplyr::filter(.data$stkcd %in% validate_stkcds)
 
       # turn on debug on create indicators
       debug <- TRUE
@@ -93,7 +93,7 @@ generate_indicators <- function(stock_db,
   # setup log info params
   log_file_path <- NULL
   ds_log <- ds_indicator_defs %>%
-    dplyr::select(ind_code, ind_category, ind_source) %>%
+    dplyr::select(c("ind_code", "ind_category", "ind_source")) %>%
     dplyr::mutate(success = FALSE)
 
   # generate indicators in batch
@@ -114,7 +114,7 @@ generate_indicators <- function(stock_db,
 
         # filter vars of the indicator
         ds_def_vars <- ds_all_vars %>%
-          dplyr::filter(ind_code %in% ind_vars)
+          dplyr::filter(.data$ind_code %in% ind_vars)
 
         # create a indicator from vars dataset.
         ts_indicator <- create_indicator(ds_def_vars,

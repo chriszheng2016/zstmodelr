@@ -9,6 +9,11 @@ ds_test_log_info <- tibble::tribble(
   "test_table02", "test_table02.txt", TRUE
 )
 
+# Clear up testing context
+withr::defer({
+  # Clean log files left by save_log
+  fs::file_delete(fs::dir_ls("./log", glob = "*test_log_info*.csv"))
+})
 
 test_that("save_log, with various arguments", {
 
