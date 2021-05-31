@@ -84,9 +84,9 @@ profile_get_factors <- function(profile_path,
   # get factors info for matched factor_codes
   matched_factors <- factor_indicator_map
   if (!is.null(factor_codes)) {
-    # get specified factor_codes
+    # get scpeficed factor_codes
     matched_factors <- matched_factors %>%
-      dplyr::filter(.data$factor_code %in% factor_codes)
+      dplyr::filter(factor_code %in% factor_codes)
     if (nrow(matched_factors) == 0) {
       msg <- sprintf(
         "No entry matched '%s' was found in %s",
@@ -99,9 +99,9 @@ profile_get_factors <- function(profile_path,
 
   # get factors info for matched factor_groups
   if (!is.null(factor_groups) & !is.null(matched_factors)) {
-    # get specified factor groups
+    # get sepcified factor groups
     matched_factors <- matched_factors %>%
-      dplyr::filter(.data$factor_group %in% factor_groups)
+      dplyr::filter(factor_group %in% factor_groups)
     if (nrow(matched_factors) == 0) {
       msg <- sprintf(
         "No entry matched '%s' was found in %s",
@@ -128,7 +128,7 @@ profile_get_factors <- function(profile_path,
 
   # output only active factor
   matched_factors <- matched_factors %>%
-    dplyr::filter(.data$is_active == TRUE)
+    dplyr::filter(is_active == TRUE)
 
   return(matched_factors)
 }
@@ -146,7 +146,7 @@ profile_get_datasource_files <- function(profile_path) {
 
   # output valid info
   datasource_files <- datasource_files %>%
-    dplyr::filter(.data$is_valid == TRUE)
+    dplyr::filter(is_valid == TRUE)
 
   return(datasource_files)
 }
@@ -169,7 +169,7 @@ profile_get_indicators <- function(profile_path, indicator_codes = NULL) {
   if (!is.null(indicator_codes)) {
     # get matched indicators info
     matched_indicators_info <- indicators_info %>%
-      dplyr::filter(.data$field_code %in% indicator_codes)
+      dplyr::filter(field_code %in% indicator_codes)
     if (nrow(matched_indicators_info) == 0) {
       msg <- sprintf(
         "No entry matched '%s' was found in %s",
@@ -210,7 +210,7 @@ profile_get_customized_indicators <- function(profile_path) {
 
   # output only active indicators info
   customized_indicators_info <- customized_indicators_info %>%
-    dplyr::filter(.data$is_active == TRUE)
+    dplyr::filter(is_active == TRUE)
 
   # reformat colname from field_* to ind_*
   if (!is.null(customized_indicators_info)) {

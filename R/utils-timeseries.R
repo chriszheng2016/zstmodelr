@@ -713,12 +713,12 @@ reindex_by_regroup.tbl_df <- function(ts_df,
 
   # aggregating number fields by agg_fun for each group
   ts_result_numbers <- ts_new_df %>%
-    dplyr::group_by(.data$group_index) %>%
+    dplyr::group_by(group_index) %>%
     dplyr::summarise_if(~ inherits(., "numeric"), agg_fun, ...)
 
   # aggregaing non-number fields by using value of first observatio of each group
   ts_result_non_numbers <- ts_new_df %>%
-    dplyr::group_by(.data$group_index) %>%
+    dplyr::group_by(group_index) %>%
     dplyr::summarise_if(~ !inherits(., "numeric"), dplyr::first)
 
   # combine non_number and number fields
@@ -727,7 +727,7 @@ reindex_by_regroup.tbl_df <- function(ts_df,
     dplyr::select(-!!rlang::parse_quo(date_index_field,
       env = rlang::caller_env()
     )) %>%
-    dplyr::select(!!date_index_field := .data$group_index, dplyr::everything())
+    dplyr::select(!!date_index_field := group_index, dplyr::everything())
 
   return(ts_result)
 }

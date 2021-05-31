@@ -9,13 +9,13 @@
 #' \itemize{
 #'    \item \strong{regular periodic series}:
 #'         a date/time vector is regular periodic, if the vector has not more
-#'     one date/time stamp on each date of period and doesn't miss any date of period.
+#'     one date/time stamp on each date of peroid and doesn't miss any date of period.
 #'     For example, c("2018-01-01", "2018-02-01", "2018-03-01", "2018-04-01",
 #'     "2018-05-01", "2018-06-01") is a regular monthly periodic dates.
 #'
 #'    \item \strong{irregular periodic series}:
 #'        a date/time vector is regular periodic, if the vector has more one
-#'     date/time stamp on each date of period or miss some date of period.
+#'     date/time stamp on each date of peroid or miss some date of period.
 #'     For example, c("2018-01-01", "2018-02-01", "2018-04-01",
 #'     "2018-05-01", "2018-06-01") is is irregular monthly periodic dates,
 #'     which miss date of "2018-03-01" in dates of months.
@@ -31,7 +31,7 @@
 #'
 #' @family utils_dates
 #' @return   return TRUE if dates is periodic, otherwise FALSE.
-#' @export
+#' @noRd
 is_periodic_dates <- function(dates_series,
                               freq_rule = c("day", "month", "quarter", "year"),
                               regular = FALSE) {
@@ -138,7 +138,7 @@ isRegularYearly <- function(x) {
 #' @return  return "day" for daily, "month" for monthly, "quarter" for quarterly,
 #'  "year" for yearly, "unknown" for unknown date period.
 #'
-#' @export
+#' @noRd
 guess_dates_period <- function(dates_series, regular = FALSE) {
 
   # validate params
@@ -202,7 +202,7 @@ guess_dates_period <- function(dates_series, regular = FALSE) {
 #' @family utils_dates
 #' @return  A date_series with period format.
 #'
-#' @export
+#' @noRd
 as_period_date <- function(dates_series,
                            period = c("day", "month", "quarter", "year"),
                            period_date = c("start", "end")) {

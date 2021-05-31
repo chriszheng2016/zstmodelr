@@ -11,7 +11,7 @@
 #'
 #' @return  Invisible NULL if succeed, otherwise raise error.
 #'
-#' @export
+#' @noRd
 verify_fields <- function(data, fields) {
 
   # validate params
@@ -57,7 +57,7 @@ verify_fields <- function(data, fields) {
 #' @family utils_fields
 #' @return  return a vectors of logical with same length of names of dataframe.
 #'
-#' @export
+#' @noRd
 is_type_field <- function(data, expect_type = c(
                             "numeric",
                             "integer",
@@ -138,7 +138,7 @@ is_type_field <- function(data, expect_type = c(
 #'
 #' @family utils_fields
 #'
-#' @export
+#' @noRd
 expect_type_fields <- function(data, expect_type = c(
                                  "numeric",
                                  "integer",

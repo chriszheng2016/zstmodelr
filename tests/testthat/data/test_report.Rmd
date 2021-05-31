@@ -2,21 +2,12 @@
 title: "Untitled"
 author: "Chris Zheng"
 date:  "2015-05-01"
-knit: (function(input, ...) {
-     zstmodelr::knit_report(
-                input,
-                report_params = "ask",
-                output_format = "all",
-                output_sn = Sys.Date(),
-                output_dir = "../output",
-                ...)
-      })
 output:
-  html_notebook:
-    number_sections: yes
-    toc: yes
   html_document:
     fig_caption: yes
+    number_sections: yes
+    toc: yes
+  html_notebook:
     number_sections: yes
     toc: yes
   pdf_document:

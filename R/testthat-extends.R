@@ -1,10 +1,10 @@
 # Extend testthat expection for not null
 expect_not_null <- function(object, info = NULL, label = NULL) {
   # Capture object and label
-  act <- testthat::quasi_label(rlang::enquo(object))
+  act <- quasi_label(rlang::enquo(object))
 
   # Call expect()
-  testthat::expect(!is.null(object), sprintf("%s is null.", act$lab),
+  expect(!is.null(object), sprintf("%s is null.", act$lab),
     info = info
   )
 

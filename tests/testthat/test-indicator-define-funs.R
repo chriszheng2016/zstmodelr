@@ -8,9 +8,6 @@ DB_PROFILE_FILE <- "gta_profile.xlsx"
 
 stock_db <- stock_db(gta_db, dsn)
 suppressMessages(db_ready <- open_stock_db(stock_db))
-withr::defer({
-  close_stock_db(stock_db)
-})
 # skip tests if test dsn is not ready
 skip_if_not(db_ready,
   message = sprintf("DSN(%s) is not ready, skip all tests for stock_db", dsn)
@@ -148,9 +145,9 @@ test_that("Quarter_TTM", {
 
   # function to create time series
   create_periodic_ts <- function(start_date,
-                                 end_date,
-                                 accumulated = TRUE,
-                                 period = c("day", "month", "quarter")) {
+                                   end_date,
+                                   accumulated = TRUE,
+                                   period = c("day", "month", "quarter")) {
     match.arg(period)
     accumulated_periodic_data <- switch(period,
       "day" = lubridate::yday,
@@ -240,3 +237,6 @@ test_that("RiskFreeRate", {
     expect_true(all(rf_return$period %in% period))
   }
 })
+
+# clear up testing conext
+suppressMessages(close_stock_db(stock_db))

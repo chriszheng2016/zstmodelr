@@ -239,17 +239,17 @@ create_indicator_def_fun <- function(indicator_code,
     ds_vars_by_period <- ds_vars %>%
       dplyr::select(
         !!date_index_field, !!key_fields,
-        .data$period, .data$ind_code, .data$ind_value
+        period, ind_code, ind_value
       ) %>%
-      dplyr::group_by(.data$period) %>%
+      dplyr::group_by(period) %>%
       tidyr::nest()
 
     # transform dataset into wide format
     ds_vars_by_period <- ds_vars_by_period %>%
       dplyr::mutate(data = purrr::map(data,
         tidyr::pivot_wider,
-        names_from = .data$ind_code,
-        values_from = .data$ind_value
+        names_from = ind_code,
+        values_from = ind_value
       ))
 
     # re-freq vars in different periods
@@ -258,7 +258,7 @@ create_indicator_def_fun <- function(indicator_code,
     ds_vars_by_period <- ds_vars_by_period %>%
       dplyr::mutate(
         refreq_data =
-          purrr::map(.data$data,
+          purrr::map(data,
             ts_asfreq,
             freq_rule = re_freq,
             fillna_method = fillna_method,
@@ -567,7 +567,7 @@ prioritize_indicator_defs <- function(ds_indicator_defs) {
 
         # get new trees by removing found independent indicators
         target_ind_defs_tree <- target_ind_defs_tree %>%
-          dplyr::filter(!(.data$ind_code %in% independ_indicators))
+          dplyr::filter(!(ind_code %in% independ_indicators))
 
         target_ind_defs_tree <- as_ind_defs_trees(target_ind_defs_tree)
       }
@@ -714,7 +714,7 @@ create_ind_defs_trees <- function(ds_indicator_defs) {
   # build defs_trees to parse dependency among indicators
   if (all(c("ind_code", "ind_vars") %in% names(ds_indicator_defs))) {
     defs_trees_info <- ds_indicator_defs %>%
-      dplyr::select(.data$ind_code, depend_ind_codes = .data$ind_vars) %>%
+      dplyr::select(ind_code, depend_ind_codes = ind_vars) %>%
       dplyr::mutate(is_root_node = NA)
   } else if (all(c("ind_code", "depend_ind_codes", "is_root_node") %in%
     names(ds_indicator_defs))) {
@@ -856,8 +856,8 @@ check_loop_depdency <- function(ind_defs_trees) {
     # No loop dependency among indicators
     # put root indicators in the front of defs_tree
     pass_defs_trees <- ind_defs_trees %>%
-      dplyr::mutate(is_root_node = (.data$ind_code %in% root_indicators)) %>%
-      dplyr::arrange(dplyr::desc(.data$is_root_node))
+      dplyr::mutate(is_root_node = (ind_code %in% root_indicators)) %>%
+      dplyr::arrange(desc(is_root_node))
   } else {
     # found loop dependency
     msg <- sprintf(

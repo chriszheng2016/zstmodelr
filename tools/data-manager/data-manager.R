@@ -71,7 +71,7 @@ update_stock_db <- function(dsn = c("GTA_SQLData", "GTA_SQLData_TEST"),
     msg <- sprintf("\nUpdate all tables in stock db...\n")
     message(msg)
   } else {
-    # update only failed tables recorded in the log file
+    # update only failed tables recored in the log file
     retry_log_file <- sprintf(
       "%s_%s(current).csv",
       log_file_prefix,
@@ -153,7 +153,7 @@ clear_stock_db <- function(dsn = c("GTA_SQLData", "GTA_SQLData_TEST"),
 data_manager <- function(dsn = c("GTA_SQLData", "GTA_SQLData_TEST"),
                          action = c("process", "update", "clear"),
                          ...,
-                         help = FALSE) {
+                         help = TRUE) {
   if (help) {
     help_usage()
   } else {

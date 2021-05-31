@@ -60,21 +60,21 @@
 #'
 #' # compute indicators by parallel process
 #' ds_indicator <- compute_indicator(ds_vars,
-#'   compute_fun = ind_def_fun,
-#'   date_index_field = "date",
-#'   key_fields = "stkcd"
-#' )
+#'        compute_fun = ind_def_fun,
+#'        date_index_field = "date",
+#'        key_fields = "stkcd")
 #'
 #' # compute indicators by sequential process
-#' ds_indicator <- compute_indicator(ds_vars,
-#'   compute_fun = ind_def_fun,
-#'   date_index_field = "date",
-#'   key_fields = "stkcd",
-#'   parallel = FALSE
-#' )
+#'  ds_indicator <- compute_indicator(ds_vars,
+#'        compute_fun = ind_def_fun,
+#'        date_index_field = "date",
+#'        key_fields = "stkcd",
+#'        parallel = FALSE)
 #'
 #' # Disable parallel process for the R session
 #' disable_parallel()
+#'
+#'
 #' }
 #' @name utils_parallel
 NULL
@@ -126,10 +126,8 @@ enable_parallel <- function(env_globals = .pkg_globals) {
     }
   } else {
     assertive::assert_is_any_of(cluster, c("SOCKcluster", "cluster"))
-    msg <- sprintf(
-      "There are already %d clusters been working.\n",
-      length(cluster)
-    )
+    msg <- sprintf("There are already %d clusters been working.\n",
+                   length(cluster))
     msg <- paste0(msg, "Use parallel_status() to show more information.\n")
     rlang::inform(msg)
   }
@@ -166,13 +164,13 @@ disable_parallel <- function(env_globals = .pkg_globals) {
   foreach::registerDoSEQ()
 
   # wait a moment for stopping clusters
-  max_wait_time <- 10 # Max wait time in second unit
+    max_wait_time <- 10  # Max wait time in second unit
   start_time <- proc.time()
   repeat {
     Sys.sleep(0.5)
     wait_time <- (proc.time() - start_time)["elapsed"]
     foreach_workers <- foreach::getDoParWorkers()
-    if ((foreach_workers == 1) || wait_time >= max_wait_time) {
+    if((foreach_workers ==1) || wait_time >= max_wait_time) {
       break
     }
   }

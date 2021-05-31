@@ -2,13 +2,8 @@
 # Skip tests on cran due to consuming long time.
 # skip_on_cran()
 
-# Enable parallel process for test
-if (is.null(parallel_status()$cluster)) {
-  suppressMessages(enable_parallel())
-  withr::defer({
-    suppressMessages(disable_parallel())
-  })
-}
+# enable parallel process
+enable_parallel()
 
 # Test tool functions ----
 # Build test dataset
@@ -935,3 +930,6 @@ test_that("refreq_dateindex, with various normal arguments", {
     }
   }
 })
+
+# disable parallel process
+disable_parallel()
