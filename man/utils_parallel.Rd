@@ -92,20 +92,20 @@ parallel_status()
 
 # compute indicators by parallel process
 ds_indicator <- compute_indicator(ds_vars,
-       compute_fun = ind_def_fun,
-       date_index_field = "date",
-       key_fields = "stkcd")
+  compute_fun = ind_def_fun,
+  date_index_field = "date",
+  key_fields = "stkcd"
+)
 
 # compute indicators by sequential process
- ds_indicator <- compute_indicator(ds_vars,
-       compute_fun = ind_def_fun,
-       date_index_field = "date",
-       key_fields = "stkcd",
-       parallel = FALSE)
+ds_indicator <- compute_indicator(ds_vars,
+  compute_fun = ind_def_fun,
+  date_index_field = "date",
+  key_fields = "stkcd",
+  parallel = FALSE
+)
 
 # Disable parallel process for the R session
 disable_parallel()
-
-
 }
 }

@@ -34,7 +34,7 @@ in a database of gta_db class
 \examples{
 \dontrun{
 ds_trd_dalyr.df <- get_stock_dataset(stock_db,
-  table_name = "TRD_Dalyr_鏃ヤ釜鑲″洖鎶ョ巼",
+  table_name = "TRD_Dalyr",
   stock_cd_list = c("600066", "000550")
 )
 }
@@ -44,12 +44,13 @@ Other stock_db generics:
 \code{\link{close_stock_db}()},
 \code{\link{code2name}()},
 \code{\link{dir_path_db}()},
-\code{\link{fetch_table_dataset}()},
 \code{\link{get_factors_info}()},
 \code{\link{get_factors}()},
 \code{\link{get_financial_report}()},
 \code{\link{get_indicators_from_source}()},
+\code{\link{get_indicators_info}()},
 \code{\link{get_indicators}()},
+\code{\link{get_industry_info}()},
 \code{\link{get_market_return}()},
 \code{\link{get_profile}()},
 \code{\link{get_riskfree_rate}()},
