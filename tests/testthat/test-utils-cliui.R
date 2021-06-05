@@ -1,6 +1,8 @@
 # Tests for utility functions of cliui ----
 
 skip_on_ci()
+# Skip on coverage tests due to unavoidable errors from devtools::test_coverage
+skip_on_covr()
 
 context("Tests for utility functions of cliui")
 
