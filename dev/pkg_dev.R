@@ -17,11 +17,11 @@
 
 ## Add package to dependency ----
 ## Add one line by package you want to add as dependency
-usethis::use_package("package")  # Use package from cran
+usethis::use_package("package") # Use package from cran
 usethis::use_dev_package(
   "pkgname",
   remote = "onwer/project@branch"
-  ) # Use package in development from github
+) # Use package in development from github
 usethis::use_tidy_description()
 
 ## Add internal datasets ----
@@ -36,19 +36,41 @@ devtools::wd("tests/testthat")
 testthat::test_file("test-app.R") # test a file
 devtools::test_file_coverage("test-app.R") # test a file coverage
 
-# Test a file which contains "skip_on_cran()/skip_on_ci()/skip_on_covr()"
+## Test a file which contains "skip_on_cran()/skip_on_ci()/skip_on_covr()"
 # Method A:
 withr::with_envvar(
-  new = c("NOT_CRAN" = "true",
-          "CI" = "false",
-          "R_COVR" = "false"),
-  testthat::test_file("test-app.R")
+  new = c(
+    "NOT_CRAN" = "true",
+    "CI" = "false",
+    "R_COVR" = "false"
+  ),
+  {
+    testthat::test_file("test-app.R")
+    devtools::test()
+  }
 )
 # Method B:
 Sys.setenv("NOT_CRAN" = "true")
 testthat::test_file("test-app.R")
+devtools::test()
+Sys.setenv("NOT_CRAN" = "")
 
-devtools::test() # test package
+## Simulate test in environment without stock db
+# Method A:
+withr::with_envvar(
+  new = c("NO_STOCK_DB" = "true"),
+  {
+    testthat::test_file("test-app.R")
+    devtools::test()
+  }
+)
+
+# Method B:
+Sys.setenv("NO_STOCK_DB" = "true")
+testthat::test_file("test-app.R")
+devtools::test()
+Sys.setenv("NO_STOCK_DB" = "")
+
 
 ## Edit vignette
 usethis::use_vignette("pkg_name")
@@ -60,7 +82,7 @@ devtools::build_vignettes()
 devtools::test()
 
 ## Test coverage
-devtools::test_coverage()
+devtools::test_coverage(quiet = FALSE, clean = FALSE)
 
 ## Style package
 ## Styles source code according to the tidyverse style guide.

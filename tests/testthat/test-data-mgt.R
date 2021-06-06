@@ -4,18 +4,16 @@ context("Tests for data management for stock_db - generic functions")
 
 # Set up testing context
 dsn <- "GTA_SQLData_TEST"
+
+skip_if_stock_db_not_ready(dsn)
 stock_db <- stock_db(gta_db, dsn)
-suppressMessages(db_ready <- open_stock_db(stock_db))
+suppressMessages(open_stock_db(stock_db))
 withr::defer({
   # Clean temp tables used for tests on database
   DBI::dbRemoveTable(stock_db$connection, "test_table01")
   DBI::dbRemoveTable(stock_db$connection, "test_table02")
   close_stock_db(stock_db)
 })
-# skip tests if test dsn is not ready
-skip_if_not(db_ready,
-  message = sprintf("DSN(%s) is not ready, skip all tests for data-mangement of stock_db!", dsn)
-)
 suppressMessages(init_stock_db(stock_db))
 db_info <- DBI::dbGetInfo(stock_db$connection)
 target_database <- db_info$dbname
