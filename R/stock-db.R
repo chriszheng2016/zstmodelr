@@ -985,7 +985,7 @@ get_stock_field_dataset <- function(ds_source.df,
                                     target_field,
                                     stkcd_field = "stkcd",
                                     date_field = "trdmnt",
-                                    tseries_type = c("timeSeries", "xts") {
+                                    tseries_type = c("timeSeries", "xts")) {
 
   # Validate params
   if (is.null(ds_source.df) || missing(stock_cd)
