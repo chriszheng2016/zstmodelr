@@ -28,6 +28,8 @@ usethis::use_tidy_description()
 ## If you have data in your package
 usethis::use_data_raw(name = "my_dataset", open = FALSE)
 
+## Style codes ----
+usethis::use_tidy_style()
 
 ## Tests ----
 ## Add one line by test you want to create
@@ -71,6 +73,17 @@ testthat::test_file("test-app.R")
 devtools::test()
 Sys.setenv("NO_STOCK_DB" = "")
 
+## Document ----
+
+## Update function doc
+devtools::document()
+?fun_abc
+
+## Check spelling in doc
+usethis::use_spell_check() # set up spelling check in doc
+devtools::document() # update all doc
+devtools::spell_check() # check spelling in doc
+spelling::update_wordlist() # accept new words if need
 
 ## Edit vignette
 usethis::use_vignette("pkg_name")
@@ -90,8 +103,8 @@ usethis::use_tidy_style() ## It will overwrite files!
 
 ## Update doc and check spelling
 devtools::document()
-usethis::use_spell_check() # Set up spelling check in doc
 devtools::spell_check()
+spelling::update_wordlist() # accept new words if need
 
 ## Check doc
 devtools::check_man()
@@ -107,3 +120,25 @@ cat(result$notes)
 
 # Update document of pkgdown
 devtools::build_site(quiet = FALSE)
+
+## Simulate R-CMD-check on Github Actions
+# Turn off stock db connection
+withr::with_envvar(
+  new = c(
+    "NO_STOCK_DB" = "true",
+    "NOT_CRAN" = "false",
+    "CI" = "true",
+    "R_COVR" = "true"
+  ),
+  {
+    result <- rcmdcheck::rcmdcheck(
+      args = c("--no-manual", "--as-cran"),
+      error_on = "warning",
+      check_dir = "check"
+    )
+  }
+)
+
+cat(result$errors)
+cat(result$warnings)
+cat(result$notes)
