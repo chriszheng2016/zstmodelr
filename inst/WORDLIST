@@ -1,10 +1,11 @@
 Accper
+CMD
 CamelCase
 Codecov
+DSN
 GTA
 IC
 Init
-ORCID
 Params
 ROCE
 RStudio
@@ -70,6 +71,7 @@ stkcds
 stylesheet
 substract
 summarization
+testthat
 tibble
 timeSeries
 timeseries

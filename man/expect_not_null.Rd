@@ -15,9 +15,6 @@ Instead see alternatives in \code{\link[testthat:quasi_label]{testthat::quasi_la
 
 \item{label}{Used to customize failure messages. For expert use only.}
 }
-\value{
-
-}
 \description{
 This is an expectation as a counterpart of \code{\link[testthat:expect_null]{testthat::expect_null()}}.
 }

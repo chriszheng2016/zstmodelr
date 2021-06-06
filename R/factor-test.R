@@ -666,7 +666,7 @@ plot.factor_test_uniregress <- function(x, ...) {
 
   # Plot return summary
 
-  invisible(return)
+  invisible(return())
 }
 setMethod(
   "plot",
@@ -695,7 +695,7 @@ plot.factor_test_IC <- function(x, ...) {
 
   # Plot return summary
 
-  invisible(return)
+  invisible(return())
 }
 setMethod(
   "plot",
@@ -791,7 +791,7 @@ plot.factor_test_sort_portfolios <- function(x, ...) {
 
   # Plot return summary
 
-  invisible(return)
+  invisible(return())
 }
 setMethod(
   "plot",

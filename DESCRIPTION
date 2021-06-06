@@ -6,8 +6,7 @@ Authors@R:
     person(given = "Chris",
            family = "Zheng",
            role = c("aut", "cre"),
-           email = "chriszheng@vip.sina.com.cn",
-           comment = c(ORCID = "CHRISZHENG'S-ORCID-ID"))
+           email = "chriszheng@vip.sina.com.cn")
 Description: An implementation of analytical tools of stock factors models
     for investing China stock market.
 License: GPL (>= 2)
@@ -46,8 +45,10 @@ Imports:
     zoo
 Suggests: 
     covr,
+    glue,
     knitr,
     mockery,
+    rticles,
     spelling,
     testthat,
     tinytex,

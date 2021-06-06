@@ -11,7 +11,6 @@
 #'  Instead see alternatives in [testthat::quasi_label()].
 #' @param label Used to customize failure messages. For expert use only.
 #'
-#' @return
 #' @export
 #'
 #' @examples

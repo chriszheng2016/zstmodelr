@@ -985,16 +985,15 @@ get_stock_field_dataset <- function(ds_source.df,
                                     target_field,
                                     stkcd_field = "stkcd",
                                     date_field = "trdmnt",
-                                    tseries_type = c("timeSeries", "xts"),
-                                    debug = FALSE) {
+                                    tseries_type = c("timeSeries", "xts") {
 
-  # Validate param
+  # Validate params
   if (is.null(ds_source.df) || missing(stock_cd)
   || missing(target_field) || missing(date_field)) {
     rlang::abort("ds_source.df, stock_cd, target_field, date_field  mustn't be null")
   }
 
-  # Check whether the datafields existed
+  # Check whether the data fields existed
   field_list <- c(stkcd_field, target_field, date_field)
   if (!all(field_list %in% names(ds_source.df))) {
     error_fields <- NULL
@@ -1055,16 +1054,8 @@ get_stock_field_dataset <- function(ds_source.df,
   result_ts <- sort(result_ts)
 
   # Return the result timeseries of stock
-  if (debug) {
 
-    # keep the result_ts in GlobalEnv for debug check
-    assign(ds_name, result_ts, pos = .GlobalEnv)
-    return(get(ds_name))
-  } else {
-
-    # reutrn the result_as as ususal
-    return(result_ts)
-  }
+  return(result_ts)
 }
 
 # Get several timeseries of stocks data for multiple stocks from periodic dataset

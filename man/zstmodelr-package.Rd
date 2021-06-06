@@ -50,7 +50,7 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Chris Zheng \email{chriszheng@vip.sina.com.cn} (\href{https://orcid.org/CHRISZHENG'S-ORCID-ID}{ORCID})
+\strong{Maintainer}: Chris Zheng \email{chriszheng@vip.sina.com.cn}
 
 }
 \keyword{internal}
