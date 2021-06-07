@@ -105,6 +105,14 @@ enable_parallel <- function(env_globals = .pkg_globals) {
   if (is.null(cluster) || !inherits(cluster, what = "cluster")) {
     if (requireNamespace("parallel", quietly = FALSE)) {
       rlang::inform("Initiate clusters for parallel process...\n")
+
+      # Only use 2 cores in CRAN/Travis/AppVeyor
+      cran_check_limt_cores <- Sys.getenv("_R_CHECK_LIMIT_CORES_", "")
+      if (nzchar(cran_check_limt_cores)&& cran_check_limt_cores == "TRUE") {
+        options(zstmodelr.common.clusters = 2)
+        rlang::warn("Only use 2 clusters by CRAN/Travis/AppVeyor.\n")
+      }
+
       cluster <- parallel::makeCluster(
         getOption("zstmodelr.common.clusters", parallel::detectCores() - 1),
         outfile = parallel_log
@@ -183,7 +191,9 @@ disable_parallel <- function(env_globals = .pkg_globals) {
     log_dir <- file.path(pkg_path, "log")
     parallel_log <- file.path(log_dir, basename(parallel_log))
     if (fs::file_exists(parallel_log)) {
-      fs::file_delete(parallel_log)
+      try({
+        fs::file_delete(parallel_log)
+      })
     }
   }
 }
@@ -238,4 +248,16 @@ parallel_status <- function(env_globals = .pkg_globals) {
     zstmodelr.common.parallel = zstmodelr.common.parallel
   )
   parallel_status
+}
+
+#' Judge whether parallel process is on or not
+#'
+#' @return return a logic, TRUE mean parallel process is on.
+#'
+#' @describeIn utils_parallel Judge whether parallel process is on or not.
+#' @export
+parallel_is_on <- function() {
+  status <- parallel_status()
+  parallel_is_on <- !is.null(status$cluster)
+  parallel_is_on
 }

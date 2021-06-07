@@ -5,6 +5,7 @@
 \alias{enable_parallel}
 \alias{disable_parallel}
 \alias{parallel_status}
+\alias{parallel_is_on}
 \title{Utils functions to control parallel process}
 \usage{
 enable_parallel(env_globals = .pkg_globals)
@@ -12,6 +13,8 @@ enable_parallel(env_globals = .pkg_globals)
 disable_parallel(env_globals = .pkg_globals)
 
 parallel_status(env_globals = .pkg_globals)
+
+parallel_is_on()
 }
 \arguments{
 \item{env_globals}{a environment with parallel process information.
@@ -20,6 +23,8 @@ to use environment of caller.}
 }
 \value{
 \code{parallel_status} return a list containing parallel status, see details.
+
+return a logic, TRUE mean parallel process is on.
 }
 \description{
 Control parallel process for parallel computation.
@@ -74,6 +79,8 @@ clusters.
 clusters.
 
 \item \code{parallel_status}: get current status of parallel process.
+
+\item \code{parallel_is_on}: Judge whether parallel process is on or not.
 }}
 
 \examples{

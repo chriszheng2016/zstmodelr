@@ -6,18 +6,14 @@ context("Tests for utility functions of parallel")
 test_that("enable/disable_parallel, with various arguments", {
 
   # number of clusters used for testing
-  test_clusters <- 2
+  test_clusters <- 4
+
+  withr::local_options(list(
+    zstmodelr.common.clusters = test_clusters,
+    zstmodelr.common.parallel = TRUE
+  ))
 
   # enable/disable_parallel with default arguments ====
-
-  # save environment and configuration related to parallel
-  old_zstmodelr.common.clusters <- getOption("zstmodelr.common.clusters")
-  old_zstmodelr.common.parallel <- getOption("zstmodelr.common.parallel")
-
-  # set environment and configuration for testing
-  options(zstmodelr.common.clusters = test_clusters)
-  options(zstmodelr.common.parallel = TRUE)
-
 
   # enable parallel processing
   enable_parallel()
@@ -30,7 +26,6 @@ test_that("enable/disable_parallel, with various arguments", {
     expect_true(file.exists(status$parallel_log))
   }
   expect_true(status$foreach_workers == test_clusters)
-
 
   # enable parallel processing again
   expect_message(
@@ -47,26 +42,36 @@ test_that("enable/disable_parallel, with various arguments", {
   expect_true(status$foreach_workers == 1)
   expect_true(!file.exists(status$parallel_log))
 
-  # restore environment and configuration related to parallel
-  options(zstmodelr.common.clusters = old_zstmodelr.common.clusters)
-  options(zstmodelr.common.parallel = old_zstmodelr.common.parallel)
+  # Enable/disable parallel in check by CRAN which only allow 2 cluster at most.
+  withr::with_options(
+    list(
+      zstmodelr.common.clusters = test_clusters,
+      zstmodelr.common.parallel = TRUE
+    ),
+    {
+      withr::with_envvar(list("_R_CHECK_LIMIT_CORES_" = "TRUE"), {
+
+        expect_warning(
+          enable_parallel(),
+          regexp = "Only use 2 clusters by CRAN"
+        )
+
+        # check results of enable parallel
+        status <- parallel_status()
+
+        # CRAN only allow 2 cores/clusters
+        expect_equal(getOption("zstmodelr.common.clusters"), 2)
+
+        # disable parallel processing
+        disable_parallel()
+      })
+    }
+  )
+
 
   # enable/disable_parallel with various arguments ====
 
   # >> env_globals = NULL ----
-
-  # save environment and configuration related to parallel
-  old_zstmodelr.common.clusters <- getOption("zstmodelr.common.clusters")
-  old_zstmodelr.common.parallel <- getOption("zstmodelr.common.parallel")
-
-  # set environment and configuration for testing
-  options(zstmodelr.common.clusters = test_clusters)
-  options(zstmodelr.common.parallel = TRUE)
-
-  withr::local_options(list(
-    zstmodelr.common.clusters = test_clusters,
-    zstmodelr.common.parallel = TRUE
-  ))
 
   # enable parallel processing
   enable_parallel(NULL)
@@ -80,8 +85,6 @@ test_that("enable/disable_parallel, with various arguments", {
   }
   expect_true(status$foreach_workers == test_clusters)
 
-
-
   # disable parallel processing
   disable_parallel(NULL)
 
@@ -94,25 +97,12 @@ test_that("enable/disable_parallel, with various arguments", {
     expect_true(!file.exists(status$parallel_log))
   }
 
-
-  # restore environment and configuration related to parallel
-  options(zstmodelr.common.clusters = old_zstmodelr.common.clusters)
-  options(zstmodelr.common.parallel = old_zstmodelr.common.parallel)
-
-
   # >> env_globals = environment ----
-
-  # save environment and configuration related to parallel
-  old_zstmodelr.common.clusters <- getOption("zstmodelr.common.clusters")
-  old_zstmodelr.common.parallel <- getOption("zstmodelr.common.parallel")
 
   # set environment and configuration for testing
   test_env <- new.env(parent = emptyenv())
   test_env$.cluster <- NULL
   test_env$.parallel_log <- "parallel.log"
-  options(zstmodelr.common.clusters = test_clusters)
-  options(zstmodelr.common.parallel = TRUE)
-
 
   # enable parallel processing
   enable_parallel(test_env)
@@ -126,7 +116,6 @@ test_that("enable/disable_parallel, with various arguments", {
   }
   expect_true(status$foreach_workers == test_clusters)
 
-
   # disable parallel processing
   disable_parallel(test_env)
 
@@ -138,11 +127,6 @@ test_that("enable/disable_parallel, with various arguments", {
     expect_type(status$parallel_log, "character")
     expect_true(!file.exists(status$parallel_log))
   }
-
-
-  # restore environment and configuration related to parallel
-  options(zstmodelr.common.clusters = old_zstmodelr.common.clusters)
-  options(zstmodelr.common.parallel = old_zstmodelr.common.parallel)
 })
 
 test_that("parallel_status, with various arguments", {
@@ -211,4 +195,17 @@ test_that("parallel_status, with various arguments", {
   expect_type(status$foreach_workers, "integer")
   expect_type(status$zstmodelr.common.clusters, "double")
   expect_type(status$zstmodelr.common.parallel, "logical")
+})
+
+test_that("parallel_is_on, with various arguments", {
+
+  # parallel_status with default arguments ====
+  enable_parallel()
+
+  expect_true(parallel_is_on())
+
+  disable_parallel()
+
+  expect_false(parallel_is_on())
+
 })
