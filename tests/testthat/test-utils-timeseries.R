@@ -3,12 +3,7 @@
 # skip_on_cran()
 
 # Enable parallel process for test
-if (is.null(parallel_status()$cluster)) {
-  suppressMessages(enable_parallel())
-  withr::defer({
-    suppressMessages(disable_parallel())
-  })
-}
+local_parallel("ON")
 
 # Test tool functions ----
 # Build test dataset

@@ -2,12 +2,7 @@
 context("Tests for function of indicator build")
 
 # Enable parallel process for test
-if (is.null(parallel_status()$cluster)) {
-  suppressMessages(enable_parallel())
-  withr::defer({
-    suppressMessages(disable_parallel())
-  })
-}
+local_parallel("ON")
 
 test_that("compute_indicator", {
 

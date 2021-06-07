@@ -16,12 +16,8 @@ suppressMessages(init_stock_db(stock_db))
 
 
 # Enable parallel process for test
-if (is.null(parallel_status()$cluster)) {
-  suppressMessages(enable_parallel())
-  withr::defer({
-    suppressMessages(disable_parallel())
-  })
-}
+local_parallel("ON")
+
 
 # prepare test data sets
 customized_indicators_info <- tibble::tibble(

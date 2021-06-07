@@ -41,6 +41,7 @@ Imports:
     tidyselect,
     timeDate,
     timeSeries,
+    withr,
     xts,
     zoo
 Suggests: 
@@ -51,8 +52,7 @@ Suggests:
     rticles,
     spelling,
     testthat,
-    tinytex,
-    withr
+    tinytex
 VignetteBuilder: 
     knitr
 Encoding: UTF-8
@@ -94,5 +94,6 @@ Collate:
     'utils-series.R'
     'utils-testthat-helpers.R'
     'utils-timeseries.R'
+    'utils-withr-helpers.R'
     'utils.R'
     'zstmodelr-package.R'
