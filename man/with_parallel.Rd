@@ -10,7 +10,15 @@ with_parallel(new, code)
 local_parallel(new = list(), .local_envir = parent.frame())
 }
 \arguments{
-\item{new}{\verb{[character(1)]} new parallel state: "ON" or "OFF".}
+\item{new}{\verb{[character(1)]}\cr new parallel state: "ON" or "OFF".}
+
+\item{code}{\code{[any]}\cr Code to execute in the temporary environment}
+
+\item{.local_envir}{\verb{[environment]}\cr The environment to use for scoping.}
+}
+\value{
+\code{[any]}\cr The results of the evaluation of the \code{code}
+argument.
 }
 \description{
 Temporarily turn on/off parallel process.
@@ -20,27 +28,30 @@ Temporarily turn on/off parallel process.
 
 with_parallel(new = "ON", {
   sprintf(
-    "Parallel prcoess is \%s.",
+    "Parallel process is \%s.",
     ifelse(parallel_is_on(), "ON", "OFF")
   )
 })
 
 with_parallel(new = "OFF", {
   sprintf(
-    "Parallel prcoess is \%s.",
+    "Parallel process is \%s.",
     ifelse(parallel_is_on(), "ON", "OFF")
   )
 })
 
 local_parallel("ON")
 sprintf(
-  "Parallel prcoess is \%s.",
+  "Parallel process is \%s.",
   ifelse(parallel_is_on(), "ON", "OFF")
 )
 local_parallel("OFF")
 sprintf(
-  "Parallel prcoess is \%s.",
+  "Parallel process is \%s.",
   ifelse(parallel_is_on(), "ON", "OFF")
 )
 }
+}
+\seealso{
+\code{\link[withr:withr]{withr}} for examples
 }

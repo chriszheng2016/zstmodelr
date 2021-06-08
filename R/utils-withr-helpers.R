@@ -20,7 +20,7 @@ set_parallel_state <- function(new_parallel_state = c("ON", "OFF")) {
     }
   }
 
-  return(old_parallel_state)
+  invisible(old_parallel_state)
 }
 
 
@@ -28,32 +28,33 @@ set_parallel_state <- function(new_parallel_state = c("ON", "OFF")) {
 #'
 #' Temporarily turn on/off parallel process.
 #'
-#' @param new `[character(1)]` new parallel state: "ON" or "OFF".
+#' @template with
+#' @param new `[character(1)]`\cr new parallel state: "ON" or "OFF".
 #' @examples
 #' \dontrun{
 #'
 #' with_parallel(new = "ON", {
 #'   sprintf(
-#'     "Parallel prcoess is %s.",
+#'     "Parallel process is %s.",
 #'     ifelse(parallel_is_on(), "ON", "OFF")
 #'   )
 #' })
 #'
 #' with_parallel(new = "OFF", {
 #'   sprintf(
-#'     "Parallel prcoess is %s.",
+#'     "Parallel process is %s.",
 #'     ifelse(parallel_is_on(), "ON", "OFF")
 #'   )
 #' })
 #'
 #' local_parallel("ON")
 #' sprintf(
-#'   "Parallel prcoess is %s.",
+#'   "Parallel process is %s.",
 #'   ifelse(parallel_is_on(), "ON", "OFF")
 #' )
 #' local_parallel("OFF")
 #' sprintf(
-#'   "Parallel prcoess is %s.",
+#'   "Parallel process is %s.",
 #'   ifelse(parallel_is_on(), "ON", "OFF")
 #' )
 #' }
