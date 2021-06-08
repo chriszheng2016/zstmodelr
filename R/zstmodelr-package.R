@@ -62,7 +62,7 @@ NULL
 # Options of pkg
 pkg_options <- list(
   zstmodelr.data_mgt.guess_max = 200000,
-  zstmodelr.common.parallel = TRUE,
+  zstmodelr.common.parallel = FALSE,
   zstmodelr.common.clusters = parallel::detectCores() - 1
 )
 

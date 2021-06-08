@@ -10,7 +10,7 @@ test_that("enable/disable_parallel, with various arguments", {
 
   withr::local_options(list(
     zstmodelr.common.clusters = test_clusters,
-    zstmodelr.common.parallel = TRUE
+    zstmodelr.common.parallel = FALSE
   ))
 
   # enable/disable_parallel with default arguments ====
@@ -26,6 +26,7 @@ test_that("enable/disable_parallel, with various arguments", {
     expect_true(file.exists(status$parallel_log))
   }
   expect_true(status$foreach_workers == test_clusters)
+  expect_true(status$zstmodelr.common.parallel == TRUE)
 
   # enable parallel processing again
   expect_message(
@@ -41,12 +42,13 @@ test_that("enable/disable_parallel, with various arguments", {
   expect_null(status$cluster)
   expect_true(status$foreach_workers == 1)
   expect_true(!file.exists(status$parallel_log))
+  expect_true(status$zstmodelr.common.parallel == FALSE)
 
   # Enable/disable parallel in check by CRAN which only allow 2 cluster at most.
   withr::with_options(
     list(
       zstmodelr.common.clusters = test_clusters,
-      zstmodelr.common.parallel = TRUE
+      zstmodelr.common.parallel = FALSE
     ),
     {
       withr::with_envvar(list("_R_CHECK_LIMIT_CORES_" = "TRUE"), {
@@ -84,6 +86,7 @@ test_that("enable/disable_parallel, with various arguments", {
     expect_true(file.exists(status$parallel_log))
   }
   expect_true(status$foreach_workers == test_clusters)
+  expect_true(status$zstmodelr.common.parallel == TRUE)
 
   # disable parallel processing
   disable_parallel(NULL)
@@ -96,6 +99,7 @@ test_that("enable/disable_parallel, with various arguments", {
     expect_type(status$parallel_log, "character")
     expect_true(!file.exists(status$parallel_log))
   }
+  expect_true(status$zstmodelr.common.parallel == FALSE)
 
   # >> env_globals = environment ----
 
@@ -115,6 +119,7 @@ test_that("enable/disable_parallel, with various arguments", {
     expect_true(file.exists(status$parallel_log))
   }
   expect_true(status$foreach_workers == test_clusters)
+  expect_true(status$zstmodelr.common.parallel == TRUE)
 
   # disable parallel processing
   disable_parallel(test_env)
@@ -127,6 +132,83 @@ test_that("enable/disable_parallel, with various arguments", {
     expect_type(status$parallel_log, "character")
     expect_true(!file.exists(status$parallel_log))
   }
+  expect_true(status$zstmodelr.common.parallel == FALSE)
+
+
+  # >> parallel_switch_option = NULL ----
+  # enable parallel processing
+  enable_parallel(parallel_switch_option = NULL)
+
+  # check results of enable parallel
+  status <- parallel_status()
+  expect_is(status$cluster, "cluster")
+  if (!is.null(status$parallel_log)) {
+    expect_type(status$parallel_log, "character")
+    expect_true(file.exists(status$parallel_log))
+  }
+  expect_true(status$foreach_workers == test_clusters)
+  expect_true(status$zstmodelr.common.parallel == FALSE)
+
+  # disable parallel processing
+  disable_parallel(parallel_switch_option = NULL)
+
+  # check results of disable parallel
+  status <- parallel_status()
+  expect_null(status$cluster)
+  expect_true(status$foreach_workers == 1)
+  if (!is.null(status$parallel_log)) {
+    expect_type(status$parallel_log, "character")
+    expect_true(!file.exists(status$parallel_log))
+  }
+  expect_true(status$zstmodelr.common.parallel == FALSE)
+
+
+  # >> parallel_switch_option = customized options ----
+  # enable parallel processing
+  customized_options <- list(opt1 = FALSE, opt2 = FALSE)
+  withr::with_options(customized_options, {
+
+    enable_parallel(parallel_switch_option = names(customized_options))
+
+    # check results of enable parallel
+    status <- parallel_status()
+    expect_is(status$cluster, "cluster")
+    if (!is.null(status$parallel_log)) {
+      expect_type(status$parallel_log, "character")
+      expect_true(file.exists(status$parallel_log))
+    }
+    expect_true(status$foreach_workers == test_clusters)
+
+    # check results parallel_switch_option
+    for(option_name in names(customized_options)) {
+      expect_option <- customized_options[option_name]
+      expect_option[option_name] <- TRUE
+      actual_option <- options(option_name)
+      expect_equal(expect_option, actual_option)
+    }
+
+    # disable parallel processing
+    disable_parallel(parallel_switch_option = names(customized_options))
+
+    # check results of disable parallel
+    status <- parallel_status()
+    expect_null(status$cluster)
+    expect_true(status$foreach_workers == 1)
+    if (!is.null(status$parallel_log)) {
+      expect_type(status$parallel_log, "character")
+      expect_true(!file.exists(status$parallel_log))
+    }
+    expect_true(status$zstmodelr.common.parallel == FALSE)
+
+    # check results parallel_switch_option
+    # check results parallel_switch_option
+    for(option_name in names(customized_options)) {
+      expect_option <- customized_options[option_name]
+      expect_option[option_name] <- FALSE
+      actual_option <- options(option_name)
+      expect_equal(expect_option, actual_option)
+    }
+  })
 })
 
 test_that("parallel_status, with various arguments", {

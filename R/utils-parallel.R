@@ -9,14 +9,18 @@
 #' computation:
 #'
 #' * Global level: enable/disable parallel process for R session.
-#' Through `enable_parallel`, we could set parallel process ready for current R
-#' session by initiating back-end clusters, which normally are processes running
-#' on multiple cores  in a computer. we could shut parallel process by using
-#' `disable_parallel`.
 #'
-#' * Function level: enable/disable parallel process for running functions. In a
-#' R session enabling parallel process, we could control a function being able
-#' to running parallel process, for example:
+#' Through `enable_parallel`, we could set parallel process ready for current R
+#' session by initiating back-end clusters which normally are processes running
+#' on multiple cores in a computer, and setting `zstmodelr.common.parallel`
+#' option to TRUE.
+#' we could use `disable_parallel` to shut parallel process by closing
+#' back-end clusters and setting `zstmodelr.common.parallel` option to FALSE
+#'
+#' * Function level: enable/disable parallel process for running functions.
+#'
+#' In a R session enabling parallel process, we could control a function being
+#'  able to running parallel process, for example:
 #'
 #' ```
 #'         compute_indicator(ts_compute_vars, compute_fun, ...,
@@ -28,7 +32,8 @@
 #'
 #' Its argument `parallel` controls whether the function run in parallel process
 #' or sequential process, whose default value is from options of
-#' `zstmodelr.common.parallel` or TRUE.
+#' `zstmodelr.common.parallel` or TRUE. By default, `zstmodelr.common.parallel`
+#' is controlled by `enable_parallel` and `disable_parallel` as well.
 #'
 #' In addition, `parallel_status` could provide current status of parallel
 #' process and configuration options, which return a list including following
@@ -84,16 +89,25 @@ NULL
 #'   Default .pkg_globals means to use global vars of the package. NULL means
 #'   to use environment of caller.
 #'
+#' @param parallel_switch_option a string name of option to turn on/off
+#' parallel computation in functions with parallel feature.
+#' Default is "zstmodelr.common.parallel".
+#'
 #' @describeIn utils_parallel enable parallel process by initiating back-end
 #'  clusters.
 #' @export
-enable_parallel <- function(env_globals = .pkg_globals) {
+enable_parallel <- function(env_globals = .pkg_globals,
+                            parallel_switch_option = "zstmodelr.common.parallel") {
 
   # env_globals must be a environment to store parallel info
   if (!is.null(env_globals)) {
     assertive::assert_is_environment(env_globals)
   } else {
     env_globals <- parent.frame()
+  }
+
+  if (!is.null(parallel_switch_option)) {
+    assertive::assert_is_character(parallel_switch_option)
   }
 
   # Get current status of parallel process
@@ -108,7 +122,7 @@ enable_parallel <- function(env_globals = .pkg_globals) {
 
       # Only use 2 cores in CRAN/Travis/AppVeyor
       cran_check_limt_cores <- Sys.getenv("_R_CHECK_LIMIT_CORES_", "")
-      if (nzchar(cran_check_limt_cores)&& cran_check_limt_cores == "TRUE") {
+      if (nzchar(cran_check_limt_cores) && cran_check_limt_cores == "TRUE") {
         options(zstmodelr.common.clusters = 2)
         rlang::warn("Only use 2 clusters by CRAN/Travis/AppVeyor.\n")
       }
@@ -123,6 +137,13 @@ enable_parallel <- function(env_globals = .pkg_globals) {
         if (!is.null(env_globals)) {
           env_globals$.cluster <- cluster
           env_globals$.parallel_log <- parallel_log
+
+          # Turn on parallel switch options
+          if (!is.null(parallel_switch_option)) {
+            switch_options <- as.list(rep(TRUE, length(parallel_switch_option)))
+            names(switch_options) <- parallel_switch_option
+            options(switch_options)
+          }
         }
       } else {
         rlang::warn("parallel is needed for parallel process,
@@ -148,13 +169,18 @@ enable_parallel <- function(env_globals = .pkg_globals) {
 #' @describeIn utils_parallel disable parallel process by stopping back-end
 #'  clusters.
 #' @export
-disable_parallel <- function(env_globals = .pkg_globals) {
+disable_parallel <- function(env_globals = .pkg_globals,
+                             parallel_switch_option = "zstmodelr.common.parallel") {
 
   # env_globals must be a environment to store parallel info
   if (!is.null(env_globals)) {
     assertive::assert_is_environment(env_globals)
   } else {
     env_globals <- parent.frame()
+  }
+
+  if (!is.null(parallel_switch_option)) {
+    assertive::assert_is_character(parallel_switch_option)
   }
 
   # Get current status of parallel process
@@ -183,6 +209,14 @@ disable_parallel <- function(env_globals = .pkg_globals) {
     if ((foreach_workers == 1) || wait_time >= max_wait_time) {
       break
     }
+  }
+
+  # Turn off parallel switch options
+  # Turn on parallel switch options
+  if (!is.null(parallel_switch_option)) {
+    switch_options <- as.list(rep(FALSE, length(parallel_switch_option)))
+    names(switch_options) <- parallel_switch_option
+    options(switch_options)
   }
 
   # Clean log file
