@@ -133,17 +133,45 @@ enable_parallel <- function(env_globals = .pkg_globals,
       )
 
       if (requireNamespace("doParallel", quietly = FALSE)) {
+
+        # Register clusters
         doParallel::registerDoParallel(cluster)
+
+        # Fix bugs from github action R-CMD-check on windows platform
+        # Reason: the package should be loaded into each cluster on windows,
+        # otherwise foreach::`%dopar% can't find the parallel function defined
+        # in the package to run.
+        sysname <- tolower(Sys.info()[["sysname"]])
+        if (sysname == "windows") {
+          this_pkg <- packageName(rlang::current_env())
+
+          # Function to run on every cluster initially
+          cluster_init <- function(require_pkgs) {
+            for (pkg in require_pkgs) {
+              if (!require(pkg, character.only = TRUE)) {
+                cat(paste0("Fail to load ", pkg, "\n"))
+              }
+            }
+          }
+
+          # Call cluster_init on every cluster
+          parallel::clusterCall(
+            cluster,
+            cluster_init,
+            require_pkgs = this_pkg
+          )
+        }
+
+        # Turn on parallel switch options
+        if (!is.null(parallel_switch_option)) {
+          switch_options <- as.list(rep(TRUE, length(parallel_switch_option)))
+          names(switch_options) <- parallel_switch_option
+          options(switch_options)
+        }
+
         if (!is.null(env_globals)) {
           env_globals$.cluster <- cluster
           env_globals$.parallel_log <- parallel_log
-
-          # Turn on parallel switch options
-          if (!is.null(parallel_switch_option)) {
-            switch_options <- as.list(rep(TRUE, length(parallel_switch_option)))
-            names(switch_options) <- parallel_switch_option
-            options(switch_options)
-          }
         }
       } else {
         rlang::warn("parallel is needed for parallel process,
