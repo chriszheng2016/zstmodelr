@@ -33,7 +33,7 @@ test_that("tests related to stock db", {
 withr::with_envvar(
   new = c("NO_STOCK_DB" = "true"),
   devtools::test() # test package
-  )
+)
 }
 
 }

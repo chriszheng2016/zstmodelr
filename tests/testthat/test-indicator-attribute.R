@@ -13,6 +13,11 @@ withr::defer({
 })
 suppressMessages(init_stock_db(stock_db))
 
+# Skip on ci for windows
+# Reason: There are unavoidable errors in github action R-CMD-check related to
+# parallel process
+skip_on_ci_for_os("windows")
+
 # Enable parallel process for test
 local_parallel("ON")
 

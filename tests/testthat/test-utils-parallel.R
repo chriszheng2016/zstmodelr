@@ -53,7 +53,7 @@ test_that("enable/disable_parallel, with various arguments", {
     {
       withr::with_envvar(list("_R_CHECK_LIMIT_CORES_" = "TRUE"), {
 
-        expect_warning(
+        expect_message(
           enable_parallel(),
           regexp = "Only use 2 clusters by CRAN"
         )

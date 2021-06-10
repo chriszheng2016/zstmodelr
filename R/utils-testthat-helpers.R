@@ -64,7 +64,7 @@ expect_not_null <- function(object, info = NULL, label = NULL) {
 #' withr::with_envvar(
 #'   new = c("NO_STOCK_DB" = "true"),
 #'   devtools::test() # test package
-#'   )
+#' )
 #' }
 #'
 skip_if_stock_db_not_ready <- function(dsn = "GTA_SQLData") {
@@ -90,4 +90,44 @@ skip_if_stock_db_not_ready <- function(dsn = "GTA_SQLData") {
       dsn
     )
   )
+}
+
+
+
+#' Skip on CI on specific OS
+#'
+#' skips on continuous integration systems like GitHub Actions, travis,
+#' and appveyor (using the CI env var) on specific operating system.
+#'
+#' @param os Character vector of system names. Supported values are "windows",
+#' "mac", "linux" and "solaris".
+#'
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#'  # Skip tests in CI testing on windows platform
+#'    skip_on_ci_for_os("windows")
+#'    test_that("tests is not good for CI on windows", {
+#'      expect_equal(1, 3) #'
+#'    })
+#' }
+skip_on_ci_for_os <- function(os) {
+  os <- match.arg(
+    os, c("windows", "mac", "linux", "solaris"),
+    several.ok = TRUE
+  )
+
+  # Skip on CI on specific OS
+  if (isTRUE(as.logical(Sys.getenv("CI")))) {
+    sysname <- tolower(Sys.info()[["sysname"]])
+    switch(sysname,
+      windows = if ("windows" %in% os) testthat::skip("CI on Windows"),
+      darwin = if ("mac" %in% os) testthat::skip("CI on Mac"),
+      linux = if ("linux" %in% os) testthat::skip("CI on Linux"),
+      sunos = if ("solaris" %in% os) testthat::skip("CI on Solaris")
+    )
+  }
+
+  invisible(TRUE)
 }
