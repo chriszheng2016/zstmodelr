@@ -124,7 +124,7 @@ enable_parallel <- function(env_globals = .pkg_globals,
       cran_check_limt_cores <- Sys.getenv("_R_CHECK_LIMIT_CORES_", "")
       if (nzchar(cran_check_limt_cores) && cran_check_limt_cores == "TRUE") {
         options(zstmodelr.common.clusters = 2)
-        rlang::warn("Only use 2 clusters by CRAN/Travis/AppVeyor.\n")
+        rlang::inform("Only use 2 clusters by CRAN/Travis/AppVeyor.\n")
       }
 
       cluster <- parallel::makeCluster(
@@ -136,31 +136,6 @@ enable_parallel <- function(env_globals = .pkg_globals,
 
         # Register clusters
         doParallel::registerDoParallel(cluster)
-
-        # Fix bugs from github action R-CMD-check on windows platform
-        # Reason: the package should be loaded into each cluster on windows,
-        # otherwise foreach::`%dopar% can't find the parallel function defined
-        # in the package to run.
-        sysname <- tolower(Sys.info()[["sysname"]])
-        if (sysname == "windows") {
-          this_pkg <- packageName(rlang::current_env())
-
-          # Function to run on every cluster initially
-          cluster_init <- function(require_pkgs) {
-            for (pkg in require_pkgs) {
-              if (!require(pkg, character.only = TRUE)) {
-                cat(paste0("Fail to load ", pkg, "\n"))
-              }
-            }
-          }
-
-          # Call cluster_init on every cluster
-          parallel::clusterCall(
-            cluster,
-            cluster_init,
-            require_pkgs = this_pkg
-          )
-        }
 
         # Turn on parallel switch options
         if (!is.null(parallel_switch_option)) {
