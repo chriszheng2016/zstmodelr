@@ -18,7 +18,7 @@ means display interactive message in execution.}
 \item{debug}{a logical of whether execute fun in simulation mode or real
 mode. Default FALSE means to execute function in real mode.}
 
-\item{quo_fun}{a function quoted by \code{\link[rlang:quo]{rlang::quo()}} or \code{\link[rlang:enquo]{rlang::enquo()}} to be
+\item{quo_fun}{a function quoted by \code{\link[rlang:nse-defuse]{rlang::quo()}} or \code{\link[rlang:nse-defuse]{rlang::enquo()}} to be
 executed.}
 }
 \value{

@@ -20,6 +20,7 @@ knitr::opts_chunk$set(
 [![R build status](https://github.com/chriszheng2016/zstmodelr/workflows/R-CMD-check/badge.svg)](https://github.com/chriszheng2016/zstmodelr/actions)
 ![pkgdown](https://github.com/chriszheng2016/zstmodelr/workflows/pkgdown/badge.svg)
 ![test-coverage](https://github.com/chriszheng2016/zstmodelr/workflows/test-coverage/badge.svg)
+[![R-CMD-check](https://github.com/chriszheng2016/zstmodelr/workflows/R-CMD-check/badge.svg)](https://github.com/chriszheng2016/zstmodelr/actions)
 <!-- badges: end -->
 
 The goal of zstmodelr is to ...

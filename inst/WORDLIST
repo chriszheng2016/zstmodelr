@@ -1,10 +1,11 @@
 Accper
+CMD
 CamelCase
 Codecov
+DSN
 GTA
 IC
 Init
-ORCID
 Params
 ROCE
 RStudio
@@ -19,6 +20,7 @@ YAML
 YYYY
 accper
 agg
+appveyor
 asfreq
 attr
 backfill
@@ -36,6 +38,7 @@ dir
 dmad
 ds
 dsn
+env
 expr
 exprs
 ffill
@@ -46,6 +49,7 @@ globals
 gta
 indcd
 knitr
+linux
 markettype
 nfill
 odbc
@@ -64,16 +68,19 @@ rlang
 rmd
 rolly
 shrchdgt
+solaris
 stdev
 stkcd
 stkcds
 stylesheet
 substract
 summarization
+testthat
 tibble
 timeSeries
 timeseries
 tp
+travis
 trddt
 trdmnt
 trdynt

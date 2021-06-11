@@ -33,7 +33,6 @@ Other stock_db generics:
 \code{\link{close_stock_db}()},
 \code{\link{code2name}()},
 \code{\link{dir_path_db}()},
-\code{\link{fetch_table_dataset}()},
 \code{\link{get_factors_info}()},
 \code{\link{get_factors}()},
 \code{\link{get_financial_report}()},

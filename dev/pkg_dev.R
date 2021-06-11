@@ -17,17 +17,19 @@
 
 ## Add package to dependency ----
 ## Add one line by package you want to add as dependency
-usethis::use_package("package")  # Use package from cran
+usethis::use_package("package") # Use package from cran
 usethis::use_dev_package(
   "pkgname",
   remote = "onwer/project@branch"
-  ) # Use package in development from github
+) # Use package in development from github
 usethis::use_tidy_description()
 
 ## Add internal datasets ----
 ## If you have data in your package
 usethis::use_data_raw(name = "my_dataset", open = FALSE)
 
+## Style codes ----
+usethis::use_tidy_style()
 
 ## Tests ----
 ## Add one line by test you want to create
@@ -36,19 +38,52 @@ devtools::wd("tests/testthat")
 testthat::test_file("test-app.R") # test a file
 devtools::test_file_coverage("test-app.R") # test a file coverage
 
-# Test a file which contains "skip_on_cran()/skip_on_ci()/skip_on_covr()"
+## Test a file which contains "skip_on_cran()/skip_on_ci()/skip_on_covr()"
 # Method A:
 withr::with_envvar(
-  new = c("NOT_CRAN" = "true",
-          "CI" = "false",
-          "R_COVR" = "false"),
-  testthat::test_file("test-app.R")
+  new = c(
+    "NOT_CRAN" = "true",
+    "CI" = "false",
+    "R_COVR" = "false"
+  ),
+  {
+    testthat::test_file("test-app.R")
+    devtools::test()
+  }
 )
 # Method B:
 Sys.setenv("NOT_CRAN" = "true")
 testthat::test_file("test-app.R")
+devtools::test()
+Sys.setenv("NOT_CRAN" = "")
 
-devtools::test() # test package
+## Simulate test in environment without stock db
+# Method A:
+withr::with_envvar(
+  new = c("NO_STOCK_DB" = "true"),
+  {
+    testthat::test_file("test-app.R")
+    devtools::test()
+  }
+)
+
+# Method B:
+Sys.setenv("NO_STOCK_DB" = "true")
+testthat::test_file("test-app.R")
+devtools::test()
+Sys.setenv("NO_STOCK_DB" = "")
+
+## Document ----
+
+## Update function doc
+devtools::document()
+?fun_abc
+
+## Check spelling in doc
+usethis::use_spell_check() # set up spelling check in doc
+devtools::document() # update all doc
+devtools::spell_check() # check spelling in doc
+spelling::update_wordlist() # accept new words if need
 
 ## Edit vignette
 usethis::use_vignette("pkg_name")
@@ -60,7 +95,7 @@ devtools::build_vignettes()
 devtools::test()
 
 ## Test coverage
-devtools::test_coverage()
+devtools::test_coverage(quiet = FALSE, clean = FALSE)
 
 ## Style package
 ## Styles source code according to the tidyverse style guide.
@@ -68,8 +103,8 @@ usethis::use_tidy_style() ## It will overwrite files!
 
 ## Update doc and check spelling
 devtools::document()
-usethis::use_spell_check() # Set up spelling check in doc
 devtools::spell_check()
+spelling::update_wordlist() # accept new words if need
 
 ## Check doc
 devtools::check_man()
@@ -85,3 +120,25 @@ cat(result$notes)
 
 # Update document of pkgdown
 devtools::build_site(quiet = FALSE)
+
+## Simulate R-CMD-check on Github Actions
+# Turn off stock db connection
+withr::with_envvar(
+  new = c(
+    "NO_STOCK_DB" = "true",
+    "NOT_CRAN" = "false",
+    "CI" = "true",
+    "R_COVR" = "true"
+  ),
+  {
+    result <- rcmdcheck::rcmdcheck(
+      args = c("--no-manual", "--as-cran"),
+      error_on = "warning",
+      check_dir = "check"
+    )
+  }
+)
+
+cat(result$errors)
+cat(result$warnings)
+cat(result$notes)

@@ -5,26 +5,23 @@ context("Tests for function of indicator generate")
 dsn <- "GTA_SQLData"
 DB_PROFILE_FILE <- "gta_profile.xlsx"
 
+skip_if_stock_db_not_ready(dsn)
 # Open database for tests
 stock_db <- stock_db(gta_db, dsn)
-suppressMessages(db_ready <- open_stock_db(stock_db))
+suppressMessages(open_stock_db(stock_db))
 withr::defer({
   close_stock_db(stock_db)
 })
-# skip tests if test dsn is not ready
-skip_if_not(db_ready,
-  message = sprintf("DSN(%s) is not ready, skip all tests for stock_db", dsn)
-)
 suppressMessages(init_stock_db(stock_db))
 
+# Skip on ci for windows
+# Reason: There are unavoidable errors in github action R-CMD-check related to
+# parallel process
+skip_on_ci_for_os("windows")
 
 # Enable parallel process for test
-if (is.null(parallel_status()$cluster)) {
-  suppressMessages(enable_parallel())
-  withr::defer({
-    suppressMessages(disable_parallel())
-  })
-}
+local_parallel("ON")
+
 
 # prepare test data sets
 customized_indicators_info <- tibble::tibble(

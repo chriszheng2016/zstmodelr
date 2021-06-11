@@ -6,8 +6,7 @@ Authors@R:
     person(given = "Chris",
            family = "Zheng",
            role = c("aut", "cre"),
-           email = "chriszheng@vip.sina.com.cn",
-           comment = c(ORCID = "CHRISZHENG'S-ORCID-ID"))
+           email = "chriszheng@vip.sina.com.cn")
 Description: An implementation of analytical tools of stock factors models
     for investing China stock market.
 License: GPL (>= 2)
@@ -42,16 +41,18 @@ Imports:
     tidyselect,
     timeDate,
     timeSeries,
+    withr,
     xts,
     zoo
 Suggests: 
     covr,
+    glue,
     knitr,
     mockery,
+    rticles,
     spelling,
     testthat,
-    tinytex,
-    withr
+    tinytex
 VignetteBuilder: 
     knitr
 Encoding: UTF-8
@@ -81,7 +82,6 @@ Collate:
     'model-zscore.R'
     'model_fundamental.R'
     'stock-db-default.R'
-    'testthat-extends.R'
     'utils-cliui.R'
     'utils-dates.R'
     'utils-expr.R'
@@ -92,6 +92,8 @@ Collate:
     'utils-profile.R'
     'utils-report.R'
     'utils-series.R'
+    'utils-testthat-helpers.R'
     'utils-timeseries.R'
+    'utils-withr-helpers.R'
     'utils.R'
     'zstmodelr-package.R'

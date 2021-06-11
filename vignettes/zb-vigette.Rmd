@@ -4,7 +4,7 @@ author: "Chris Zheng "
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{ZStockModels User guide }
+  %\VignetteIndexEntry{zstmodelr User guide}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
