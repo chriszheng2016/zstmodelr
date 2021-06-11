@@ -29,7 +29,6 @@ Generic function to get factors info from stock_db.
 \section{Functions}{
 \itemize{
 \item \code{get_factors_info,gta_db-method}: get factors info from a database of gta_db class
-gta_db class
 }}
 
 \seealso{
@@ -37,11 +36,12 @@ Other stock_db generics:
 \code{\link{close_stock_db}()},
 \code{\link{code2name}()},
 \code{\link{dir_path_db}()},
-\code{\link{fetch_table_dataset}()},
 \code{\link{get_factors}()},
 \code{\link{get_financial_report}()},
 \code{\link{get_indicators_from_source}()},
+\code{\link{get_indicators_info}()},
 \code{\link{get_indicators}()},
+\code{\link{get_industry_info}()},
 \code{\link{get_market_return}()},
 \code{\link{get_profile}()},
 \code{\link{get_riskfree_rate}()},

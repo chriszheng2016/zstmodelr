@@ -91,8 +91,13 @@ exploreFactorsDistributionUI <- function(id, ds_factors) {
 exploreFactorsDistribution <- function(input, output, session, ds_factors) {
   ds_transform_factors <- shiny::reactive({
     ds_factors <- ds_factors()
+    # ds_transform_factors <- ds_factors %>%
+    #   tidyr::gather(key = "factor_name", value = "factor_exposure", -(date:indcd))
     ds_transform_factors <- ds_factors %>%
-      tidyr::gather(key = "factor_name", value = "factor_exposure", -(date:indcd))
+      tidyr::pivot_longer(cols = -(date:indcd),
+                          names_to = "factor_name",
+                          values_to = "factor_exposure")
+
 
     return(ds_transform_factors)
   })

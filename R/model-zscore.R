@@ -108,10 +108,10 @@ zscore_filter_stocks <- function(ds_zscores,
 
   if (is.null(dplyr::groups(filter_stocks))) {
     result_stocks <- filter_stocks %>%
-      dplyr::arrange(desc(!!ranking_field))
+      dplyr::arrange(dplyr::desc(!!ranking_field))
   } else {
     result_stocks <- filter_stocks %>%
-      dplyr::arrange(desc(!!ranking_field), .by_group = TRUE)
+      dplyr::arrange(dplyr::desc(!!ranking_field), .by_group = TRUE)
   }
 
   return(result_stocks)

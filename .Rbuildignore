@@ -3,12 +3,13 @@
 ^data-raw$
 ^README\.Rmd$
 ^README-.*\.png$
-profile_files
-profile.html
+^profile_files$
+^profile\.html$
 ^research$
+^dev$
 ^.*\.rxproj$
 ^\.vs$
-check
+^check$
 ^CODE_OF_CONDUCT\.md$
 ^_pkgdown\.yml$
 ^docs$
@@ -16,4 +17,9 @@ check
 ^codecov\.yml$
 ^\.github$
 ^\.git$
-[.]log$
+
+
+
+^doc$
+^Meta$
+^man-roxygen$

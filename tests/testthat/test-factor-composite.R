@@ -10,7 +10,7 @@ test_that("composite_factor, with various arguments", {
     new_factor_name = "new_factor"
   )
 
-  # weight_formula with default argurments ====
+  # weight_formula with default arguments ====
   ds_composite_factor <- composite_factor(ds_classify_factors,
     aggregate_formula = factors_weight_formula
   )
@@ -18,7 +18,7 @@ test_that("composite_factor, with various arguments", {
   expect_false(all(factors_list %in% names(ds_composite_factor)))
 
 
-  # weight_formula with customized argurments ====
+  # weight_formula with customized arguments ====
   ds_composite_factor <- composite_factor(ds_classify_factors,
     aggregate_formula = Profit ~ 0.3 * GPM + 0.7 * ROCE,
     drop = FALSE
@@ -31,13 +31,13 @@ test_that("weight_formula, with various arguments", {
   factors_list <- c("GPM", "ROCE", "PE", "PB", "CUR", "QR")
   factors_weight <- factors_weight_equal(factors_list)
 
-  # weight_formula with default argurments ====
+  # weight_formula with default arguments ====
   factors_weight_formula <- weight_formula(factors_weight)
   expect_is(factors_weight_formula, "formula")
   expect_true(all(factors_list %in% all.vars(factors_weight_formula)))
   expect_true(all("composite_factor" %in% all.vars(factors_weight_formula)))
 
-  # weight_formula with customized argurments ====
+  # weight_formula with customized arguments ====
   factors_weight_formula <- weight_formula(factors_weight,
     new_factor_name = "new_factor"
   )
@@ -49,7 +49,7 @@ test_that("weight_formula, with various arguments", {
 test_that("factors_weight_equal, with various arguments", {
   factors_list <- c("GPM", "ROCE", "PE", "PB", "CUR", "QR")
 
-  # factors_weight_equal with default argurments ====
+  # factors_weight_equal with default arguments ====
   factors_weight <- factors_weight_equal(factors_list)
   expect_is(factors_weight, "list")
   expected <- c("factor_name", "factor_weight")

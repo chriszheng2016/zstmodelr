@@ -6,10 +6,9 @@ Authors@R:
     person(given = "Chris",
            family = "Zheng",
            role = c("aut", "cre"),
-           email = "chriszheng@vip.sina.com.cn",
-           comment = c(ORCID = "CHRISZHENG'S-ORCID-ID"))
-Description: An implementation of analytical tools of stock
-    factors models for investing China stock market.
+           email = "chriszheng@vip.sina.com.cn")
+Description: An implementation of analytical tools of stock factors models
+    for investing China stock market.
 License: GPL (>= 2)
 URL: https://github.com/chriszheng2016/zstmodelr
 BugReports: https://github.com/chriszheng2016/zstmodelr/issues
@@ -18,12 +17,10 @@ Depends:
 Imports: 
     assertive,
     broom,
-    car,
     cli,
     DBI,
     doParallel,
     dplyr,
-    DT,
     foreach,
     fs,
     lubridate,
@@ -38,13 +35,13 @@ Imports:
     readxl,
     rlang,
     rmarkdown,
-    shiny,
-    shinydashboard,
     stringr,
     tibble,
     tidyr,
+    tidyselect,
     timeDate,
     timeSeries,
+    withr,
     xts,
     zoo
 Suggests: 
@@ -52,17 +49,17 @@ Suggests:
     glue,
     knitr,
     mockery,
+    rticles,
     spelling,
     testthat,
-    tinytex,
-    withr
+    tinytex
 VignetteBuilder: 
     knitr
 Encoding: UTF-8
 Language: en-US
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.0
+RoxygenNote: 7.1.1
 Collate: 
     'stock-db.R'
     'code-name-list.R'
@@ -84,10 +81,7 @@ Collate:
     'model-predict.R'
     'model-zscore.R'
     'model_fundamental.R'
-    'shiny-factor-explore.R'
-    'shiny-factor-tools.R'
     'stock-db-default.R'
-    'testthat-extends.R'
     'utils-cliui.R'
     'utils-dates.R'
     'utils-expr.R'
@@ -98,6 +92,8 @@ Collate:
     'utils-profile.R'
     'utils-report.R'
     'utils-series.R'
+    'utils-testthat-helpers.R'
     'utils-timeseries.R'
+    'utils-withr-helpers.R'
     'utils.R'
     'zstmodelr-package.R'

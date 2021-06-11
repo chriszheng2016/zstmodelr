@@ -1,9 +1,11 @@
 
-# Skip tests on cran due to consuming long time.
-# skip_on_cran()
+# Skip on ci for windows
+# Reason: There are unavoidable errors in github action R-CMD-check related to
+# parallel process
+skip_on_ci_for_os("windows")
 
-# enable parallel process
-enable_parallel()
+# Enable parallel process for test
+local_parallel("ON")
 
 # Test tool functions ----
 # Build test dataset
@@ -930,6 +932,3 @@ test_that("refreq_dateindex, with various normal arguments", {
     }
   }
 })
-
-# disable parallel process
-disable_parallel()

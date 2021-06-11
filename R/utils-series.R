@@ -157,7 +157,7 @@ trail_periodic_series <- function(dates, data_series,
     # convert into period data
     if (accumulated) {
 
-      # original data is accumalated
+      # original data is accumulated
 
       # add year field to indicate period
       ds_period <- ds_origin %>%
@@ -167,28 +167,28 @@ trail_periodic_series <- function(dates, data_series,
 
       # fill NAs with value before NAs
       ds_period <- ds_period %>%
-        dplyr::group_by(year) %>%
+        dplyr::group_by(.data$year) %>%
         tidyr::fill(names(ds_series), .direction = "down") %>%
         dplyr::ungroup()
 
       # compute value of each period
       ds_period <- ds_period %>%
-        dplyr::group_by(year) %>%
+        dplyr::group_by(.data$year) %>%
         dplyr::mutate_at(
-          .vars = dplyr::vars(-date, -year),
+          .vars = dplyr::vars(-c("date", "year")),
           .funs = .period_value
         )
 
       # get period dataset
       ds_period <- ds_period %>%
         dplyr::ungroup() %>%
-        dplyr::select(-date, -year)
+        dplyr::select(-c("date", "year"))
     } else {
-      # original data is not accumated(already contain period data)
+      # original data is not accumulated(already contain period data)
 
       # use origin data as period data directly
       ds_period <- ds_origin %>%
-        dplyr::select(-date)
+        dplyr::select(-.data$date)
 
       # replace NA in series with 0
       ds_period <- ds_period %>%

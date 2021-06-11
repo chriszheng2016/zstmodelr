@@ -130,24 +130,32 @@ loadFactors <- function(input, output, session, factors_info) {
 
       shiny::incProgress(message = "init_stock_db")
 
-      # Initate the stock database
+      # Initiate the stock database
       invisible(init_stock_db(stock_db))
 
       shiny::incProgress(message = "get_factor_indicator")
 
       # Get fundamental indicators
-      fundamental_factors <- get_factor_indicator(stock_db,
-        factor_list = factors_list
-      )
+      # fundamental_factors <- get_factor_indicator(stock_db,
+      #   factor_list = factors_list
+      # )
+
+      ds_factors <-
+        get_factors(stock_db, factor_codes = factors_list) %>%
+        tidyr::pivot_wider(names_from = "factor_name",
+                           values_from = "factor_value")
 
       # fundamental_factors <- readRDS("./../../data-raw/fundamental_factors.rds")
+
 
       close_stock_db(stock_db)
     })
 
+
+
     shiny::showNotification("Load factors successfully.")
 
-    return(fundamental_factors)
+    return(ds_factors)
   })
 
   # Display factors Info

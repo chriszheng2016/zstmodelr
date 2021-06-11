@@ -48,7 +48,7 @@ test_that("normalize, with various arguments", {
   set.seed(1234)
   x <- rnorm(100, mean = 5, sd = 5)
 
-  # clean extremes with default argurments ====
+  # clean extremes with default arguments ====
   x_2_extremes <- c(100, 100, x)
   x_result <- normalize(x_2_extremes)
   expect_true(any(duplicated(x_result[1:2])))

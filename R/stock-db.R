@@ -260,7 +260,7 @@ setGeneric(
 #' @examples
 #' \dontrun{
 #' ds_trd_dalyr.df <- get_stock_dataset(stock_db,
-#'   table_name = "TRD_Dalyr_日个股回报率",
+#'   table_name = "TRD_Dalyr",
 #'   stock_cd_list = c("600066", "000550")
 #' )
 #' }
@@ -283,36 +283,6 @@ setGeneric(
                                       stock_cd_list = NULL,
                                       ...) {
     standardGeneric("get_stock_dataset")
-  }
-)
-
-
-#' Fetch many datasets from stock_db
-#'
-#' Generic function to fetch many datasets from stock_db.
-#'
-#' @param stock_db   A stock database object to operate.
-#' @param table_list A character vector of table names.
-#' @param ... Extra arguments to be passed to methods.
-#'
-#' @family stock_db generics
-#'
-#' @return A list of names of table fetched if succeed.
-#' @export
-#'
-
-
-# S3 generic definition
-# fetch_table_dataset <- function(stock_db, table_list, ...) {
-#   UseMethod("fetch_table_dataset")
-# }
-
-# S4 generic definition
-setGeneric(
-  name = "fetch_table_dataset",
-  signature = c("stock_db"),
-  def = fetch_table_dataset <- function(stock_db, table_list, ...) {
-    standardGeneric("fetch_table_dataset")
   }
 )
 
@@ -342,12 +312,43 @@ setGeneric(
   name = "get_stock_info",
   signature = c("stock_db"),
   def = get_stock_info <- function(stock_db,
-                                     stock_cd_list = NULL,
-                                     ...) {
+                                   stock_cd_list = NULL,
+                                   ...) {
     standardGeneric("get_stock_info")
   }
 )
 
+#' Get industry info from stock_db
+#'
+#' Generic function to get industry info from stock_db.
+#'
+#' @param stock_db    A stock database object to operate.
+#' @param industry_codes A list of industry codes, default value of NULL means
+#'  all industry data will return.
+#' @param ... Extra arguments to be passed to methods.
+#'
+#' @family stock_db generics
+#'
+#' @return A dataframe of stock info.
+#' @export
+#'
+# S3 generic definition
+# get_industry_info <- function(stock_db,
+#                             industry_codes = NULL,
+#                              ...) {
+#   UseMethod("get_industry_info")
+# }
+
+# S4 generic definition
+setGeneric(
+  name = "get_industry_info",
+  signature = c("stock_db"),
+  def = get_industry_info <- function(stock_db,
+                                      industry_codes = NULL,
+                                      ...) {
+    standardGeneric("get_industry_info")
+  }
+)
 
 #' Get stock return timeseries from stock_db
 #'
@@ -577,7 +578,7 @@ setGeneric(
   name = "save_indicators_to_source",
   signature = c("stock_db"),
   def = save_indicators_to_source <- function(stock_db, indicator_source,
-                                                ts_indicators, ...) {
+                                              ts_indicators, ...) {
     standardGeneric("save_indicators_to_source")
   }
 )
@@ -614,6 +615,37 @@ setGeneric(
     standardGeneric("get_indicators")
   }
 )
+
+#' Get indicators Info from stock_db
+#'
+#' Generic function to get indicator info from stock_db.
+#'
+#' @param stock_db         A stock database object to operate.
+#' @param indicator_codes     A character vector of indicator groups.
+#' Default NULL return all indicators.
+##' @param ... Extra arguments to be passed to methods.
+#'
+#' @family stock_db generics
+#'
+#' @return A dataframe of matched indicators if succeed, otherwise NULL.
+#' @export
+#'
+
+# S3 generic definition
+# get_indicators_info <- function(stock_db, indicator_codes = NULL,
+#                              ...){
+#   UseMethod("get_indicators_info")
+# }
+# S4 generic definition
+setGeneric(
+  name = "get_indicators_info",
+  signature = c("stock_db"),
+  def = get_indicators_info <- function(stock_db, indicator_codes = NULL,
+                                        ...) {
+    standardGeneric("get_indicators_info")
+  }
+)
+
 
 #' Get factors from stock_db
 #'
@@ -665,7 +697,7 @@ setGeneric(
 #'
 
 # S3 generic definition
-# get_factors_info <- function(stock_db, ,factor_codes = NULL,
+# get_factors_info <- function(stock_db, factor_codes = NULL,
 #                              factor_group = NULL,...){
 #   UseMethod("get_factors_info")
 # }
@@ -942,7 +974,7 @@ stocks_excess_return <- function(ts_stocks_return,
   # combine stocks_return and riskfree_rate to compute excess return
   ts_stocks_excess_return <- ts_stocks_return %>%
     dplyr::inner_join(ts_riskfree_rate_with_stkcd, by = c("date", "stkcd")) %>%
-    dplyr::mutate(excess_return = return - riskfree_return)
+    dplyr::mutate(excess_return = .data$return - .data$riskfree_return)
 
   return(ts_stocks_excess_return)
 }
@@ -953,16 +985,15 @@ get_stock_field_dataset <- function(ds_source.df,
                                     target_field,
                                     stkcd_field = "stkcd",
                                     date_field = "trdmnt",
-                                    tseries_type = c("timeSeries", "xts"),
-                                    debug = FALSE) {
+                                    tseries_type = c("timeSeries", "xts")) {
 
-  # Validate param
+  # Validate params
   if (is.null(ds_source.df) || missing(stock_cd)
   || missing(target_field) || missing(date_field)) {
     rlang::abort("ds_source.df, stock_cd, target_field, date_field  mustn't be null")
   }
 
-  # Check whether the datafields existed
+  # Check whether the data fields existed
   field_list <- c(stkcd_field, target_field, date_field)
   if (!all(field_list %in% names(ds_source.df))) {
     error_fields <- NULL
@@ -1023,16 +1054,8 @@ get_stock_field_dataset <- function(ds_source.df,
   result_ts <- sort(result_ts)
 
   # Return the result timeseries of stock
-  if (debug) {
 
-    # keep the result_ts in GlobalEnv for debug check
-    assign(ds_name, result_ts, pos = .GlobalEnv)
-    return(get(ds_name))
-  } else {
-
-    # reutrn the result_as as ususal
-    return(result_ts)
-  }
+  return(result_ts)
 }
 
 # Get several timeseries of stocks data for multiple stocks from periodic dataset
@@ -1098,6 +1121,10 @@ fetch_stock_field_dataset <- function(ds_source.df,
 #'
 #' @param x    A object containing code/name information.
 #' @param code A code or a vector of codes to be translated.
+#'  if exact_match is FALSE, code could be regular expression for
+#'  non-exact matching.
+#' @param exact_match  A logic to determine use exact matching or not.
+#'  Default TRUE means to use exact matching
 #' @param ... Extra arguments to be passed to methods.
 #'
 #' @family stock_db generics
@@ -1108,7 +1135,7 @@ fetch_stock_field_dataset <- function(ds_source.df,
 
 
 # S3 generic definition
-# code2name <- function(x, code, ...) {
+# code2name <- function(x, code, exact_match = TRUE, ...) {
 #   UseMethod("code2name")
 # }
 
@@ -1116,7 +1143,7 @@ fetch_stock_field_dataset <- function(ds_source.df,
 setGeneric(
   name = "code2name",
   signature = c("x"),
-  def = code2name <- function(x, code, ...) {
+  def = code2name <- function(x, code, exact_match = TRUE, ...) {
     standardGeneric("code2name")
   }
 )
@@ -1128,6 +1155,10 @@ setGeneric(
 #'
 #' @param x     A object containing code/name information.
 #' @param name  A name or a vector of names to be translated.
+#'  if exact_match is FALSE, name could be regular expression for
+#'  non-exact matching.
+#' @param exact_match  A logic to determine use exact matching or not.
+#'  Default TRUE means to use exact matching
 #' @param ... Extra arguments to be passed to methods.
 #'
 #' @family stock_db generics
@@ -1138,7 +1169,7 @@ setGeneric(
 
 
 # S3 generic definition
-# name2code <- function(x, name, ...) {
+# name2code <- function(x, name, exact_match = TRUE, ...) {
 #   UseMethod("name2code")
 # }
 
@@ -1146,7 +1177,7 @@ setGeneric(
 setGeneric(
   name = "name2code",
   signature = c("x"),
-  def = name2code <- function(x, name, ...) {
+  def = name2code <- function(x, name, exact_match = TRUE, ...) {
     standardGeneric("name2code")
   }
 )

@@ -350,7 +350,7 @@ compute_attr_value.gta_db <- function(dates,
 
   # limit ds_attr_source to target stocks
   ds_attr_source <- ds_attr_source %>%
-    dplyr::filter(stkcd %in% unique(stkcds))
+    dplyr::filter(.data$stkcd %in% unique(stkcds))
 
   # get attribute values by matching dates/stkcds
   attr_values <- purrr::map2_chr(
