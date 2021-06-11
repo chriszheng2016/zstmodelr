@@ -34,21 +34,17 @@ get_datasource.gta_db <- function(stock_db, ...) {
     # build specified result of datasource
     ds_datasource <- ds_datasource_files %>%
       dplyr::mutate(
-        input_template = ifelse(is.na(.data$input_template),
-          .data$input_file, .data$input_template
-        ),
         input_dir = input_dir,
-        start_index = as.integer(.data$start_index)
+        start_index = as.integer(start_index)
       ) %>%
       dplyr::select(
-        target_table = .data$target_table,
-        input_file = .data$input_file,
-        input_template = .data$input_template,
-        input_type = .data$input_type,
+        target_table = target_table,
+        input_file = input_file,
+        input_type = input_type,
         input_dir = input_dir,
-        start_index = .data$start_index,
-        process = .data$process,
-        process_source = .data$process_source
+        start_index = start_index,
+        process = process,
+        process_source = process_source
       )
   }
 
@@ -141,7 +137,7 @@ update_db.gta_db <- function(stock_db,
   )
   log_file_path <- NULL
   ds_log <- data_source %>%
-    dplyr::select(.data$target_table, .data$input_file) %>%
+    dplyr::select(target_table, input_file) %>%
     dplyr::mutate(success = FALSE)
 
   # collect failed tables from log file
@@ -153,15 +149,15 @@ update_db.gta_db <- function(stock_db,
     if (!is.null(ds_retry_log)) {
 
       # find out failed tables
-      ds_failed_tables <- ds_retry_log %>%
-        dplyr::filter(.data$success == FALSE)
-      if (nrow(ds_failed_tables) > 0) {
-        failed_tables <- ds_failed_tables$target_table
+      ds_faild_tables <- ds_retry_log %>%
+        dplyr::filter(success == FALSE)
+      if (nrow(ds_faild_tables) > 0) {
+        failed_tables <- ds_faild_tables$target_table
       }
 
       # find out finished tables
       ds_finished_tables <- ds_retry_log %>%
-        dplyr::filter(.data$success == TRUE)
+        dplyr::filter(success == TRUE)
       if (nrow(ds_finished_tables) > 0) {
         finished_tables <- ds_finished_tables$target_table
       }
@@ -189,7 +185,6 @@ update_db.gta_db <- function(stock_db,
 
         result <- import_table(stock_db,
           input_file = data_source_info$input_file,
-          input_template = data_source_info$input_template,
           input_type = data_source_info$input_type,
           input_dir = data_source_info$input_dir,
           start_index = as.integer(data_source_info$start_index),
@@ -261,7 +256,6 @@ setMethod(
 # @export
 import_table.gta_db <- function(stock_db,
                                 input_file,
-                                input_template = NULL,
                                 input_type = c("csv", "txt"),
                                 input_dir = NULL,
                                 start_index = 2L,
@@ -276,11 +270,6 @@ import_table.gta_db <- function(stock_db,
     stop("Stock db isn't connected, try to connect db again")
   }
   assertive::assert_is_not_null(input_file)
-  assertive::assert_is_character(input_file)
-  if (!is.null(input_template)) {
-    assertive::assert_is_character(input_template)
-  }
-
   assertive::assert_is_integer(start_index)
   assertive::assert_all_are_greater_than_or_equal_to(start_index, 1)
   assertive::assert_is_logical(ignore_problems)
@@ -294,9 +283,7 @@ import_table.gta_db <- function(stock_db,
   success <- TRUE
 
   # read raw file for importing
-  raw_data_frame <- read_import_file(
-    input_file,
-    input_template = input_template,
+  raw_data_frame <- read_import_file(input_file,
     input_type = input_type,
     input_dir = input_dir,
     start_index = start_index,
@@ -362,13 +349,13 @@ import_table.gta_db <- function(stock_db,
 setMethod(
   "import_table",
   signature(stock_db = "gta_db"),
-  function(stock_db, input_file, input_template, input_type,
+  function(stock_db, input_file, input_type,
            input_dir, start_index,
            target_table, ignore_problems,
            log_dir,
            ...) {
     import_table.gta_db(
-      stock_db, input_file, input_template, input_type,
+      stock_db, input_file, input_type,
       input_dir, start_index,
       target_table, ignore_problems,
       log_dir, ...
@@ -400,7 +387,7 @@ process_files.gta_db <- function(stock_db,
 
   # filter datasource files to be process
   data_source_process <- data_source %>%
-    dplyr::filter(!is.na(.data$process)) %>%
+    dplyr::filter(!is.na(process)) %>%
     dplyr::left_join(data_source,
       by = c("process_source" = "input_file"),
       suffix = c("", ".source")
@@ -420,9 +407,9 @@ process_files.gta_db <- function(stock_db,
   log_file_path <- NULL
   ds_log <- data_source_process %>%
     dplyr::select(
-      input_file = .data$input_file,
-      source_file = .data$process_source,
-      .data$process
+      input_file = input_file,
+      source_file = process_source,
+      process
     ) %>%
     dplyr::mutate(success = FALSE)
 
@@ -435,15 +422,15 @@ process_files.gta_db <- function(stock_db,
     if (!is.null(ds_retry_log)) {
 
       # find out failed files
-      ds_failed_files <- ds_retry_log %>%
-        dplyr::filter(.data$success == FALSE)
-      if (nrow(ds_failed_files) > 0) {
-        failed_files <- ds_failed_files$input_file
+      ds_faild_files <- ds_retry_log %>%
+        dplyr::filter(success == FALSE)
+      if (nrow(ds_faild_files) > 0) {
+        failed_files <- ds_faild_files$input_file
       }
 
       # find out finished files
       ds_finished_files <- ds_retry_log %>%
-        dplyr::filter(.data$success == TRUE)
+        dplyr::filter(success == TRUE)
       if (nrow(ds_finished_files) > 0) {
         finished_files <- ds_finished_files$input_file
       }

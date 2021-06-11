@@ -5,36 +5,21 @@
 \alias{enable_parallel}
 \alias{disable_parallel}
 \alias{parallel_status}
-\alias{parallel_is_on}
 \title{Utils functions to control parallel process}
 \usage{
-enable_parallel(
-  env_globals = .pkg_globals,
-  parallel_switch_option = "zstmodelr.common.parallel"
-)
+enable_parallel(env_globals = .pkg_globals)
 
-disable_parallel(
-  env_globals = .pkg_globals,
-  parallel_switch_option = "zstmodelr.common.parallel"
-)
+disable_parallel(env_globals = .pkg_globals)
 
 parallel_status(env_globals = .pkg_globals)
-
-parallel_is_on()
 }
 \arguments{
 \item{env_globals}{a environment with parallel process information.
 Default .pkg_globals means to use global vars of the package. NULL means
 to use environment of caller.}
-
-\item{parallel_switch_option}{a string name of option to turn on/off
-parallel computation in functions with parallel feature.
-Default is "zstmodelr.common.parallel".}
 }
 \value{
 \code{parallel_status} return a list containing parallel status, see details.
-
-return a logic, TRUE mean parallel process is on.
 }
 \description{
 Control parallel process for parallel computation.
@@ -44,20 +29,14 @@ There are two levels of controlling parallel process for
 computation:
 \itemize{
 \item Global level: enable/disable parallel process for R session.
-}
-
 Through \code{enable_parallel}, we could set parallel process ready for current R
-session by initiating back-end clusters which normally are processes running
-on multiple cores in a computer, and setting \code{zstmodelr.common.parallel}
-option to TRUE.
-we could use \code{disable_parallel} to shut parallel process by closing
-back-end clusters and setting \code{zstmodelr.common.parallel} option to FALSE
-\itemize{
-\item Function level: enable/disable parallel process for running functions.
-}
-
-In a R session enabling parallel process, we could control a function being
-able to running parallel process, for example:\preformatted{        compute_indicator(ts_compute_vars, compute_fun, ...,
+session by initiating back-end clusters, which normally are processes running
+on multiple cores  in a computer. we could shut parallel process by using
+\code{disable_parallel}.
+\item Function level: enable/disable parallel process for running functions. In a
+R session enabling parallel process, we could control a function being able
+to running parallel process, for example:
+}\preformatted{        compute_indicator(ts_compute_vars, compute_fun, ...,
                   date_index_field = "stkcd"
                   c("date"), key_fields = NULL,
                   parallel = getOption("zstmodelr.common.parallel", TRUE))
@@ -66,8 +45,7 @@ able to running parallel process, for example:\preformatted{        compute_indi
 
 Its argument \code{parallel} controls whether the function run in parallel process
 or sequential process, whose default value is from options of
-\code{zstmodelr.common.parallel} or TRUE. By default, \code{zstmodelr.common.parallel}
-is controlled by \code{enable_parallel} and \code{disable_parallel} as well.
+\code{zstmodelr.common.parallel} or TRUE.
 
 In addition, \code{parallel_status} could provide current status of parallel
 process and configuration options, which return a list including following
@@ -96,8 +74,6 @@ clusters.
 clusters.
 
 \item \code{parallel_status}: get current status of parallel process.
-
-\item \code{parallel_is_on}: Judge whether parallel process is on or not.
 }}
 
 \examples{
@@ -116,20 +92,20 @@ parallel_status()
 
 # compute indicators by parallel process
 ds_indicator <- compute_indicator(ds_vars,
-  compute_fun = ind_def_fun,
-  date_index_field = "date",
-  key_fields = "stkcd"
-)
+       compute_fun = ind_def_fun,
+       date_index_field = "date",
+       key_fields = "stkcd")
 
 # compute indicators by sequential process
-ds_indicator <- compute_indicator(ds_vars,
-  compute_fun = ind_def_fun,
-  date_index_field = "date",
-  key_fields = "stkcd",
-  parallel = FALSE
-)
+ ds_indicator <- compute_indicator(ds_vars,
+       compute_fun = ind_def_fun,
+       date_index_field = "date",
+       key_fields = "stkcd",
+       parallel = FALSE)
 
 # Disable parallel process for the R session
 disable_parallel()
+
+
 }
 }

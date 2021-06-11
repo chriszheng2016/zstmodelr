@@ -23,22 +23,10 @@
 #'
 #' # read some importing files....
 #' ds_import_data <- read_import_file(input_file)
-#' }
+#'
+#'}
 #' @keywords internal
 "_PACKAGE"
-
-# Import frequently-used functions from other packages
-#' @importFrom stats mad median sd cor na.omit
-#' @importFrom utils head
-#' @importFrom graphics par
-#' @importFrom rlang .data
-
-## Quiets notes of R CMD check for pipelines codes
-if (getRversion() >= "2.15.1") {
-  utils::globalVariables(
-    c("where", ".", ":=")
-  )
-}
 
 
 # The following block is used by usethis to automatically manage
@@ -62,7 +50,7 @@ NULL
 # Options of pkg
 pkg_options <- list(
   zstmodelr.data_mgt.guess_max = 200000,
-  zstmodelr.common.parallel = FALSE,
+  zstmodelr.common.parallel = TRUE,
   zstmodelr.common.clusters = parallel::detectCores() - 1
 )
 
@@ -82,4 +70,5 @@ pkg_options <- list(
 
   # Stop parallel processing
   disable_parallel(.pkg_globals)
+
 }

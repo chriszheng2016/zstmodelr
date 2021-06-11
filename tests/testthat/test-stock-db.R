@@ -6,13 +6,12 @@ context("Tests for function of stock_db - generic functions")
 dsn <- "GTA_SQLData"
 DB_PROFILE_FILE <- "gta_profile.xlsx"
 
-skip_if_stock_db_not_ready(dsn)
 stock_db <- stock_db(gta_db, dsn)
-suppressMessages(open_stock_db(stock_db))
-withr::defer({
-  close_stock_db(stock_db)
-})
-
+suppressMessages(db_ready <- open_stock_db(stock_db))
+# skip tests if test dsn is not ready
+skip_if_not(db_ready,
+  message = sprintf("DSN(%s) is not ready, skip all tests for stock_db", dsn)
+)
 suppressMessages(init_stock_db(stock_db))
 
 
@@ -79,6 +78,24 @@ test_that("get_stock_dataset, with various arguments", {
   expect_true(is.character(ds_stocks$stkcd))
 })
 
+test_that("fetch_table_dataset, with various arguments", {
+
+  # fetch_table_dataset with default arguments ====
+  table_list <- c(
+    stock_db$table_list$TRD_Co,
+    stock_db$table_list$gta_fieldname_list
+  )
+  expect_message(
+    result_table_list <- fetch_table_dataset(stock_db, table_list),
+    "successfully"
+  )
+  expect_length(result_table_list, length(table_list))
+  for (i in seq_along(result_table_list)) {
+    expect_is(get(result_table_list[[i]]), "data.frame")
+  }
+})
+
+
 test_that("get_stock_info, with various arguments", {
 
   # get_stock_info with default arguments ====
@@ -112,37 +129,6 @@ test_that("get_stock_info, with various arguments", {
   expect_true(all(actual_fields %in% expect_fields))
   expect_true(all(unique(ds_stock_info$stkcd) %in% stock_cd_list))
 })
-
-test_that("get_industry_info, with various arguments", {
-
-  # get_industry_info with default arguments ====
-  ds_industry_info <- get_industry_info(stock_db)
-  expect_fields <- c(
-    "indcd", "indname"
-  )
-  actual_fields <- names(ds_industry_info)
-  expect_gt(NROW(ds_industry_info), 0)
-  expect_is(ds_industry_info, "data.frame")
-  expect_true(all(actual_fields %in% expect_fields))
-
-
-  # get_industry_info with various arguments ====
-  industry_codes <- c("C38", "J66")
-
-  ds_industry_info <- get_industry_info(stock_db,
-    industry_codes = industry_codes
-  )
-  expect_fields <- c(
-    "indcd", "indname"
-  )
-  actual_fields <- names(ds_industry_info)
-
-  expect_gt(NROW(ds_industry_info), 0)
-  expect_is(ds_industry_info, "data.frame")
-  expect_true(all(actual_fields %in% expect_fields))
-  expect_true(all(unique(ds_industry_info$indcd) %in% industry_codes))
-})
-
 
 test_that("get_stock_return, with various arguments", {
 
@@ -674,34 +660,6 @@ test_that("get_indicators, with various arguments", {
   }
 })
 
-test_that("get_indicators_info, with various arguments", {
-
-  # get_indicators_info with default arguments ====
-  ds_matched_indicators <- get_indicators_info(stock_db)
-  expected_fields <- c(
-    "ind_code", "ind_name", "ind_type",
-    "ind_category", "ind_description"
-  )
-  if (!is.null(ds_matched_indicators)) {
-    expect_is(ds_matched_indicators, "data.frame")
-    actual_fields <- names(ds_matched_indicators)
-    expect_equal(actual_fields, expected_fields)
-  }
-
-
-  # get_indicators_info with indicator_codes ====
-  indicator_codes <- c("f010101a", "f010201a")
-  ds_matched_indicators <- get_indicators_info(stock_db,
-    indicator_codes = indicator_codes
-  )
-  if (!is.null(ds_matched_indicators)) {
-    expect_is(ds_matched_indicators, "data.frame")
-    actual_fields <- names(ds_matched_indicators)
-    expect_equal(actual_fields, expected_fields)
-    expect_true(all(ds_matched_indicators$ind_code %in% indicator_codes))
-  }
-})
-
 test_that("get_factors, with various arguments", {
 
   # get_factors with default arguments ====
@@ -709,11 +667,11 @@ test_that("get_factors, with various arguments", {
   ds_factors <- get_factors(stock_db, factor_codes)
   expect_fields <- c(
     "date", "period", "stkcd", "indcd",
-    "factor_code", "factor_value"
+    "factor_name", "factor_value"
   )
   if (!is.null(ds_factors)) {
     expect_true(all(expect_fields %in% names(ds_factors)))
-    expect_true(all(ds_factors$factor_code %in% factor_codes))
+    expect_true(all(ds_factors$factor_name %in% factor_codes))
   }
 })
 
@@ -849,204 +807,10 @@ test_that("dir_path_db, with various arguments", {
 })
 
 test_that("Translation between code and name", {
-
-  # name2code/code2name with default arguments ====
-  expect_equal(code2name(stock_db, "600031", type = "stock"), "三一重工")
-  expect_equal(name2code(stock_db, "三一重工", type = "stock"), "600031")
-
-  # name2code/code2name with various arguments ====
-
-  # >>single code/name with exact match = TRUE(default)----
-  expect_equal(code2name(stock_db, "600031", type = "stock"), "三一重工")
-  expect_equal(name2code(stock_db, "三一重工", type = "stock"), "600031")
-  expect_equal(code2name(stock_db, "f050101b", type = "field"), "资产报酬率A")
   expect_equal(name2code(stock_db, "资产报酬率A", type = "field"), "f050101b")
-  expect_equal(code2name(stock_db, "C28", type = "industry"), "化学纤维制造业")
-  expect_equal(name2code(stock_db, "化学纤维制造业", type = "industry"), "C28")
-  expect_equal(code2name(stock_db, "GPM", type = "factor"), "Gross profit margin")
-  expect_equal(name2code(stock_db, "Gross profit margin", type = "factor"), "GPM")
-  expect_equal(code2name(stock_db, "f050101b", type = "indicator"), "资产报酬率A")
-  expect_equal(name2code(stock_db, "资产报酬率A", type = "indicator"), "f050101b")
-
-  # >>multple code/name with exact match = TRUE(default)----
-  expect_equal(
-    code2name(stock_db, c("600031", "600030"), type = "stock"),
-    c("三一重工", "中信证券")
-  )
-  expect_equal(
-    name2code(stock_db, c("三一重工", "中信证券"), type = "stock"),
-    c("600031", "600030")
-  )
-  expect_equal(
-    code2name(stock_db, c("f050101b", "f050102b"), type = "field"),
-    c("资产报酬率A", "资产报酬率B")
-  )
-  expect_equal(
-    name2code(stock_db, c("资产报酬率A", "资产报酬率B"), type = "field"),
-    c("f050101b", "f050102b")
-  )
-  expect_equal(
-    code2name(stock_db, c("C28", "C29"), type = "industry"),
-    c("化学纤维制造业", "橡胶和塑料制品业")
-  )
-  expect_equal(
-    name2code(stock_db, c("化学纤维制造业", "橡胶和塑料制品业"),
-      type = "industry"
-    ),
-    c("C28", "C29")
-  )
-  expect_equal(
-    code2name(stock_db, c("GPM", "OPM"), type = "factor"),
-    c("Gross profit margin", "Operating profit margin")
-  )
-  expect_equal(
-    name2code(stock_db, c("Gross profit margin", "Operating profit margin"),
-      type = "factor"
-    ),
-    c("GPM", "OPM")
-  )
-  expect_equal(
-    code2name(stock_db, c("f050101b", "f050102b"), type = "indicator"),
-    c("资产报酬率A", "资产报酬率B")
-  )
-  expect_equal(
-    name2code(stock_db, c("资产报酬率A", "资产报酬率B"), type = "indicator"),
-    c("f050101b", "f050102b")
-  )
-
-  # >> single code/name with exact match = FALSE----
-  expect_gte(
-    length(
-      code2name(stock_db, "60003", type = "stock", exact_match = FALSE)
-    ), 1
-  )
-  expect_gte(
-    length(
-      name2code(stock_db, "格力", type = "stock", exact_match = FALSE)
-    ), 1
-  )
-  expect_gte(
-    length(
-      code2name(stock_db, "f05010", type = "field", exact_match = FALSE)
-    ), 1
-  )
-  expect_gte(
-    length(
-      name2code(stock_db, "资产报酬", type = "field", exact_match = FALSE)
-    ), 1
-  )
-  expect_gte(
-    length(
-      code2name(stock_db, "C2", type = "industry", exact_match = FALSE)
-    ), 1
-  )
-  expect_gte(
-    length(
-      name2code(stock_db, "化学", type = "industry", exact_match = FALSE)
-    ), 1
-  )
-  expect_gte(
-    length(
-      code2name(stock_db, "PM", type = "factor", exact_match = FALSE)
-    ), 1
-  )
-  expect_gte(
-    length(
-      name2code(stock_db, "profit margin", type = "factor", exact_match = FALSE)
-    ), 1
-  )
-  expect_gte(
-    length(
-      code2name(stock_db, "f05010", type = "indicator", exact_match = FALSE)
-    ), 1
-  )
-  expect_gte(
-    length(
-      name2code(stock_db, "资产报酬", type = "indicator", exact_match = FALSE)
-    ), 1
-  )
-
-  # >> multiple code/name with exact match = FALSE----
-  expect_gte(
-    length(
-      code2name(stock_db, c("60003", "60002"),
-        type = "stock",
-        exact_match = FALSE
-      )
-    ), 2
-  )
-  expect_gte(
-    length(
-      name2code(stock_db, c("格力", "招商"),
-        type = "stock",
-        exact_match = FALSE
-      )
-    ), 2
-  )
-  expect_gte(
-    length(
-      code2name(stock_db, c("f05010", "f05020"),
-        type = "field",
-        exact_match = FALSE
-      )
-    ), 2
-  )
-  expect_gte(
-    length(
-      name2code(stock_db, c("资产报酬", "净资产收益"),
-        type = "field",
-        exact_match = FALSE
-      )
-    ), 2
-  )
-  expect_gte(
-    length(
-      code2name(stock_db, c("C2", "C3"),
-        type = "industry",
-        exact_match = FALSE
-      )
-    ), 2
-  )
-  expect_gte(
-    length(
-      name2code(stock_db, c("化学", "医药"),
-        type = "industry",
-        exact_match = FALSE
-      )
-    ), 2
-  )
-  expect_gte(
-    length(
-      code2name(stock_db, c("PM", "RO"),
-        type = "factor",
-        exact_match = FALSE
-      )
-    ), 2
-  )
-  expect_gte(
-    length(
-      name2code(stock_db, c("profit margin", "Return on"),
-        type = "factor",
-        exact_match = FALSE
-      )
-    ), 2
-  )
-  expect_gte(
-    length(
-      code2name(stock_db, c("f05010", "f05020"),
-        type = "indicator",
-        exact_match = FALSE
-      )
-    ), 2
-  )
-  expect_gte(
-    length(
-      name2code(stock_db, c("资产报酬", "净资产收益"),
-        type = "indicator",
-        exact_match = FALSE
-      )
-    ), 2
-  )
+  expect_equal(code2name(stock_db, "f050101b", type = "field"), "资产报酬率A")
+  expect_equal(name2code(stock_db, "三一重工", type = "stock"), "600031")
+  expect_equal(code2name(stock_db, "600031", type = "stock"), "三一重工")
 })
 
 # Tests for stock_db class - non generic functions ----
@@ -1259,3 +1023,6 @@ test_that("stocks_excess_return, with various arguments", {
   expect_true(is_periodic_dates(ts_stock_excess_return$date, freq_rule = "month"))
   expect_true(all(lubridate::day(ts_stock_excess_return$date + 1) == 1))
 })
+
+# clear up testing conext
+suppressMessages(close_stock_db(stock_db))

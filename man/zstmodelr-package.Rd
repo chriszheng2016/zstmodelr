@@ -8,8 +8,8 @@
 \description{
 \if{html}{\figure{logo.png}{options: align='right' alt='logo' width='120'}}
 
-An implementation of analytical tools of stock factors models
-    for investing China stock market.
+An implementation of analytical tools of stock
+    factors models for investing China stock market.
 }
 \details{
 The main goals of zstmodelr is to leverage traditional financial theory and
@@ -39,6 +39,7 @@ options(zstmodelr.data_mgt.guess_max = 300000)
 
 # read some importing files....
 ds_import_data <- read_import_file(input_file)
+
 }
 }
 \seealso{
@@ -50,7 +51,7 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Chris Zheng \email{chriszheng@vip.sina.com.cn}
+\strong{Maintainer}: Chris Zheng \email{chriszheng@vip.sina.com.cn} (\href{https://orcid.org/CHRISZHENG'S-ORCID-ID}{ORCID})
 
 }
 \keyword{internal}

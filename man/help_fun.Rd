@@ -16,7 +16,7 @@ help_fun_(quo_fun, argument_desc = NULL, examples = NULL)
 
 \item{examples}{a character examples.}
 
-\item{quo_fun}{a function quoted by \code{\link[rlang:nse-defuse]{rlang::quo()}} or \code{\link[rlang:nse-defuse]{rlang::enquo()}} to be
+\item{quo_fun}{a function quoted by \code{\link[rlang:quo]{rlang::quo()}} or \code{\link[rlang:enquo]{rlang::enquo()}} to be
 display usage.}
 }
 \value{

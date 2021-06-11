@@ -299,11 +299,11 @@ help_usage <- function() {
 }
 
 
-# Run indicator_producer in direct mode
-# indicator_producer(help = TRUE)
+# Run data_manager in direct mode
+# data_manager(help = TRUE)
 #
-# Run indicator_producer in interactive mode
-# indicator_producer_ui()
+# Run data_manager in interactive mode
+# data_manager_ui()
 #
 
 

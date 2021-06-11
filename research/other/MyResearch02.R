@@ -13,7 +13,7 @@ stock_cd_list <- c(600066,000550, 600031, 000157,000651, 000333)
 fr_t1_debt.df <- get_table_dataset(stock_db, table_name = "FR_T1_偿债能力")
 
 # load all tables from stock db
-#result_table_list <- fetch_table_dataset(stock_db, table_list = db_tables[c(6,7)])
+result_table_list <- fetch_table_dataset(stock_db, table_list = db_tables[c(6,7)])
 
 # stock_field_list
 stock_field_list <- stock_field_list(stock_db)

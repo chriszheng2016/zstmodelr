@@ -125,15 +125,7 @@ setGeneric(
 #'  in log dir, e.g. "input_file(YYYY-MM-DD).csv"
 #'
 #' @param stock_db  A stock database object to operate.
-#' @param input_file  A character of name or path of input data file.
-#' @param input_template  A character of name of input template file.
-#' @param input_file  A character of name or path of input data file,
-#' which could use regular expression to import multiple files into a table,
-#' e.g. `test[0-9]*.txt`" will read files like test.txt, test1.txt,...,
-#' test9.txt..., etc., the files ware queued in ascending alphabet order.
-#' @param input_template  A character of name of input template file.
-#'   Default NULL means use as input_file when reading single files or
-#'   the first file in input_file when reading multiple files.
+#' @param input_file  A name or a path of input data file.
 #' @param input_type  Format of input file, e.g. "txt", "csv".
 #' @param input_dir Working dir of input file, if NULL, use dir of input file as
 #'   working dir, by default NULL,
@@ -157,7 +149,6 @@ setGeneric(
 # S3 generic definition
 # import_table <- function(stock_db,
 #                          input_file,
-#                          input_template = NULL,
 #                          input_type = c("csv", "txt"),
 #                          input_dir = NULL,
 #                          start_index = 2L
@@ -175,7 +166,6 @@ setGeneric(
   signature = c("stock_db"),
   def = import_table <- function(stock_db,
                                  input_file,
-                                 input_template = NULL,
                                  input_type = c("csv", "txt"),
                                  input_dir = NULL,
                                  start_index = 2L,
@@ -250,13 +240,10 @@ setGeneric(
 #'
 #' Read a raw file into a dataframe for processing or importing.
 #'
-#' @param input_file  A character of name or path of input data file,
-#' which could use regular expression to read multiple files into a combined
-#' dataframe, e.g. `test[0-9]*.txt`" will read files like test.txt, test1.txt,...,
+#' @param input_file  A name or a path of input data file, which could use
+#'   regular expression to read multiple files into a combined dataframe, e.g.
+#'   "`test[0-9]*.txt`" will read files like test.txt, test1.txt,...,
 #'   test9.txt..., etc., the files ware queued in ascending alphabet order.
-#' @param input_template  A character of name of input template file.
-#'   Default NULL means use as input_file when reading single files or
-#'   the first file in input_file when reading multiple files.
 #' @param input_type  A character of input file format, e.g. "txt", "csv".
 #' @param input_dir   A path of working dir of input file, if NULL, use dir of
 #'   input file as working dir, default NULL.
@@ -275,7 +262,6 @@ setGeneric(
 #'
 #' @export
 read_import_file <- function(input_file,
-                             input_template = NULL,
                              input_type = c("csv", "txt"),
                              input_dir = NULL,
                              start_index = 2L,
@@ -355,7 +341,7 @@ read_import_file <- function(input_file,
         )
       }
 
-      readr::write_excel_csv(problems_data, file = problems_file)
+      readr::write_excel_csv(problems_data, problems_file)
 
       msg <- sprintf(
         "Converting problems in %s, plese check %s for detail.",
@@ -380,17 +366,12 @@ read_import_file <- function(input_file,
 
   # -- Main Function --
   # validate params
-  assertive::assert_is_not_null(input_file)
-  assertive::assert_is_character(input_file)
-  if (!is.null(input_template)) {
-    assertive::assert_is_character(input_template)
-  }
-
+  #   assertive::assert_is_not_null(input_file)
   assertive::assert_is_integer(start_index)
   assertive::assert_all_are_greater_than_or_equal_to(start_index, 1L)
   assertive::assert_is_logical(ignore_problems)
 
-  # Get target files for importing
+  # Get traget files for importing
   if (is.null(input_dir)) {
     input_dir <- dirname(input_file)
   } else {
@@ -405,46 +386,29 @@ read_import_file <- function(input_file,
     )
   )
   target_files <- stringr::str_sort(target_files, decreasing = FALSE)
-  names(target_files) <- target_files
 
   # Process multiple target files
   ds_import_data <- NULL
   if (length(target_files) > 0) {
 
     # Inform matched files to read
-    msg <- sprintf(
-      "Read data from file(s):%s...\n",
-      paste(target_files, collapse = ",")
-    )
+    msg <- sprintf("Read data from file(s):%s...\n",
+              paste(target_files, collapse = ","))
     rlang::inform(msg)
 
-    # Input_template is used to determine the names and type of columns of
-    # multiples input files.
-    if (is.null(input_template)) {
-      # Use first input file as input_template if NULL.
-      input_template <- target_files[1]
-    } else {
-      input_template <- target_files[input_template]
-    }
-
-    if (is.na(input_template)) {
-      msg <- sprintf(
-        "Input template (%s) doesn't exisit!\n",
-        input_template
-      )
-      rlang::abort(msg)
-    }
+    # use first file configration(col_name, col_type) as configuration for all files
+    first_target_file <- target_files[1]
 
     # get full path of input file
     if (!is.null(input_dir)) {
-      input_template_path <-
-        paste0(input_dir, "/", basename(input_template))
+      input_file_path <-
+        paste0(input_dir, "/", basename(first_target_file))
     } else {
-      input_template_path <- normalizePath(input_template, winslash = "/")
+      input_file_path <- normalizePath(first_target_file, winslash = "/")
     }
 
     # guess file encoding
-    file_encoding_info <- readr::guess_encoding(input_template_path)
+    file_encoding_info <- readr::guess_encoding(input_file_path)
     if (NROW(file_encoding_info) > 0) {
       file_encoding <- file_encoding_info$encoding[1]
     } else {
@@ -457,13 +421,13 @@ read_import_file <- function(input_file,
     suppressMessages(
       import_data_header <- switch(input_type,
         txt = {
-          readr::read_tsv(input_template_path,
+          readr::read_tsv(input_file_path,
             locale = readr::locale(encoding = file_encoding),
             n_max = 0
           )
         },
         csv = {
-          readr::read_csv(input_template_path,
+          readr::read_csv(input_file_path,
             locale = readr::locale(encoding = file_encoding),
             n_max = 0
           )
@@ -472,7 +436,7 @@ read_import_file <- function(input_file,
     )
     col_names <- names(import_data_header)
     if (nrow(import_data_header) != 0) {
-      msg <- sprintf("Error in getting header from %s", input_template_path)
+      msg <- sprintf("Error in getting header from %s", input_file_path)
       rlang::abort(msg)
     }
 
@@ -482,7 +446,7 @@ read_import_file <- function(input_file,
       col_spec <- switch(input_type,
         txt = {
           readr::spec_tsv(
-            input_template_path,
+            input_file_path,
             col_names = col_names,
             locale = readr::locale(encoding = file_encoding),
             skip = skip,
@@ -491,7 +455,7 @@ read_import_file <- function(input_file,
         },
         csv = {
           readr::spec_csv(
-            input_template_path,
+            input_file_path,
             col_names = col_names,
             locale = readr::locale(encoding = file_encoding),
             skip = skip,
@@ -601,10 +565,10 @@ write_import_file <- function(ds_output,
   suppressMessages(
     switch(output_type,
       txt = {
-        readr::write_tsv(ds_output, file = output_file_path)
+        readr::write_tsv(ds_output, path = output_file_path)
       },
       csv = {
-        readr::write_csv(ds_output, file = output_file_path)
+        readr::write_csv(ds_output, path = output_file_path)
       }
     )
   )

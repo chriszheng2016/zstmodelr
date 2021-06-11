@@ -7,42 +7,36 @@
 build_report(
   report_template,
   report_params = NULL,
-  output_format = NULL,
+  output_format = c("html_document", "pdf_document", "word_document", "rticles::ctex"),
   output_sn = NULL,
   output_dir = "output",
   quiet = TRUE,
-  encoding = "UTF-8",
   ...
 )
 }
 \arguments{
-\item{report_template}{A rmd file as report template.
-See input argument of \code{\link[rmarkdown:render]{rmarkdown::render()}} for details.}
+\item{report_template}{A rmd file as report template.}
 
-\item{report_params}{A list of report params, by default NULL.
-See params argument of \code{\link[rmarkdown:render]{rmarkdown::render()}} for details.}
+\item{report_params}{A list of report params, by default NULL.}
 
-\item{output_format}{The R Markdown output format to convert to.
-See output_format argument of \code{\link[rmarkdown:render]{rmarkdown::render()}} for details.}
+\item{output_format}{Output file format i.e. "html_document","pdf_document",
+"word_document", "rticles::ctex". Default "html_document".}
 
 \item{output_sn}{Serial number or id for output file. Default NULL}
 
 \item{output_dir}{Path of dir to save output file. Default "output" means to
 save file in output in current dir. If NULL save in directory of template
-file, otherwise in output_dir.}
+file, otherwise in output_dir}
 
 \item{quiet}{A logic flag of whether to suppress printing of the pandoc
 command line.}
 
-\item{encoding}{Ignored. The encoding is always assumed to be UTF-8.}
-
-\item{...}{Arguments passed to \code{\link[rmarkdown:render]{rmarkdown::render()}}.}
+\item{...}{Arguments passed to rmarkdown::render.}
 }
 \value{
 No return.
 }
 \description{
-It's a wrapper of \code{\link[rmarkdown:render]{rmarkdown::render()}} to build report from template by
-customized arguments.
+Use data rank as new data
 }
 \concept{utils_report}

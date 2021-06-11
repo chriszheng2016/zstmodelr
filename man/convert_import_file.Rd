@@ -19,9 +19,9 @@ convert_import_file(
 )
 }
 \arguments{
-\item{input_file}{A character of name or path of input data file,
-which could use regular expression to read multiple files into a combined
-dataframe, e.g. \code{test[0-9]*.txt}" will read files like test.txt, test1.txt,...,
+\item{input_file}{A name or a path of input data file, which could use
+regular expression to read multiple files into a combined dataframe, e.g.
+"\code{test[0-9]*.txt}" will read files like test.txt, test1.txt,...,
 test9.txt..., etc., the files ware queued in ascending alphabet order.}
 
 \item{input_type}{A character of input file format, e.g. "txt", "csv".}

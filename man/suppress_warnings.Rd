@@ -16,7 +16,7 @@ means suppressing all warnings.}
 The warning message as character string, invisibly.
 }
 \description{
-Unlike \code{\link[base:warning]{base::suppressWarnings()}} which suppresses all warnings, it can
+Unlike \code{\link[base:suppressWarnings]{base::suppressWarnings()}} which suppresses all warnings, it can
 suppress some specific warnings and output remain warnings.
 }
 \examples{

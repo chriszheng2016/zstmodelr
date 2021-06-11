@@ -7,27 +7,16 @@
 \alias{code2name,gta_db-method}
 \title{Translate code into name}
 \usage{
-code2name(x, code, exact_match = TRUE, ...)
+code2name(x, code, ...)
 
-\S4method{code2name}{code_name_list}(x, code, exact_match = TRUE, ...)
+\S4method{code2name}{code_name_list}(x, code, ...)
 
-\S4method{code2name}{gta_db}(
-  x,
-  code,
-  exact_match = TRUE,
-  type = c("stock", "field", "industry", "factor", "indicator"),
-  ...
-)
+\S4method{code2name}{gta_db}(x, code, type = c("stock", "field", "industry"), ...)
 }
 \arguments{
 \item{x}{A object containing code/name information.}
 
-\item{code}{A code or a vector of codes to be translated.
-if exact_match is FALSE, code could be regular expression for
-non-exact matching.}
-
-\item{exact_match}{A logic to determine use exact matching or not.
-Default TRUE means to use exact matching}
+\item{code}{A code or a vector of codes to be translated.}
 
 \item{...}{Extra arguments to be passed to methods.}
 
@@ -52,13 +41,12 @@ Generic function to translate code into name
 Other stock_db generics: 
 \code{\link{close_stock_db}()},
 \code{\link{dir_path_db}()},
+\code{\link{fetch_table_dataset}()},
 \code{\link{get_factors_info}()},
 \code{\link{get_factors}()},
 \code{\link{get_financial_report}()},
 \code{\link{get_indicators_from_source}()},
-\code{\link{get_indicators_info}()},
 \code{\link{get_indicators}()},
-\code{\link{get_industry_info}()},
 \code{\link{get_market_return}()},
 \code{\link{get_profile}()},
 \code{\link{get_riskfree_rate}()},

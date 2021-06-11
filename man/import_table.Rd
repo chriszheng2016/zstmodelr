@@ -8,7 +8,6 @@
 import_table(
   stock_db,
   input_file,
-  input_template = NULL,
   input_type = c("csv", "txt"),
   input_dir = NULL,
   start_index = 2L,
@@ -21,7 +20,6 @@ import_table(
 \S4method{import_table}{gta_db}(
   stock_db,
   input_file,
-  input_template = NULL,
   input_type = c("csv", "txt"),
   input_dir = NULL,
   start_index = 2L,
@@ -34,14 +32,7 @@ import_table(
 \arguments{
 \item{stock_db}{A stock database object to operate.}
 
-\item{input_file}{A character of name or path of input data file,
-which could use regular expression to import multiple files into a table,
-e.g. \code{test[0-9]*.txt}" will read files like test.txt, test1.txt,...,
-test9.txt..., etc., the files ware queued in ascending alphabet order.}
-
-\item{input_template}{A character of name of input template file.
-Default NULL means use as input_file when reading single files or
-the first file in input_file when reading multiple files.}
+\item{input_file}{A name or a path of input data file.}
 
 \item{input_type}{Format of input file, e.g. "txt", "csv".}
 

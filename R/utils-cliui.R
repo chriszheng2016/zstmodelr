@@ -36,13 +36,12 @@ arg_value <- function(arg_name, choices = NULL, quo_fun = NULL) {
 
   # Get value of a argument
   arg_value <- NULL
-  no_default <- "NO_DEFAULT"
   if (arg_name != "...") {
 
     # build candidate list of choice
     if (is.null(choices)) {
       eval_tidy_with_dfault <- purrr::possibly(rlang::eval_tidy,
-        otherwise = no_default,
+        otherwise = NULL,
         quiet = TRUE
       )
       formal.args <- formals(fun)
@@ -79,6 +78,7 @@ arg_value <- function(arg_name, choices = NULL, quo_fun = NULL) {
           # user input "q" to cancel input
           arg_value <- character(0)
         }
+
       } else {
         # when user input "", we should use choices as default value
         # notice: NULL value is still valid since NULL could be default value
@@ -91,14 +91,10 @@ arg_value <- function(arg_name, choices = NULL, quo_fun = NULL) {
       if (is.null(arg_value)) {
         input_arg_value <- "NULL"
       } else {
-        if (arg_value[1] != no_default) {
-          input_arg_value <- arg_value
-        } else {
-          input_arg_value <- character(0)
-        }
+        input_arg_value <- arg_value
       }
       input_arg_value <- paste0(input_arg_value, collapse = ",")
-      cli::cli_alert_success("selected {arg_name}: {.strong {input_arg_value}}\n")
+      cli::cli_alert_success("selected {arg_name}: {.strong {input_arg_value}}.\n")
     } else {
       if (!is.null(quo_fun)) {
         # only character(0) means cancel select/input value
@@ -109,11 +105,7 @@ arg_value <- function(arg_name, choices = NULL, quo_fun = NULL) {
       rlang::abort("Abort without a value for argument.\n")
     }
 
-    if ((!is.null(arg_value)) && (arg_value[1] == no_default)) {
-      arg_value <- rlang::list2(!!arg_name := rlang::missing_arg())
-    } else {
-      arg_value <- rlang::list2(!!arg_name := arg_value)
-    }
+    arg_value <- rlang::list2(!!arg_name := arg_value)
   }
 
   arg_value
@@ -198,8 +190,7 @@ execute_fun <- function(quo_fun, args_values, quiet = FALSE, debug = FALSE) {
     )
     cli::cli_code(format(rlang::parse_expr(action_str)))
     user_answer <- user_select_values(c("Yes", "No"),
-      title = "It may take long time. Are you sure to execute?"
-    )
+             title = "It may take long time. Are you sure to execute?")
     if (user_answer == "Yes") {
       if (!debug) {
         cli::cli_alert_info("Run {fun_name}... ")
@@ -262,7 +253,7 @@ execute_fun <- function(quo_fun, args_values, quiet = FALSE, debug = FALSE) {
 #' }
 #'
 #' # NSE version of function
-interactive_call <- function(fun, quiet = FALSE, debug = FALSE) {
+interactive_call <- function(fun, quiet = FALSE, debug = FALSE ) {
   interactive_call_(
     quo_fun = rlang::enquo(fun),
     quiet = quiet,
@@ -400,12 +391,12 @@ help_fun_ <- function(quo_fun,
   # display help doc
   if (is.null(argument_desc) || is.null(examples)) {
     cli::cli_alert_info("please see document of {fun_name} in help window...")
-    # help(topic = fun_name)
+    #help(topic = fun_name)
   }
 }
 
 # User select values from console - easy for mock testing
-user_select_values <- function(choices, multiple = FALSE, title = NULL) {
+user_select_values <- function(choices,  multiple = FALSE, title = NULL) {
   utils::select.list(choices, multiple = multiple, title = title)
 }
 
