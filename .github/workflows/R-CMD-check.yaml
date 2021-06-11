@@ -69,9 +69,22 @@ jobs:
           remotes::install_cran("rcmdcheck")
         shell: Rscript {0}
 
-      - name: Check
+      # Since chinese words in codes cause warnings on windows which iwll lead to failure,
+      # I have to give check different arguments depending on os:
+      # * In windows, change error_on = "error" to "warning";
+      # * In non-windows, use original araguments.
+      - name: Check on windows os
         env:
           _R_CHECK_CRAN_INCOMING_REMOTE_: false
+        if: runner.os == 'Windows'
+        run: |
+          options(crayon.enabled = TRUE)
+          rcmdcheck::rcmdcheck(args = c("--no-manual", "--as-cran"), error_on = "error", check_dir = "check")
+        shell: Rscript {0}
+      - name: Check on non-windows os
+        env:
+          _R_CHECK_CRAN_INCOMING_REMOTE_: false
+        if: runner.os != 'Windows'
         run: |
           options(crayon.enabled = TRUE)
           rcmdcheck::rcmdcheck(args = c("--no-manual", "--as-cran"), error_on = "warning", check_dir = "check")
